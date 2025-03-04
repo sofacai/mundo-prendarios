@@ -1,0 +1,7 @@
+{
+  "name": "mundo-prendarios",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
