@@ -1,0 +1,39 @@
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main content area -->
+  <div class="main-content" [ngClass]="{'content-expanded': sidebarCollapsed}">
+    <div class="content-wrapper">
+      <h1>Dashboard</h1>
+
+      <!-- Contenido específico del dashboard -->
+      <div class="dashboard-content">
+        <!-- Aquí puedes agregar el contenido específico según el rol -->
+        <div class="dashboard-cards">
+          <!-- Ejemplo de tarjetas de resumen -->
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Operaciones</h5>
+              <p class="card-value">0</p>
+            </div>
+          </div>
+
+          <div class="card" *ngIf="userRole === rolType.Administrador || userRole === rolType.AdminCanal">
+            <div class="card-body">
+              <h5 class="card-title">Usuarios</h5>
+              <p class="card-value">0</p>
+            </div>
+          </div>
+
+          <div class="card" *ngIf="userRole === rolType.Administrador">
+            <div class="card-body">
+              <h5 class="card-title">Canales</h5>
+              <p class="card-value">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

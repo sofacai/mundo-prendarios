@@ -1,0 +1,65 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f8fa;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 280px; // Ancho del sidebar
+  transition: margin-left 0.3s ease;
+  overflow-y: auto;
+
+  @media (max-width: 991.98px) {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  &.content-expanded {
+    margin-left: 0;
+  }
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #181C32;
+  }
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.08);
+    border: none;
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #5E6278;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-value {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #181C32;
+      margin: 0;
+    }
+  }
+}

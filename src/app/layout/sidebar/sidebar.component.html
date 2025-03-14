@@ -1,0 +1,95 @@
+<div class="sidebar" [class.sidebar-expanded]="!isSidebarCollapsed">
+  <div class="sidebar-header">
+    <div class="logo-container">
+      <!-- Utilizar onerror para manejar el caso en que el logo no exista -->
+      <img src="assets/logo.png" alt="Logo" class="logo"
+           onerror="this.onerror=null; this.src=''; this.alt='Sistema de Préstamos'; this.classList.add('text-logo');">
+    </div>
+    <button class="sidebar-toggle-btn d-lg-none" (click)="toggleSidebar()">
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+  </div>
+
+  <div class="sidebar-menu">
+    <ul class="menu-items">
+      <!-- Dashboard - visible para todos -->
+      <li class="menu-item" [class.active]="isActiveRoute('/dashboard')">
+        <a (click)="navigateTo('/dashboard')" class="menu-link">
+          <ion-icon name="grid-outline" size="small"></ion-icon>
+          <span class="menu-title">Dashboard</span>
+        </a>
+      </li>
+
+      <!-- Menú de Canales - solo para admin (rol 1) -->
+      <li class="menu-item has-submenu"
+          [class.active]="isCanalesMenuActive()"
+          [class.expanded]="isCanalesExpanded"
+          *ngIf="userRole === rolType.Administrador">
+        <a (click)="toggleCanalesMenu()" class="menu-link">
+          <ion-icon name="git-network-outline" size="small"></ion-icon>
+          <span class="menu-title">Canales</span>
+          <ion-icon name="chevron-down-outline" class="submenu-icon" [class.rotated]="isCanalesExpanded"></ion-icon>
+        </a>
+        <ul class="submenu" [class.expanded]="isCanalesExpanded">
+          <li class="submenu-item" [class.active]="isActiveRoute('/canales')">
+            <a (click)="navigateTo('/canales')" class="submenu-link">
+              <ion-icon name="list-outline" size="small"></ion-icon>
+              <span>Ver Canales</span>
+            </a>
+          </li>
+          <li class="submenu-item" [class.active]="isActiveRoute('/subcanales')">
+            <a (click)="navigateTo('/subcanales')" class="submenu-link">
+              <ion-icon name="git-branch-outline" size="small"></ion-icon>
+              <span>Subcanales</span>
+            </a>
+          </li>
+          <li class="submenu-item" [class.active]="isActiveRoute('/usuarios')">
+            <a (click)="navigateTo('/usuarios')" class="submenu-link">
+              <ion-icon name="people-outline" size="small"></ion-icon>
+              <span>Usuarios</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Para roles que no son Admin, mostrar opciones separadas -->
+      <!-- Usuarios - solo para admincanal (rol 2) -->
+      <li class="menu-item" [class.active]="isActiveRoute('/usuarios')"
+          *ngIf="userRole === rolType.AdminCanal">
+        <a (click)="navigateTo('/usuarios')" class="menu-link">
+          <ion-icon name="people-outline" size="small"></ion-icon>
+          <span class="menu-title">Usuarios</span>
+        </a>
+      </li>
+
+      <!-- Clientes - solo para admin (rol 1) -->
+      <li class="menu-item" [class.active]="isActiveRoute('/clientes')"
+          *ngIf="userRole === rolType.Administrador">
+        <a (click)="navigateTo('/clientes')" class="menu-link">
+          <ion-icon name="person-circle-outline" size="small"></ion-icon>
+          <span class="menu-title">Clientes</span>
+        </a>
+      </li>
+
+      <!-- Operaciones - visible para todos los roles -->
+      <li class="menu-item" [class.active]="isActiveRoute('/operaciones')">
+        <a (click)="navigateTo('/operaciones')" class="menu-link">
+          <ion-icon name="cash-outline" size="small"></ion-icon>
+          <span class="menu-title">Operaciones</span>
+        </a>
+      </li>
+
+      <!-- Planes - solo para admin (rol 1) -->
+      <li class="menu-item" [class.active]="isActiveRoute('/planes')"
+          *ngIf="userRole === rolType.Administrador">
+        <a (click)="navigateTo('/planes')" class="menu-link">
+          <ion-icon name="calendar-outline" size="small"></ion-icon>
+          <span class="menu-title">Planes</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Overlay para móviles cuando el sidebar está abierto -->
+<div class="sidebar-overlay" [class.active]="!isSidebarCollapsed && isMobile" (click)="toggleSidebar()"></div>

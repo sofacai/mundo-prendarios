@@ -1,2 +1,78 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
+:root {
+  // Colores principales basados en Metronic
+  --ion-color-primary: #009ef7;
+  --ion-color-primary-rgb: 0, 158, 247;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #008bd9;
+  --ion-color-primary-tint: #1aa8f8;
+
+  // Color secundario (verde)
+  --ion-color-secondary: #50cd89;
+  --ion-color-secondary-rgb: 80, 205, 137;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #46b479;
+  --ion-color-secondary-tint: #62d295;
+
+  // Color de advertencia (amarillo/naranja)
+  --ion-color-warning: #ffc700;
+  --ion-color-warning-rgb: 255, 199, 0;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #e0af00;
+  --ion-color-warning-tint: #ffcd1a;
+
+  // Color de peligro (rojo)
+  --ion-color-danger: #f1416c;
+  --ion-color-danger-rgb: 241, 65, 108;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #d4395f;
+  --ion-color-danger-tint: #f25a7d;
+
+  // Color neutros
+  --ion-color-dark: #181c32;
+  --ion-color-dark-rgb: 24, 28, 50;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #15192c;
+  --ion-color-dark-tint: #2f3347;
+
+  --ion-color-medium: #a1a5b7;
+  --ion-color-medium-rgb: 161, 165, 183;
+  --ion-color-medium-contrast: #000000;
+  --ion-color-medium-contrast-rgb: 0, 0, 0;
+  --ion-color-medium-shade: #8e91a1;
+  --ion-color-medium-tint: #aaaebd;
+
+  --ion-color-light: #f9f9f9;
+  --ion-color-light-rgb: 249, 249, 249;
+  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast-rgb: 0, 0, 0;
+  --ion-color-light-shade: #dbdbdb;
+  --ion-color-light-tint: #fafafa;
+
+  // Variables para fondos
+  --background-color: #f5f8fa;
+  --card-background: #ffffff;
+  --sidebar-background: #1e1e2d;
+  --sidebar-text: #9899ac;
+  --sidebar-active: #ffffff;
+
+  // Bordes redondeados
+  --border-radius-sm: 0.35rem;
+  --border-radius-md: 0.675rem;
+  --border-radius-lg: 0.85rem;
+
+  // Sombras
+  --card-box-shadow: 0px 0px 20px 0px rgba(76, 87, 125, 0.02);
+  --modal-box-shadow: 0px 0px 30px 0px rgba(82, 63, 105, 0.05);
+
+  // Espaciado
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+}

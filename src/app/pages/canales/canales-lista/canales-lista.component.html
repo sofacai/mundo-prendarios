@@ -1,0 +1,106 @@
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido principal -->
+  <div class="content-area">
+    <!-- Encabezado -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Gestión de Canales</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" (click)="abrirModalNuevoCanal()">
+          <i class="bi bi-plus"></i> Nuevo Canal
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido de la tabla -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de Canales</h2>
+      </div>
+      <div class="card-body">
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando canales...</p>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="error && !loading" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <!-- Tabla de datos -->
+        <div *ngIf="!loading && !error" class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width: 50px">ID</th>
+                <th>Nombre</th>
+                <th>Provincia</th>
+                <th>Estado</th>
+                <th class="text-center" style="width: 80px">Planes</th>
+                <th class="text-center" style="width: 80px">Subcanales</th>
+                <th style="width: 60px" class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let canal of canales">
+                <td>{{ canal.id }}</td>
+                <td>
+                  <div>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(canal.id)">
+                      {{ canal.nombreFantasia }}
+                    </a>
+                    <div class="text-muted fs-7">{{ canal.razonSocial }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <div class="text-dark">{{ canal.provincia }}</div>
+                    <div class="text-muted fs-7">{{ canal.localidad }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
+                    {{ canal.activo ? 'Activado' : 'Desactivado' }}
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-light-info">
+                    {{ getPlanesCantidad(canal) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-light-warning">
+                    {{ getSubcanalesCantidad(canal) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(canal.id)"></i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Mensaje cuando no hay canales -->
+          <div *ngIf="canales.length === 0" class="text-center p-5">
+            No hay canales registrados.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<app-canal-form
+  [isOpen]="modalOpen"
+  (closeModal)="cerrarModal()"
+  (canalCreado)="onCanalCreado($event)">
+</app-canal-form>

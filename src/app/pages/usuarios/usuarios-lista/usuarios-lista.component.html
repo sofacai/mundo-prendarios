@@ -1,0 +1,120 @@
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido principal -->
+  <div class="content-area">
+    <!-- Encabezado -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Gestión de Usuarios</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" (click)="abrirModalNuevoUsuario()">
+          <i class="bi bi-plus"></i> Nuevo Usuario
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido de la tabla -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de Usuarios</h2>
+      </div>
+      <div class="card-body">
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando usuarios...</p>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="error && !loading" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <!-- Tabla de datos -->
+        <div *ngIf="!loading && !error" class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width: 50px">ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th style="width: 120px" class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let usuario of usuarios">
+                <td>{{ usuario.id }}</td>
+                <td>
+                  <div>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(usuario.id)">
+                      {{ usuario.nombre }} {{ usuario.apellido }}
+                    </a>
+                  </div>
+                </td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                  <div class="badge" [ngClass]="getRolClass(usuario.rolId)">
+                    {{ usuario.rolNombre }}
+                  </div>
+                </td>
+                <td>
+                  <div class="badge" [ngClass]="getEstadoClass(usuario.activo)">
+                    {{ usuario.activo ? 'Activado' : 'Desactivado' }}
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="actions-container">
+                    <!-- Botón de editar -->
+                    <button class="btn-action" title="Editar usuario" (click)="abrirModalEditarUsuario(usuario.id)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de ver detalle (cambiado a flecha) -->
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(usuario.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Mensaje cuando no hay usuarios -->
+          <div *ngIf="usuarios.length === 0" class="text-center p-5">
+            No hay usuarios registrados.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear usuario -->
+  <app-usuario-form
+    [isOpen]="modalOpen"
+    (closeModal)="cerrarModal()"
+    (usuarioCreado)="onUsuarioCreado($event)">
+  </app-usuario-form>
+
+  <!-- Modal para editar usuario -->
+  <app-modal-editar-usuario
+    [isOpen]="modalEditarOpen"
+    [usuarioId]="usuarioIdEditar"
+    (closeModal)="cerrarModalEditar()"
+    (usuarioActualizado)="onUsuarioActualizado($event)">
+  </app-modal-editar-usuario>
+
+  <!-- Modal para ver usuario -->
+  <app-modal-ver-usuario
+    [isOpen]="modalVerOpen"
+    [usuarioId]="usuarioIdVer"
+    (closeModal)="cerrarModalVer()"
+    (editRequest)="onEditarSolicitado($event)">
+  </app-modal-ver-usuario>
+</div>

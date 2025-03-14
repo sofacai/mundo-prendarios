@@ -1,0 +1,93 @@
+<div class="canales-container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content-area">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Gestión de Planes</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" (click)="abrirModalNuevoPlan()">
+          <i class="bi bi-plus"></i> Nuevo Plan
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de Planes</h2>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2">Cargando planes...</p>
+        </div>
+
+        <div *ngIf="error && !loading" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div *ngIf="!loading && !error" class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width: 50px">ID</th>
+                <th>Nombre</th>
+                <th>Monto</th>
+                <th>Cuotas</th>
+                <th>Tasa</th>
+                <th>Vigencia</th>
+                <th>Estado</th>
+                <th style="width: 60px" class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let plan of planes">
+                <td>{{ plan.id }}</td>
+                <td>
+                  <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(plan.id)">
+                    {{ plan.nombre }}
+                  </a>
+                </td>
+                <td>${{ formatMonto(plan.montoMinimo) }} - ${{ formatMonto(plan.montoMaximo) }}</td>
+                <td>
+                  <span class="badge badge-light-info">
+                    {{ formatCuotas(plan.cuotasAplicablesList) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-light-warning">
+                    {{ formatTasa(plan.tasa) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="text-dark">{{ plan.fechaInicioStr }}</div>
+                  <div class="text-muted fs-7">{{ plan.fechaFinStr }}</div>
+                </td>
+                <td>
+                  <div class="badge" [ngClass]="getEstadoClass(plan.activo)">
+                    {{ plan.activo ? 'Activado' : 'Desactivado' }}
+                  </div>
+                </td>
+                <td class="text-center">
+                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(plan.id)"></i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="planes.length === 0" class="text-center p-5">
+            No hay planes registrados.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<app-plan-form
+  [isOpen]="modalOpen"
+  (closeModal)="cerrarModal()"
+  (planCreado)="onPlanCreado($event)">
+</app-plan-form>

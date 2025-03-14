@@ -1,0 +1,68 @@
+<ion-modal [isOpen]="isOpen" (didDismiss)="cerrarModal()" class="ver-usuario-modal">
+  <ng-template>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2>Detalles del Usuario</h2>
+        <ion-button fill="clear" (click)="cerrarModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid" *ngIf="usuario">
+          <div class="detail-group">
+            <label>Nombre</label>
+            <div class="detail-value">{{ usuario.nombre }}</div>
+          </div>
+
+          <div class="detail-group">
+            <label>Apellido</label>
+            <div class="detail-value">{{ usuario.apellido }}</div>
+          </div>
+
+          <div class="detail-group">
+            <label>Email</label>
+            <div class="detail-value">{{ usuario.email }}</div>
+          </div>
+
+          <div class="detail-group">
+            <label>Teléfono</label>
+            <div class="detail-value">{{ usuario.telefono }}</div>
+          </div>
+
+          <div class="detail-group">
+            <label>Rol</label>
+            <div class="detail-value">
+              <div class="badge" [ngClass]="getRolClass(usuario.rolId)">
+                {{ usuario.rolNombre }}
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-group">
+            <label>Estado</label>
+            <div class="detail-value">
+              <div class="badge" [ngClass]="getEstadoClass(usuario.activo)">
+                {{ usuario.activo ? 'Activado' : 'Desactivado' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="loading-container" *ngIf="loading">
+          <ion-spinner name="dots"></ion-spinner>
+          <p>Cargando información del usuario...</p>
+        </div>
+
+        <div class="form-error" *ngIf="error">
+          <div class="alert alert-danger">{{ error }}</div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn btn-light" (click)="cerrarModal()">Cerrar</button>
+          <button type="button" class="btn btn-primary" (click)="editarUsuario()" *ngIf="usuario">Editar</button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

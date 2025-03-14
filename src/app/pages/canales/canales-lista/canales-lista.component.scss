@@ -1,0 +1,284 @@
+@import '../../../../theme/variables.scss';
+
+.canales-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.content-area {
+  flex: 1;
+  margin-left: 260px;
+  padding: 30px;
+  background-color: var(--background-color);
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  min-height: 100vh;
+}
+
+@media (max-width: 991.98px) {
+  .content-area {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  background-color: white;
+  padding: 20px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-box-shadow);
+}
+
+.page-title h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin: 0;
+}
+
+.page-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.card {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-box-shadow);
+  margin-bottom: 30px;
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid #eff2f5;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ion-color-dark);
+}
+
+.card-body {
+  padding: 0;
+}
+
+/* Estilos para la tabla */
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.custom-table th, .custom-table td {
+  padding: 16px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #eff2f5;
+}
+
+.custom-table th {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  background-color: #f9fafb;
+  font-size: 14px;
+}
+
+.custom-table td {
+  font-size: 14px;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Estilos para los badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 0.425rem;
+}
+
+.badge-success {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.badge-danger {
+  background-color: #fff5f8;
+  color: #f1416c;
+}
+
+.badge-light-info {
+  background-color: #f1faff;
+  color: #009ef7;
+}
+
+.badge-light-warning {
+  background-color: #fff8dd;
+  color: #ffc700;
+}
+
+/* Estilos para los botones de acción */
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.475rem;
+  margin-left: 5px;
+  background-color: #f5f8fa;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-active-color-primary:hover {
+  color: white;
+  background-color: var(--ion-color-primary);
+}
+
+.btn-active-color-danger:hover {
+  color: white;
+  background-color: var(--ion-color-danger);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Estilos para los símbolos/iconos */
+.symbol {
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.symbol-45px {
+  width: 45px;
+  height: 45px;
+}
+
+.symbol-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  color: var(--ion-color-primary);
+  background-color: #e1f0ff;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.475rem;
+}
+
+.text-muted {
+  color: #a1a5b7;
+}
+
+.fs-7 {
+  font-size: 0.8rem;
+}
+
+.text-hover-primary:hover {
+  color: var(--ion-color-primary) !important;
+}
+
+.fw-bold {
+  font-weight: 600;
+}
+
+.text-dark {
+  color: var(--ion-color-dark);
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-end {
+  justify-content: flex-end;
+}
+
+.me-3 {
+  margin-right: 1rem;
+}
+
+.me-1 {
+  margin-right: 0.25rem;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.btn-primary {
+  background-color: var(--ion-color-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: var(--ion-color-primary-shade);
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border: 0.25rem solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+  to { transform: rotate(360deg); }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.p-5 {
+  padding: 3rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.alert-danger {
+  background-color: #fff5f8;
+  color: #f1416c;
+  padding: 1rem;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}

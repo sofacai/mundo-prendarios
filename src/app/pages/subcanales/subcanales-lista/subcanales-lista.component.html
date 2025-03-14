@@ -1,0 +1,101 @@
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido principal -->
+  <div class="content-area">
+    <!-- Encabezado -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Gestión de Subcanales</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" (click)="abrirModalNuevoSubcanal()">
+          <i class="bi bi-plus"></i> Nuevo Subcanal
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido de la tabla -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de Subcanales</h2>
+      </div>
+      <div class="card-body">
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando subcanales...</p>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="error && !loading" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <!-- Tabla de datos -->
+        <div *ngIf="!loading && !error" class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width: 50px">ID</th>
+                <th>Nombre</th>
+                <th>Provincia</th>
+                <th>Estado</th>
+                <th>Gastos</th>
+                <th style="width: 60px" class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let subcanal of subcanales">
+                <td>{{ subcanal.id }}</td>
+                <td>
+                  <div>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(subcanal.id)">
+                      {{ subcanal.nombre }}
+                    </a>
+                    <div class="text-muted fs-7">Canal: {{ subcanal.canalNombre }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <div class="text-dark">{{ subcanal.provincia }}</div>
+                    <div class="text-muted fs-7">{{ subcanal.localidad }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="badge" [ngClass]="getEstadoClass(subcanal.activo)">
+                    {{ subcanal.activo ? 'Activado' : 'Desactivado' }}
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-light-info">
+                    {{ getGastosPorcentaje(subcanal) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(subcanal.id)"></i>
+                </td>
+              </tr>
+              <!-- Mensaje cuando no hay datos -->
+              <tr *ngIf="subcanales.length === 0">
+                <td colspan="6" class="text-center p-5">
+                  No hay subcanales registrados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Componente de formulario de subcanal (se debe implementar) -->
+<app-subcanal-form
+  [isOpen]="modalOpen"
+  (closeModal)="cerrarModal()"
+  (subcanalCreado)="onSubcanalCreado($event)">
+</app-subcanal-form>
