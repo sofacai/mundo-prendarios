@@ -2,7 +2,7 @@
   display: block;
 }
 
-.ver-canal-modal {
+.ver-subcanal-modal {
   --width: 85%;
   --max-width: 850px;
   --height: auto;
@@ -15,7 +15,7 @@
 }
 
 /* Ajuste para que el backdrop cubra toda la pantalla */
-::ng-deep ion-modal.ver-canal-modal::part(backdrop) {
+::ng-deep ion-modal.ver-subcanal-modal::part(backdrop) {
   position: fixed;
   top: 0;
   left: 0;
@@ -244,7 +244,7 @@
     grid-template-columns: 1fr;
   }
 
-  .ver-canal-modal {
+  .ver-subcanal-modal {
     --width: 95%;
   }
 }

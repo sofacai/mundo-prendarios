@@ -1,16 +1,9 @@
-// src/app/core/services/subcanal.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
-
-export interface Gasto {
-  id: number;
-  nombre: string;
-  porcentaje: number;
-  subcanalId?: number; // Agregamos esta propiedad para la creación
-}
+import { Gasto, GastoCreate, GastoUpdate } from '../models/gasto.model';
 
 export interface Vendor {
   id: number;
@@ -42,7 +35,7 @@ export interface SubcanalCrearDto {
   provincia: string;
   localidad: string;
   canalId: number;
-  adminCanalId: number;  // Agregamos esta propiedad que faltaba
+  adminCanalId: number;
 }
 
 @Injectable({
@@ -93,15 +86,27 @@ export class SubcanalService {
   }
 
   // Agregar un gasto a un subcanal
-  agregarGasto(subcanalId: number, gasto: Gasto): Observable<Gasto> {
+  agregarGasto(subcanalId: number, gasto: GastoCreate): Observable<Gasto> {
     const headers = this.getAuthHeaders();
-    return this.http.post<Gasto>(`${this.apiUrl}/${subcanalId}/gastos`, gasto, { headers });
+    // Asegurar que el subcanalId esté siempre establecido en el cuerpo
+    const gastoData: GastoCreate = {
+      ...gasto,
+      subcanalId: subcanalId
+    };
+    console.log('Enviando gasto a la API:', gastoData, 'a la URL:', `${this.apiUrl}/gasto`);
+    return this.http.post<Gasto>(`${this.apiUrl}/gasto`, gastoData, { headers });
   }
 
   // Eliminar un gasto de un subcanal
   eliminarGasto(gastoId: number): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.delete<any>(`${this.apiUrl}/gastos/${gastoId}`, { headers });
+    return this.http.delete<any>(`${this.apiUrl}/gasto/${gastoId}`, { headers });
+  }
+
+  // Actualizar un gasto existente
+  updateGasto(gastoId: number, gasto: GastoUpdate): Observable<Gasto> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<Gasto>(`${this.apiUrl}/gasto/${gastoId}`, gasto, { headers });
   }
 
   // Configurar los headers con el token de autenticación

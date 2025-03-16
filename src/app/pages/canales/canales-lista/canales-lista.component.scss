@@ -282,3 +282,34 @@
 .table-responsive {
   overflow-x: auto;
 }
+
+/* Estilos para los botones de acción */
+.actions-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  border: 1px solid #e4e6ef;
+  color: #7e8299;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--ion-color-primary-tint);
+    color: white;
+    border-color: var(--ion-color-primary);
+  }
+
+  i {
+    font-size: 14px;
+  }
+}

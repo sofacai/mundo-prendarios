@@ -46,7 +46,7 @@
                 <th>Estado</th>
                 <th class="text-center" style="width: 80px">Planes</th>
                 <th class="text-center" style="width: 80px">Subcanales</th>
-                <th style="width: 60px" class="text-end">Acciones</th>
+                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +82,17 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(canal.id)"></i>
+                  <div class="actions-container">
+                    <!-- Botón de editar -->
+                    <button class="btn-action" title="Editar canal" (click)="abrirModalEditarCanal(canal.id)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de ver detalle -->
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(canal.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -96,11 +106,26 @@
       </div>
     </div>
   </div>
-</div>
 
+  <!-- Modal para crear canal -->
+  <app-canal-form
+    [isOpen]="modalOpen"
+    (closeModal)="cerrarModal()"
+    (canalCreado)="onCanalCreado($event)">
+  </app-canal-form>
 
-<app-canal-form
-  [isOpen]="modalOpen"
-  (closeModal)="cerrarModal()"
-  (canalCreado)="onCanalCreado($event)">
-</app-canal-form>
+  <!-- Modal para editar canal -->
+  <app-modal-editar-canal
+    [isOpen]="modalEditarOpen"
+    [canalId]="canalIdEditar"
+    (closeModal)="cerrarModalEditar()"
+    (canalActualizado)="onCanalActualizado($event)">
+  </app-modal-editar-canal>
+
+  <!-- Modal para ver canal -->
+  <app-modal-ver-canal
+    [isOpen]="modalVerOpen"
+    [canalId]="canalIdVer"
+    (closeModal)="cerrarModalVer()"
+    (editRequest)="onEditarSolicitado($event)">
+  </app-modal-ver-canal>

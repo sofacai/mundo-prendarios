@@ -45,7 +45,7 @@
                 <th>Provincia</th>
                 <th>Estado</th>
                 <th>Gastos</th>
-                <th style="width: 60px" class="text-end">Acciones</th>
+                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -76,9 +76,20 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(subcanal.id)"></i>
+                  <div class="actions-container">
+                    <!-- Botón de editar -->
+                    <button class="btn-action" title="Editar subcanal" (click)="abrirModalEditarSubcanal(subcanal.id)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de ver detalle -->
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(subcanal.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
+
               <!-- Mensaje cuando no hay datos -->
               <tr *ngIf="subcanales.length === 0">
                 <td colspan="6" class="text-center p-5">
@@ -91,11 +102,27 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- Componente de formulario de subcanal (se debe implementar) -->
-<app-subcanal-form
-  [isOpen]="modalOpen"
-  (closeModal)="cerrarModal()"
-  (subcanalCreado)="onSubcanalCreado($event)">
-</app-subcanal-form>
+  <!-- Modal para crear subcanal -->
+  <app-subcanal-form
+    [isOpen]="modalOpen"
+    (closeModal)="cerrarModal()"
+    (subcanalCreado)="onSubcanalCreado($event)">
+  </app-subcanal-form>
+
+  <!-- Modal para editar subcanal -->
+  <app-modal-editar-subcanal
+    [isOpen]="modalEditarOpen"
+    [subcanalId]="subcanalIdEditar"
+    (closeModal)="cerrarModalEditar()"
+    (subcanalActualizado)="onSubcanalActualizado($event)">
+  </app-modal-editar-subcanal>
+
+  <!-- Modal para ver subcanal -->
+  <app-modal-ver-subcanal
+    [isOpen]="modalVerOpen"
+    [subcanalId]="subcanalIdVer"
+    (closeModal)="cerrarModalVer()"
+    (editRequest)="onEditarSolicitado($event)">
+  </app-modal-ver-subcanal>
+</div>

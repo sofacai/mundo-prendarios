@@ -2,10 +2,11 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Rende
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { SubcanalService, SubcanalCrearDto, Gasto } from 'src/app/core/services/subcanal.service';
+import { SubcanalService, SubcanalCrearDto } from 'src/app/core/services/subcanal.service';
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
 import { forkJoin } from 'rxjs';
+import { Gasto, GastoCreate } from 'src/app/core/models/gasto.model';
 
 @Component({
   selector: 'app-subcanal-form',
@@ -49,9 +50,6 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    this.cargarCanales();
-    this.cargarAdministradores();
-
     // Escuchar cambios en el valor de adminCanalId para actualizar texto del dropdown
     this.subcanalForm.get('adminCanalId')?.valueChanges.subscribe(value => {
       if (value) {
@@ -120,6 +118,11 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['isOpen']) {
       if (changes['isOpen'].currentValue) {
         this.resetForm();
+
+        // Cargar datos solo cuando el modal se abre
+        this.cargarCanales();
+        this.cargarAdministradores();
+
         // Calculamos el ancho de la barra de desplazamiento
         const scrollWidth = window.innerWidth - document.documentElement.clientWidth;
 
@@ -193,11 +196,10 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
       next: (subcanal) => {
         // Verificar si se ha ingresado un gasto para agregarlo
         if (formValues.gastoNombre && formValues.gastoPorcentaje > 0) {
-          const gasto: Gasto = {
-            id: 0, // La API asignará este valor
+          const gasto: GastoCreate = {
             nombre: formValues.gastoNombre,
             porcentaje: formValues.gastoPorcentaje,
-            subcanalId: subcanal.id // Usamos el ID del subcanal recién creado
+            subcanalId: subcanal.id
           };
 
           // Agregar el gasto al subcanal

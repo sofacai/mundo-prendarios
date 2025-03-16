@@ -38,7 +38,7 @@
                 <th>Tasa</th>
                 <th>Vigencia</th>
                 <th>Estado</th>
-                <th style="width: 60px" class="text-end">Acciones</th>
+                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -70,7 +70,17 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(plan.id)"></i>
+                  <div class="actions-container">
+                    <!-- Botón de editar -->
+                    <button class="btn-action" title="Editar plan" (click)="abrirModalEditarPlan(plan.id)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de ver detalle -->
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(plan.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -83,11 +93,27 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal para crear plan -->
+  <app-plan-form
+    [isOpen]="modalOpen"
+    (closeModal)="cerrarModal()"
+    (planCreado)="onPlanCreado($event)">
+  </app-plan-form>
+
+  <!-- Modal para editar plan -->
+  <app-modal-editar-plan
+    [isOpen]="modalEditarOpen"
+    [planId]="planIdEditar"
+    (closeModal)="cerrarModalEditar()"
+    (planActualizado)="onPlanActualizado($event)">
+  </app-modal-editar-plan>
+
+  <!-- Modal para ver plan -->
+  <app-modal-ver-plan
+    [isOpen]="modalVerOpen"
+    [planId]="planIdVer"
+    (closeModal)="cerrarModalVer()"
+    (editRequest)="onEditarSolicitado($event)">
+  </app-modal-ver-plan>
 </div>
-
-
-<app-plan-form
-  [isOpen]="modalOpen"
-  (closeModal)="cerrarModal()"
-  (planCreado)="onPlanCreado($event)">
-</app-plan-form>
