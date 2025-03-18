@@ -22,14 +22,10 @@
         <h2 class="card-title">Listado de Usuarios</h2>
       </div>
       <div class="card-body">
-        <!-- Indicador de carga -->
-        <div *ngIf="loading" class="text-center p-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-          <p class="mt-2">Cargando usuarios...</p>
-        </div>
-
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="text-center p-5">
+    <p class="mt-2">Cargando canales...</p>
+  </div>
         <!-- Mensaje de error -->
         <div *ngIf="error && !loading" class="alert alert-danger">
           {{ error }}

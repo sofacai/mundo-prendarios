@@ -1,3 +1,75 @@
-<p>
-  operaciones-lista works!
-</p>
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido principal -->
+  <div class="content-area">
+    <!-- Contenido de la tabla -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de Operaciones</h2>
+      </div>
+      <div class="card-body">
+     <!-- Indicador de carga -->
+     <div *ngIf="loading" class="text-center p-5">
+      <p class="mt-2">Cargando canales...</p>
+    </div>
+        <!-- Mensaje de error -->
+        <div *ngIf="error && !loading" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <!-- Tabla de datos -->
+        <div *ngIf="!loading && !error" class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width: 50px">ID</th>
+                <th>Cliente</th>
+                <th>Plan</th>
+                <th>Meses</th>
+                <th>Gasto</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th style="width: 80px" class="text-center">Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let operacion of operaciones">
+                <td>{{ operacion.id }}</td>
+                <td>
+                  <div>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(operacion.id)">
+                      {{ operacion.nombreCliente }} {{ operacion.apellidoCliente }}
+                    </a>
+                  </div>
+                </td>
+                <td>{{ operacion.plan }}</td>
+                <td>{{ operacion.meses }}</td>
+                <td>{{ operacion.gasto}} %</td>
+                <td>${{ formatNumber(operacion.monto) }}</td>
+                <td>
+                  <div class="badge" [ngClass]="getEstadoClass(operacion.estado)">
+                    {{ operacion.estado }}
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="actions-container">
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(operacion.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Mensaje cuando no hay operaciones -->
+          <div *ngIf="operaciones.length === 0" class="text-center p-5">
+            No hay operaciones registradas.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

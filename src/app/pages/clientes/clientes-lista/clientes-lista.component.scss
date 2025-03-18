@@ -1,0 +1,183 @@
+@import '../../../../theme/variables.scss';
+
+.canales-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.content-area {
+  flex: 1;
+  margin-left: 260px;
+  padding: 30px;
+  background-color: var(--background-color);
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  min-height: 100vh;
+}
+
+@media (max-width: 991.98px) {
+  .content-area {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  background-color: white;
+  padding: 20px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-box-shadow);
+}
+
+.page-title h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin: 0;
+}
+
+.page-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.card {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--card-box-shadow);
+  margin-bottom: 30px;
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid #eff2f5;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ion-color-dark);
+}
+
+.card-body {
+  padding: 0;
+}
+
+/* Ajustes específicos para la tabla de clientes */
+.custom-table {
+  font-size: 14px; /* Ajustar tamaño general de texto */
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 1rem;
+    border-bottom: 1px solid #eff2f5;
+    text-align: left;
+  }
+
+  td {
+    font-size: 14px;
+    padding: 1rem;
+    border-bottom: 1px solid #eff2f5;
+    vertical-align: middle;
+  }
+
+  .text-dark {
+    font-size: 14px;
+  }
+
+  .fw-bold {
+    font-size: 14px;
+  }
+
+  .text-muted {
+    font-size: 12px;
+  }
+
+  .badge {
+    font-size: 12px;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+/* Clases adicionales para compatibilidad con modales */
+.content-area-with-modal {
+  padding-right: 15px; /* Ajustar según el ancho de la barra de desplazamiento */
+}
+
+/* Agregar estos estilos a tu archivo de estilos existente */
+
+.actions-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  border: 1px solid #e4e6ef;
+  color: #7e8299;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--ion-color-primary-tint);
+    color: white;
+    border-color: var(--ion-color-primary);
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+/* Ajustes para los badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em 0.75em;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+
+  &.badge-success {
+    background-color: rgba(80, 205, 137, 0.1);
+    color: #50cd89;
+  }
+
+  &.badge-danger {
+    background-color: rgba(241, 65, 108, 0.1);
+    color: #f1416c;
+  }
+}
+
+/* Ajustes responsivos para la tabla */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 767.98px) {
+    .custom-table {
+      min-width: 650px;
+    }
+  }
+}

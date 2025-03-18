@@ -18,10 +18,10 @@
         <h2 class="card-title">Listado de Planes</h2>
       </div>
       <div class="card-body">
-        <div *ngIf="loading" class="text-center p-5">
-          <div class="spinner-border text-primary" role="status"></div>
-          <p class="mt-2">Cargando planes...</p>
-        </div>
+     <!-- Indicador de carga -->
+     <div *ngIf="loading" class="text-center p-5">
+      <p class="mt-2">Cargando canales...</p>
+    </div>
 
         <div *ngIf="error && !loading" class="alert alert-danger">
           {{ error }}
