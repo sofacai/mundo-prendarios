@@ -1,0 +1,126 @@
+/* cotizador/wizard-container/wizard-container.component.scss */
+.wizard-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.error-container {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  ion-icon {
+    font-size: 48px;
+    color: #d9534f;
+    margin-bottom: 20px;
+  }
+
+  p {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 16px;
+  }
+}
+
+.loader-container {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  background-color: #003087;
+  color: white;
+  padding: 15px;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 15px;
+
+  img {
+    height: 40px;
+  }
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &.active {
+    .step-number {
+      background-color: #fff;
+      color: #003087;
+    }
+  }
+}
+
+.step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.step-label {
+  font-size: 14px;
+}
+
+.step-line {
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.3);
+  flex-grow: 1;
+  margin: 0 10px;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+
+  ion-spinner {
+    width: 50px;
+    height: 50px;
+    --color: #003087;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 16px;
+    color: #333;
+  }
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #5a6268;
+  }
+}

@@ -2,17 +2,25 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
 import { SubcanalFormComponent } from 'src/app/shared/modals/subcanal-form/subcanal-form.component';
 import { ModalEditarSubcanalComponent } from 'src/app/shared/modals/modal-editar-subcanal/modal-editar-subcanal.component';
 import { ModalVerSubcanalComponent } from 'src/app/shared/modals/modal-ver-subcanal/modal-ver-subcanal.component';
 
+// Tipo para ordenamiento
+interface SortState {
+  column: string;
+  direction: 'asc' | 'desc';
+}
+
 @Component({
   selector: 'app-subcanales-lista',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     SidebarComponent,
     IonicModule,
     SubcanalFormComponent,
@@ -24,6 +32,7 @@ import { ModalVerSubcanalComponent } from 'src/app/shared/modals/modal-ver-subca
 })
 export class SubcanalesListaComponent implements OnInit {
   subcanales: Subcanal[] = [];
+  filteredSubcanales: Subcanal[] = []; // Lista filtrada para mostrar
   loading = false;
   error: string | null = null;
   modalOpen = false;
@@ -32,6 +41,11 @@ export class SubcanalesListaComponent implements OnInit {
   subcanalIdEditar: number | null = null;
   subcanalIdVer: number | null = null;
   scrollbarWidth: number = 0;
+
+  // Búsqueda y ordenamiento
+  searchTerm: string = '';
+  searchTimeout: any;
+  sortState: SortState = { column: '', direction: 'asc' };
 
   constructor(
     private subcanalService: SubcanalService,
@@ -55,6 +69,7 @@ export class SubcanalesListaComponent implements OnInit {
     this.subcanalService.getSubcanales().subscribe({
       next: (data) => {
         this.subcanales = data;
+        this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
         console.log(`${data.length} subcanales cargados`);
         this.loading = false;
       },
@@ -64,6 +79,98 @@ export class SubcanalesListaComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // Funciones para búsqueda
+  onSearchChange() {
+    // Debounce para evitar muchas búsquedas mientras el usuario escribe
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.applyFilters();
+    }, 300);
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  // Aplicar filtros y ordenamiento a la lista
+  applyFilters() {
+    let result = [...this.subcanales];
+
+    // Aplicar búsqueda si hay término
+    if (this.searchTerm && this.searchTerm.length >= 3) {
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(subcanal =>
+        subcanal.nombre.toLowerCase().includes(term) ||
+        subcanal.canalNombre.toLowerCase().includes(term)
+      );
+    }
+
+    // Aplicar ordenamiento si está configurado
+    if (this.sortState.column) {
+      result = this.sortData(result);
+    }
+
+    this.filteredSubcanales = result;
+  }
+
+  // Ordenar los datos según la columna seleccionada
+  sortData(data: Subcanal[]): Subcanal[] {
+    const { column, direction } = this.sortState;
+    const factor = direction === 'asc' ? 1 : -1;
+
+    return [...data].sort((a: any, b: any) => {
+      // Para ordenar por ID (numérico)
+      if (column === 'id') {
+        return (a.id - b.id) * factor;
+      }
+      // Para texto (nombre, provincia)
+      else if (column === 'nombre' || column === 'provincia') {
+        const valueA = (a[column] || '').toLowerCase();
+        const valueB = (b[column] || '').toLowerCase();
+        return valueA.localeCompare(valueB) * factor;
+      }
+      // Para ordenar por estado (activo/inactivo)
+      else if (column === 'activo') {
+        return (a[column] === b[column] ? 0 : a[column] ? -1 : 1) * factor;
+      }
+      // Para ordenar por porcentaje de gastos
+      else if (column === 'gastos') {
+        // Extraer el valor numérico del porcentaje
+        const getGastoValue = (subcanal: Subcanal) => {
+          const gastoStr = this.getGastosPorcentaje(subcanal);
+          return parseFloat(gastoStr.replace('%', '')) || 0;
+        };
+        return (getGastoValue(a) - getGastoValue(b)) * factor;
+      }
+
+      return 0;
+    });
+  }
+
+  // Cambiar el ordenamiento cuando se hace clic en una columna
+  sortBy(column: string) {
+    // Si es la misma columna, cambiar dirección, si no, ordenar asc por la nueva columna
+    if (this.sortState.column === column) {
+      this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortState = { column, direction: 'asc' };
+    }
+
+    this.applyFilters();
+  }
+
+  // Obtener el icono para la columna de ordenamiento
+  getSortIcon(column: string): string {
+    if (this.sortState.column !== column) {
+      return 'bi-arrow-down-up text-muted';
+    }
+
+    return this.sortState.direction === 'asc'
+      ? 'bi-sort-down-alt'
+      : 'bi-sort-up-alt';
   }
 
   // Navegar al detalle del subcanal

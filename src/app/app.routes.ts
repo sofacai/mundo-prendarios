@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RolType } from './core/models/usuario.model';
+import { WizardContainerComponent } from './pages/cotizador/wizard-container/wizard-container.component';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -12,10 +13,7 @@ export const routes: Routes = [
     path: 'pages/home',
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
   },
-  {
-    path: 'cotizador',
-    loadComponent: () => import('./pages/cotizador/cotizador/cotizador.component').then(m => m.CotizadorComponent)
-  },
+
 
   // Rutas protegidas
   {
@@ -59,6 +57,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/planes/planes-lista/planes-lista.component').then(m => m.PlanesListaComponent),
     canActivate: [AuthGuard],
     data: { roles: [RolType.Administrador] }
+  },
+  {
+    path: 'cotizador',
+    component: WizardContainerComponent,
+    canActivate: [AuthGuard] // Si tienes un guard
   },
 
   // Redirecciones

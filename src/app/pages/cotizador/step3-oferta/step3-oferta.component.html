@@ -1,0 +1,74 @@
+<div class="step-container">
+  <div class="header">
+    <div class="logo">
+      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-label">Monto</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-label">Datos</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step active">
+        <div class="step-number">3</div>
+        <div class="step-label">Oferta</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2 class="title">"{{nombreCompleto}}", esta es la oferta que tenemos para vos:</h2>
+
+    <div class="oferta-card">
+      <div class="oferta-details">
+        <div class="detail-row">
+          <div class="detail-label">Monto de la prenda</div>
+          <div class="detail-value">{{ monto | currency:'ARS':'symbol':'1.0-0' }}</div>
+        </div>
+
+        <ng-container *ngIf="planes && planes.length > 0">
+          <div class="detail-row">
+            <div class="detail-label">Tipo de tasa</div>
+            <div class="detail-value">UVA</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Cantidad de cuotas</div>
+            <div class="detail-value">{{ plazo }}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Valor de la cuota</div>
+            <div class="detail-value">{{ planes[0].cuota | currency:'ARS':'symbol':'1.0-0' }}</div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="oferta-actions">
+        <button class="btn-action whatsapp" (click)="onSeleccionarPlan(planes[0]?.id)">
+          <ion-icon name="logo-whatsapp"></ion-icon>
+          Enviar por Whatsapp
+        </button>
+
+        <button class="btn-action pre-aprobacion" (click)="onSeleccionarPlan(planes[0]?.id)">
+          Completar datos para pre-aprobación
+        </button>
+      </div>
+
+      <div class="oferta-disclaimer">
+        <p>*Montos y plazos estimativos, sujeto a evaluación financiera del cliente.</p>
+        <p>**Los montos no incluyen seguro</p>
+      </div>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="btn-secondary" (click)="onVolver()">VOLVER</button>
+      <button class="btn-primary" (click)="onRealizarOtraOferta()">REALIZAR OTRA OFERTA</button>
+    </div>
+  </div>
+</div>

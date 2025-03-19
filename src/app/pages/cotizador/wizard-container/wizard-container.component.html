@@ -1,0 +1,62 @@
+<!-- Solución simplificada para el problema -->
+<div class="wizard-wrapper">
+  <!-- Mensajes de error -->
+  <ng-container *ngIf="error">
+    <div class="error-container">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>{{error}}</p>
+      <button class="btn-secondary" (click)="reiniciarWizard()">Reintentar</button>
+    </div>
+  </ng-container>
+
+  <!-- Spinner de carga -->
+  <div class="loader-container" *ngIf="!error && cargando">
+    <div class="header">
+      <!-- Header content -->
+    </div>
+    <div class="loader">
+      <ion-spinner name="circular"></ion-spinner>
+      <p>Cargando datos...</p>
+    </div>
+  </div>
+
+  <!-- Selector de subcanal -->
+  <app-subcanal-selector
+    *ngIf="!error && !cargando && necesitaSeleccionarSubcanal && datosWizard?.subcanales"
+    [subcanales]="datosWizard?.subcanales || []"
+    (seleccionarSubcanal)="seleccionarSubcanal($event)">
+  </app-subcanal-selector>
+
+  <!-- Paso 1 -->
+  <app-step1-monto
+    *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 1"
+    [subcanalInfo]="subcanalSeleccionadoInfo"
+    (continuar)="continuarPaso1($event)">
+  </app-step1-monto>
+
+  <!-- Paso 2 - AQUÍ ESTÁ EL CAMBIO PRINCIPAL -->
+  <div *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 2">
+    <app-step2-datos
+      (continuar)="continuarPaso2($event)"
+      (volver)="volverAlPasoAnterior()">
+    </app-step2-datos>
+  </div>
+
+  <!-- Paso 3 -->
+  <app-step3-oferta
+    *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 3"
+    [clienteNombre]="wizardData.clienteNombre!"
+    [clienteApellido]="wizardData.clienteApellido!"
+    [monto]="wizardData.monto!"
+    [plazo]="wizardData.plazo!"
+    [planes]="wizardData.planesDisponibles || []"
+    (seleccionarPlan)="seleccionarPlan($event)"
+    (volver)="volverAlPasoAnterior()"
+    (realizarOtraOferta)="reiniciarWizard()">
+  </app-step3-oferta>
+
+  <!-- Elemento de depuración para mostrar el estado actual -->
+  <div *ngIf="!error && !cargando" style="padding: 10px; background-color: #f5f5f5; margin-top: 20px; font-size: 12px;">
+    Debug: Paso actual: {{wizardData.paso}} | Subcanal: {{subcanalSeleccionado}} | NecesitaSeleccionarSubcanal: {{necesitaSeleccionarSubcanal}}
+  </div>
+</div>

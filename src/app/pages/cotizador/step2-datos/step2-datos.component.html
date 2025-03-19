@@ -1,0 +1,71 @@
+<div class="container">
+  <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
+    <h2>Datos del Cliente</h2>
+
+    <!-- Nombre -->
+    <ion-item [class.invalid]="nombreInvalido">
+      <ion-label position="floating">Nombre <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input formControlName="nombre" type="text"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="nombreInvalido">
+      <small>El nombre es requerido y debe tener al menos 2 caracteres.</small>
+    </ion-text>
+
+    <!-- Apellido -->
+    <ion-item [class.invalid]="apellidoInvalido">
+      <ion-label position="floating">Apellido <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input formControlName="apellido" type="text"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="apellidoInvalido">
+      <small>El apellido es requerido y debe tener al menos 2 caracteres.</small>
+    </ion-text>
+
+    <!-- WhatsApp -->
+    <ion-item [class.invalid]="whatsappInvalido">
+      <ion-label position="floating">WhatsApp <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input formControlName="whatsapp" type="tel"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="whatsappInvalido">
+      <small>El número de WhatsApp es requerido y debe contener solo dígitos (10-15 caracteres).</small>
+    </ion-text>
+
+    <!-- Email -->
+    <ion-item [class.invalid]="emailInvalido">
+      <ion-label position="floating">Email <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input formControlName="email" type="email"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="emailInvalido">
+      <small>El email es requerido y debe tener un formato válido.</small>
+    </ion-text>
+
+    <!-- Toggle para cambiar entre DNI y CUIL -->
+    <ion-item lines="none">
+      <ion-label>Tipo de documento: {{tipoDocumento}}</ion-label>
+      <ion-button slot="end" (click)="toggleTipoDocumento()">CAMBIAR</ion-button>
+    </ion-item>
+
+    <!-- DNI -->
+    <ion-item *ngIf="tipoDocumento === 'DNI'" [class.invalid]="dniInvalido">
+      <ion-label position="floating">DNI <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input formControlName="dni" type="number"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="tipoDocumento === 'DNI' && dniInvalido">
+      <small>El DNI debe contener entre 7 y 8 dígitos numéricos.</small>
+    </ion-text>
+
+    <!-- CUIL -->
+    <ion-item *ngIf="tipoDocumento === 'CUIL'" [class.invalid]="cuilInvalido">
+      <ion-label position="floating">CUIL <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input formControlName="cuil" type="number"></ion-input>
+    </ion-item>
+    <ion-text color="danger" *ngIf="tipoDocumento === 'CUIL' && cuilInvalido">
+      <small>El CUIL debe contener 11 dígitos numéricos.</small>
+    </ion-text>
+
+    <!-- Botones -->
+    <div class="button-container">
+      <ion-button (click)="onVolver()" fill="outline">VOLVER</ion-button>
+      <ion-button type="submit" expand="block">CONTINUAR</ion-button>
+    </div>
+  </form>
+</div>

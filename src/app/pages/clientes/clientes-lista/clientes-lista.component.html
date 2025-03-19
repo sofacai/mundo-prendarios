@@ -12,10 +12,32 @@
       <div class="card-header">
         <h2 class="card-title">Listado de Clientes</h2>
       </div>
+
+      <!-- Buscador -->
+      <div class="card-body search-container">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="Buscar por nombre o email..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear"
+            (click)="clearSearch()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+
       <div class="card-body">
-         <!-- Indicador de carga -->
-         <div *ngIf="loading" class="text-center p-5">
-          <p class="mt-2">Cargando canales...</p>
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <p class="mt-2">Cargando clientes...</p>
         </div>
 
         <!-- Mensaje de error -->
@@ -28,17 +50,28 @@
           <table class="custom-table">
             <thead>
               <tr>
-                <th style="width: 50px">ID</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                  ID
+                  <i class="bi" [ngClass]="getSortIcon('id')"></i>
+                </th>
+                <th (click)="sortBy('nombre')" class="sortable-header">
+                  Nombre
+                  <i class="bi" [ngClass]="getSortIcon('nombre')"></i>
+                </th>
+                <th (click)="sortBy('email')" class="sortable-header">
+                  Email
+                  <i class="bi" [ngClass]="getSortIcon('email')"></i>
+                </th>
+                <th (click)="sortBy('telefono')" class="sortable-header">
+                  Teléfono
+                  <i class="bi" [ngClass]="getSortIcon('telefono')"></i>
+                </th>
                 <th>Operación</th>
-
                 <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let cliente of clientes">
+              <tr *ngFor="let cliente of filteredClientes">
                 <td>{{ cliente.id }}</td>
                 <td>
                   <div>
@@ -50,7 +83,6 @@
                 <td>{{ cliente.email }}</td>
                 <td>{{ cliente.telefono }}</td>
                 <td>{{ "" }}</td>
-
                 <td class="text-center">
                   <div class="actions-container">
                     <!-- Botón de ver detalle -->
@@ -63,14 +95,13 @@
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay clientes -->
-          <div *ngIf="clientes.length === 0" class="text-center p-5">
-            No hay clientes registrados.
+          <!-- Mensaje cuando no hay clientes o resultados -->
+          <div *ngIf="filteredClientes.length === 0" class="text-center p-5">
+            <p *ngIf="searchTerm">No se encontraron clientes que coincidan con "{{ searchTerm }}".</p>
+            <p *ngIf="!searchTerm">No hay clientes registrados.</p>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-
 </div>

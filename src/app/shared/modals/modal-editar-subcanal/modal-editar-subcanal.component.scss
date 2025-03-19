@@ -1,3 +1,4 @@
+// Modal editar subcanal
 :host {
   display: block;
 }
@@ -14,7 +15,6 @@
   --background: #ffffff;
 }
 
-/* Ajuste para que el backdrop cubra toda la pantalla */
 ::ng-deep ion-modal.editar-subcanal-modal::part(backdrop) {
   position: fixed;
   top: 0;
@@ -24,7 +24,6 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
-/* Estilos para la ventana modal */
 ::ng-deep .modal-wrapper {
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -34,7 +33,6 @@
   transform: translateY(-50%) !important;
 }
 
-/* Mantener visible la barra de desplazamiento pero bloquear el scroll */
 ::ng-deep body.modal-open {
   overflow-y: scroll;
   position: fixed;
@@ -75,6 +73,7 @@
   max-height: calc(90vh - 130px);
 }
 
+/* Estilos para el formulario general */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -100,16 +99,22 @@
   .form-control {
     width: 100%;
     padding: 10px 14px;
-    border: 1px solid #e4e6ef;
-    border-radius: 6px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
     font-size: 14px;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
+    height: 40px;
 
     &:focus {
       border-color: var(--ion-color-primary);
       outline: none;
-      box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.1);
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    &:disabled {
+      background-color: #e9ecef;
+      cursor: not-allowed;
     }
   }
 
@@ -132,119 +137,181 @@
   }
 }
 
-.form-section {
-  margin-top: 20px;
-  margin-bottom: 20px;
+/* Estilos específicos para la sección de gastos */
+.gastos-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eef0f2;
 
   h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
     font-size: 18px;
     font-weight: 600;
     color: var(--ion-color-dark);
-    margin-bottom: 12px;
-    border-bottom: 1px solid #eef0f2;
-    padding-bottom: 8px;
   }
 }
 
-.gastos-container {
+.porcentaje-total {
   margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-dark);
+
+  span {
+    font-weight: 600;
+    &.text-success {
+      color: var(--ion-color-secondary);
+    }
+    &.text-danger {
+      color: var(--ion-color-danger);
+    }
+  }
+}
+
+.btn-add-gasto {
+  background-color: var(--ion-color-primary);
+  border: none;
+  color: white;
+  border-radius: var(--border-radius-sm);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background-color: var(--ion-color-primary-shade);
+  }
+
+  &:before {
+    content: "+";
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.gastos-list {
+  margin-top: 16px;
 }
 
 .gasto-item {
-  background-color: #f8f9fa;
-  border-radius: 8px;
+  background-color: #f9fafb;
+  border-radius: var(--border-radius-sm);
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  position: relative;
+  border: 1px solid #e9ecef;
 }
 
 .gasto-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 12px;
+}
 
-  h4 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+.gasto-labels {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+
+  .nombre-label {
+    flex: 4;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--ion-color-dark);
   }
-
-  .btn-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    background-color: rgba(241, 65, 108, 0.1);
-    color: #f1416c;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: #f1416c;
-      color: white;
-    }
+  .porcentaje-label {
+    flex: 1;
+    min-width: 120px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ion-color-dark);
   }
 }
 
-.gasto-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.total-gastos {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-bottom: 16px;
-  font-weight: 600;
-
-  .text-danger {
-    color: var(--ion-color-danger);
-  }
-}
-
-.btn-sm {
-  padding: 8px 12px;
-  font-size: 13px;
-}
-
-.btn-light-primary {
-  background-color: rgba(0, 158, 247, 0.1);
-  color: var(--ion-color-primary);
+.btn-trash {
+  background-color: transparent;
+  border: none;
+  color: var(--ion-color-danger);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  margin-left: 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 
   &:hover {
-    background-color: rgba(0, 158, 247, 0.2);
+    background-color: rgba(220, 53, 69, 0.1);
   }
 }
 
-.form-footer {
+.gasto-content {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #eef0f2;
+  width: 100%;
+  gap: 16px;
 }
 
+.gasto-nombre {
+  flex: 4;
+}
+
+.gasto-porcentaje {
+  flex: 1;
+  min-width: 120px;
+}
+
+.gasto-nombre input,
+.gasto-porcentaje input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  height: 40px;
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+}
+
+.no-gastos {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+  border: 1px dashed #ced4da;
+}
+
+/* Botones generales */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   font-weight: 500;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 100px;
+  height: 40px;
 
   &.btn-primary {
     background-color: var(--ion-color-primary);
@@ -255,7 +322,7 @@
     }
 
     &:disabled {
-      opacity: 0.7;
+      opacity: 0.65;
       cursor: not-allowed;
     }
   }
@@ -263,6 +330,7 @@
   &.btn-light {
     background-color: #f5f8fa;
     color: var(--ion-color-medium);
+    border: 1px solid #ced4da;
 
     &:hover {
       background-color: #eef3f7;
@@ -271,50 +339,48 @@
   }
 }
 
-.spinner-sm {
-  width: 16px;
-  height: 16px;
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eef0f2;
 }
 
 .form-error {
-  margin-bottom: 16px;
+  margin-top: 16px;
 }
 
 .alert-danger {
   background-color: #fff5f8;
   color: var(--ion-color-danger);
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   padding: 12px 16px;
   font-size: 14px;
+  border: 1px solid #f5c2c7;
 }
 
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 0;
-
-  ion-spinner {
-    margin-bottom: 12px;
-  }
-
-  p {
-    color: var(--ion-color-medium);
-  }
+/* Spinner para el botón */
+.spinner-sm {
+  width: 24px;
+  height: 24px;
 }
 
-/* Responsive adjustments */
+/* Responsive ajustes */
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .gasto-form {
-    grid-template-columns: 1fr;
+  .gasto-content {
+    flex-direction: column;
+    gap: 8px;
   }
 
-  .editar-subcanal-modal {
-    --width: 95%;
+  .gasto-nombre,
+  .gasto-porcentaje {
+    width: 100%;
+    margin-right: 0;
   }
 }

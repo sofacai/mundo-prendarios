@@ -1,0 +1,43 @@
+<div class="selector-container">
+  <div class="header">
+    <div class="logo">
+      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+    </div>
+    <h2>Seleccionar Subcanal</h2>
+  </div>
+
+  <div class="content">
+    <ng-container *ngIf="errorMessage">
+      <div class="error-message">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>{{errorMessage}}</p>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!errorMessage">
+      <p class="info-text">
+        Estás asignado a múltiples subcanales. Por favor, selecciona el subcanal para el que deseas realizar esta cotización.
+      </p>
+
+      <div class="select-container">
+        <ion-item>
+          <ion-label position="stacked">Subcanal</ion-label>
+          <ion-select [(ngModel)]="subcanalId" placeholder="Selecciona un subcanal">
+            <ion-select-option *ngFor="let subcanal of subcanalesActivos" [value]="subcanal.subcanalId">
+              {{ subcanal.subcanalNombre }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <div class="button-container">
+        <button
+          class="btn-primary"
+          [disabled]="!subcanalId"
+          (click)="onSeleccionarSubcanal()">
+          Continuar
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

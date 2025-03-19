@@ -4,16 +4,41 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
+    <!-- Encabezado -->
+
     <!-- Contenido de la tabla -->
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">Listado de Operaciones</h2>
       </div>
+
+      <!-- Buscador -->
+      <div class="card-body search-container">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="Buscar por cliente o plan..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear"
+            (click)="clearSearch()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+
       <div class="card-body">
-     <!-- Indicador de carga -->
-     <div *ngIf="loading" class="text-center p-5">
-      <p class="mt-2">Cargando canales...</p>
-    </div>
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <p class="mt-2">Cargando operaciones...</p>
+        </div>
+
         <!-- Mensaje de error -->
         <div *ngIf="error && !loading" class="alert alert-danger">
           {{ error }}
@@ -24,18 +49,39 @@
           <table class="custom-table">
             <thead>
               <tr>
-                <th style="width: 50px">ID</th>
-                <th>Cliente</th>
-                <th>Plan</th>
-                <th>Meses</th>
-                <th>Gasto</th>
-                <th>Monto</th>
-                <th>Estado</th>
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                  ID
+                  <i class="bi" [ngClass]="getSortIcon('id')"></i>
+                </th>
+                <th (click)="sortBy('nombreCompleto')" class="sortable-header">
+                  Cliente
+                  <i class="bi" [ngClass]="getSortIcon('nombreCompleto')"></i>
+                </th>
+                <th (click)="sortBy('plan')" class="sortable-header">
+                  Plan
+                  <i class="bi" [ngClass]="getSortIcon('plan')"></i>
+                </th>
+                <th (click)="sortBy('meses')" class="sortable-header">
+                  Meses
+                  <i class="bi" [ngClass]="getSortIcon('meses')"></i>
+                </th>
+                <th (click)="sortBy('gasto')" class="sortable-header">
+                  Gasto
+                  <i class="bi" [ngClass]="getSortIcon('gasto')"></i>
+                </th>
+                <th (click)="sortBy('monto')" class="sortable-header">
+                  Monto
+                  <i class="bi" [ngClass]="getSortIcon('monto')"></i>
+                </th>
+                <th (click)="sortBy('estado')" class="sortable-header">
+                  Estado
+                  <i class="bi" [ngClass]="getSortIcon('estado')"></i>
+                </th>
                 <th style="width: 80px" class="text-center">Detalle</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let operacion of operaciones">
+              <tr *ngFor="let operacion of filteredOperaciones">
                 <td>{{ operacion.id }}</td>
                 <td>
                   <div>
@@ -64,9 +110,10 @@
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay operaciones -->
-          <div *ngIf="operaciones.length === 0" class="text-center p-5">
-            No hay operaciones registradas.
+          <!-- Mensaje cuando no hay operaciones o resultados -->
+          <div *ngIf="filteredOperaciones.length === 0" class="text-center p-5">
+            <p *ngIf="searchTerm">No se encontraron operaciones que coincidan con "{{ searchTerm }}".</p>
+            <p *ngIf="!searchTerm">No hay operaciones registradas.</p>
           </div>
         </div>
       </div>

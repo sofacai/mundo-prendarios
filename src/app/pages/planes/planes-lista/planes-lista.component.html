@@ -2,26 +2,42 @@
   <app-sidebar></app-sidebar>
 
   <div class="content-area">
-    <div class="page-header">
-      <div class="page-title">
-        <h1>Gestión de Planes</h1>
-      </div>
-      <div class="page-actions">
-        <button class="btn btn-primary" (click)="abrirModalNuevoPlan()">
-          <i class="bi bi-plus"></i> Nuevo Plan
-        </button>
-      </div>
-    </div>
+
 
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">Listado de Planes</h2>
       </div>
+
+      <!-- Buscador -->
+      <div class="card-body search-container">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="Buscar por nombre..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear"
+            (click)="clearSearch()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <button class="btn btn-primary" (click)="abrirModalNuevoPlan()">
+          <i class="bi bi-plus"></i> Nuevo Plan
+        </button>
+      </div>
+
       <div class="card-body">
-     <!-- Indicador de carga -->
-     <div *ngIf="loading" class="text-center p-5">
-      <p class="mt-2">Cargando canales...</p>
-    </div>
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <p class="mt-2">Cargando planes...</p>
+        </div>
 
         <div *ngIf="error && !loading" class="alert alert-danger">
           {{ error }}
@@ -31,18 +47,39 @@
           <table class="custom-table">
             <thead>
               <tr>
-                <th style="width: 50px">ID</th>
-                <th>Nombre</th>
-                <th>Monto</th>
-                <th>Cuotas</th>
-                <th>Tasa</th>
-                <th>Vigencia</th>
-                <th>Estado</th>
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                  ID
+                  <i class="bi" [ngClass]="getSortIcon('id')"></i>
+                </th>
+                <th (click)="sortBy('nombre')" class="sortable-header">
+                  Nombre
+                  <i class="bi" [ngClass]="getSortIcon('nombre')"></i>
+                </th>
+                <th (click)="sortBy('montoMaximo')" class="sortable-header">
+                  Monto
+                  <i class="bi" [ngClass]="getSortIcon('montoMaximo')"></i>
+                </th>
+                <th>
+                  Cuotas
+
+                </th>
+                <th (click)="sortBy('tasa')" class="sortable-header">
+                  Tasa
+                  <i class="bi" [ngClass]="getSortIcon('tasa')"></i>
+                </th>
+                <th (click)="sortBy('fechaInicio')" class="sortable-header">
+                  Vigencia
+                  <i class="bi" [ngClass]="getSortIcon('fechaInicio')"></i>
+                </th>
+                <th (click)="sortBy('activo')" class="sortable-header">
+                  Estado
+                  <i class="bi" [ngClass]="getSortIcon('activo')"></i>
+                </th>
                 <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let plan of planes">
+              <tr *ngFor="let plan of filteredPlanes">
                 <td>{{ plan.id }}</td>
                 <td>
                   <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(plan.id)">
@@ -86,8 +123,9 @@
             </tbody>
           </table>
 
-          <div *ngIf="planes.length === 0" class="text-center p-5">
-            No hay planes registrados.
+          <div *ngIf="filteredPlanes.length === 0" class="text-center p-5">
+            <p *ngIf="searchTerm">No se encontraron planes que coincidan con "{{ searchTerm }}".</p>
+            <p *ngIf="!searchTerm">No hay planes registrados.</p>
           </div>
         </div>
       </div>

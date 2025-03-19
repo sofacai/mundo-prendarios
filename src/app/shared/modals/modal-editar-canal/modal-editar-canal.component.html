@@ -105,11 +105,41 @@
             </div>
           </div>
 
+          <!-- Sección para planes asignados -->
+          <div class="planes-section" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
+            <h3>Planes Asignados</h3>
+            <div class="planes-list">
+              <div *ngFor="let planCanal of canal.planesCanal"
+                   class="plan-btn"
+                   [class.active]="!planesToRemove.includes(planCanal.id)"
+                   (click)="togglePlanRemoval(planCanal.id)">
+                {{ planCanal.plan.nombre }}
+              </div>
+            </div>
+            <small class="text-muted">*Haga clic en un plan para marcarlo como removido</small>
+          </div>
+
+          <!-- Sección para asignar nuevos planes -->
+          <div class="planes-section mt-4" *ngIf="planesDisponibles.length > 0">
+            <h3>Asignar Nuevos Planes</h3>
+            <div class="planes-list">
+              <div *ngFor="let plan of planesDisponibles"
+                   class="plan-btn"
+                   [class.active]="isPlanSelected(plan.id)"
+                   (click)="togglePlanSelection(plan.id)">
+                {{ plan.nombre }}
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-info" *ngIf="planesDisponibles.length === 0 && planes.length > 0">
+            <p>No hay planes adicionales disponibles para asignar.</p>
+          </div>
+
           <div class="form-error" *ngIf="error">
             <div class="alert alert-danger">{{ error }}</div>
           </div>
 
-          <div class="form-footer">
+          <div class="form-footer mt-4">
             <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
             <button type="submit" class="btn btn-primary" [disabled]="loading || canalForm.invalid">
               <span *ngIf="!loading">Guardar Cambios</span>
