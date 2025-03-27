@@ -10,129 +10,195 @@
 
       <div class="modal-body">
         <form [formGroup]="canalForm" (ngSubmit)="actualizarCanal()" *ngIf="canal">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Nombre Fantasía <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="nombreFantasia">
-              <small class="text-danger" *ngIf="canalForm.get('nombreFantasia')?.invalid && canalForm.get('nombreFantasia')?.touched">
-                Campo requerido
-              </small>
-            </div>
+          <!-- Información General -->
+          <div class="form-section">
+            <h3>Información General</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Nombre Fantasía <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="nombreFantasia">
+                <small class="text-danger" *ngIf="canalForm.get('nombreFantasia')?.invalid && canalForm.get('nombreFantasia')?.touched">
+                  Campo requerido
+                </small>
+              </div>
 
-            <div class="form-group">
-              <label>Razón Social <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="razonSocial">
-              <small class="text-danger" *ngIf="canalForm.get('razonSocial')?.invalid && canalForm.get('razonSocial')?.touched">
-                Campo requerido
-              </small>
-            </div>
+              <div class="form-group">
+                <label>Razón Social <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="razonSocial">
+                <small class="text-danger" *ngIf="canalForm.get('razonSocial')?.invalid && canalForm.get('razonSocial')?.touched">
+                  Campo requerido
+                </small>
+              </div>
 
-            <div class="form-group">
-              <label>Provincia <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="provincia">
-              <small class="text-danger" *ngIf="canalForm.get('provincia')?.invalid && canalForm.get('provincia')?.touched">
-                Campo requerido
-              </small>
-            </div>
+              <div class="form-group">
+                <label>Tipo de Canal <span class="required">*</span></label>
+                <select class="form-control" formControlName="tipoCanal">
+                  <option value="">Seleccione un tipo</option>
+                  <option *ngFor="let tipo of tiposCanal" [value]="tipo.id">
+                    {{ tipo.nombre }}
+                  </option>
+                </select>
+                <small class="text-danger" *ngIf="canalForm.get('tipoCanal')?.invalid && canalForm.get('tipoCanal')?.touched">
+                  Campo requerido
+                </small>
+              </div>
 
-            <div class="form-group">
-              <label>Localidad <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="localidad">
-              <small class="text-danger" *ngIf="canalForm.get('localidad')?.invalid && canalForm.get('localidad')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>CUIT <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="cuit">
-              <small class="text-danger" *ngIf="canalForm.get('cuit')?.invalid && canalForm.get('cuit')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>CBU <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="cbu">
-              <small class="text-danger" *ngIf="canalForm.get('cbu')?.invalid && canalForm.get('cbu')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Alias <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="alias">
-              <small class="text-danger" *ngIf="canalForm.get('alias')?.invalid && canalForm.get('alias')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Banco <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="banco">
-              <small class="text-danger" *ngIf="canalForm.get('banco')?.invalid && canalForm.get('banco')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Número de Cuenta <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="numCuenta">
-              <small class="text-danger" *ngIf="canalForm.get('numCuenta')?.invalid && canalForm.get('numCuenta')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Tipo de Canal <span class="required">*</span></label>
-              <select class="form-control" formControlName="tipoCanal">
-                <option value="">Seleccione un tipo</option>
-                <option *ngFor="let tipo of tiposCanal" [value]="tipo.id">
-                  {{ tipo.nombre }}
-                </option>
-              </select>
-              <small class="text-danger" *ngIf="canalForm.get('tipoCanal')?.invalid && canalForm.get('tipoCanal')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Estado</label>
-              <div class="toggle-container">
-                <ion-toggle formControlName="activo"></ion-toggle>
-                <span>{{ canalForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+              <div class="form-group">
+                <label>Estado</label>
+                <div class="toggle-container">
+                  <ion-toggle formControlName="activo"></ion-toggle>
+                  <span>{{ canalForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Sección para planes asignados -->
-          <div class="planes-section" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
-            <h3>Planes Asignados</h3>
-            <div class="planes-list">
-              <div *ngFor="let planCanal of canal.planesCanal"
-                   class="plan-btn"
-                   [class.active]="!planesToRemove.includes(planCanal.id)"
-                   (click)="togglePlanRemoval(planCanal.id)">
-                {{ planCanal.plan.nombre }}
+          <!-- Ubicación -->
+          <div class="form-section">
+            <h3>Ubicación</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Provincia <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="provincia">
+                <small class="text-danger" *ngIf="canalForm.get('provincia')?.invalid && canalForm.get('provincia')?.touched">
+                  Campo requerido
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Localidad <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="localidad">
+                <small class="text-danger" *ngIf="canalForm.get('localidad')?.invalid && canalForm.get('localidad')?.touched">
+                  Campo requerido
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" class="form-control" formControlName="direccion">
               </div>
             </div>
-            <small class="text-muted">*Haga clic en un plan para marcarlo como removido</small>
           </div>
 
-          <!-- Sección para asignar nuevos planes -->
-          <div class="planes-section mt-4" *ngIf="planesDisponibles.length > 0">
-            <h3>Asignar Nuevos Planes</h3>
-            <div class="planes-list">
-              <div *ngFor="let plan of planesDisponibles"
-                   class="plan-btn"
-                   [class.active]="isPlanSelected(plan.id)"
-                   (click)="togglePlanSelection(plan.id)">
-                {{ plan.nombre }}
+          <!-- Información Fiscal -->
+          <div class="form-section">
+            <h3>Información Fiscal</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>CUIT <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="cuit">
+                <small class="text-danger" *ngIf="canalForm.get('cuit')?.invalid && canalForm.get('cuit')?.touched">
+                  Campo requerido
+                </small>
               </div>
             </div>
           </div>
-          <div class="alert alert-info" *ngIf="planesDisponibles.length === 0 && planes.length > 0">
-            <p>No hay planes adicionales disponibles para asignar.</p>
+
+          <!-- Información Bancaria -->
+          <div class="form-section">
+            <h3>Información Bancaria</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Banco <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="banco">
+                <small class="text-danger" *ngIf="canalForm.get('banco')?.invalid && canalForm.get('banco')?.touched">
+                  Campo requerido
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>CBU <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="cbu">
+                <small class="text-danger" *ngIf="canalForm.get('cbu')?.invalid && canalForm.get('cbu')?.touched">
+                  Campo requerido
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Alias <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="alias">
+                <small class="text-danger" *ngIf="canalForm.get('alias')?.invalid && canalForm.get('alias')?.touched">
+                  Campo requerido
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Número de Cuenta <span class="required">*</span></label>
+                <input type="text" class="form-control" formControlName="numCuenta">
+                <small class="text-danger" *ngIf="canalForm.get('numCuenta')?.invalid && canalForm.get('numCuenta')?.touched">
+                  Campo requerido
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Opciones de Cobro</label>
+                <input type="text" class="form-control" formControlName="opcionesCobro" placeholder="Ej: cheque, transferencia, efectivo">
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos del Titular -->
+          <div class="form-section">
+            <h3>Datos del Titular</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" class="form-control" formControlName="titularNombreCompleto">
+              </div>
+
+              <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" class="form-control" formControlName="titularTelefono">
+              </div>
+
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" formControlName="titularEmail">
+              </div>
+            </div>
+          </div>
+
+          <!-- Imagen/Foto -->
+          <div class="form-section">
+            <h3>Imagen del Canal</h3>
+            <div class="form-group">
+              <label>URL de la imagen</label>
+              <input type="text" class="form-control" formControlName="foto" placeholder="URL de la imagen">
+            </div>
+          </div>
+
+          <!-- Planes -->
+          <div class="form-section">
+            <h3>Planes</h3>
+            <!-- Sección para planes asignados -->
+            <div class="planes-section" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
+              <h4>Planes Asignados</h4>
+              <div class="planes-list">
+                <div *ngFor="let planCanal of canal.planesCanal"
+                     class="plan-btn"
+                     [class.active]="!planesToRemove.includes(planCanal.id)"
+                     (click)="togglePlanRemoval(planCanal.id)">
+                  {{ planCanal.plan.nombre }}
+                </div>
+              </div>
+              <small class="text-muted">*Haga clic en un plan para marcarlo como removido</small>
+            </div>
+
+            <!-- Sección para asignar nuevos planes -->
+            <div class="planes-section mt-4" *ngIf="planesDisponibles.length > 0">
+              <h4>Asignar Nuevos Planes</h4>
+              <div class="planes-list">
+                <div *ngFor="let plan of planesDisponibles"
+                     class="plan-btn"
+                     [class.active]="isPlanSelected(plan.id)"
+                     (click)="togglePlanSelection(plan.id)">
+                  {{ plan.nombre }}
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-info" *ngIf="planesDisponibles.length === 0 && planes.length > 0">
+              <p>No hay planes adicionales disponibles para asignar.</p>
+            </div>
           </div>
 
           <div class="form-error" *ngIf="error">

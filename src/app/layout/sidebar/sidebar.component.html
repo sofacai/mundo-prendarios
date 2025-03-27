@@ -20,11 +20,11 @@
         </a>
       </li>
 
-      <!-- Menú de Canales - solo para admin (rol 1) -->
+      <!-- Menú de Canales - para admin (rol 1) y oficial comercial (rol 4) -->
       <li class="menu-item has-submenu"
           [class.active]="isCanalesMenuActive()"
           [class.expanded]="isCanalesExpanded"
-          *ngIf="userRole === rolType.Administrador">
+          *ngIf="userRole === rolType.Administrador || userRole === rolType.OficialComercial">
         <a (click)="toggleCanalesMenu()" class="menu-link">
           <ion-icon name="git-network-outline" size="small"></ion-icon>
           <span class="menu-title">Canales</span>
@@ -62,9 +62,9 @@
         </a>
       </li>
 
-      <!-- Clientes - solo para admin (rol 1) -->
+      <!-- Clientes - para admin (rol 1) y oficial comercial (rol 4) -->
       <li class="menu-item" [class.active]="isActiveRoute('/clientes')"
-          *ngIf="userRole === rolType.Administrador">
+          *ngIf="userRole === rolType.Administrador || userRole === rolType.OficialComercial">
         <a (click)="navigateTo('/clientes')" class="menu-link">
           <ion-icon name="person-circle-outline" size="small"></ion-icon>
           <span class="menu-title">Clientes</span>

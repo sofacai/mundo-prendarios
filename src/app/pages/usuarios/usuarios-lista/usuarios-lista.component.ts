@@ -139,6 +139,24 @@ export class UsuariosListaComponent implements OnInit {
       else if (column === 'activo') {
         return (a[column] === b[column] ? 0 : a[column] ? -1 : 1) * factor;
       }
+      // Para ordenar por fechaAlta
+      else if (column === 'fechaAlta') {
+        // Manejar caso donde alguna fecha pueda ser null o undefined
+        if (!a.fechaAlta) return factor; // Si a no tiene fecha, va al final
+        if (!b.fechaAlta) return -factor; // Si b no tiene fecha, va al final
+        return (new Date(a.fechaAlta).getTime() - new Date(b.fechaAlta).getTime()) * factor;
+      }
+      // Para ordenar por fechaUltimaOperacion
+      else if (column === 'fechaUltimaOperacion') {
+        // Manejar caso donde alguna fecha pueda ser null o undefined
+        if (!a.fechaUltimaOperacion) return factor;
+        if (!b.fechaUltimaOperacion) return -factor;
+        return (new Date(a.fechaUltimaOperacion).getTime() - new Date(b.fechaUltimaOperacion).getTime()) * factor;
+      }
+      // Para ordenar por cantidadOperaciones
+      else if (column === 'cantidadOperaciones') {
+        return (a.cantidadOperaciones - b.cantidadOperaciones) * factor;
+      }
 
       return 0;
     });
@@ -209,6 +227,8 @@ export class UsuariosListaComponent implements OnInit {
         return 'badge-light-info';  // Color azul claro para AdminCanal
       case 3: // Vendor
         return 'badge-light-warning';  // Color amarillo claro para Vendor
+      case 4: // OficialComercial - Agregado nuevo rol
+        return 'badge-light-primary';  // Color primario para OficialComercial
       default:
         return '';
     }

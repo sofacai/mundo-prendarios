@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CotizadorService, SubcanalInfo } from 'src/app/core/services/cotizador.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-step1-monto',
@@ -14,6 +15,7 @@ import { CotizadorService, SubcanalInfo } from 'src/app/core/services/cotizador.
 export class Step1MontoComponent implements OnInit {
   @Input() subcanalInfo: SubcanalInfo | null = null;
   @Output() continuar = new EventEmitter<{monto: number, plazo: number}>();
+  @Output() volver = new EventEmitter<void>();
 
   monto: number = 1000000;
   plazo: number = 36;
@@ -23,7 +25,7 @@ export class Step1MontoComponent implements OnInit {
 
   errorMensaje: string | null = null;
 
-  constructor() {}
+  constructor(private router: Router) {}
 
   ngOnInit() {
     // Si tenemos información del subcanal, obtenemos límites y plazos de sus planes
@@ -53,6 +55,10 @@ export class Step1MontoComponent implements OnInit {
     } else {
       this.errorMensaje = "No se encontraron planes disponibles para este subcanal.";
     }
+  }
+
+  onVolver() {
+    this.volver.emit();
   }
 
   onSliderChange(event: any) {
@@ -86,4 +92,6 @@ export class Step1MontoComponent implements OnInit {
       plazo: this.plazo
     });
   }
+
+
 }

@@ -141,7 +141,18 @@ export class CanalesListaComponent implements OnInit {
         const countA = this.getSubcanalesCantidad(a);
         const countB = this.getSubcanalesCantidad(b);
         return (countA - countB) * factor;
-      }
+      }// Para ordenar por fecha de alta
+else if (column === 'fechaAlta') {
+  const dateA = a.fechaAlta ? new Date(a.fechaAlta).getTime() : 0;
+  const dateB = b.fechaAlta ? new Date(b.fechaAlta).getTime() : 0;
+  return (dateA - dateB) * factor;
+}
+// Para ordenar por operaciones
+else if (column === 'operaciones') {
+  const countA = a.numeroOperaciones || 0;
+  const countB = b.numeroOperaciones || 0;
+  return (countA - countB) * factor;
+}
 
       return 0;
     });

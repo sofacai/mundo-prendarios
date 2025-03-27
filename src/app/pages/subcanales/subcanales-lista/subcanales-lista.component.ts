@@ -145,6 +145,10 @@ export class SubcanalesListaComponent implements OnInit {
         };
         return (getGastoValue(a) - getGastoValue(b)) * factor;
       }
+      // Para ordenar por comisión
+      else if (column === 'comision') {
+        return (a.comision - b.comision) * factor;
+      }
 
       return 0;
     });
@@ -171,6 +175,11 @@ export class SubcanalesListaComponent implements OnInit {
     return this.sortState.direction === 'asc'
       ? 'bi-sort-down-alt'
       : 'bi-sort-up-alt';
+  }
+
+  // Formatear comisión para visualización
+  formatComision(comision: number): string {
+    return `${comision.toFixed(2)}%`;
   }
 
   // Navegar al detalle del subcanal

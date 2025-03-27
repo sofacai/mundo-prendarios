@@ -6,7 +6,6 @@
   <div class="content-area">
     <!-- Encabezado -->
 
-
     <!-- Contenido de la tabla -->
     <div class="card">
       <div class="card-header">
@@ -70,6 +69,19 @@
                   Rol
                   <i class="bi" [ngClass]="getSortIcon('rolId')"></i>
                 </th>
+                <!-- Nuevas columnas -->
+                <th (click)="sortBy('fechaAlta')" class="sortable-header">
+                  Alta
+                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
+                </th>
+                <th (click)="sortBy('fechaUltimaOperacion')" class="sortable-header">
+                  Ult. Operación
+                  <i class="bi" [ngClass]="getSortIcon('fechaUltimaOperacion')"></i>
+                </th>
+                <th (click)="sortBy('cantidadOperaciones')" class="sortable-header">
+                  Cant. Operaciones
+                  <i class="bi" [ngClass]="getSortIcon('cantidadOperaciones')"></i>
+                </th>
                 <th (click)="sortBy('activo')" class="sortable-header">
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
@@ -93,6 +105,10 @@
                     {{ usuario.rolNombre }}
                   </div>
                 </td>
+                <!-- Nuevas columnas con datos -->
+                <td>{{ usuario.fechaAlta | date:'dd/MM/yy' }}</td>
+                <td>{{ usuario.fechaUltimaOperacion | date:'dd/MM/yy' }}</td>
+                <td>{{ usuario.cantidadOperaciones }}</td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(usuario.activo)">
                     {{ usuario.activo ? 'Activado' : 'Desactivado' }}

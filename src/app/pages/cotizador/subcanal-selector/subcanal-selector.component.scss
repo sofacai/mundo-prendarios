@@ -1,69 +1,126 @@
-/* cotizador/subcanal-selector/subcanal-selector.component.scss */
-.selector-container {
-  max-width: 600px;
-  margin: 0 auto;
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
+.step-container {
+  background-color: white;
   border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 600px;
+  margin: 30px auto 0;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .header {
-  background-color: #003087;
-  color: white;
-  padding: 15px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eef0f2;
   text-align: center;
 }
 
 .logo {
   margin-bottom: 15px;
-
-  img {
-    height: 40px;
-  }
 }
 
-h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+.logo img {
+  height: 40px;
 }
 
 .content {
   padding: 20px;
 }
 
-.info-text {
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.subtitle {
   text-align: center;
   margin-bottom: 20px;
-  color: #555;
+  color: #495057;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
-.select-container {
-  margin-bottom: 30px;
+.form-group {
+  position: relative;
+  margin-bottom: 16px;
 }
 
-.button-container {
-  text-align: center;
+.full-width {
+  width: 100%;
+}
+
+.cuotas-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.cuota-option {
+  background-color: #f5f8fa;
+  border: 1px solid #e4e6ef;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #212529;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cuota-option:hover {
+  border-color: #47b2f5;
+}
+
+.cuota-option.selected {
+  background-color: #e1f0ff;
+  border-color: #47b2f5;
+  color: #47b2f5;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eef0f2;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
 }
 
 .btn-primary {
-  background-color: #003087;
+  background-color: #47b2f5;
   color: white;
-  border: none;
-  padding: 12px 30px;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
+}
 
-  &:hover {
-    background-color: #00246e;
-  }
+.btn-primary:hover:not(:disabled) {
+  background-color: #3a9fe1;
+}
 
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .step-container {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }

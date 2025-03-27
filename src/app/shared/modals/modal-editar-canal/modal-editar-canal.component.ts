@@ -70,7 +70,14 @@ export class ModalEditarCanalComponent implements OnChanges, OnDestroy, OnInit {
       banco: ['', Validators.required],
       numCuenta: ['', Validators.required],
       tipoCanal: ['', Validators.required],
-      activo: [true]
+      activo: [true],
+      // Nuevos campos
+      direccion: [''],
+      opcionesCobro: [''],
+      foto: [''],
+      titularNombreCompleto: [''],
+      titularTelefono: [''],
+      titularEmail: ['']
     });
   }
 
@@ -157,7 +164,14 @@ export class ModalEditarCanalComponent implements OnChanges, OnDestroy, OnInit {
           banco: canal.banco,
           numCuenta: canal.numCuenta,
           tipoCanal: tipoId.toString(), // Usamos el ID como string para el select
-          activo: canal.activo
+          activo: canal.activo,
+          // Nuevos campos
+          direccion: canal.direccion || '',
+          opcionesCobro: canal.opcionesCobro || '',
+          foto: canal.foto || '',
+          titularNombreCompleto: canal.titularNombreCompleto || '',
+          titularTelefono: canal.titularTelefono || '',
+          titularEmail: canal.titularEmail || ''
         });
 
         // Actualizar los planes disponibles
@@ -281,7 +295,14 @@ export class ModalEditarCanalComponent implements OnChanges, OnDestroy, OnInit {
       banco: formValues.banco,
       numCuenta: formValues.numCuenta,
       tipoCanal: tipoSeleccionado ? tipoSeleccionado.nombre : '',
-      activo: formValues.activo
+      activo: formValues.activo,
+      // Nuevos campos
+      direccion: formValues.direccion,
+      opcionesCobro: formValues.opcionesCobro,
+      foto: formValues.foto,
+      titularNombreCompleto: formValues.titularNombreCompleto,
+      titularTelefono: formValues.titularTelefono,
+      titularEmail: formValues.titularEmail
     };
 
     try {

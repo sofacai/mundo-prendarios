@@ -4,19 +4,38 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
 export interface Cliente {
-  id?: number;
+  id: number;
   nombre: string;
   apellido: string;
-  telefono: string; // Usado como whatsapp
+  telefono: string;
   email: string;
-  dni?: string | null; // Cambiado: puede ser null explícitamente
-  cuil?: string | null; // Cambiado: puede ser null explícitamente
+  dni?: string;
+  cuil?: string;
   provincia?: string;
   sexo?: string;
   estadoCivil?: string;
-  fechaCreacion?: Date;
+  canalId: number;
+  canalNombre: string;
+  fechaCreacion: Date;
+  ultimaModificacion?: Date;
+  usuarioCreadorId?: number;
+  usuarioCreadorNombre?: string;
+  vendoresAsignados?: any[];
+  numeroOperaciones: number;
+}
+
+export interface ClienteCrearDto {
+  nombre: string;
+  apellido: string;
+  cuil?: string;
+  dni?: string;
+  email: string;
+  telefono: string;
+  provincia?: string;
+  sexo?: string;
+  estadoCivil?: string;
   canalId?: number;
-  activo?: boolean;
+  autoasignarVendor?: boolean;
 }
 
 @Injectable({
@@ -42,43 +61,16 @@ export class ClienteService {
     return this.http.get<Cliente>(`${this.apiUrl}/Clientes/${id}`, { headers });
   }
 
-  crearCliente(cliente: any): Observable<Cliente> {
+  // Crear un nuevo cliente
+  crearCliente(cliente: ClienteCrearDto): Observable<Cliente> {
     const headers = this.getAuthHeaders();
-
-    // Aseguramos que los valores null se envíen como string vacía o null explícito
-    const clienteData = {
-      nombre: cliente.nombre,
-      apellido: cliente.apellido,
-      telefono: cliente.telefono || cliente.whatsapp,
-      email: cliente.email,
-      dni: cliente.dni === null ? "" : cliente.dni,
-      cuil: cliente.cuil === null ? "" : cliente.cuil,
-      canalId: cliente.canalId || 1
-    };
-
-    // Corregimos la URL al endpoint correcto
-    return this.http.post<Cliente>(`${this.apiUrl}/Clientes`, clienteData, { headers });
+    return this.http.post<Cliente>(`${this.apiUrl}/Clientes`, cliente, { headers });
   }
 
   // Actualizar un cliente existente
-  actualizarCliente(id: number, cliente: Cliente): Observable<Cliente> {
+  actualizarCliente(id: number, cliente: ClienteCrearDto): Observable<any> {
     const headers = this.getAuthHeaders();
-
-    // Adaptamos el objeto cliente al formato esperado por la API
-    const clienteDto = {
-      nombre: cliente.nombre,
-      apellido: cliente.apellido,
-      cuil: cliente.cuil || "",
-      dni: cliente.dni || "",
-      email: cliente.email,
-      telefono: cliente.telefono,
-      provincia: cliente.provincia || null,
-      sexo: cliente.sexo || null,
-      estadoCivil: cliente.estadoCivil || null,
-      canalId: cliente.canalId || 1
-    };
-
-    return this.http.put<Cliente>(`${this.apiUrl}/Clientes/${id}`, clienteDto, { headers });
+    return this.http.put<any>(`${this.apiUrl}/Clientes/${id}`, cliente, { headers });
   }
 
   // Buscar cliente por DNI
@@ -91,6 +83,12 @@ export class ClienteService {
   getClientePorCuil(cuil: string): Observable<Cliente> {
     const headers = this.getAuthHeaders();
     return this.http.get<Cliente>(`${this.apiUrl}/Clientes/cuil/${cuil}`, { headers });
+  }
+
+  // Obtener clientes por canal
+  getClientesPorCanal(canalId: number): Observable<Cliente[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Cliente[]>(`${this.apiUrl}/Clientes/canal/${canalId}`, { headers });
   }
 
   private getAuthHeaders(): HttpHeaders {

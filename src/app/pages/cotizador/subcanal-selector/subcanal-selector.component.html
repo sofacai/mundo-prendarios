@@ -1,43 +1,36 @@
-<div class="selector-container">
+<div class="step-container">
   <div class="header">
     <div class="logo">
       <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
     </div>
-    <h2>Seleccionar Subcanal</h2>
   </div>
 
   <div class="content">
-    <ng-container *ngIf="errorMessage">
-      <div class="error-message">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <p>{{errorMessage}}</p>
-      </div>
-    </ng-container>
+    <h2 class="title">Seleccionar Subcanal</h2>
 
-    <ng-container *ngIf="!errorMessage">
-      <p class="info-text">
-        Estás asignado a múltiples subcanales. Por favor, selecciona el subcanal para el que deseas realizar esta cotización.
-      </p>
+    <p class="subtitle">
+      Estás asignado a múltiples subcanales. Por favor, selecciona el subcanal para el que deseas realizar esta cotización.
+    </p>
 
-      <div class="select-container">
-        <ion-item>
-          <ion-label position="stacked">Subcanal</ion-label>
-          <ion-select [(ngModel)]="subcanalId" placeholder="Selecciona un subcanal">
-            <ion-select-option *ngFor="let subcanal of subcanalesActivos" [value]="subcanal.subcanalId">
-              {{ subcanal.subcanalNombre }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+    <div class="form-group full-width">
+      <div class="cuotas-container">
+        <div
+          *ngFor="let subcanal of subcanalesActivos"
+          class="cuota-option"
+          [class.selected]="subcanalId === subcanal.subcanalId"
+          (click)="subcanalId = subcanal.subcanalId">
+          {{ subcanal.subcanalNombre }}
+        </div>
       </div>
+    </div>
 
-      <div class="button-container">
-        <button
-          class="btn-primary"
-          [disabled]="!subcanalId"
-          (click)="onSeleccionarSubcanal()">
-          Continuar
-        </button>
-      </div>
-    </ng-container>
+    <div class="form-footer">
+      <button
+        class="btn btn-primary"
+        [disabled]="!subcanalId"
+        (click)="onSeleccionarSubcanal()">
+        Continuar
+      </button>
+    </div>
   </div>
 </div>

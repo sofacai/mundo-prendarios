@@ -54,6 +54,8 @@ export class AuthService {
         return RolType.AdminCanal;
       case 'Vendor':
         return RolType.Vendor;
+      case 'OficialComercial':
+          return RolType.OficialComercial;
       default:
         console.warn(`Rol desconocido: ${rolName}, usando Vendor como predeterminado`);
         return RolType.Vendor;

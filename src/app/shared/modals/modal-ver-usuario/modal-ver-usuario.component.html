@@ -47,6 +47,24 @@
               </div>
             </div>
           </div>
+
+          <!-- Nuevos campos -->
+          <ng-container *ngIf="usuario.rolId === 3">  <!-- Solo para Vendors -->
+            <div class="detail-group">
+              <label>Fecha de Alta</label>
+              <div class="detail-value">{{ usuario.fechaAlta ? (usuario.fechaAlta | date:'dd/MM/yyyy') : 'No disponible' }}</div>
+            </div>
+
+            <div class="detail-group">
+              <label>Última Operación</label>
+              <div class="detail-value">{{ usuario.fechaUltimaOperacion ? (usuario.fechaUltimaOperacion | date:'dd/MM/yyyy') : 'Sin operaciones' }}</div>
+            </div>
+
+            <div class="detail-group">
+              <label>Operaciones Realizadas</label>
+              <div class="detail-value">{{ usuario.cantidadOperaciones }}</div>
+            </div>
+          </ng-container>
         </div>
 
         <div class="loading-container" *ngIf="loading">

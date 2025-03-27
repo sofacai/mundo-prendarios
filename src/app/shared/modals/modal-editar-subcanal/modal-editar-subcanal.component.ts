@@ -40,6 +40,7 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
       localidad: ['', Validators.required],
       canalId: [null, Validators.required],
       adminCanalId: [null, Validators.required],
+      comision: [0, [Validators.required, Validators.min(0), Validators.max(100)]], // Agregado campo comision
       activo: [true],
       gastos: this.fb.array([])
     });
@@ -161,6 +162,7 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
           localidad: subcanal.localidad,
           canalId: subcanal.canalId,
           adminCanalId: subcanal.adminCanalId,
+          comision: subcanal.comision, // Agregado para cargar el valor de comisión
           activo: subcanal.activo
         });
 
@@ -232,7 +234,8 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
       provincia: formValues.provincia,
       localidad: formValues.localidad,
       canalId: formValues.canalId,
-      adminCanalId: formValues.adminCanalId
+      adminCanalId: formValues.adminCanalId,
+      comision: formValues.comision // Agregado el campo comision al DTO
     };
 
     // Guardar el ID del subcanal antes de la operación

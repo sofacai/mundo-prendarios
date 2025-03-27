@@ -47,7 +47,11 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     private planService: PlanService,
     private renderer: Renderer2
   ) {
-    this.canalForm = this.fb.group({
+    this.canalForm = this.createForm();
+  }
+
+  createForm(): FormGroup {
+    return this.fb.group({
       nombreFantasia: ['', Validators.required],
       razonSocial: ['', Validators.required],
       provincia: ['', Validators.required],
@@ -58,7 +62,14 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       banco: ['', Validators.required],
       numCuenta: [''],
       tipoCanal: ['', Validators.required],
-      activo: [true]
+      activo: [true],
+      // Nuevos campos
+      direccion: [''],
+      opcionesCobro: [''],
+      foto: [''],
+      titularNombreCompleto: [''],
+      titularTelefono: [''],
+      titularEmail: ['']
     });
   }
 
@@ -147,7 +158,14 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       banco: formValues.banco,
       numCuenta: formValues.numCuenta || '',
       tipoCanal: tipoSeleccionado ? tipoSeleccionado.nombre : '',
-      activo: true
+      activo: true,
+      // Nuevos campos
+      direccion: formValues.direccion || '',
+      opcionesCobro: formValues.opcionesCobro || '',
+      foto: formValues.foto || '',
+      titularNombreCompleto: formValues.titularNombreCompleto || '',
+      titularTelefono: formValues.titularTelefono || '',
+      titularEmail: formValues.titularEmail || ''
     };
 
     this.canalService.createCanal(canalDto).subscribe({

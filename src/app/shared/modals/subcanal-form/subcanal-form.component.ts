@@ -43,7 +43,8 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
       localidad: ['', Validators.required],
       canalId: ['', Validators.required],
       adminCanalId: ['', Validators.required],
-      // Nuevos campos para el gasto
+      comision: [0, [Validators.required, Validators.min(0), Validators.max(100)]], // Nuevo campo comisión
+      // Campos para el gasto
       gastoNombre: [''],
       gastoPorcentaje: [0, [Validators.min(0), Validators.max(100)]]
     });
@@ -161,6 +162,7 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
       localidad: '',
       canalId: '',
       adminCanalId: '',
+      comision: 0, // Valor por defecto para comisión
       gastoNombre: '',
       gastoPorcentaje: 0
     });
@@ -189,7 +191,8 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
       provincia: formValues.provincia,
       localidad: formValues.localidad,
       canalId: parseInt(formValues.canalId),
-      adminCanalId: parseInt(formValues.adminCanalId)
+      adminCanalId: parseInt(formValues.adminCanalId),
+      comision: formValues.comision // Enviamos el valor de comisión
     };
 
     this.subcanalService.createSubcanal(subcanalDto).subscribe({

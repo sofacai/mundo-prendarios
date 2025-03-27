@@ -4,9 +4,6 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
-    <!-- Encabezado -->
-
-
     <!-- Contenido de la tabla -->
     <div class="card">
       <div class="card-header">
@@ -54,8 +51,16 @@
                   ID
                   <i class="bi" [ngClass]="getSortIcon('id')"></i>
                 </th>
+                <th (click)="sortBy('fechaCreacion')" class="sortable-header">
+                  Creación
+                  <i class="bi" [ngClass]="getSortIcon('fechaCreacion')"></i>
+                </th>
+                <th (click)="sortBy('ultimaModificacion')" class="sortable-header">
+                  Últ. modif
+                  <i class="bi" [ngClass]="getSortIcon('ultimaModificacion')"></i>
+                </th>
                 <th (click)="sortBy('nombre')" class="sortable-header">
-                  Nombre
+                  Cliente
                   <i class="bi" [ngClass]="getSortIcon('nombre')"></i>
                 </th>
                 <th (click)="sortBy('email')" class="sortable-header">
@@ -63,16 +68,20 @@
                   <i class="bi" [ngClass]="getSortIcon('email')"></i>
                 </th>
                 <th (click)="sortBy('telefono')" class="sortable-header">
-                  Teléfono
+                  Tel
                   <i class="bi" [ngClass]="getSortIcon('telefono')"></i>
                 </th>
-                <th>Operación</th>
+                <th>
+                  Canal
+                </th>
                 <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let cliente of filteredClientes">
                 <td>{{ cliente.id }}</td>
+                <td>{{ formatDate(cliente.fechaCreacion) }}</td>
+                <td>{{ formatDate(cliente.ultimaModificacion, cliente) }}</td>
                 <td>
                   <div>
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(cliente.id)">
@@ -82,7 +91,7 @@
                 </td>
                 <td>{{ cliente.email }}</td>
                 <td>{{ cliente.telefono }}</td>
-                <td>{{ "" }}</td>
+                <td>{{ cliente.canalNombre }}</td>
                 <td class="text-center">
                   <div class="actions-container">
                     <!-- Botón de ver detalle -->
@@ -105,3 +114,10 @@
     </div>
   </div>
 </div>
+
+<!-- Modal para ver detalles del cliente -->
+<app-modal-ver-cliente
+  [isOpen]="modalVerOpen"
+  [clienteId]="clienteIdVer"
+  (closeModal)="onCloseVerModal()"
+></app-modal-ver-cliente>

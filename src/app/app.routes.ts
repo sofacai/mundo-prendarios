@@ -27,25 +27,25 @@ export const routes: Routes = [
     path: 'canales',
     loadComponent: () => import('./pages/canales/canales-lista/canales-lista.component').then(m => m.CanalesListaComponent),
     canActivate: [AuthGuard],
-    data: { roles: [RolType.Administrador] }
+    data: { roles: [RolType.Administrador, RolType.OficialComercial] }
   },
   {
     path: 'subcanales',
     loadComponent: () => import('./pages/subcanales/subcanales-lista/subcanales-lista.component').then(m => m.SubcanalesListaComponent),
     canActivate: [AuthGuard],
-    data: { roles: [RolType.Administrador] }
+    data: { roles: [RolType.Administrador, RolType.OficialComercial] }
   },
   {
     path: 'usuarios',
     loadComponent: () => import('./pages/usuarios/usuarios-lista/usuarios-lista.component').then(m => m.UsuariosListaComponent),
     canActivate: [AuthGuard],
-    data: { roles: [RolType.Administrador, RolType.AdminCanal] }
+    data: { roles: [RolType.Administrador, RolType.AdminCanal, RolType.OficialComercial] }
   },
   {
     path: 'clientes',
     loadComponent: () => import('./pages/clientes/clientes-lista/clientes-lista.component').then(m => m.ClientesListaComponent),
     canActivate: [AuthGuard],
-    data: { roles: [RolType.Administrador] }
+    data: { roles: [RolType.Administrador, RolType.OficialComercial] }
   },
   {
     path: 'operaciones',

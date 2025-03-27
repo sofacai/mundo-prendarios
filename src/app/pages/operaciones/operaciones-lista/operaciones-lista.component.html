@@ -73,6 +73,14 @@
                   Monto
                   <i class="bi" [ngClass]="getSortIcon('monto')"></i>
                 </th>
+                <th (click)="sortBy('fechaCreacion')" class="sortable-header">
+                  Fecha
+                  <i class="bi" [ngClass]="getSortIcon('fechaCreacion')"></i>
+                </th>
+                <th (click)="sortBy('canal')" class="sortable-header">
+                  Canal
+                  <i class="bi" [ngClass]="getSortIcon('canal')"></i>
+                </th>
                 <th (click)="sortBy('estado')" class="sortable-header">
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('estado')"></i>
@@ -94,6 +102,8 @@
                 <td>{{ operacion.meses }}</td>
                 <td>{{ operacion.gasto}} %</td>
                 <td>${{ formatNumber(operacion.monto) }}</td>
+                <td>{{ operacion.fechaCreacion }}</td>
+                <td>{{ operacion.canal }}</td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(operacion.estado)">
                     {{ operacion.estado }}
@@ -120,3 +130,10 @@
     </div>
   </div>
 </div>
+
+
+<app-modal-ver-operacion
+  [isOpen]="modalVerOperacionOpen"
+  [operacionId]="operacionIdSeleccionada"
+  (closeModal)="cerrarModalVerOperacion()">
+</app-modal-ver-operacion>

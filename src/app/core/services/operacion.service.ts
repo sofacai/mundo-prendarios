@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
 export interface Operacion {
@@ -9,10 +10,15 @@ export interface Operacion {
   meses: number;
   tasa: number;
   clienteId: number;
+  clienteNombre?: string;
   planId: number;
-  vendedorId: number;
-  subcanalId: number;
-  canalId: number;
+  planNombre?: string;
+  vendedorId?: number;
+  vendedorNombre?: string;
+  subcanalId?: number;
+  subcanalNombre?: string;
+  canalId?: number;
+  canalNombre?: string;
   fechaCreacion?: Date;
   estado?: string;
 }
@@ -85,7 +91,7 @@ export class OperacionService {
       }
     };
 
-    return this.http.post<Operacion>(`${this.apiUrl}/Clientes/wizard`, combinado, { headers });
+    return this.http.post<Operacion>(`${this.apiUrl}/Operacion/cliente`, combinado, { headers });
   }
 
   // Obtener operaciones de un cliente específico

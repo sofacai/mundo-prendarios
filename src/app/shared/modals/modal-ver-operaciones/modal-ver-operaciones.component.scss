@@ -2,7 +2,7 @@
   display: block;
 }
 
-.ver-canal-modal {
+.ver-operacion-modal {
   --width: 85%;
   --max-width: 850px;
   --height: auto;
@@ -15,7 +15,7 @@
 }
 
 /* Ajuste para que el backdrop cubra toda la pantalla */
-::ng-deep ion-modal.ver-canal-modal::part(backdrop) {
+::ng-deep ion-modal.ver-operacion-modal::part(backdrop) {
   position: fixed;
   top: 0;
   left: 0;
@@ -232,9 +232,24 @@
     color: #50cd89;
   }
 
+  &.badge-warning {
+    background-color: rgba(255, 199, 0, 0.1);
+    color: #ffc700;
+  }
+
+  &.badge-info {
+    background-color: rgba(0, 158, 247, 0.1);
+    color: #009ef7;
+  }
+
   &.badge-danger {
     background-color: rgba(241, 65, 108, 0.1);
     color: #f1416c;
+  }
+
+  &.badge-light {
+    background-color: rgba(181, 181, 195, 0.1);
+    color: #b5b5c3;
   }
 }
 
@@ -244,7 +259,7 @@
     grid-template-columns: 1fr;
   }
 
-  .ver-canal-modal {
+  .ver-operacion-modal {
     --width: 95%;
   }
 }
@@ -263,10 +278,4 @@
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
-}
-
-.canal-image {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 4px;
 }

@@ -448,6 +448,14 @@ private asignarVendorACliente(clienteId: number) {
     }
   }
 
+  volverAlSeleccionSubcanal() {
+    // Reiniciar la selección de subcanal
+    this.wizardData.paso = 1;
+    this.necesitaSeleccionarSubcanal = true;
+    this.subcanalSeleccionado = null;
+    this.subcanalSeleccionadoInfo = null;
+  }
+
   reiniciarWizard() {
     this.error = null;
     this.wizardData = {

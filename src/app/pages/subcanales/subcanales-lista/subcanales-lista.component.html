@@ -6,7 +6,6 @@
   <div class="content-area">
     <!-- Encabezado -->
 
-
     <!-- Contenido de la tabla -->
     <div class="card">
       <div class="card-header">
@@ -70,6 +69,10 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
                 </th>
+                <th (click)="sortBy('comision')" class="sortable-header">
+                  Comisión
+                  <i class="bi" [ngClass]="getSortIcon('comision')"></i>
+                </th>
                 <th (click)="sortBy('gastos')" class="sortable-header">
                   Gastos
                   <i class="bi" [ngClass]="getSortIcon('gastos')"></i>
@@ -98,6 +101,11 @@
                   <div class="badge" [ngClass]="getEstadoClass(subcanal.activo)">
                     {{ subcanal.activo ? 'Activado' : 'Desactivado' }}
                   </div>
+                </td>
+                <td>
+                  <span class="badge badge-light-primary">
+                    {{ formatComision(subcanal.comision) }}
+                  </span>
                 </td>
                 <td>
                   <span class="badge badge-light-info">

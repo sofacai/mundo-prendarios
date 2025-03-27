@@ -24,8 +24,18 @@
   <div class="content">
     <h2 class="title">¿Qué monto buscas?</h2>
 
-    <div class="monto-input">
-      <ion-input type="number" [(ngModel)]="monto" min="{{montoMinimo}}" max="{{montoMaximo}}"></ion-input>
+    <div class="form-group">
+      <label>Monto <span class="required">*</span></label>
+      <div class="input-group">
+        <span class="input-prefix">$</span>
+        <input
+          type="text"
+          [(ngModel)]="monto"
+          [min]="montoMinimo"
+          [max]="montoMaximo"
+          class="form-control"
+          placeholder="0">
+      </div>
     </div>
 
     <div class="slider-container">
@@ -34,32 +44,32 @@
         [max]="montoMaximo"
         [value]="monto"
         (ionChange)="onSliderChange($event)"
-        step="10000"
-      >
+        step="10000">
         <ion-label slot="start">{{montoMinimo | currency:'ARS':'symbol':'1.0-0'}}</ion-label>
         <ion-label slot="end">{{montoMaximo | currency:'ARS':'symbol':'1.0-0'}}</ion-label>
       </ion-range>
     </div>
 
-    <h3 class="subtitle">¿En qué plazo?</h3>
-
-    <div class="plazo-buttons">
-      <button
-        *ngFor="let p of plazosDisponibles"
-        class="plazo-button"
-        [class.active]="plazo === p"
-        (click)="seleccionarPlazo(p)">
-        {{p}}
-      </button>
+    <div class="form-group full-width">
+      <label>¿En qué plazo? <span class="required">*</span></label>
+      <div class="cuotas-container">
+        <div
+          *ngFor="let p of plazosDisponibles"
+          class="cuota-option"
+          [class.selected]="plazo === p"
+          (click)="seleccionarPlazo(p)">
+          {{p}} meses
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="errorMensaje" class="error-message">
-      <ion-icon name="alert-circle-outline"></ion-icon>
+    <div *ngIf="errorMensaje" class="alert alert-danger">
       <span>{{errorMensaje}}</span>
     </div>
 
-    <div class="actions">
-      <button class="btn-primary" (click)="onContinuar()">ME INTERESA</button>
+    <div class="form-footer">
+      <button type="button" class="btn btn-light" (click)="onVolver()">VOLVER</button>
+      <button type="button" class="btn btn-primary" (click)="onContinuar()">ME INTERESA</button>
     </div>
   </div>
 </div>

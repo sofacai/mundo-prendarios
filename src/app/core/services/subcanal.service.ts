@@ -26,6 +26,7 @@ export interface Subcanal {
   adminCanalId: number;
   adminCanalNombre: string;
   activo: boolean;
+  comision: number; // Nuevo campo de comisión
   gastos: Gasto[];
   vendors: Vendor[];
 }
@@ -36,6 +37,12 @@ export interface SubcanalCrearDto {
   localidad: string;
   canalId: number;
   adminCanalId: number;
+  comision: number; // Nuevo campo de comisión
+}
+
+// Interfaz para actualizar la comisión
+export interface ComisionActualizarDto {
+  comision: number;
 }
 
 @Injectable({
@@ -107,6 +114,12 @@ export class SubcanalService {
   updateGasto(gastoId: number, gasto: GastoUpdate): Observable<Gasto> {
     const headers = this.getAuthHeaders();
     return this.http.put<Gasto>(`${this.apiUrl}/gasto/${gastoId}`, gasto, { headers });
+  }
+
+  // Nuevo método para actualizar la comisión
+  actualizarComision(subcanalId: number, comision: ComisionActualizarDto): Observable<Subcanal> {
+    const headers = this.getAuthHeaders();
+    return this.http.patch<Subcanal>(`${this.apiUrl}/${subcanalId}/comision`, comision, { headers });
   }
 
   // Configurar los headers con el token de autenticación

@@ -4,16 +4,9 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
+import { Cliente, ClienteService } from 'src/app/core/services/cliente.service';
+import { ModalVerClienteComponent } from 'src/app/shared/modals/modal-ver-clientes/modal-ver-clientes.component';
 
-// Definición del DTO para cliente
-export interface ClienteDto {
-  id: number;
-  nombre: string;
-  apellido: string;
-  email: string;
-  telefono: string;
-  activo: boolean;
-}
 
 // Tipo para ordenamiento
 interface SortState {
@@ -29,20 +22,17 @@ interface SortState {
     FormsModule,
     SidebarComponent,
     IonicModule,
-    // Los componentes de modal se importarán cuando estén creados
+    ModalVerClienteComponent
   ],
   templateUrl: './clientes-lista.component.html',
   styleUrls: ['./clientes-lista.component.scss']
 })
 export class ClientesListaComponent implements OnInit {
-  clientes: ClienteDto[] = [];
-  filteredClientes: ClienteDto[] = []; // Lista filtrada para mostrar
+  clientes: Cliente[] = [];
+  filteredClientes: Cliente[] = []; // Lista filtrada para mostrar
   loading = true;
   error: string | null = null;
-  modalOpen = false;
-  modalEditarOpen = false;
   modalVerOpen = false;
-  clienteIdEditar: number | null = null;
   clienteIdVer: number | null = null;
   scrollbarWidth: number = 0;
 
@@ -53,7 +43,8 @@ export class ClientesListaComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private clienteService: ClienteService
   ) { }
 
   ngOnInit() {
@@ -64,41 +55,8 @@ export class ClientesListaComponent implements OnInit {
 
   loadClientes() {
     this.loading = true;
+    this.error = null;
 
-    // Como mencionaste que la base está vacía, vamos a simular datos
-    setTimeout(() => {
-      this.clientes = [
-        {
-          id: 1,
-          nombre: 'Juan',
-          apellido: 'Pérez',
-          email: 'juan.perez@example.com',
-          telefono: '+54 11 1234-5678',
-          activo: true
-        },
-        {
-          id: 2,
-          nombre: 'María',
-          apellido: 'González',
-          email: 'maria.gonzalez@example.com',
-          telefono: '+54 11 8765-4321',
-          activo: true
-        },
-        {
-          id: 3,
-          nombre: 'Carlos',
-          apellido: 'Rodríguez',
-          email: 'carlos.rodriguez@example.com',
-          telefono: '+54 11 5555-6666',
-          activo: false
-        }
-      ];
-      this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
-      this.loading = false;
-    }, 1000); // Simular delay de red
-
-    // El servicio real se implementará después
-    /*
     this.clienteService.getClientes().subscribe({
       next: (data) => {
         this.clientes = data;
@@ -111,7 +69,6 @@ export class ClientesListaComponent implements OnInit {
         this.loading = false;
       }
     });
-    */
   }
 
   // Funciones para búsqueda
@@ -151,7 +108,7 @@ export class ClientesListaComponent implements OnInit {
   }
 
   // Ordenar los datos según la columna seleccionada
-  sortData(data: ClienteDto[]): ClienteDto[] {
+  sortData(data: Cliente[]): Cliente[] {
     const { column, direction } = this.sortState;
     const factor = direction === 'asc' ? 1 : -1;
 
@@ -159,6 +116,17 @@ export class ClientesListaComponent implements OnInit {
       // Para ordenar por ID (numérico)
       if (column === 'id') {
         return (a.id - b.id) * factor;
+      }
+      // Para ordenar por fecha creación
+      else if (column === 'fechaCreacion') {
+        return (new Date(a.fechaCreacion).getTime() - new Date(b.fechaCreacion).getTime()) * factor;
+      }
+      // Para ordenar por última modificación
+      else if (column === 'ultimaModificacion') {
+        // Si alguna fecha es null, manejarla apropiadamente
+        if (!a.ultimaModificacion) return factor; // null va al final en asc, primero en desc
+        if (!b.ultimaModificacion) return -factor;
+        return (new Date(a.ultimaModificacion).getTime() - new Date(b.ultimaModificacion).getTime()) * factor;
       }
       // Para ordenar por nombre (concatenando nombre y apellido)
       else if (column === 'nombre') {
@@ -202,6 +170,23 @@ export class ClientesListaComponent implements OnInit {
       : 'bi-sort-up-alt';
   }
 
+  // Formatear fecha en formato dd/mm/aa
+  formatDate(date: Date | string | null | undefined, cliente?: Cliente): string {
+    // Si no hay fecha de modificación, usar fecha de creación
+    if (!date && cliente) {
+      date = cliente.fechaCreacion;
+    }
+
+    if (!date) return '-';
+
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = String(dateObj.getFullYear()).slice(-2);
+
+    return `${day}/${month}/${year}`;
+  }
+
   // Navegar al detalle del cliente
   verDetalle(id: number): void {
     this.clienteIdVer = id;
@@ -209,10 +194,11 @@ export class ClientesListaComponent implements OnInit {
     this.manejarAperturaModal();
   }
 
-  // Abre el modal para nuevo cliente
-  abrirModalNuevoCliente() {
-    console.log('Abrir modal para nuevo cliente');
-    // Implementación futura
+  // Cerrar modal de ver cliente
+  onCloseVerModal() {
+    this.modalVerOpen = false;
+    this.clienteIdVer = null;
+    this.manejarCierreModal();
   }
 
   // Funciones helper para manejar estilos del body
@@ -230,7 +216,7 @@ export class ClientesListaComponent implements OnInit {
 
   private manejarCierreModal() {
     // Solo restaurar si no hay ningún otro modal abierto
-    if (!this.modalOpen && !this.modalEditarOpen && !this.modalVerOpen) {
+    if (!this.modalVerOpen) {
       const contentArea = document.querySelector('.content-area') as HTMLElement;
       if (contentArea) {
         this.renderer.removeClass(contentArea, 'content-area-with-modal');

@@ -57,13 +57,17 @@
                   ID
                   <i class="bi" [ngClass]="getSortIcon('id')"></i>
                 </th>
+                <th (click)="sortBy('fechaAlta')" class="sortable-header">
+                  Fecha Alta
+                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
+                </th>
                 <th (click)="sortBy('nombreFantasia')" class="sortable-header">
                   Nombre
                   <i class="bi" [ngClass]="getSortIcon('nombreFantasia')"></i>
                 </th>
-                <th (click)="sortBy('provincia')" class="sortable-header">
-                  Provincia
-                  <i class="bi" [ngClass]="getSortIcon('provincia')"></i>
+                <th (click)="sortBy('tipoCanal')" class="sortable-header">
+                  Tipo Canal
+                  <i class="bi" [ngClass]="getSortIcon('tipoCanal')"></i>
                 </th>
                 <th (click)="sortBy('activo')" class="sortable-header">
                   Estado
@@ -77,12 +81,17 @@
                   Subcanales
                   <i class="bi" [ngClass]="getSortIcon('subcanales')"></i>
                 </th>
+                <th (click)="sortBy('operaciones')" class="sortable-header text-center" style="width: 80px">
+                  Operaciones
+                  <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
+                </th>
                 <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let canal of filteredCanales">
                 <td>{{ canal.id }}</td>
+                <td>{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</td>
                 <td>
                   <div>
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(canal.id)">
@@ -91,12 +100,7 @@
                     <div class="text-muted fs-7">{{ canal.razonSocial }}</div>
                   </div>
                 </td>
-                <td>
-                  <div>
-                    <div class="text-dark">{{ canal.provincia }}</div>
-                    <div class="text-muted fs-7">{{ canal.localidad }}</div>
-                  </div>
-                </td>
+                <td>{{ canal.tipoCanal }}</td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
                     {{ canal.activo ? 'Activado' : 'Desactivado' }}
@@ -110,6 +114,11 @@
                 <td class="text-center">
                   <span class="badge badge-light-warning">
                     {{ getSubcanalesCantidad(canal) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-light-primary">
+                    {{ canal.numeroOperaciones || 0 }}
                   </span>
                 </td>
                 <td class="text-center">

@@ -1,0 +1,129 @@
+<ion-modal [isOpen]="isOpen" (didDismiss)="cerrarModal()" class="ver-cliente-modal">
+  <ng-template>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2>Detalles del Cliente</h2>
+        <ion-button fill="clear" (click)="cerrarModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid" *ngIf="cliente">
+          <!-- Información personal del cliente -->
+          <div class="detail-section">
+            <h3>Información Personal</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>ID Cliente</label>
+                <div class="detail-value">{{ cliente.id }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Nombre Completo</label>
+                <div class="detail-value">{{ cliente.nombre }} {{ cliente.apellido }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Email</label>
+                <div class="detail-value">{{ cliente.email || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Teléfono</label>
+                <div class="detail-value">{{ cliente.telefono || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>DNI</label>
+                <div class="detail-value">{{ cliente.dni || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>CUIL</label>
+                <div class="detail-value">{{ cliente.cuil || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Provincia</label>
+                <div class="detail-value">{{ cliente.provincia || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Sexo</label>
+                <div class="detail-value">{{ cliente.sexo || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Estado Civil</label>
+                <div class="detail-value">{{ cliente.estadoCivil || 'No especificado' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de canal y vendedores -->
+          <div class="detail-section">
+            <h3>Información del Canal</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>Canal</label>
+                <div class="detail-value">{{ cliente.canalNombre || 'No asignado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Usuario Creador</label>
+                <div class="detail-value">{{ cliente.usuarioCreadorNombre || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Fecha de Creación</label>
+                <div class="detail-value">{{ formatDate(cliente.fechaCreacion) }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Última Modificación</label>
+                <div class="detail-value">{{ formatDate(cliente.ultimaModificacion) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de vendedores asignados -->
+          <div class="detail-section" *ngIf="cliente.vendoresAsignados && cliente.vendoresAsignados.length > 0">
+            <h3>Vendedores Asignados</h3>
+            <div class="detail-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let vendor of cliente.vendoresAsignados">
+                    <td>{{ vendor.nombre }} {{ vendor.apellido }}</td>
+                    <td>{{ vendor.email || 'No disponible' }}</td>
+                    <td>{{ vendor.telefono || 'No disponible' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Resumen de operaciones -->
+          <div class="detail-section">
+            <h3>Resumen de Operaciones</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>Número de Operaciones</label>
+                <div class="detail-value">{{ cliente.numeroOperaciones || 0 }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicadores de estado -->
+        <div class="loading-container" *ngIf="loading">
+          <ion-spinner name="dots"></ion-spinner>
+          <p>Cargando información del cliente...</p>
+        </div>
+        <div class="form-error" *ngIf="error">
+          <div class="alert alert-danger">{{ error }}</div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="form-footer">
+          <button type="button" class="btn btn-light" (click)="cerrarModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
