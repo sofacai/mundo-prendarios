@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Renderer2 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { CanalFormComponent } from 'src/app/shared/modals/canal-form/canal-form.component';
 import { ModalEditarCanalComponent } from 'src/app/shared/modals/modal-editar-canal/modal-editar-canal.component';
 import { ModalVerCanalComponent } from 'src/app/shared/modals/modal-ver-canal/modal-ver-canal.component';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 // Tipo para ordenamiento
 interface SortState {
@@ -30,7 +32,7 @@ interface SortState {
   templateUrl: './canales-lista.component.html',
   styleUrls: ['./canales-lista.component.scss']
 })
-export class CanalesListaComponent implements OnInit {
+export class CanalesListaComponent implements OnInit, OnDestroy {
   canales: Canal[] = [];
   filteredCanales: Canal[] = []; // Lista filtrada para mostrar
   loading = true;
@@ -40,24 +42,56 @@ export class CanalesListaComponent implements OnInit {
   modalVerOpen = false;
   canalIdEditar: number | null = null;
   canalIdVer: number | null = null;
-  scrollbarWidth: number = 0;
 
-  // Búsqueda y ordenamiento
+  isSidebarCollapsed = false;
+  private sidebarSubscription: Subscription | null = null;
+
+
+  // Búsqueda, filtrado y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
-  sortState: SortState = { column: '', direction: 'asc' };
+  filterActive: string = 'all'; // 'all', 'active', 'inactive'
+  sortState: SortState = { column: 'id', direction: 'asc' };
 
   constructor(
     private canalService: CanalService,
-    private router: Router,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private sidebarStateService: SidebarStateService
+
   ) { }
 
   ngOnInit() {
+
+    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
+    this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
+      collapsed => {
+        this.isSidebarCollapsed = collapsed;
+        this.adjustContentArea();
+      }
+    );
+
     this.loadCanales();
-    // Calcular el ancho de la barra de desplazamiento
-    this.scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    this.loadCanales();
   }
+
+  ngOnDestroy() {
+    if (this.sidebarSubscription) {
+      this.sidebarSubscription.unsubscribe();
+    }
+  }
+
+  private adjustContentArea() {
+    const contentArea = document.querySelector('.content-area') as HTMLElement;
+    if (contentArea) {
+      if (this.isSidebarCollapsed) {
+        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+      } else {
+        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+      }
+    }
+  }
+
 
   loadCanales() {
     this.loading = true;
@@ -89,17 +123,26 @@ export class CanalesListaComponent implements OnInit {
     this.applyFilters();
   }
 
-  // Aplicar filtros y ordenamiento a la lista
+  // Aplicar filtros, búsqueda y ordenamiento a la lista
   applyFilters() {
     let result = [...this.canales];
 
     // Aplicar búsqueda si hay término
-    if (this.searchTerm && this.searchTerm.length >= 3) {
+    if (this.searchTerm && this.searchTerm.length >= 2) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(canal =>
         canal.nombreFantasia.toLowerCase().includes(term) ||
-        canal.razonSocial.toLowerCase().includes(term)
+        canal.razonSocial.toLowerCase().includes(term) ||
+        canal.tipoCanal.toLowerCase().includes(term) ||
+        (canal.provincia && canal.provincia.toLowerCase().includes(term))
       );
+    }
+
+    // Aplicar filtro por estado
+    if (this.filterActive === 'active') {
+      result = result.filter(canal => canal.activo);
+    } else if (this.filterActive === 'inactive') {
+      result = result.filter(canal => !canal.activo);
     }
 
     // Aplicar ordenamiento si está configurado
@@ -121,7 +164,7 @@ export class CanalesListaComponent implements OnInit {
         return (a.id - b.id) * factor;
       }
       // Para texto (nombre, provincia)
-      else if (column === 'nombreFantasia' || column === 'provincia') {
+      else if (column === 'nombreFantasia' || column === 'tipoCanal') {
         const valueA = (a[column] || '').toLowerCase();
         const valueB = (b[column] || '').toLowerCase();
         return valueA.localeCompare(valueB) * factor;
@@ -141,18 +184,19 @@ export class CanalesListaComponent implements OnInit {
         const countA = this.getSubcanalesCantidad(a);
         const countB = this.getSubcanalesCantidad(b);
         return (countA - countB) * factor;
-      }// Para ordenar por fecha de alta
-else if (column === 'fechaAlta') {
-  const dateA = a.fechaAlta ? new Date(a.fechaAlta).getTime() : 0;
-  const dateB = b.fechaAlta ? new Date(b.fechaAlta).getTime() : 0;
-  return (dateA - dateB) * factor;
-}
-// Para ordenar por operaciones
-else if (column === 'operaciones') {
-  const countA = a.numeroOperaciones || 0;
-  const countB = b.numeroOperaciones || 0;
-  return (countA - countB) * factor;
-}
+      }
+      // Para ordenar por fecha de alta
+      else if (column === 'fechaAlta') {
+        const dateA = a.fechaAlta ? new Date(a.fechaAlta).getTime() : 0;
+        const dateB = b.fechaAlta ? new Date(b.fechaAlta).getTime() : 0;
+        return (dateA - dateB) * factor;
+      }
+      // Para ordenar por operaciones
+      else if (column === 'operaciones') {
+        const countA = a.numeroOperaciones || 0;
+        const countB = b.numeroOperaciones || 0;
+        return (countA - countB) * factor;
+      }
 
       return 0;
     });
@@ -179,6 +223,18 @@ else if (column === 'operaciones') {
     return this.sortState.direction === 'asc'
       ? 'bi-sort-down-alt'
       : 'bi-sort-up-alt';
+  }
+
+  // Obtener iniciales para el avatar
+  getInitials(name: string): string {
+    if (!name) return '';
+
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    return name.substring(0, 2).toUpperCase();
   }
 
   // Navegar al detalle del canal

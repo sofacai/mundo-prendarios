@@ -4,56 +4,69 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Canales</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" (click)="abrirModalNuevoCanal()">
+          <i class="bi bi-plus"></i> Nuevo Canal
+        </button>
+      </div>
+    </div>
 
-    <!-- Contenido de la tabla -->
+    <!-- Main Content Card -->
     <div class="card">
-      <div class="card-header" style="display:flex; justify-content: space-between;">
-        <h2 class="card-title">Listado de Canales</h2>
+      <!-- Card Header with Search -->
+      <div class="card-header">
+        <div class="search-container">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Buscar canal..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()">
+            <button
+              *ngIf="searchTerm"
+              class="btn-clear"
+              (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
 
-      </div>
-
-      <!-- Buscador -->
-      <div class="card-body search-container">
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control search-input"
-            placeholder="Buscar por nombre..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          >
-          <button
-            *ngIf="searchTerm"
-            class="btn-clear"
-            (click)="clearSearch()"
-          >
-            <i class="bi bi-x"></i>
-          </button>
+          <div class="d-flex align-items-center">
+            <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </div>
         </div>
-
-          <button class="btn btn-primary" (click)="abrirModalNuevoCanal()">
-            <i class="bi bi-plus"></i> Nuevo Canal
-          </button>
       </div>
 
+      <!-- Card Body with Table -->
       <div class="card-body">
-        <!-- Indicador de carga -->
+        <!-- Loading Indicator -->
         <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary"></div>
           <p class="mt-2">Cargando canales...</p>
         </div>
 
-        <!-- Mensaje de error -->
+        <!-- Error Message -->
         <div *ngIf="error && !loading" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
           {{ error }}
         </div>
 
-        <!-- Tabla de datos -->
+        <!-- Table Content -->
         <div *ngIf="!loading && !error" class="table-responsive">
           <table class="custom-table">
             <thead>
               <tr>
-                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 70px">
                   ID
                   <i class="bi" [ngClass]="getSortIcon('id')"></i>
                 </th>
@@ -73,19 +86,18 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
                 </th>
-                <th (click)="sortBy('planes')" class="sortable-header text-center" style="width: 80px">
+                <th (click)="sortBy('planes')" class="sortable-header text-center">
                   Planes
                   <i class="bi" [ngClass]="getSortIcon('planes')"></i>
                 </th>
-                <th (click)="sortBy('subcanales')" class="sortable-header text-center" style="width: 80px">
+                <th (click)="sortBy('subcanales')" class="sortable-header text-center">
                   Subcanales
                   <i class="bi" [ngClass]="getSortIcon('subcanales')"></i>
                 </th>
-                <th (click)="sortBy('operaciones')" class="sortable-header text-center" style="width: 80px">
+                <th (click)="sortBy('operaciones')" class="sortable-header text-center">
                   Operaciones
                   <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
                 </th>
-                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -93,17 +105,19 @@
                 <td>{{ canal.id }}</td>
                 <td>{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</td>
                 <td>
-                  <div>
+                  <div style="display: block;">
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(canal.id)">
                       {{ canal.nombreFantasia }}
                     </a>
-                    <div class="text-muted fs-7">{{ canal.razonSocial }}</div>
+                    <div class="text-muted fs-7" style="display: block; margin-top: 4px;">{{ canal.razonSocial }}</div>
                   </div>
                 </td>
-                <td>{{ canal.tipoCanal }}</td>
+                <td>
+                  <span class="badge badge-light-info">{{ canal.tipoCanal }}</span>
+                </td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
-                    {{ canal.activo ? 'Activado' : 'Desactivado' }}
+                    {{ canal.activo ? 'Activo' : 'Inactivo' }}
                   </div>
                 </td>
                 <td class="text-center">
@@ -121,53 +135,49 @@
                     {{ canal.numeroOperaciones || 0 }}
                   </span>
                 </td>
-                <td class="text-center">
-                  <div class="actions-container">
-                    <!-- Botón de editar -->
-                    <button class="btn-action" title="Editar canal" (click)="abrirModalEditarCanal(canal.id)">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-
-                    <!-- Botón de ver detalle -->
-                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(canal.id)">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </div>
-                </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay canales o resultados -->
+          <!-- Empty State -->
           <div *ngIf="filteredCanales.length === 0" class="text-center p-5">
-            <p *ngIf="searchTerm">No se encontraron canales que coincidan con "{{ searchTerm }}".</p>
-            <p *ngIf="!searchTerm">No hay canales registrados.</p>
+            <div class="text-center">
+              <i class="bi bi-grid-3x3-gap fs-1 text-muted mb-3"></i>
+              <h4>No se encontraron canales</h4>
+              <p class="text-muted" *ngIf="searchTerm">
+                No hay resultados que coincidan con "{{ searchTerm }}"
+              </p>
+              <p class="text-muted" *ngIf="!searchTerm">
+                No hay canales registrados en el sistema
+              </p>
+              <button class="btn btn-primary mt-3" (click)="abrirModalNuevoCanal()">
+                <i class="bi bi-plus"></i> Nuevo Canal
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Modal para crear canal -->
-  <app-canal-form
-    [isOpen]="modalOpen"
-    (closeModal)="cerrarModal()"
-    (canalCreado)="onCanalCreado($event)">
-  </app-canal-form>
-
-  <!-- Modal para editar canal -->
-  <app-modal-editar-canal
-    [isOpen]="modalEditarOpen"
-    [canalId]="canalIdEditar"
-    (closeModal)="cerrarModalEditar()"
-    (canalActualizado)="onCanalActualizado($event)">
-  </app-modal-editar-canal>
-
-  <!-- Modal para ver canal -->
-  <app-modal-ver-canal
-    [isOpen]="modalVerOpen"
-    [canalId]="canalIdVer"
-    (closeModal)="cerrarModalVer()"
-    (editRequest)="onEditarSolicitado($event)">
-  </app-modal-ver-canal>
 </div>
+
+<!-- Modales -->
+<app-canal-form
+  [isOpen]="modalOpen"
+  (closeModal)="cerrarModal()"
+  (canalCreado)="onCanalCreado($event)">
+</app-canal-form>
+
+<app-modal-editar-canal
+  [isOpen]="modalEditarOpen"
+  [canalId]="canalIdEditar"
+  (closeModal)="cerrarModalEditar()"
+  (canalActualizado)="onCanalActualizado($event)">
+</app-modal-editar-canal>
+
+<app-modal-ver-canal
+  [isOpen]="modalVerOpen"
+  [canalId]="canalIdVer"
+  (closeModal)="cerrarModalVer()"
+  (editRequest)="onEditarSolicitado($event)">
+</app-modal-ver-canal>
