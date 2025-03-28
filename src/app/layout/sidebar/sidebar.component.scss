@@ -1,181 +1,334 @@
-@import '../../../theme/variables.scss';
-
-// Variables específicas del sidebar
-$sidebar-width: 280px;
-$sidebar-collapsed-width: 0;
-$sidebar-bg: #1e1e2d;
+// Variables
+$sidebar-bg: #1a1b23;
+$sidebar-width: 260px;
+$sidebar-collapsed-width: 70px;
 $sidebar-text: #9899ac;
-$sidebar-active: #fff;
-$sidebar-active-bg: #2a2a3c;
-$sidebar-hover-bg: #2a2a3c;
+$sidebar-active-text: #ffffff;
+$sidebar-hover-bg: #1e2029;
+$sidebar-accent: #0d6efd;
+$transition-duration: 0.3s;
 
-/* Estilos base del sidebar */
+// Base styles
 .sidebar {
-  width: 260px;
+  width: $sidebar-width;
   height: 100vh;
-  background-color: #1a2035;
   position: fixed;
   left: 0;
   top: 0;
+  background-color: $sidebar-bg;
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: width $transition-duration ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &.sidebar-collapsed {
+    width: $sidebar-collapsed-width;
+  }
+}
+
+.sidebar-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $sidebar-bg;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
 }
 
-.sidebar-collapsed {
-  transform: translateX(-260px);
-}
-
-.sidebar-expanded {
-  transform: translateX(0);
-}
-
-.sidebar-header {
-  padding: 15px;
+// Logo area
+.logo-area {
+  height: 70px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.logo-container {
-  width: 100%;
-  display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 10px 0;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+
+  .sidebar-collapsed & {
+    padding: 0.5rem;
+    height: 60px;
+  }
 }
 
 .logo {
-  max-width: 80%;
-  height: auto;
+  max-width: 42px;
+
+  .full-logo {
+    max-height: 40px;
+    max-width: 160px;
+  }
+
+  .small-logo {
+    max-height: 40px;
+    max-width: 40px;
+  }
+
+  &.collapsed {
+    text-align: center;
+  }
 }
 
-.text-logo {
-  font-weight: bold;
-  font-size: 14px;  /* Reducido en 3px */
-  color: white;
-  text-align: center;
-  padding: 8px;
-  width: 100%;
+// Menu container
+.menu-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+
+  // Esto mantiene los iconos alineados vertical y horizontalmente
+  .sidebar-collapsed & {
+    padding-top: 0;
+  }
 }
 
-.sidebar-toggle-btn {
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 1.3rem;  /* Reducido en 3px */
-}
-
-/* Estilos para el menú */
-.sidebar-menu {
-  padding: 12px 0;
-}
-
-.menu-items {
+// Menu list
+.menu-list {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0.5rem 0.75rem;
 }
 
+// Menu items
 .menu-item {
   position: relative;
-  margin-bottom: 4px;
-  overflow: hidden;
+  margin-bottom: 0.25rem;
+
+  &.has-submenu {
+    margin-bottom: 0;
+  }
+
+  &.active {
+    > .menu-link {
+      background-color: $sidebar-hover-bg;
+
+      .menu-icon {
+        color: $sidebar-accent;
+      }
+
+      .menu-text {
+        color: $sidebar-active-text;
+      }
+    }
+  }
+
+  &.expanded {
+    > .menu-link .submenu-arrow {
+      transform: rotate(180deg);
+    }
+
+    > .submenu {
+      max-height: 500px;
+    }
+  }
 }
 
+// Menu links
 .menu-link {
   display: flex;
   align-items: center;
-  padding: 8px 15px;  /* Reducido el padding vertical */
-  color: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem 1rem;
+  color: $sidebar-text;
   text-decoration: none;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 13px;  /* Reducido en 3px */
-}
-
-.menu-link:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.menu-item.active .menu-link {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-left: 3px solid #4dabf7;
-}
-
-.menu-title {
-  margin-left: 10px;
-}
-
-/* Estilos para el menú desplegable */
-.has-submenu {
+  transition: all 0.2s ease;
   position: relative;
+
+  &:hover {
+    background-color: $sidebar-hover-bg;
+
+    .menu-text {
+      color: $sidebar-active-text;
+    }
+  }
+
+  .menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+
+    .sidebar-collapsed & {
+      margin: 0 auto;
+    }
+  }
+
+  .menu-text {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+  }
+
+  .submenu-arrow {
+    font-size: 1rem;
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+  }
 }
 
-.submenu-icon {
-  margin-left: auto;
-  transition: transform 0.3s ease;
+// Tooltips
+.menu-tooltip, .submenu-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #30313f;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1002;
+
+  &:before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px 5px 5px 0;
+    border-style: solid;
+    border-color: transparent #30313f transparent transparent;
+  }
 }
 
-.submenu-icon.rotated {
-  transform: rotate(180deg);
+.menu-item:hover .menu-tooltip,
+.submenu-item:hover .submenu-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
+// Submenu
 .submenu {
   list-style: none;
-  padding-left: 0;
+  padding: 0.25rem 0 0.25rem 2.5rem;
+  margin: 0;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease;
-  background-color: rgba(0, 0, 0, 0.15);
-}
 
-.submenu.expanded {
-  max-height: 500px; /* Ajusta según sea necesario */
+  .sidebar-collapsed & {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    padding: 0.5rem;
+    background-color: #30313f;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+    width: 180px;
+    z-index: 1001;
+    max-height: none;
+    opacity: 0;
+    visibility: hidden;
+
+    &.expanded {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
 }
 
 .submenu-item {
   padding: 0;
+  position: relative;
+
+  &.active .submenu-link {
+    color: $sidebar-active-text;
+  }
 }
 
 .submenu-link {
-  padding: 7px 15px 7px 40px;  /* Reducido el padding vertical */
   display: flex;
   align-items: center;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 1rem;
+  color: $sidebar-text;
   text-decoration: none;
+  border-radius: 0.3rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 12px;  /* Reducido en 3px */
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  position: relative;
+
+  &:hover {
+    background-color: $sidebar-hover-bg;
+    color: $sidebar-active-text;
+  }
+
+  .submenu-text {
+    position: relative;
+  }
 }
 
-.submenu-link:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
+// Footer y botón de colapsar/expandir
+.sidebar-footer {
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: 1rem;
 }
 
-.submenu-link i {
-  font-size: 0.8rem;  /* Reducido en .05rem */
-  margin-right: 8px;
+.toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #30313f;
+  border: none;
+  color: $sidebar-text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $transition-duration ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+
+  // Cuando el sidebar está expandido
+  .sidebar:not(.sidebar-collapsed) & {
+    &:hover {
+      background-color: $sidebar-hover-bg;
+      color: white;
+    }
+  }
+
+  // Cuando el sidebar está colapsado
+  .sidebar-collapsed & {
+    position: relative;
+    right: 0;
+    &:hover {
+      background-color: $sidebar-accent;
+      color: white;
+    }
+  }
+
+  i {
+    font-size: 1rem;
+  }
 }
 
-.submenu-item.active .submenu-link {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Ajustes para los iconos */
-.menu-link i, .submenu-link i {
-  font-size: 1rem;  /* Reducido en .1rem */
-  min-width: 22px;  /* Reducido en 2px */
-  text-align: center;
-}
-
-/* Overlay para móviles */
+// Overlay para móvil
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -185,35 +338,58 @@ $sidebar-hover-bg: #2a2a3c;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
+
+  &.active {
+    display: block;
+  }
 }
 
-.sidebar-overlay.active {
-  display: block;
-}
-
-/* Media queries para responsiveness */
+// Media queries
 @media (max-width: 991.98px) {
   .sidebar {
-    transform: translateX(-260px);
+    transform: translateX(-100%);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    width: $sidebar-width !important; // Force full width on mobile
+
+    &.sidebar-collapsed {
+      transform: translateX(-100%);
+    }
+
+    &.sidebar-expanded {
+      transform: translateX(0);
+    }
   }
 
-  .sidebar-expanded {
-    transform: translateX(0);
+  .menu-tooltip, .submenu-tooltip {
+    display: none !important; // Hide tooltips on mobile
+  }
+
+  .submenu {
+    display: block;
+    position: static !important;
+    width: auto !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    padding: 0.25rem 0 0.25rem 2.5rem !important;
   }
 }
 
-/* Modificar el estilo cuando un submenú está activo */
-.has-submenu.active > .menu-link {
-  /* Quitar el estilo de ítem activo cuando alguno de sus hijos está seleccionado */
-  background-color: transparent !important;
-  border-left: none !important;
+// Adjustments for content
+:host-context(.sidebar-collapsed) ~ .content-area {
+  margin-left: $sidebar-collapsed-width;
+  transition: margin-left $transition-duration ease;
 }
 
-/* O alternativamente, si prefieres mantener solo un indicador sutil */
-.has-submenu.active > .menu-link {
-  /* Mantener el color pero con menos énfasis visual */
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  border-left: 1px solid rgba(77, 171, 247, 0.5) !important;
+:host-context(.sidebar) ~ .content-area {
+  margin-left: $sidebar-width;
+  transition: margin-left $transition-duration ease;
 }
+
+// Quitar el botón toggle original
+.sidebar-toggle {
+  display: none;
+}
+
+

@@ -4,12 +4,11 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { RolType } from '../../core/models/usuario.model';
-import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
@@ -37,6 +36,11 @@ export class SidebarComponent implements OnInit {
       if (this.isCanalesRelatedRoute(event.url)) {
         this.isCanalesExpanded = true;
       }
+
+      // En dispositivos móviles, colapsar el sidebar después de la navegación
+      if (this.isMobile && !this.isSidebarCollapsed) {
+        this.isSidebarCollapsed = true;
+      }
     });
   }
 
@@ -48,7 +52,6 @@ export class SidebarComponent implements OnInit {
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.userRole = user.rolId;
-        console.log('Sidebar - Actualización del rol:', this.userRole);
       } else {
         this.userRole = null;
       }
@@ -64,6 +67,14 @@ export class SidebarComponent implements OnInit {
     if (this.isCanalesRelatedRoute(this.router.url)) {
       this.isCanalesExpanded = true;
     }
+
+    // Cargar la preferencia del sidebar desde localStorage (solo en desktop)
+    if (!this.isMobile) {
+      const savedState = localStorage.getItem('sidebarCollapsed');
+      if (savedState !== null) {
+        this.isSidebarCollapsed = savedState === 'true';
+      }
+    }
   }
 
   @HostListener('window:resize', ['$event'])
@@ -72,60 +83,90 @@ export class SidebarComponent implements OnInit {
   }
 
   private checkScreenSize(): void {
+    const oldIsMobile = this.isMobile;
     this.isMobile = window.innerWidth < 992; // Bootstrap lg breakpoint
 
-    // En desktop siempre mostrar el sidebar, en móvil siempre colapsado por defecto
-    if (!this.isMobile) {
-      this.isSidebarCollapsed = false;
-    } else if (this.isMobile && this.isSidebarCollapsed === false) {
-      // Solo colapsar si está en móvil y está expandido
+    // Si cambiamos de desktop a móvil
+    if (!oldIsMobile && this.isMobile) {
       this.isSidebarCollapsed = true;
+    }
+    // Si cambiamos de móvil a desktop, restaurar preferencia guardada
+    else if (oldIsMobile && !this.isMobile) {
+      const savedState = localStorage.getItem('sidebarCollapsed');
+      this.isSidebarCollapsed = savedState === 'true';
     }
   }
 
+  /**
+   * Alterna el estado de colapso del sidebar
+   */
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
+
+    // Guardar preferencia solo en desktop
+    if (!this.isMobile) {
+      localStorage.setItem('sidebarCollapsed', this.isSidebarCollapsed.toString());
+    }
   }
 
-  // Método para alternar el menú desplegable de canales
-  toggleCanalesMenu(): void {
-    this.isCanalesExpanded = !this.isCanalesExpanded;
+  /**
+   * Alterna la expansión del menú de Canales
+   */
+  toggleCanalesMenu(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (this.isSidebarCollapsed) {
+      // En modo colapsado, navegar directamente a la página principal
+      this.navigateTo('/canales');
+    } else {
+      this.isCanalesExpanded = !this.isCanalesExpanded;
+    }
   }
 
-  // Método mejorado para la navegación
+  /**
+   * Método para navegar a una ruta
+   */
   navigateTo(route: string): void {
-    console.log(`Navegando a: ${route}`);
-    // Cerrar el sidebar en móvil
+    // En móvil, cerrar el sidebar después de navegar
     if (this.isMobile) {
       this.isSidebarCollapsed = true;
     }
-    // Navegación programática
+
     this.router.navigate([route]);
   }
 
   private getUserRole(): void {
-    // Obtener el rol del usuario del servicio de autenticación
     const user = this.authService.currentUserValue;
     if (user) {
       this.userRole = user.rolId;
-      console.log('Rol del usuario en sidebar:', this.userRole);
     }
   }
 
-  // Método para verificar si una ruta está activa
+  /**
+   * Verifica si una ruta está activa
+   */
   isActiveRoute(route: string): boolean {
-    return this.router.url === route;
+    return this.router.url === route || this.router.url.startsWith(route + '/');
   }
 
-  // Método para verificar si alguna ruta dentro del menú canales está activa
+  /**
+   * Verifica si alguna ruta del menú de canales está activa
+   */
   isCanalesMenuActive(): boolean {
     return this.isCanalesRelatedRoute(this.router.url);
   }
 
-  // Método para verificar si la ruta está relacionada con el menú de Canales
+  /**
+   * Verifica si la ruta está relacionada con el menú de Canales
+   */
   private isCanalesRelatedRoute(url: string): boolean {
     return url === '/canales' ||
+           url.startsWith('/canales/') ||
            url === '/subcanales' ||
-           url === '/usuarios';
+           url.startsWith('/subcanales/') ||
+           url === '/usuarios' ||
+           url.startsWith('/usuarios/');
   }
 }
