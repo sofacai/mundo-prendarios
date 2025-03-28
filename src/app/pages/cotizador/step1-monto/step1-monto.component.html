@@ -1,0 +1,75 @@
+<div class="step-container">
+  <div class="header">
+    <div class="logo">
+      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+    </div>
+    <div class="steps">
+      <div class="step active">
+        <div class="step-number">1</div>
+        <div class="step-label">Monto</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-label">Datos</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-label">Oferta</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2 class="title">¿Qué monto buscas?</h2>
+
+    <div class="form-group">
+      <label>Monto <span class="required">*</span></label>
+      <div class="input-group">
+        <span class="input-prefix">$</span>
+        <input
+          type="text"
+          [(ngModel)]="monto"
+          [min]="montoMinimo"
+          [max]="montoMaximo"
+          class="form-control"
+          placeholder="0">
+      </div>
+    </div>
+
+    <div class="slider-container">
+      <ion-range
+        [min]="montoMinimo"
+        [max]="montoMaximo"
+        [value]="monto"
+        (ionChange)="onSliderChange($event)"
+        step="10000">
+        <ion-label slot="start">{{montoMinimo | currency:'ARS':'symbol':'1.0-0'}}</ion-label>
+        <ion-label slot="end">{{montoMaximo | currency:'ARS':'symbol':'1.0-0'}}</ion-label>
+      </ion-range>
+    </div>
+
+    <div class="form-group full-width">
+      <label>¿En qué plazo? <span class="required">*</span></label>
+      <div class="cuotas-container">
+        <div
+          *ngFor="let p of plazosDisponibles"
+          class="cuota-option"
+          [class.selected]="plazo === p"
+          (click)="seleccionarPlazo(p)">
+          {{p}} meses
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="errorMensaje" class="alert alert-danger">
+      <span>{{errorMensaje}}</span>
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-light" (click)="onVolver()">VOLVER</button>
+      <button type="button" class="btn btn-primary" (click)="onContinuar()">ME INTERESA</button>
+    </div>
+  </div>
+</div>

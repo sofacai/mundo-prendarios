@@ -4,29 +4,42 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
-    <!-- Encabezado -->
-    <div class="page-header">
-      <div class="page-title">
-        <h1>Gestión de Canales</h1>
-      </div>
-      <div class="page-actions">
-        <button class="btn btn-primary" (click)="abrirModalNuevoCanal()">
-          <i class="bi bi-plus"></i> Nuevo Canal
-        </button>
-      </div>
-    </div>
 
     <!-- Contenido de la tabla -->
     <div class="card">
-      <div class="card-header">
+      <div class="card-header" style="display:flex; justify-content: space-between;">
         <h2 class="card-title">Listado de Canales</h2>
+
       </div>
+
+      <!-- Buscador -->
+      <div class="card-body search-container">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="Buscar por nombre..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear"
+            (click)="clearSearch()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+
+          <button class="btn btn-primary" (click)="abrirModalNuevoCanal()">
+            <i class="bi bi-plus"></i> Nuevo Canal
+          </button>
+      </div>
+
       <div class="card-body">
         <!-- Indicador de carga -->
         <div *ngIf="loading" class="text-center p-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
           <p class="mt-2">Cargando canales...</p>
         </div>
 
@@ -40,18 +53,45 @@
           <table class="custom-table">
             <thead>
               <tr>
-                <th style="width: 50px">ID</th>
-                <th>Nombre</th>
-                <th>Provincia</th>
-                <th>Estado</th>
-                <th class="text-center" style="width: 80px">Planes</th>
-                <th class="text-center" style="width: 80px">Subcanales</th>
-                <th style="width: 60px" class="text-end">Acciones</th>
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                  ID
+                  <i class="bi" [ngClass]="getSortIcon('id')"></i>
+                </th>
+                <th (click)="sortBy('fechaAlta')" class="sortable-header">
+                  Fecha Alta
+                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
+                </th>
+                <th (click)="sortBy('nombreFantasia')" class="sortable-header">
+                  Nombre
+                  <i class="bi" [ngClass]="getSortIcon('nombreFantasia')"></i>
+                </th>
+                <th (click)="sortBy('tipoCanal')" class="sortable-header">
+                  Tipo Canal
+                  <i class="bi" [ngClass]="getSortIcon('tipoCanal')"></i>
+                </th>
+                <th (click)="sortBy('activo')" class="sortable-header">
+                  Estado
+                  <i class="bi" [ngClass]="getSortIcon('activo')"></i>
+                </th>
+                <th (click)="sortBy('planes')" class="sortable-header text-center" style="width: 80px">
+                  Planes
+                  <i class="bi" [ngClass]="getSortIcon('planes')"></i>
+                </th>
+                <th (click)="sortBy('subcanales')" class="sortable-header text-center" style="width: 80px">
+                  Subcanales
+                  <i class="bi" [ngClass]="getSortIcon('subcanales')"></i>
+                </th>
+                <th (click)="sortBy('operaciones')" class="sortable-header text-center" style="width: 80px">
+                  Operaciones
+                  <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
+                </th>
+                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let canal of canales">
+              <tr *ngFor="let canal of filteredCanales">
                 <td>{{ canal.id }}</td>
+                <td>{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</td>
                 <td>
                   <div>
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(canal.id)">
@@ -60,12 +100,7 @@
                     <div class="text-muted fs-7">{{ canal.razonSocial }}</div>
                   </div>
                 </td>
-                <td>
-                  <div>
-                    <div class="text-dark">{{ canal.provincia }}</div>
-                    <div class="text-muted fs-7">{{ canal.localidad }}</div>
-                  </div>
-                </td>
+                <td>{{ canal.tipoCanal }}</td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
                     {{ canal.activo ? 'Activado' : 'Desactivado' }}
@@ -82,25 +117,57 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  <i class="bi bi-chevron-right cursor-pointer" (click)="verDetalle(canal.id)"></i>
+                  <span class="badge badge-light-primary">
+                    {{ canal.numeroOperaciones || 0 }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="actions-container">
+                    <!-- Botón de editar -->
+                    <button class="btn-action" title="Editar canal" (click)="abrirModalEditarCanal(canal.id)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de ver detalle -->
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(canal.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay canales -->
-          <div *ngIf="canales.length === 0" class="text-center p-5">
-            No hay canales registrados.
+          <!-- Mensaje cuando no hay canales o resultados -->
+          <div *ngIf="filteredCanales.length === 0" class="text-center p-5">
+            <p *ngIf="searchTerm">No se encontraron canales que coincidan con "{{ searchTerm }}".</p>
+            <p *ngIf="!searchTerm">No hay canales registrados.</p>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal para crear canal -->
+  <app-canal-form
+    [isOpen]="modalOpen"
+    (closeModal)="cerrarModal()"
+    (canalCreado)="onCanalCreado($event)">
+  </app-canal-form>
+
+  <!-- Modal para editar canal -->
+  <app-modal-editar-canal
+    [isOpen]="modalEditarOpen"
+    [canalId]="canalIdEditar"
+    (closeModal)="cerrarModalEditar()"
+    (canalActualizado)="onCanalActualizado($event)">
+  </app-modal-editar-canal>
+
+  <!-- Modal para ver canal -->
+  <app-modal-ver-canal
+    [isOpen]="modalVerOpen"
+    [canalId]="canalIdVer"
+    (closeModal)="cerrarModalVer()"
+    (editRequest)="onEditarSolicitado($event)">
+  </app-modal-ver-canal>
 </div>
-
-
-<app-canal-form
-  [isOpen]="modalOpen"
-  (closeModal)="cerrarModal()"
-  (canalCreado)="onCanalCreado($event)">
-</app-canal-form>

@@ -13,6 +13,10 @@ export interface UsuarioDto {
   rolId: number;
   rolNombre: string;
   activo: boolean;
+  // New fields
+  fechaAlta?: Date;
+  fechaUltimaOperacion?: Date;
+  cantidadOperaciones: number;
 }
 
 export interface UsuarioCrearDto {
@@ -22,6 +26,17 @@ export interface UsuarioCrearDto {
   telefono: string;
   password: string;
   rolId: number;
+  // New field
+  fechaAlta?: Date;
+}
+
+export interface VendorEstadisticasDto {
+  id: number;
+  nombre: string;
+  apellido: string;
+  fechaAlta?: Date;
+  fechaUltimaOperacion?: Date;
+  cantidadOperaciones: number;
 }
 
 @Injectable({
@@ -81,6 +96,12 @@ export class UsuarioService {
   desactivarUsuario(id: number): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.patch<any>(`${this.apiUrl}/${id}/desactivar`, {}, { headers });
+  }
+
+  // New method to get vendor statistics
+  getVendorEstadisticas(id: number): Observable<VendorEstadisticasDto> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<VendorEstadisticasDto>(`${this.apiUrl}/vendor/estadisticas/${id}`, { headers });
   }
 
   // Configurar los headers con el token de autenticación

@@ -37,6 +37,15 @@
               </small>
             </div>
 
+            <!-- Campo de Comisión -->
+            <div class="form-group full-width">
+              <label>Comisión (%) <span class="required">*</span></label>
+              <input type="number" class="form-control" formControlName="comision" min="0" max="100" step="0.01">
+              <small class="text-danger" *ngIf="subcanalForm.get('comision')?.invalid && subcanalForm.get('comision')?.touched">
+                Ingrese un valor válido entre 0 y 100
+              </small>
+            </div>
+
             <!-- Títulos de secciones -->
             <div class="form-group section-title full-width">
               <h4>Selección de Canal</h4>

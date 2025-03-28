@@ -1,0 +1,36 @@
+<div class="step-container">
+  <div class="header">
+    <div class="logo">
+      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+    </div>
+  </div>
+
+  <div class="content">
+    <h2 class="title">Seleccionar Subcanal</h2>
+
+    <p class="subtitle">
+      Estás asignado a múltiples subcanales. Por favor, selecciona el subcanal para el que deseas realizar esta cotización.
+    </p>
+
+    <div class="form-group full-width">
+      <div class="cuotas-container">
+        <div
+          *ngFor="let subcanal of subcanalesActivos"
+          class="cuota-option"
+          [class.selected]="subcanalId === subcanal.subcanalId"
+          (click)="subcanalId = subcanal.subcanalId">
+          {{ subcanal.subcanalNombre }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button
+        class="btn btn-primary"
+        [disabled]="!subcanalId"
+        (click)="onSeleccionarSubcanal()">
+        Continuar
+      </button>
+    </div>
+  </div>
+</div>

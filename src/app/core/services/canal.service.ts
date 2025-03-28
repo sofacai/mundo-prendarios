@@ -43,6 +43,13 @@ export interface PlanCanal {
   plan: Plan;
 }
 
+export interface OficialComercialResumen {
+  id: number;
+  nombre: string;
+  apellido: string;
+  fechaAsignacion: string;
+}
+
 export interface Canal {
   id: number;
   nombreFantasia: string;
@@ -58,6 +65,16 @@ export interface Canal {
   activo: boolean;
   subcanales: Subcanal[];
   planesCanal: PlanCanal[];
+  // Nuevos campos
+  direccion?: string;
+  fechaAlta?: string;
+  opcionesCobro?: string;
+  foto?: string;
+  titularNombreCompleto?: string;
+  titularTelefono?: string;
+  titularEmail?: string;
+  oficialesComerciales?: any[];
+  numeroOperaciones?: number;
 }
 
 export interface CanalCrearDto {
@@ -72,10 +89,23 @@ export interface CanalCrearDto {
   numCuenta: string;
   tipoCanal: string;
   activo: boolean;
+  // Nuevos campos
+  direccion?: string;
+  opcionesCobro?: string;
+  foto?: string;
+  titularNombreCompleto?: string;
+  titularTelefono?: string;
+  titularEmail?: string;
+  oficialesComerciales?: number[];
 }
 
 export interface PlanCanalCrearDto {
   planId: number;
+}
+
+export interface CanalOficialComercialCrearDto {
+  canalId: number;
+  oficialComercialId: number;
 }
 
 @Injectable({
@@ -159,6 +189,24 @@ export class CanalService {
   eliminarPlanCanal(planCanalId: number): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.delete<any>(`${this.apiUrl}/planes/${planCanalId}`, { headers });
+  }
+
+  // Asignar un oficial comercial a un canal
+  asignarOficialComercialACanal(canalId: number, oficialComercialId: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<any>(`${this.apiUrl}/${canalId}/oficialcomercial/${oficialComercialId}`, {}, { headers });
+  }
+
+  // Obtener oficiales comerciales de un canal
+  getOficialesComercialCanal(canalId: number): Observable<any[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/${canalId}/oficialescomerciales`, { headers });
+  }
+
+  // Desasignar un oficial comercial de un canal
+  desasignarOficialComercialDeCanal(canalId: number, oficialComercialId: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<any>(`${this.apiUrl}/${canalId}/oficialcomercial/${oficialComercialId}`, { headers });
   }
 
   // Configurar los headers con el token de autenticación

@@ -19,6 +19,7 @@ export class ModalVerUsuarioComponent implements OnChanges, OnDestroy {
   usuario: UsuarioDto | null = null;
   loading = false;
   error: string | null = null;
+  vendorStats: any = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -77,6 +78,9 @@ export class ModalVerUsuarioComponent implements OnChanges, OnDestroy {
       next: (usuario) => {
         this.usuario = usuario;
         this.loading = false;
+
+        // Si es un vendor (rolId = 3), intentamos cargar sus estadísticas detalladas
+        // Ya incluidas en el modelo de usuario, por lo que no es necesario hacer otra llamada
       },
       error: (err) => {
         this.error = 'Error al cargar los datos del usuario.';
@@ -119,6 +123,8 @@ export class ModalVerUsuarioComponent implements OnChanges, OnDestroy {
         return 'badge-light-info';  // Color azul claro para AdminCanal
       case 3: // Vendor
         return 'badge-light-warning';  // Color amarillo claro para Vendor
+      case 4: // OficialComercial - Añadido
+        return 'badge-light-primary';  // Color primario para OficialComercial
       default:
         return '';
     }

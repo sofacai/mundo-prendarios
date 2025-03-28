@@ -1,95 +1,136 @@
-<div class="sidebar" [class.sidebar-expanded]="!isSidebarCollapsed">
-  <div class="sidebar-header">
-    <div class="logo-container">
-      <!-- Utilizar onerror para manejar el caso en que el logo no exista -->
-      <img src="assets/logo.png" alt="Logo" class="logo"
-           onerror="this.onerror=null; this.src=''; this.alt='Sistema de Préstamos'; this.classList.add('text-logo');">
+<div class="sidebar" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <div class="sidebar-content">
+    <!-- Logo Area - según estado colapsado/expandido -->
+    <div class="logo-area">
+      <div class="logo" [class.collapsed]="isSidebarCollapsed">
+        <img src="assets/logo.webp" alt="Logo" class="full-logo" *ngIf="!isSidebarCollapsed">
+        <img src="assets/logo_acoplado.webp" alt="Logo" class="small-logo" *ngIf="isSidebarCollapsed">
+      </div>
     </div>
-    <button class="sidebar-toggle-btn d-lg-none" (click)="toggleSidebar()">
-      <ion-icon name="close-outline"></ion-icon>
-    </button>
-  </div>
 
-  <div class="sidebar-menu">
-    <ul class="menu-items">
-      <!-- Dashboard - visible para todos -->
-      <li class="menu-item" [class.active]="isActiveRoute('/dashboard')">
-        <a (click)="navigateTo('/dashboard')" class="menu-link">
-          <ion-icon name="grid-outline" size="small"></ion-icon>
-          <span class="menu-title">Dashboard</span>
-        </a>
-      </li>
+    <!-- Navigation Menu -->
+    <div class="menu-container">
+      <ul class="menu-list">
+        <!-- Dashboard -->
+        <li class="menu-item" [class.active]="isActiveRoute('/dashboard')">
+          <a (click)="navigateTo('/dashboard')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-house"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Dashboard</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Dashboard</div>
+        </li>
 
-      <!-- Menú de Canales - solo para admin (rol 1) -->
-      <li class="menu-item has-submenu"
-          [class.active]="isCanalesMenuActive()"
-          [class.expanded]="isCanalesExpanded"
-          *ngIf="userRole === rolType.Administrador">
-        <a (click)="toggleCanalesMenu()" class="menu-link">
-          <ion-icon name="git-network-outline" size="small"></ion-icon>
-          <span class="menu-title">Canales</span>
-          <ion-icon name="chevron-down-outline" class="submenu-icon" [class.rotated]="isCanalesExpanded"></ion-icon>
-        </a>
-        <ul class="submenu" [class.expanded]="isCanalesExpanded">
-          <li class="submenu-item" [class.active]="isActiveRoute('/canales')">
-            <a (click)="navigateTo('/canales')" class="submenu-link">
-              <ion-icon name="list-outline" size="small"></ion-icon>
-              <span>Ver Canales</span>
-            </a>
-          </li>
-          <li class="submenu-item" [class.active]="isActiveRoute('/subcanales')">
-            <a (click)="navigateTo('/subcanales')" class="submenu-link">
-              <ion-icon name="git-branch-outline" size="small"></ion-icon>
-              <span>Subcanales</span>
-            </a>
-          </li>
-          <li class="submenu-item" [class.active]="isActiveRoute('/usuarios')">
-            <a (click)="navigateTo('/usuarios')" class="submenu-link">
-              <ion-icon name="people-outline" size="small"></ion-icon>
-              <span>Usuarios</span>
-            </a>
-          </li>
-        </ul>
-      </li>
+        <!-- VERSIÓN EXPANDIDA: Canales con submenu -->
+        <li class="menu-item has-submenu" [class.active]="isCanalesMenuActive()" [class.expanded]="isCanalesExpanded"
+            *ngIf="!isSidebarCollapsed && userRole === rolType.Administrador">
+          <a (click)="toggleCanalesMenu()" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-grid"></i>
+            </div>
+            <span class="menu-text">Canales</span>
+            <i class="bi bi-chevron-down submenu-arrow" [class.rotated]="isCanalesExpanded"></i>
+          </a>
 
-      <!-- Para roles que no son Admin, mostrar opciones separadas -->
-      <!-- Usuarios - solo para admincanal (rol 2) -->
-      <li class="menu-item" [class.active]="isActiveRoute('/usuarios')"
-          *ngIf="userRole === rolType.AdminCanal">
-        <a (click)="navigateTo('/usuarios')" class="menu-link">
-          <ion-icon name="people-outline" size="small"></ion-icon>
-          <span class="menu-title">Usuarios</span>
-        </a>
-      </li>
+          <!-- Submenu items -->
+          <ul class="submenu" [class.expanded]="isCanalesExpanded">
+            <li class="submenu-item" [class.active]="isActiveRoute('/canales')">
+              <a (click)="navigateTo('/canales')" class="submenu-link">
+                <span class="submenu-text">Ver Canales</span>
+              </a>
+            </li>
+            <li class="submenu-item" [class.active]="isActiveRoute('/subcanales')">
+              <a (click)="navigateTo('/subcanales')" class="submenu-link">
+                <span class="submenu-text">Subcanales</span>
+              </a>
+            </li>
+            <li class="submenu-item" [class.active]="isActiveRoute('/usuarios')">
+              <a (click)="navigateTo('/usuarios')" class="submenu-link">
+                <span class="submenu-text">Usuarios</span>
+              </a>
+            </li>
+          </ul>
+        </li>
 
-      <!-- Clientes - solo para admin (rol 1) -->
-      <li class="menu-item" [class.active]="isActiveRoute('/clientes')"
-          *ngIf="userRole === rolType.Administrador">
-        <a (click)="navigateTo('/clientes')" class="menu-link">
-          <ion-icon name="person-circle-outline" size="small"></ion-icon>
-          <span class="menu-title">Clientes</span>
-        </a>
-      </li>
+        <!-- VERSIÓN COLAPSADA: Enlaces directos -->
+        <!-- Canales (enlace directo en modo colapsado) -->
+        <li class="menu-item" [class.active]="isActiveRoute('/canales')"
+            *ngIf="isSidebarCollapsed && userRole === rolType.Administrador">
+          <a (click)="navigateTo('/canales')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-grid"></i>
+            </div>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Canales</div>
+        </li>
 
-      <!-- Operaciones - visible para todos los roles -->
-      <li class="menu-item" [class.active]="isActiveRoute('/operaciones')">
-        <a (click)="navigateTo('/operaciones')" class="menu-link">
-          <ion-icon name="cash-outline" size="small"></ion-icon>
-          <span class="menu-title">Operaciones</span>
-        </a>
-      </li>
+        <!-- Subcanales (enlace directo en modo colapsado) -->
+        <li class="menu-item" [class.active]="isActiveRoute('/subcanales')"
+            *ngIf="isSidebarCollapsed && userRole === rolType.Administrador">
+          <a (click)="navigateTo('/subcanales')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-diagram-3"></i>
+            </div>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Subcanales</div>
+        </li>
 
-      <!-- Planes - solo para admin (rol 1) -->
-      <li class="menu-item" [class.active]="isActiveRoute('/planes')"
-          *ngIf="userRole === rolType.Administrador">
-        <a (click)="navigateTo('/planes')" class="menu-link">
-          <ion-icon name="calendar-outline" size="small"></ion-icon>
-          <span class="menu-title">Planes</span>
-        </a>
-      </li>
-    </ul>
+        <!-- Usuarios -->
+        <li class="menu-item" [class.active]="isActiveRoute('/usuarios')"
+            *ngIf="isSidebarCollapsed || userRole === rolType.AdminCanal">
+          <a (click)="navigateTo('/usuarios')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-people"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Usuarios</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Usuarios</div>
+        </li>
+
+        <!-- Clientes -->
+        <li class="menu-item" [class.active]="isActiveRoute('/clientes')" *ngIf="userRole === rolType.Administrador">
+          <a (click)="navigateTo('/clientes')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-person"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Clientes</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Clientes</div>
+        </li>
+
+        <!-- Operaciones -->
+        <li class="menu-item" [class.active]="isActiveRoute('/operaciones')">
+          <a (click)="navigateTo('/operaciones')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-cash"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Operaciones</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Operaciones</div>
+        </li>
+
+        <!-- Planes -->
+        <li class="menu-item" [class.active]="isActiveRoute('/planes')" *ngIf="userRole === rolType.Administrador">
+          <a (click)="navigateTo('/planes')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-calendar"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Planes</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Planes</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Botón de toggle al final del sidebar -->
+    <div class="sidebar-footer">
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <i class="bi" [ngClass]="isSidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- Overlay para móviles cuando el sidebar está abierto -->
+<!-- Overlay for mobile -->
 <div class="sidebar-overlay" [class.active]="!isSidebarCollapsed && isMobile" (click)="toggleSidebar()"></div>

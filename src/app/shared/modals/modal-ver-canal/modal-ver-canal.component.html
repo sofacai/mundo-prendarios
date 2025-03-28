@@ -1,3 +1,253 @@
-<p>
-  modal-ver-canal works!
-</p>
+<ion-modal [isOpen]="isOpen" (didDismiss)="cerrarModal()" class="ver-canal-modal">
+  <ng-template>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2>Detalles del Canal</h2>
+        <ion-button fill="clear" (click)="cerrarModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid" *ngIf="canal">
+          <!-- Información general -->
+          <div class="detail-section">
+            <h3>Información General</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>Nombre Fantasía</label>
+                <div class="detail-value">{{ canal.nombreFantasia }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Razón Social</label>
+                <div class="detail-value">{{ canal.razonSocial }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Tipo de Canal</label>
+                <div class="detail-value">{{ canal.tipoCanal }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Fecha de Alta</label>
+                <div class="detail-value">{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Estado</label>
+                <div class="detail-value">
+                  <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
+                    {{ canal.activo ? 'Activado' : 'Desactivado' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ubicación -->
+          <div class="detail-section">
+            <h3>Ubicación</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>Provincia</label>
+                <div class="detail-value">{{ canal.provincia }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Localidad</label>
+                <div class="detail-value">{{ canal.localidad }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Dirección</label>
+                <div class="detail-value">{{ canal.direccion || 'No especificada' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información fiscal -->
+          <div class="detail-section">
+            <h3>Información Fiscal</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>CUIT</label>
+                <div class="detail-value">{{ canal.cuit }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información bancaria -->
+          <div class="detail-section">
+            <h3>Información Bancaria</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>Banco</label>
+                <div class="detail-value">{{ canal.banco }}</div>
+              </div>
+              <div class="detail-group">
+                <label>CBU</label>
+                <div class="detail-value">{{ canal.cbu }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Alias</label>
+                <div class="detail-value">{{ canal.alias }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Número de Cuenta</label>
+                <div class="detail-value">{{ canal.numCuenta }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Opciones de Cobro</label>
+                <div class="detail-value">{{ canal.opcionesCobro || 'No especificadas' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos del titular -->
+          <div class="detail-section">
+            <h3>Datos del Titular</h3>
+            <div class="detail-grid-2col">
+              <div class="detail-group">
+                <label>Nombre Completo</label>
+                <div class="detail-value">{{ canal.titularNombreCompleto || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Teléfono</label>
+                <div class="detail-value">{{ canal.titularTelefono || 'No especificado' }}</div>
+              </div>
+              <div class="detail-group">
+                <label>Email</label>
+                <div class="detail-value">{{ canal.titularEmail || 'No especificado' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Imagen/Foto si existe -->
+          <div class="detail-section" *ngIf="canal.foto">
+            <h3>Imagen del Canal</h3>
+            <div class="detail-image">
+              <img [src]="canal.foto" alt="Imagen del canal" class="canal-image">
+            </div>
+          </div>
+
+          <!-- Oficiales Comerciales -->
+          <div class="detail-section" *ngIf="canal.oficialesComerciales && canal.oficialesComerciales.length > 0">
+            <h3>Oficiales Comerciales</h3>
+            <div class="detail-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Fecha Asignación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let oc of canal.oficialesComerciales">
+                    <td>{{ oc.nombre }}</td>
+                    <td>{{ oc.apellido }}</td>
+                    <td>{{ oc.fechaAsignacion | date:'dd/MM/yyyy' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de Planes -->
+        <div class="detail-section" *ngIf="canal && canal.planesCanal && canal.planesCanal.length > 0">
+          <h3>Planes Asignados</h3>
+          <div class="detail-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Fechas</th>
+                  <th>Montos</th>
+                  <th>Tasa</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let planCanal of canal.planesCanal">
+                  <td>{{ planCanal.plan.nombre }}</td>
+                  <td>{{ planCanal.plan.fechaInicioStr }} - {{ planCanal.plan.fechaFinStr }}</td>
+                  <td>{{ planCanal.plan.montoMinimo | currency }} - {{ planCanal.plan.montoMaximo | currency }}</td>
+                  <td>{{ planCanal.plan.tasa }}%</td>
+                  <td>
+                    <div class="badge" [ngClass]="getEstadoClass(planCanal.activo)">
+                      {{ planCanal.activo ? 'Activado' : 'Desactivado' }}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sección de Subcanales -->
+        <div class="detail-section" *ngIf="canal && canal.subcanales && canal.subcanales.length > 0">
+          <h3>Subcanales</h3>
+          <div class="detail-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Provincia</th>
+                  <th>Localidad</th>
+                  <th>Estado</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let subcanal of canal.subcanales">
+                  <td>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleSubcanal(subcanal.id)">
+                      {{ subcanal.nombre }}
+                    </a>
+                  </td>
+                  <td>{{ subcanal.provincia }}</td>
+                  <td>{{ subcanal.localidad }}</td>
+                  <td>
+                    <div class="badge" [ngClass]="getEstadoClass(subcanal.activo)">
+                      {{ subcanal.activo ? 'Activado' : 'Desactivado' }}
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalleSubcanal(subcanal.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Indicadores de estado -->
+        <div class="loading-container" *ngIf="loading">
+          <ion-spinner name="dots"></ion-spinner>
+          <p>Cargando información del canal...</p>
+        </div>
+        <div class="form-error" *ngIf="error">
+          <div class="alert alert-danger">{{ error }}</div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="form-footer">
+          <button type="button" class="btn btn-light" (click)="cerrarModal()">Cerrar</button>
+          <button type="button" class="btn btn-primary" (click)="editarCanal()" *ngIf="canal">Editar</button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+<!-- Modales para subcanales -->
+<app-modal-ver-subcanal
+  [isOpen]="modalVerSubcanalOpen"
+  [subcanalId]="subcanalIdVer"
+  (closeModal)="cerrarModalVerSubcanal()"
+  (editRequest)="onEditarSubcanalSolicitado($event)">
+</app-modal-ver-subcanal>
+
+<app-modal-editar-subcanal
+  [isOpen]="modalEditarSubcanalOpen"
+  [subcanalId]="subcanalIdEditar"
+  (closeModal)="cerrarModalEditarSubcanal()"
+  (subcanalActualizado)="onSubcanalActualizado($event)">
+</app-modal-editar-subcanal>

@@ -5,28 +5,41 @@
   <!-- Contenido principal -->
   <div class="content-area">
     <!-- Encabezado -->
-    <div class="page-header">
-      <div class="page-title">
-        <h1>Gestión de Usuarios</h1>
-      </div>
-      <div class="page-actions">
-        <button class="btn btn-primary" (click)="abrirModalNuevoUsuario()">
-          <i class="bi bi-plus"></i> Nuevo Usuario
-        </button>
-      </div>
-    </div>
 
     <!-- Contenido de la tabla -->
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">Listado de Usuarios</h2>
       </div>
+
+      <!-- Buscador -->
+      <div class="card-body search-container">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="Buscar por nombre o email..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear"
+            (click)="clearSearch()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+
+        <button class="btn btn-primary" (click)="abrirModalNuevoUsuario()">
+          <i class="bi bi-plus"></i> Nuevo Usuario
+        </button>
+      </div>
+
       <div class="card-body">
         <!-- Indicador de carga -->
         <div *ngIf="loading" class="text-center p-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
           <p class="mt-2">Cargando usuarios...</p>
         </div>
 
@@ -40,16 +53,44 @@
           <table class="custom-table">
             <thead>
               <tr>
-                <th style="width: 50px">ID</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th>Estado</th>
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                  ID
+                  <i class="bi" [ngClass]="getSortIcon('id')"></i>
+                </th>
+                <th (click)="sortBy('nombre')" class="sortable-header">
+                  Nombre
+                  <i class="bi" [ngClass]="getSortIcon('nombre')"></i>
+                </th>
+                <th (click)="sortBy('email')" class="sortable-header">
+                  Email
+                  <i class="bi" [ngClass]="getSortIcon('email')"></i>
+                </th>
+                <th (click)="sortBy('rolId')" class="sortable-header">
+                  Rol
+                  <i class="bi" [ngClass]="getSortIcon('rolId')"></i>
+                </th>
+                <!-- Nuevas columnas -->
+                <th (click)="sortBy('fechaAlta')" class="sortable-header">
+                  Alta
+                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
+                </th>
+                <th (click)="sortBy('fechaUltimaOperacion')" class="sortable-header">
+                  Ult. Operación
+                  <i class="bi" [ngClass]="getSortIcon('fechaUltimaOperacion')"></i>
+                </th>
+                <th (click)="sortBy('cantidadOperaciones')" class="sortable-header">
+                  Cant. Operaciones
+                  <i class="bi" [ngClass]="getSortIcon('cantidadOperaciones')"></i>
+                </th>
+                <th (click)="sortBy('activo')" class="sortable-header">
+                  Estado
+                  <i class="bi" [ngClass]="getSortIcon('activo')"></i>
+                </th>
                 <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let usuario of usuarios">
+              <tr *ngFor="let usuario of filteredUsuarios">
                 <td>{{ usuario.id }}</td>
                 <td>
                   <div>
@@ -64,6 +105,10 @@
                     {{ usuario.rolNombre }}
                   </div>
                 </td>
+                <!-- Nuevas columnas con datos -->
+                <td>{{ usuario.fechaAlta | date:'dd/MM/yy' }}</td>
+                <td>{{ usuario.fechaUltimaOperacion | date:'dd/MM/yy' }}</td>
+                <td>{{ usuario.cantidadOperaciones }}</td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(usuario.activo)">
                     {{ usuario.activo ? 'Activado' : 'Desactivado' }}
@@ -76,7 +121,7 @@
                       <i class="bi bi-pencil"></i>
                     </button>
 
-                    <!-- Botón de ver detalle (cambiado a flecha) -->
+                    <!-- Botón de ver detalle -->
                     <button class="btn-action" title="Ver detalles" (click)="verDetalle(usuario.id)">
                       <i class="bi bi-chevron-right"></i>
                     </button>
@@ -86,9 +131,10 @@
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay usuarios -->
-          <div *ngIf="usuarios.length === 0" class="text-center p-5">
-            No hay usuarios registrados.
+          <!-- Mensaje cuando no hay usuarios o resultados -->
+          <div *ngIf="filteredUsuarios.length === 0" class="text-center p-5">
+            <p *ngIf="searchTerm">No se encontraron usuarios que coincidan con "{{ searchTerm }}".</p>
+            <p *ngIf="!searchTerm">No hay usuarios registrados.</p>
           </div>
         </div>
       </div>

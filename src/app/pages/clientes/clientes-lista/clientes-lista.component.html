@@ -1,3 +1,123 @@
-<p>
-  clientes-lista works!
-</p>
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido principal -->
+  <div class="content-area">
+    <!-- Contenido de la tabla -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de Clientes</h2>
+      </div>
+
+      <!-- Buscador -->
+      <div class="card-body search-container">
+        <div class="search-box">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="Buscar por nombre o email..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear"
+            (click)="clearSearch()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center p-5">
+          <p class="mt-2">Cargando clientes...</p>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="error && !loading" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <!-- Tabla de datos -->
+        <div *ngIf="!loading && !error" class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th (click)="sortBy('id')" class="sortable-header" style="width: 50px">
+                  ID
+                  <i class="bi" [ngClass]="getSortIcon('id')"></i>
+                </th>
+                <th (click)="sortBy('fechaCreacion')" class="sortable-header">
+                  Creación
+                  <i class="bi" [ngClass]="getSortIcon('fechaCreacion')"></i>
+                </th>
+                <th (click)="sortBy('ultimaModificacion')" class="sortable-header">
+                  Últ. modif
+                  <i class="bi" [ngClass]="getSortIcon('ultimaModificacion')"></i>
+                </th>
+                <th (click)="sortBy('nombre')" class="sortable-header">
+                  Cliente
+                  <i class="bi" [ngClass]="getSortIcon('nombre')"></i>
+                </th>
+                <th (click)="sortBy('email')" class="sortable-header">
+                  Email
+                  <i class="bi" [ngClass]="getSortIcon('email')"></i>
+                </th>
+                <th (click)="sortBy('telefono')" class="sortable-header">
+                  Tel
+                  <i class="bi" [ngClass]="getSortIcon('telefono')"></i>
+                </th>
+                <th>
+                  Canal
+                </th>
+                <th style="width: 120px" class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cliente of filteredClientes">
+                <td>{{ cliente.id }}</td>
+                <td>{{ formatDate(cliente.fechaCreacion) }}</td>
+                <td>{{ formatDate(cliente.ultimaModificacion, cliente) }}</td>
+                <td>
+                  <div>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(cliente.id)">
+                      {{ cliente.nombre }} {{ cliente.apellido }}
+                    </a>
+                  </div>
+                </td>
+                <td>{{ cliente.email }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.canalNombre }}</td>
+                <td class="text-center">
+                  <div class="actions-container">
+                    <!-- Botón de ver detalle -->
+                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(cliente.id)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Mensaje cuando no hay clientes o resultados -->
+          <div *ngIf="filteredClientes.length === 0" class="text-center p-5">
+            <p *ngIf="searchTerm">No se encontraron clientes que coincidan con "{{ searchTerm }}".</p>
+            <p *ngIf="!searchTerm">No hay clientes registrados.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para ver detalles del cliente -->
+<app-modal-ver-cliente
+  [isOpen]="modalVerOpen"
+  [clienteId]="clienteIdVer"
+  (closeModal)="onCloseVerModal()"
+></app-modal-ver-cliente>

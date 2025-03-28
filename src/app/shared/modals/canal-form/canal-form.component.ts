@@ -1,10 +1,9 @@
-// Actualización para canal-form.component.ts
-
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CanalService, CanalCrearDto } from 'src/app/core/services/canal.service';
+import { PlanService } from 'src/app/core/services/plan.service';
 
 // Define la interfaz de tipos de canal con id y nombre
 interface TipoCanal {
@@ -19,7 +18,7 @@ interface TipoCanal {
   templateUrl: './canal-form.component.html',
   styleUrls: ['./canal-form.component.scss']
 })
-export class CanalFormComponent implements OnChanges, OnDestroy {
+export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() canalCreado = new EventEmitter<any>();
@@ -38,12 +37,21 @@ export class CanalFormComponent implements OnChanges, OnDestroy {
     { id: 6, nombre: 'Consumidor Final' }
   ];
 
+  // Planes disponibles y seleccionados
+  planes: any[] = [];
+  selectedPlanIds: number[] = [];
+
   constructor(
     private fb: FormBuilder,
     private canalService: CanalService,
+    private planService: PlanService,
     private renderer: Renderer2
   ) {
-    this.canalForm = this.fb.group({
+    this.canalForm = this.createForm();
+  }
+
+  createForm(): FormGroup {
+    return this.fb.group({
       nombreFantasia: ['', Validators.required],
       razonSocial: ['', Validators.required],
       provincia: ['', Validators.required],
@@ -54,40 +62,65 @@ export class CanalFormComponent implements OnChanges, OnDestroy {
       banco: ['', Validators.required],
       numCuenta: [''],
       tipoCanal: ['', Validators.required],
-      activo: [true]
+      activo: [true],
+      // Nuevos campos
+      direccion: [''],
+      opcionesCobro: [''],
+      foto: [''],
+      titularNombreCompleto: [''],
+      titularTelefono: [''],
+      titularEmail: ['']
     });
+  }
+
+  ngOnInit(): void {
+    this.cargarPlanes();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']) {
       if (changes['isOpen'].currentValue) {
         this.resetForm();
-        // Calculamos el ancho de la barra de desplazamiento
         const scrollWidth = window.innerWidth - document.documentElement.clientWidth;
-
-        // Añadir clase al body cuando se abre el modal
         this.renderer.addClass(document.body, 'modal-open');
-
-        // Establece un padding-right al body para compensar la barra de desplazamiento
         this.renderer.setStyle(document.body, 'padding-right', `${scrollWidth}px`);
-        console.log('Modal abierto:', this.isOpen);
       } else if (!changes['isOpen'].firstChange) {
-        // Remover clase y estilos cuando se cierra el modal
         this.renderer.removeClass(document.body, 'modal-open');
         this.renderer.removeStyle(document.body, 'padding-right');
-        console.log('Modal cerrado');
       }
     }
   }
 
   ngOnDestroy(): void {
-    // Asegurarse de remover la clase cuando el componente se destruye
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
   }
 
+  cargarPlanes(): void {
+    this.planService.getPlanesActivos().subscribe({
+      next: (planes) => {
+        this.planes = planes;
+      },
+      error: (err) => {
+        console.error('Error cargando planes:', err);
+        this.error = 'Error al cargar los planes disponibles.';
+      }
+    });
+  }
+
+  isPlanSelected(planId: number): boolean {
+    return this.selectedPlanIds.includes(planId);
+  }
+
+  togglePlanSelection(planId: number): void {
+    if (this.isPlanSelected(planId)) {
+      this.selectedPlanIds = this.selectedPlanIds.filter(id => id !== planId);
+    } else {
+      this.selectedPlanIds.push(planId);
+    }
+  }
+
   cerrarModal() {
-    // Remover clase del body al cerrar el modal
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
     this.closeModal.emit(true);
@@ -98,41 +131,75 @@ export class CanalFormComponent implements OnChanges, OnDestroy {
       activo: true,
       tipoCanal: ''
     });
+    this.selectedPlanIds = [];
     this.error = null;
   }
 
   guardarCanal() {
     if (this.canalForm.invalid) {
-      // Marcar todos los campos como tocados para mostrar errores
       Object.keys(this.canalForm.controls).forEach(key => {
-        const control = this.canalForm.get(key);
-        control?.markAsTouched();
+        this.canalForm.get(key)?.markAsTouched();
       });
       return;
     }
 
     this.loading = true;
-
-    // Obtenemos los valores del formulario
     const formValues = this.canalForm.value;
-
-    // Encontrar el nombre del tipo de canal seleccionado
     const tipoSeleccionado = this.tiposCanal.find(tipo => tipo.id.toString() === formValues.tipoCanal);
 
-    // Crear el DTO con el nombre del tipo de canal (no el ID)
     const canalDto: CanalCrearDto = {
-      ...formValues,
+      nombreFantasia: formValues.nombreFantasia,
+      razonSocial: formValues.razonSocial,
+      provincia: formValues.provincia,
+      localidad: formValues.localidad,
+      cuit: formValues.cuit,
+      cbu: formValues.cbu,
+      alias: formValues.alias || '',
+      banco: formValues.banco,
+      numCuenta: formValues.numCuenta || '',
       tipoCanal: tipoSeleccionado ? tipoSeleccionado.nombre : '',
-      // Añadir los arrays vacíos para subcanales y planesCanal
-      subcanales: [],
-      planesCanal: []
+      activo: true,
+      // Nuevos campos
+      direccion: formValues.direccion || '',
+      opcionesCobro: formValues.opcionesCobro || '',
+      foto: formValues.foto || '',
+      titularNombreCompleto: formValues.titularNombreCompleto || '',
+      titularTelefono: formValues.titularTelefono || '',
+      titularEmail: formValues.titularEmail || ''
     };
 
     this.canalService.createCanal(canalDto).subscribe({
       next: (canal) => {
-        this.loading = false;
-        this.canalCreado.emit(canal);
-        this.cerrarModal();
+        if (this.selectedPlanIds.length > 0) {
+          const asignacionesPromises = this.selectedPlanIds.map(planId =>
+            this.canalService.asignarPlanACanal(canal.id, planId).toPromise()
+          );
+
+          Promise.all(asignacionesPromises)
+            .then(() => {
+              this.canalService.getCanalDetalles(canal.id).subscribe({
+                next: (canalActualizado) => {
+                  this.loading = false;
+                  this.canalCreado.emit(canalActualizado);
+                  this.cerrarModal();
+                },
+                error: (err) => {
+                  this.loading = false;
+                  this.canalCreado.emit(canal);
+                  this.cerrarModal();
+                }
+              });
+            })
+            .catch(err => {
+              this.loading = false;
+              this.error = 'Error al asignar planes al canal.';
+              this.canalCreado.emit(canal);
+            });
+        } else {
+          this.loading = false;
+          this.canalCreado.emit(canal);
+          this.cerrarModal();
+        }
       },
       error: (err) => {
         this.loading = false;

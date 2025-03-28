@@ -1,7 +1,8 @@
 export enum RolType {
   Administrador = 1,
   AdminCanal = 2,
-  Vendor = 3
+  Vendor = 3,
+  OficialComercial = 4
 }
 
 export interface Usuario {
