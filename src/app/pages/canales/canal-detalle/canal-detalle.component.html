@@ -34,64 +34,64 @@
     <!-- Canal Content -->
     <div *ngIf="canal && !loading && !error" class="canal-detail">
 
-<!-- Cabecera Principal -->
-<div class="canal-header-card">
-  <div class="header-main-section">
-    <!-- Logo canal -->
-    <div class="canal-logo">
-      <div *ngIf="canal.foto" class="logo-image">
-        <img [src]="canal.foto" alt="Logo Canal" />
+      <!-- Cabecera Principal -->
+      <div class="canal-header-card">
+        <div class="header-main-section">
+          <!-- Logo canal -->
+          <div class="canal-logo">
+            <div *ngIf="canal.foto" class="logo-image">
+              <img [src]="canal.foto" alt="Logo Canal" />
+            </div>
+            <div *ngIf="!canal.foto" class="logo-placeholder">
+              <span>{{ canal.nombreFantasia ? canal.nombreFantasia.substring(0, 2).toUpperCase() : '' }}</span>
+            </div>
+          </div>
+
+          <!-- Titulo y badge -->
+          <div class="title-container">
+            <div class="title-badge-wrapper">
+              <h2 class="canal-title">{{ canal.nombreFantasia }}</h2>
+              <span class="status-badge" [ngClass]="canal.activo ? 'active' : 'inactive'">
+                {{ canal.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información contacto -->
+        <div class="owner-contact-info">
+          <div class="contact-item">
+            <i class="bi bi-person"></i>
+            <span>{{ canal.titularNombreCompleto || 'No especificado' }}</span>
+          </div>
+          <div class="contact-item">
+            <i class="bi bi-telephone"></i>
+            <span>{{ canal.titularTelefono || 'No especificado' }}</span>
+          </div>
+          <div class="contact-item">
+            <i class="bi bi-envelope"></i>
+            <span>{{ canal.titularEmail || 'No especificado' }}</span>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-section">
+          <div class="stat-box">
+            <div class="stat-number">{{ subcanalesActivos + subcanalesInactivos }}</div>
+            <div class="stat-label">Subcanales</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">{{ planesActivos + planesInactivos }}</div>
+            <div class="stat-label">Planes</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">{{ totalOperaciones }}</div>
+            <div class="stat-label">Operaciones</div>
+          </div>
+        </div>
       </div>
-      <div *ngIf="!canal.foto" class="logo-placeholder">
-        <span>{{ canal.nombreFantasia ? canal.nombreFantasia.substring(0, 2).toUpperCase() : '' }}</span>
-      </div>
-    </div>
-
-    <!-- Titulo y badge -->
-    <div class="title-container">
-      <div class="title-badge-wrapper">
-        <h2 class="canal-title">{{ canal.nombreFantasia }}</h2>
-        <span class="status-badge" [ngClass]="canal.activo ? 'active' : 'inactive'">
-          {{ canal.activo ? 'Activo' : 'Inactivo' }}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Información contacto -->
-  <div class="owner-contact-info">
-    <div class="contact-item">
-      <i class="bi bi-person"></i>
-      <span>{{ canal.titularNombreCompleto || 'No especificado' }}</span>
-    </div>
-    <div class="contact-item">
-      <i class="bi bi-telephone"></i>
-      <span>{{ canal.titularTelefono || 'No especificado' }}</span>
-    </div>
-    <div class="contact-item">
-      <i class="bi bi-envelope"></i>
-      <span>{{ canal.titularEmail || 'No especificado' }}</span>
-    </div>
-  </div>
-
-  <!-- Estadísticas -->
-  <div class="stats-section">
-    <div class="stat-box">
-      <div class="stat-number">{{ subcanalesActivos + subcanalesInactivos }}</div>
-      <div class="stat-label">Subcanales</div>
-    </div>
-
-    <div class="stat-box">
-      <div class="stat-number">{{ planesActivos + planesInactivos }}</div>
-      <div class="stat-label">Planes</div>
-    </div>
-
-    <div class="stat-box">
-      <div class="stat-number">{{ totalOperaciones }}</div>
-      <div class="stat-label">Operaciones</div>
-    </div>
-  </div>
-</div>
 
       <!-- Tabs Navigation -->
       <div class="canal-tabs card mb-4">
@@ -155,15 +155,15 @@
       <div class="tab-content">
         <!-- General Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'general'">
-          <div class="row g-3">
-            <!-- Primera fila: Información General y Ubicación -->
+          <div class="row g-4">
+            <!-- Primera fila: Información General y Oficiales Comerciales -->
             <div class="col-12">
-              <div class="row g-3">
-                <!-- Información General -->
-                <div class="col-12 col-lg-6">
+              <div class="d-flex flex-column flex-lg-row gap-4">
+                <!-- Información General - 50% -->
+                <div style="flex-basis: 50%;">
                   <div class="card detail-card h-100">
                     <div class="card-header">
-                      <h3 class="card-title">Información General</h3>
+                      <h3 class="card-title"><i class="bi bi-info-circle me-2 text-primary"></i>Información General</h3>
                     </div>
                     <div class="card-body p-4">
                       <div class="row">
@@ -206,30 +206,54 @@
                   </div>
                 </div>
 
-                <!-- Ubicación -->
-                <div class="col-12 col-lg-6">
+                <!-- Oficiales Comerciales - 50% -->
+                <div style="flex-basis: 50%;">
                   <div class="card detail-card h-100">
                     <div class="card-header">
-                      <h3 class="card-title">Ubicación</h3>
+                      <h3 class="card-title"><i class="bi bi-person-badge me-2 text-primary"></i>Oficiales Comerciales</h3>
                     </div>
                     <div class="card-body p-4">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Provincia</div>
-                            <div class="detail-value">{{ canal.provincia }}</div>
-                          </div>
+                      <div class="oficiales-comerciales-container">
+                        <!-- Loading Indicator -->
+                        <div *ngIf="loadingOficiales" class="text-center my-3">
+                          <div class="spinner-border spinner-border-sm"></div>
+                          <p class="mt-2 small">Cargando...</p>
                         </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Localidad</div>
-                            <div class="detail-value">{{ canal.localidad }}</div>
-                          </div>
+
+                        <!-- Error Message -->
+                        <div *ngIf="errorOficiales && !loadingOficiales" class="alert alert-danger py-2 small">
+                          {{ errorOficiales }}
                         </div>
-                        <div class="col-12">
-                          <div class="detail-row">
-                            <div class="detail-label">Dirección</div>
-                            <div class="detail-value">{{ canal.direccion || 'No especificada' }}</div>
+
+                        <!-- Tabla de Oficiales Comerciales -->
+                        <div *ngIf="!loadingOficiales && !errorOficiales" class="table-responsive">
+                          <table class="custom-table table-sm" *ngIf="oficialesComerciales && oficialesComerciales.length > 0">
+                            <thead>
+                              <tr>
+                                <th>NOMBRE</th>
+                                <th>ESTADO</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let oficial of oficialesComerciales">
+                                <td>
+                                  <div class="oficial-info">
+                                    <div class="fw-bold">{{ oficial.oficialComercialNombre }}</div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div class="badge" [ngClass]="getEstadoClass(oficial.activo)">
+                                    {{ oficial.activo ? 'Activo' : 'Inactivo' }}
+                                  </div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+
+                          <!-- Empty State -->
+                          <div *ngIf="!oficialesComerciales || oficialesComerciales.length === 0" class="text-center py-4">
+                            <i class="bi bi-people"></i>
+                            <p class="small text-muted mt-2 mb-0">No hay oficiales comerciales asignados a este canal</p>
                           </div>
                         </div>
                       </div>
@@ -239,14 +263,45 @@
               </div>
             </div>
 
-            <!-- Segunda fila: Información Fiscal y Bancaria -->
-            <div class="col-12">
-              <div class="row g-3">
+            <!-- Ubicación -->
+            <div class="col-12 mt-2">
+              <div class="card detail-card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="bi bi-geo-alt me-2 text-primary"></i>Ubicación</h3>
+                </div>
+                <div class="card-body p-4">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="detail-row mb-3">
+                        <div class="detail-label">Provincia</div>
+                        <div class="detail-value">{{ canal.provincia }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="detail-row mb-3">
+                        <div class="detail-label">Localidad</div>
+                        <div class="detail-value">{{ canal.localidad }}</div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="detail-row">
+                        <div class="detail-label">Dirección</div>
+                        <div class="detail-value">{{ canal.direccion || 'No especificada' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tercera fila: Información Fiscal y Bancaria -->
+            <div class="col-12 mt-2">
+              <div class="d-flex flex-column flex-lg-row gap-4">
                 <!-- Información Fiscal -->
-                <div class="col-12 col-lg-6">
+                <div style="flex-basis: 50%;">
                   <div class="card detail-card h-100">
                     <div class="card-header">
-                      <h3 class="card-title">Información Fiscal</h3>
+                      <h3 class="card-title"><i class="bi bi-file-text me-2 text-primary"></i>Información Fiscal</h3>
                     </div>
                     <div class="card-body p-4">
                       <div class="row">
@@ -262,10 +317,10 @@
                 </div>
 
                 <!-- Información Bancaria -->
-                <div class="col-12 col-lg-6">
+                <div style="flex-basis: 50%;">
                   <div class="card detail-card h-100">
                     <div class="card-header">
-                      <h3 class="card-title">Información Bancaria</h3>
+                      <h3 class="card-title"><i class="bi bi-bank me-2 text-primary"></i>Información Bancaria</h3>
                     </div>
                     <div class="card-body p-4">
                       <div class="row">

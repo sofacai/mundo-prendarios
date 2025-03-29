@@ -43,6 +43,11 @@ export class CanalDetalleComponent implements OnInit, OnDestroy, AfterViewInit {
   private subcanalesChart: Chart | null = null;
   private vendedoresChart: Chart | null = null;
 
+  // Propiedades para oficiales comerciales
+oficialesComerciales: any[] = [];
+loadingOficiales = false;
+errorOficiales: string | null = null;
+
   // Estadísticas
   subcanalesActivos = 0;
   subcanalesInactivos = 0;
@@ -134,6 +139,9 @@ export class CanalDetalleComponent implements OnInit, OnDestroy, AfterViewInit {
         this.canal = canal;
         this.calculateBaseStatistics();
 
+        // Cargar oficiales comerciales
+        this.cargarOficialesComerciales(this.canalId);
+
         // Cargar datos adicionales en paralelo
         this.loadAdditionalData();
       },
@@ -144,6 +152,24 @@ export class CanalDetalleComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
   }
+
+  cargarOficialesComerciales(canalId: number) {
+    this.loadingOficiales = true;
+    this.errorOficiales = null;
+
+    this.canalService.getOficialesComercialCanal(canalId).subscribe({
+      next: (data) => {
+        this.oficialesComerciales = data;
+        this.loadingOficiales = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar oficiales comerciales:', err);
+        this.errorOficiales = 'No se pudieron cargar los oficiales comerciales';
+        this.loadingOficiales = false;
+      }
+    });
+  }
+
 
   loadAdditionalData() {
     // Usamos forkJoin para manejar múltiples solicitudes en paralelo

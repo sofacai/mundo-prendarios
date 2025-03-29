@@ -1,210 +1,240 @@
-/* Estilos básicos del componente */
-.canal-detail {
-  margin-top: 1rem;
-}
-
-/* Cabecera principal del canal */
-.canal-header-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-  margin-bottom: 1.5rem;
-}
-
-/* Sección principal con imagen y título */
-.header-main-section {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #ebedf3;
-}
-
-.canal-logo {
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-
-  .logo-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* ===============================
+   ESTRUCTURA BÁSICA
+   =============================== */
+   .canal-detail {
+    margin-top: 1rem;
   }
 
-  .logo-placeholder {
-    width: 100%;
-    height: 100%;
-    background-color: #000;
+  .content-area {
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  .canales-container {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ===============================
+     CABECERA DEL CANAL
+     =============================== */
+  .canal-header-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Sección principal con imagen y título */
+  .header-main-section {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ebedf3;
+  }
 
-    span {
-      color: white;
-      font-size: 24px;
-      font-weight: 600;
+  .canal-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .logo-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .logo-placeholder {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      span {
+        color: white;
+        font-size: 24px;
+        font-weight: 600;
+      }
     }
   }
-}
 
-.title-container {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.canal-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #181c32;
-  margin: 0;
-}
-
-/* Badge de estado */
-
-.title-badge-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.status-badge {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 6px;
-
-  &.active {
-    background-color: #e8fff3;
-    color: #50cd89;
+  .title-container {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  &.inactive {
-    background-color: #fff5f8;
-    color: #f1416c;
-  }
-}
-
-/* Información del dueño */
-.owner-contact-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px 40px;
-  padding: 15px 0;
-  border-bottom: 1px solid #ebedf3;
-}
-
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  i {
-    font-size: 16px;
-    color: #a1a5b7;
-  }
-
-  span {
-    font-size: 14px;
-    color: #7e8299;
-  }
-}
-
-/* Cajas de estadísticas */
-.stats-section {
-  display: flex;
-  gap: 12px;
-  padding-top: 15px;
-}
-
-.stat-box {
-  flex: 1;
-  border: 1px solid #ebedf3;
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-  max-width: 200px;
-
-  .stat-number {
-    font-size: 22px;
+  .canal-title {
+    font-size: 24px;
     font-weight: 600;
     color: #181c32;
+    margin: 0;
   }
 
-  .stat-label {
+  /* Badge de estado */
+  .title-badge-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-badge {
     font-size: 12px;
-    color: #a1a5b7;
-    margin-top: 4px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 6px;
+
+    &.active {
+      background-color: #e8fff3;
+      color: #50cd89;
+    }
+
+    &.inactive {
+      background-color: #fff5f8;
+      color: #f1416c;
+    }
   }
-}
 
-/* Mantenemos los estilos originales para el resto de la aplicación */
-.tab-navigation {
-  border-bottom: 1px solid #eef0f2;
-  background-color: #fff;
-
-  .nav {
+  /* Información del dueño */
+  .owner-contact-info {
     display: flex;
     flex-wrap: wrap;
-    padding-left: 0;
-    margin-bottom: 0;
-    list-style: none;
+    gap: 20px 40px;
+    padding: 15px 0;
+    border-bottom: 1px solid #ebedf3;
+  }
 
-    .nav-item {
-      margin-bottom: -1px;
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-      .nav-link {
-        display: block;
-        padding: 1rem 1.5rem;
-        color: #5e6278;
-        transition: color 0.2s ease;
-        cursor: pointer;
+    i {
+      font-size: 16px;
+      color: #a1a5b7;
+    }
 
-        &.active {
-          color: #009ef7;
-          font-weight: 500;
-          border-bottom: 2px solid #009ef7;
-        }
+    span {
+      font-size: 14px;
+      color: #7e8299;
+    }
+  }
 
-        &:hover:not(.active) {
-          color: #009ef7;
-        }
+  /* Cajas de estadísticas */
+  .stats-section {
+    display: flex;
+    gap: 12px;
+    padding-top: 15px;
+  }
 
-        i {
-          margin-right: 0.5rem;
+  .stat-box {
+    flex: 1;
+    border: 1px solid #ebedf3;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    max-width: 200px;
+
+    .stat-number {
+      font-size: 22px;
+      font-weight: 600;
+      color: #181c32;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #a1a5b7;
+      margin-top: 4px;
+    }
+  }
+
+  /* ===============================
+     TABS Y NAVEGACIÓN
+     =============================== */
+  .tab-navigation {
+    border-bottom: 1px solid #eef0f2;
+    background-color: #fff;
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      padding-left: 0;
+      margin-bottom: 0;
+      list-style: none;
+
+      .nav-item {
+        margin-bottom: -1px;
+
+        .nav-link {
+          display: block;
+          padding: 1rem 1.5rem;
+          color: #5e6278;
+          transition: color 0.2s ease;
+          cursor: pointer;
+
+          &.active {
+            color: #009ef7;
+            font-weight: 500;
+            border-bottom: 2px solid #009ef7;
+          }
+
+          &:hover:not(.active) {
+            color: #009ef7;
+          }
+
+          i {
+            margin-right: 0.5rem;
+          }
         }
       }
     }
   }
-}
 
-.tab-content {
-  .tab-pane {
-    display: none;
+  .tab-content {
+    .tab-pane {
+      display: none;
 
-    &.active {
-      display: block;
+      &.active {
+        display: block;
+      }
     }
   }
-}
 
-.detail-card {
-  margin-bottom: 1.5rem;
+  /* ===============================
+     TARJETAS DE DETALLE
+     =============================== */
+  .detail-card {
+    margin-bottom: 1rem;
+    height: 100%;
+    position: relative;
 
-  .card-header {
-    background-color: transparent;
-    border-bottom: 1px solid #eef0f2;
-    padding: 1rem 1.25rem;
+    .card-header {
+      background-color: transparent;
+      border-bottom: 1px solid #eef0f2;
+      padding: 1rem 1.25rem;
 
-    .card-title {
-      margin-bottom: 0;
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: #181c32;
+      .card-title {
+        margin-bottom: 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #181c32;
+
+        i {
+          font-size: 1rem;
+          color: #009ef7;
+        }
+      }
     }
+  }
+
+  .card-body.p-4 {
+    padding: 1.5rem !important;
   }
 
   .detail-row {
@@ -220,119 +250,284 @@
       font-weight: 500;
     }
   }
-}
 
-.chart-container {
-  position: relative;
-  width: 100%;
-  canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-}
+  /* ===============================
+     OFICIALES COMERCIALES
+     =============================== */
+  .oficiales-comerciales-container {
+    height: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
 
-.content-area {
-  overflow-y: auto;
-  max-height: 100vh;
-}
-
-.canales-container {
-  overflow: hidden;
-  height: 100vh;
-}
-
-.card-body.p-4 {
-  padding: 1.5rem !important;
-}
-
-.badge {
-  padding: 0.5em 0.85em;
-  font-size: 85%;
-  font-weight: 500;
-  border-radius: 0.475rem;
-
-  &.badge-success {
-    background-color: #e8fff3;
-    color: #50cd89;
-  }
-
-  &.badge-danger {
-    background-color: #fff5f8;
-    color: #f1416c;
-  }
-}
-
-/* Responsive */
-@media (max-width: 767px) {
-  .canal-header-card {
-    padding: 16px;
-  }
-
-  .header-main-section {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .title-container {
-    width: 100%;
-    margin-top: 15px;
-  }
-
-  .owner-contact-info {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .stats-section {
-    flex-wrap: wrap;
-  }
-
-  .stat-box {
-    min-width: calc(33.33% - 8px);
-    max-width: none;
-    padding: 10px;
-
-    .stat-number {
-      font-size: 18px;
+    &::-webkit-scrollbar {
+      width: 4px;
     }
 
-    .stat-label {
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+
+  /* Información del oficial */
+  .oficial-info {
+    line-height: 1.3;
+
+    .small {
       font-size: 11px;
     }
   }
 
-  .tab-navigation .nav .nav-item .nav-link {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+  /* ===============================
+     TABLAS Y ESTILOS DE DATOS
+     =============================== */
+  /* Ajustes para tablas pequeñas */
+  .table-sm {
+    th {
+      padding: 10px 16px;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: #7E8299;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
 
-    i {
-      margin-right: 0.25rem;
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
     }
   }
-}
 
-@media (max-width: 991.98px) {
-  .border-start {
-    border-left: none !important;
-    padding-left: 0 !important;
-    margin-top: 1rem;
+  /* Badges y estados */
+  .badge {
+    padding: 0.5em 0.85em;
+    font-size: 85%;
+    font-weight: 500;
+    border-radius: 0.475rem;
   }
+
+  .badge-success {
+    background-color: #e8fff3;
+    color: #50cd89;
+  }
+
+  .badge-danger {
+    background-color: #fff5f8;
+    color: #f1416c;
+  }
+
+  /* Gráficos */
+  .chart-container {
+    position: relative;
+    width: 100%;
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  /* Spinner más pequeño */
+  .spinner-border-sm {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.2em;
+  }
+
+  /* ===============================
+     CLASES DE COMPATIBILIDAD
+     =============================== */
+  .canal-avatar .symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 0.5rem;
+  }
+
+  .symbol-80px {
+    width: 80px;
+    height: 80px;
+  }
+
+  .canal-header .card-body {
+    padding: 2rem !important;
+  }
+
+  /* ===============================
+     RESPONSIVE
+     =============================== */
+  @media (max-width: 767px) {
+    .canal-header-card {
+      padding: 16px;
+    }
+
+    .header-main-section {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .title-container {
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .owner-contact-info {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stats-section {
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      min-width: calc(33.33% - 8px);
+      max-width: none;
+      padding: 10px;
+
+      .stat-number {
+        font-size: 18px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+      }
+    }
+
+    .tab-navigation .nav .nav-item .nav-link {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+
+      i {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    .border-start {
+      border-left: none !important;
+      padding-left: 0 !important;
+      margin-top: 1rem;
+    }
+
+    .card.detail-card {
+      height: auto !important; /* Anular altura fija en móviles */
+    }
+
+    .d-flex.flex-column.flex-lg-row {
+      gap: 1rem !important;
+    }
+  }
+
+
+  /* Correcciones de espaciado para las cajas */
+.row.g-4 > .col-12 {
+  margin-bottom: 1.5rem;
 }
 
-/* Mantener compatibilidad con clases utilizadas en el resto del componente */
-.canal-avatar .symbol {
-  display: inline-flex;
+/* Espaciado entre cajas */
+.d-flex.flex-column.flex-lg-row.gap-4 {
+  gap: 1.5rem !important;
+}
+
+/* Ajuste de padding para las tarjetas */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.card .card-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid #ebedf3;
+}
+
+
+
+/* Estilo para los iconos de títulos */
+.card-title {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 0.5rem;
+  color: #181c32;
+  font-size: 1.15rem;
 }
 
-.symbol-80px {
-  width: 80px;
-  height: 80px;
+.card-title i {
+  color: #009ef7;
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
 }
 
-.canal-header .card-body {
-  padding: 2rem !important;
+/* Asegurar que las tarjetas tengan margen inferior */
+.detail-card {
+  margin-bottom: 1.5rem;
+}
+
+/* Espacio entre filas de información */
+.detail-label {
+  font-size: 0.85rem;
+  color: #a1a5b7;
+  margin-bottom: 0.35rem;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.detail-row {
+  margin-bottom: 1.25rem;
+}
+
+/* Estilos para la tabla de oficiales comerciales */
+.oficiales-comerciales-container {
+  height: 100%;
+}
+
+.table-sm th {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #a1a5b7;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  letter-spacing: 0.5px;
+}
+
+.table-sm td {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* Ajuste de estados */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Corrección para que el activo e inactivo se vean bien */
+.badge-success,
+.badge.active {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.badge-danger,
+.badge.inactive,
+.table-sm td .badge[class*="inactive"] {
+  background-color: #fff5f8;
+  color: #f1416c;
 }
