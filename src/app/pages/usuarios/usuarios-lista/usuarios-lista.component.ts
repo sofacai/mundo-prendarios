@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
 import { UsuarioFormComponent } from 'src/app/shared/modals/usuario-form/usuario-form.component';
 import { ModalEditarUsuarioComponent } from 'src/app/shared/modals/modal-editar-usuario/modal-editar-usuario.component';
 import { ModalVerUsuarioComponent } from 'src/app/shared/modals/modal-ver-usuario/modal-ver-usuario.component';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 // Tipo para ordenamiento
 interface SortState {
@@ -30,7 +33,7 @@ interface SortState {
   templateUrl: './usuarios-lista.component.html',
   styleUrls: ['./usuarios-lista.component.scss']
 })
-export class UsuariosListaComponent implements OnInit {
+export class UsuariosListaComponent implements OnInit, OnDestroy {
   usuarios: UsuarioDto[] = [];
   filteredUsuarios: UsuarioDto[] = []; // Lista filtrada para mostrar
   loading = true;
@@ -42,35 +45,84 @@ export class UsuariosListaComponent implements OnInit {
   usuarioIdVer: number | null = null;
   scrollbarWidth: number = 0;
 
+  // Sidebar collapsed state
+  isSidebarCollapsed = false;
+  private sidebarSubscription: Subscription | null = null;
+  sidebarLayoutLocked = false;
+
+
   // Búsqueda y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
+  filterActive: string = 'all'; // 'all', 'active', 'inactive'
   sortState: SortState = { column: '', direction: 'asc' };
 
   constructor(
     private usuarioService: UsuarioService,
     private router: Router,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private sidebarStateService: SidebarStateService
   ) { }
 
   ngOnInit() {
-    this.loadUsuarios();
-    // Calcular el ancho de la barra de desplazamiento
-    this.scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    // Lock sidebar state immediately
+    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
+    this.sidebarLayoutLocked = true;
+    this.adjustContentArea();
+
+    // Subscribe for future changes only
+    this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
+      collapsed => {
+        if (!this.sidebarLayoutLocked) {
+          // Only update if not loading data
+          this.isSidebarCollapsed = collapsed;
+          this.adjustContentArea();
+        }
+      }
+    );
+
+    // Now load data when layout is established
+    this.loadUsuarios(); // Replace with your load method
+  }
+
+  ngOnDestroy() {
+    if (this.sidebarSubscription) {
+      this.sidebarSubscription.unsubscribe();
+    }
+  }
+
+  private adjustContentArea() {
+    const contentArea = document.querySelector('.content-area') as HTMLElement;
+    if (contentArea) {
+      if (this.isSidebarCollapsed) {
+        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+      } else {
+        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+      }
+    }
   }
 
   loadUsuarios() {
     this.loading = true;
+    this.error = null;
+
+    // Lock sidebar during loading
+    this.sidebarLayoutLocked = true;
+
     this.usuarioService.getUsuarios().subscribe({
       next: (data) => {
         this.usuarios = data;
-        this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
+        this.applyFilters();
         this.loading = false;
+        // Unlock sidebar when done
+        this.sidebarLayoutLocked = false;
       },
       error: (err) => {
-        console.error('Error al cargar usuarios:', err);
-        this.error = 'No se pudieron cargar los usuarios. Por favor, intente nuevamente.';
+        console.error('Error al cargar xxx:', err);
+        this.error = 'No se pudieron cargar los xxx. Por favor, intente nuevamente.';
         this.loading = false;
+        // Unlock sidebar when done
+        this.sidebarLayoutLocked = false;
       }
     });
   }
@@ -80,27 +132,39 @@ export class UsuariosListaComponent implements OnInit {
     // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
+      console.log(`Searching for: "${this.searchTerm}"`);
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
+    console.log('Clearing search');
     this.searchTerm = '';
     this.applyFilters();
   }
 
   // Aplicar filtros y ordenamiento a la lista
   applyFilters() {
+    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.usuarios];
 
     // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 3) {
       const term = this.searchTerm.toLowerCase();
+      console.log(`Filtering by term: "${term}"`);
       result = result.filter(usuario =>
-        usuario.nombre.toLowerCase().includes(term) ||
-        usuario.apellido.toLowerCase().includes(term) ||
-        usuario.email.toLowerCase().includes(term)
+        usuario.nombre?.toLowerCase().includes(term) ||
+        usuario.apellido?.toLowerCase().includes(term) ||
+        usuario.email?.toLowerCase().includes(term)
       );
+      console.log(`After filtering: ${result.length} results`);
+    }
+
+    // Aplicar filtro por estado
+    if (this.filterActive === 'active') {
+      result = result.filter(usuario => usuario.activo);
+    } else if (this.filterActive === 'inactive') {
+      result = result.filter(usuario => !usuario.activo);
     }
 
     // Aplicar ordenamiento si está configurado
@@ -109,6 +173,7 @@ export class UsuariosListaComponent implements OnInit {
     }
 
     this.filteredUsuarios = result;
+    console.log(`Final filtered results: ${this.filteredUsuarios.length}`);
   }
 
   // Ordenar los datos según la columna seleccionada
@@ -123,13 +188,13 @@ export class UsuariosListaComponent implements OnInit {
       }
       // Para ordenar por nombre (concatenando nombre y apellido)
       else if (column === 'nombre') {
-        const nombreA = `${a.nombre} ${a.apellido}`.toLowerCase();
-        const nombreB = `${b.nombre} ${b.apellido}`.toLowerCase();
+        const nombreA = `${a.nombre || ''} ${a.apellido || ''}`.toLowerCase();
+        const nombreB = `${b.nombre || ''} ${b.apellido || ''}`.toLowerCase();
         return nombreA.localeCompare(nombreB) * factor;
       }
       // Para ordenar por email
       else if (column === 'email') {
-        return a.email.toLowerCase().localeCompare(b.email.toLowerCase()) * factor;
+        return (a.email || '').toLowerCase().localeCompare((b.email || '').toLowerCase()) * factor;
       }
       // Para ordenar por rol (usando rolId numérico)
       else if (column === 'rolId') {

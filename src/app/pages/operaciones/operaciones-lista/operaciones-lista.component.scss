@@ -1,5 +1,84 @@
 @import '../../../../theme/variables.scss';
 
+// Additional CSS to complement global styles
+
+// Filter actions styling
+.filter-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-select {
+  height: 38px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid #e4e6ef;
+  background-color: #f5f8fa;
+  padding: 0.35rem 2rem 0.35rem 1rem;
+  font-size: 0.95rem;
+  min-width: 140px;
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.15);
+    outline: none;
+  }
+}
+
+// Card improvements
+.card {
+  box-shadow: var(--card-box-shadow, 0 0 20px rgba(76, 87, 125, 0.05));
+  border-radius: var(--border-radius-md, 0.75rem);
+  overflow: hidden;
+
+  .card-header {
+    background-color: transparent;
+  }
+}
+
+// Improve table hover states
+.custom-table tbody tr {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}
+
+// Responsive search and filter container
+@media (max-width: 767.98px) {
+  .search-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .search-box, .filter-actions {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .filter-actions {
+    .form-select {
+      width: 100%;
+    }
+  }
+}
+
+// Make sure content adapts to sidebar
+@media (min-width: 992px) {
+  :host-context(.sidebar-collapsed) ~ .content-area {
+    margin-left: 70px;
+  }
+}
+
+// Make entire row clickable and improve appearance
+tr.cursor-pointer {
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f1f8ff !important;
+  }
+}
 
 /* Estilos para badges */
 .badge {
@@ -38,5 +117,3 @@
     color: #7e8299;
   }
 }
-
-

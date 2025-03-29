@@ -4,47 +4,64 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
-    <!-- Encabezado -->
-
-    <!-- Contenido de la tabla -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Listado de Operaciones</h2>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Operaciones</h1>
       </div>
+      <div class="page-actions">
+        <!-- Aquí podría ir un botón para crear nueva operación si es necesario -->
+      </div>
+    </div>
 
-      <!-- Buscador -->
-      <div class="card-body search-container">
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control search-input"
-            placeholder="Buscar por cliente o plan..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          >
-          <button
-            *ngIf="searchTerm"
-            class="btn-clear"
-            (click)="clearSearch()"
-          >
-            <i class="bi bi-x"></i>
-          </button>
+    <!-- Main Content Card -->
+    <div class="card">
+      <!-- Card Header with Search -->
+      <div class="card-header">
+        <div class="search-container">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Buscar por cliente o plan..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()">
+            <button
+              *ngIf="searchTerm"
+              class="btn-clear"
+              (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center">
+            <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
+              <option value="all">Todos los estados</option>
+              <option value="active">Activo</option>
+              <option value="pending">Pendiente</option>
+              <option value="completed">Completado</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
         </div>
       </div>
 
+      <!-- Card Body with Table -->
       <div class="card-body">
-        <!-- Indicador de carga -->
+        <!-- Loading Indicator -->
         <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary"></div>
           <p class="mt-2">Cargando operaciones...</p>
         </div>
 
-        <!-- Mensaje de error -->
+        <!-- Error Message -->
         <div *ngIf="error && !loading" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
           {{ error }}
         </div>
 
-        <!-- Tabla de datos -->
+        <!-- Table Content -->
         <div *ngIf="!loading && !error" class="table-responsive">
           <table class="custom-table">
             <thead>
@@ -85,17 +102,16 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('estado')"></i>
                 </th>
-                <th style="width: 80px" class="text-center">Detalle</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let operacion of filteredOperaciones">
+              <tr *ngFor="let operacion of filteredOperaciones" (click)="verDetalle(operacion.id)" class="cursor-pointer">
                 <td>{{ operacion.id }}</td>
                 <td>
-                  <div>
-                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(operacion.id)">
+                  <div style="display: block;">
+                    <span class="text-dark fw-bold text-hover-primary">
                       {{ operacion.nombreCliente }} {{ operacion.apellidoCliente }}
-                    </a>
+                    </span>
                   </div>
                 </td>
                 <td>{{ operacion.plan }}</td>
@@ -109,21 +125,22 @@
                     {{ operacion.estado }}
                   </div>
                 </td>
-                <td class="text-center">
-                  <div class="actions-container">
-                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(operacion.id)">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </div>
-                </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay operaciones o resultados -->
+          <!-- Empty State -->
           <div *ngIf="filteredOperaciones.length === 0" class="text-center p-5">
-            <p *ngIf="searchTerm">No se encontraron operaciones que coincidan con "{{ searchTerm }}".</p>
-            <p *ngIf="!searchTerm">No hay operaciones registradas.</p>
+            <div class="text-center">
+              <i class="bi bi-file-earmark-text fs-1 text-muted mb-3"></i>
+              <h4>No se encontraron operaciones</h4>
+              <p class="text-muted" *ngIf="searchTerm">
+                No hay resultados que coincidan con "{{ searchTerm }}"
+              </p>
+              <p class="text-muted" *ngIf="!searchTerm">
+                No hay operaciones registradas en el sistema
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -131,7 +148,7 @@
   </div>
 </div>
 
-
+<!-- Modal para ver detalles de la operación -->
 <app-modal-ver-operacion
   [isOpen]="modalVerOperacionOpen"
   [operacionId]="operacionIdSeleccionada"

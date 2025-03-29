@@ -1,3 +1,5 @@
+// src/app/pages/canales/canales-lista/canales-lista.component.ts
+
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
@@ -57,11 +59,9 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     private canalService: CanalService,
     private renderer: Renderer2,
     private sidebarStateService: SidebarStateService
-
   ) { }
 
   ngOnInit() {
-
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
       collapsed => {
@@ -70,8 +70,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.loadCanales();
-
+    // Load canales only once
     this.loadCanales();
   }
 
@@ -92,11 +91,12 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     }
   }
 
-
   loadCanales() {
     this.loading = true;
+    console.log('Loading canales...');
     this.canalService.getCanales().subscribe({
       next: (data) => {
+        console.log(`Loaded ${data.length} canales`);
         this.canales = data;
         this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
         this.loading = false;
@@ -114,28 +114,33 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
+      console.log(`Searching for: "${this.searchTerm}"`);
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
+    console.log('Clearing search');
     this.searchTerm = '';
     this.applyFilters();
   }
 
   // Aplicar filtros, búsqueda y ordenamiento a la lista
   applyFilters() {
+    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.canales];
 
     // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 2) {
       const term = this.searchTerm.toLowerCase();
+      console.log(`Filtering by term: "${term}"`);
       result = result.filter(canal =>
-        canal.nombreFantasia.toLowerCase().includes(term) ||
-        canal.razonSocial.toLowerCase().includes(term) ||
-        canal.tipoCanal.toLowerCase().includes(term) ||
+        canal.nombreFantasia?.toLowerCase().includes(term) ||
+        canal.razonSocial?.toLowerCase().includes(term) ||
+        canal.tipoCanal?.toLowerCase().includes(term) ||
         (canal.provincia && canal.provincia.toLowerCase().includes(term))
       );
+      console.log(`After filtering: ${result.length} results`);
     }
 
     // Aplicar filtro por estado
@@ -151,7 +156,10 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     }
 
     this.filteredCanales = result;
+    console.log(`Final filtered results: ${this.filteredCanales.length}`);
   }
+
+  // Resto del código permanece igual...
 
   // Ordenar los datos según la columna seleccionada
   sortData(data: Canal[]): Canal[] {
@@ -279,12 +287,12 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
   // Devuelve el conteo de planes activos
   getPlanesCantidad(canal: Canal): number {
-    return canal.planesCanal.filter(pc => pc.activo).length;
+    return canal.planesCanal?.filter(pc => pc.activo)?.length || 0;
   }
 
   // Devuelve la cantidad de subcanales
   getSubcanalesCantidad(canal: Canal): number {
-    return canal.subcanales.length;
+    return canal.subcanales?.length || 0;
   }
 
   // Devuelve la clase CSS según el estado

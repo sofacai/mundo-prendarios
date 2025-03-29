@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { PlanService, Plan } from 'src/app/core/services/plan.service';
 import { PlanFormComponent } from 'src/app/shared/modals/plan-form/plan-form.component';
 import { ModalEditarPlanComponent } from 'src/app/shared/modals/modal-editar-plan/modal-editar-plan.component';
 import { ModalVerPlanComponent } from 'src/app/shared/modals/modal-ver-plan/modal-ver-plan.component';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 // Tipo para ordenamiento
 interface SortState {
@@ -30,7 +33,7 @@ interface SortState {
   templateUrl: './planes-lista.component.html',
   styleUrls: ['./planes-lista.component.scss']
 })
-export class PlanesListaComponent implements OnInit {
+export class PlanesListaComponent implements OnInit, OnDestroy {
   planes: Plan[] = [];
   filteredPlanes: Plan[] = []; // Lista filtrada para mostrar
   loading = true;
@@ -42,63 +45,123 @@ export class PlanesListaComponent implements OnInit {
   planIdVer: number | null = null;
   scrollbarWidth: number = 0;
 
+  // Sidebar collapsed state
+  isSidebarCollapsed = false;
+  private sidebarSubscription: Subscription | null = null;
+  sidebarLayoutLocked = false;
+
+
   // Búsqueda y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
+  filterActive: string = 'all'; // 'all', 'active', 'inactive'
   sortState: SortState = { column: '', direction: 'asc' };
 
   constructor(
     private planService: PlanService,
     private router: Router,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private sidebarStateService: SidebarStateService
   ) { }
 
   ngOnInit() {
-    this.loadPlanes();
-    // Calcular el ancho de la barra de desplazamiento
-    this.scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    // Lock sidebar state immediately
+    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
+    this.sidebarLayoutLocked = true;
+    this.adjustContentArea();
+
+    // Subscribe for future changes only
+    this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
+      collapsed => {
+        if (!this.sidebarLayoutLocked) {
+          // Only update if not loading data
+          this.isSidebarCollapsed = collapsed;
+          this.adjustContentArea();
+        }
+      }
+    );
+
+    // Now load data when layout is established
+    this.loadPlanes(); // Replace with your load method
+  }
+
+  ngOnDestroy() {
+    if (this.sidebarSubscription) {
+      this.sidebarSubscription.unsubscribe();
+    }
+  }
+
+  private adjustContentArea() {
+    const contentArea = document.querySelector('.content-area') as HTMLElement;
+    if (contentArea) {
+      if (this.isSidebarCollapsed) {
+        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+      } else {
+        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+      }
+    }
   }
 
   loadPlanes() {
-    this.loading = true;
-    this.planService.getPlanes().subscribe({
-      next: (data) => {
-        this.planes = data;
-        this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar planes:', err);
-        this.error = 'No se pudieron cargar los planes. Por favor, intente nuevamente.';
-        this.loading = false;
-      }
-    });
-  }
+  this.error = null;
+
+  // Lock sidebar during loading
+  this.sidebarLayoutLocked = true;
+
+  this.planService.getPlanes().subscribe({
+    next: (data) => {
+      this.planes = data;
+      this.applyFilters();
+      this.loading = false;
+      // Unlock sidebar when done
+      this.sidebarLayoutLocked = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar xxx:', err);
+      this.error = 'No se pudieron cargar los xxx. Por favor, intente nuevamente.';
+      this.loading = false;
+      // Unlock sidebar when done
+      this.sidebarLayoutLocked = false;
+    }
+  });
+}
 
   // Funciones para búsqueda
   onSearchChange() {
     // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
+      console.log(`Searching for: "${this.searchTerm}"`);
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
+    console.log('Clearing search');
     this.searchTerm = '';
     this.applyFilters();
   }
 
   // Aplicar filtros y ordenamiento a la lista
   applyFilters() {
+    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.planes];
 
     // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 3) {
       const term = this.searchTerm.toLowerCase();
+      console.log(`Filtering by term: "${term}"`);
       result = result.filter(plan =>
-        plan.nombre.toLowerCase().includes(term)
+        (plan.nombre?.toLowerCase() || '').includes(term)
       );
+      console.log(`After filtering: ${result.length} results`);
+    }
+
+    // Aplicar filtro por estado
+    if (this.filterActive === 'active') {
+      result = result.filter(plan => plan.activo);
+    } else if (this.filterActive === 'inactive') {
+      result = result.filter(plan => !plan.activo);
     }
 
     // Aplicar ordenamiento si está configurado
@@ -107,6 +170,7 @@ export class PlanesListaComponent implements OnInit {
     }
 
     this.filteredPlanes = result;
+    console.log(`Final filtered results: ${this.filteredPlanes.length}`);
   }
 
   // Ordenar los datos según la columna seleccionada
@@ -121,7 +185,7 @@ export class PlanesListaComponent implements OnInit {
       }
       // Para texto (nombre)
       else if (column === 'nombre') {
-        return a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase()) * factor;
+        return (a.nombre || '').toLowerCase().localeCompare((b.nombre || '').toLowerCase()) * factor;
       }
       // Para ordenar por montos (usando el monto máximo)
       else if (column === 'montoMaximo') {
@@ -133,14 +197,14 @@ export class PlanesListaComponent implements OnInit {
       }
       // Para ordenar por cuotas (usando la cuota máxima)
       else if (column === 'cuotasAplicablesList') {
-        const maxCuotaA = Math.max(...a.cuotasAplicablesList);
-        const maxCuotaB = Math.max(...b.cuotasAplicablesList);
+        const maxCuotaA = a.cuotasAplicablesList?.length ? Math.max(...a.cuotasAplicablesList) : 0;
+        const maxCuotaB = b.cuotasAplicablesList?.length ? Math.max(...b.cuotasAplicablesList) : 0;
         return (maxCuotaA - maxCuotaB) * factor;
       }
       // Para ordenar por fecha
       else if (column === 'fechaInicio') {
-        const dateA = new Date(a.fechaInicio).getTime();
-        const dateB = new Date(b.fechaInicio).getTime();
+        const dateA = a.fechaInicio ? new Date(a.fechaInicio).getTime() : 0;
+        const dateB = b.fechaInicio ? new Date(b.fechaInicio).getTime() : 0;
         return (dateA - dateB) * factor;
       }
       // Para ordenar por estado (activo/inactivo)
@@ -216,14 +280,19 @@ export class PlanesListaComponent implements OnInit {
   }
 
   formatCuotas(cuotasAplicablesList: number[]): string {
+    if (!cuotasAplicablesList || cuotasAplicablesList.length === 0) {
+      return '-';
+    }
     return cuotasAplicablesList.join(', ');
   }
 
   formatMonto(monto: number): string {
+    if (monto === undefined || monto === null) return '0';
     return monto.toLocaleString('es-AR');
   }
 
   formatTasa(tasa: number): string {
+    if (tasa === undefined || tasa === null) return '0%';
     return tasa.toFixed(2) + '%';
   }
 

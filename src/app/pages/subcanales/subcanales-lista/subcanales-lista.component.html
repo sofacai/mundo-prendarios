@@ -4,51 +4,64 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
-    <!-- Encabezado -->
-
-    <!-- Contenido de la tabla -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Listado de Subcanales</h2>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Subcanales</h1>
       </div>
-
-      <!-- Buscador -->
-      <div class="card-body search-container">
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control search-input"
-            placeholder="Buscar por nombre..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          >
-          <button
-            *ngIf="searchTerm"
-            class="btn-clear"
-            (click)="clearSearch()"
-          >
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
-
+      <div class="page-actions">
         <button class="btn btn-primary" (click)="abrirModalNuevoSubcanal()">
           <i class="bi bi-plus"></i> Nuevo Subcanal
         </button>
       </div>
+    </div>
 
+    <!-- Main Content Card -->
+    <div class="card">
+      <!-- Card Header with Search -->
+      <div class="card-header">
+        <div class="search-container">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Buscar subcanal..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()">
+            <button
+              *ngIf="searchTerm"
+              class="btn-clear"
+              (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center">
+            <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Body with Table -->
       <div class="card-body">
-        <!-- Indicador de carga -->
+        <!-- Loading Indicator -->
         <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary"></div>
           <p class="mt-2">Cargando subcanales...</p>
         </div>
 
-        <!-- Mensaje de error -->
+        <!-- Error Message -->
         <div *ngIf="error && !loading" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
           {{ error }}
         </div>
 
-        <!-- Tabla de datos -->
+        <!-- Table Content -->
         <div *ngIf="!loading && !error" class="table-responsive">
           <table class="custom-table">
             <thead>
@@ -77,18 +90,17 @@
                   Gastos
                   <i class="bi" [ngClass]="getSortIcon('gastos')"></i>
                 </th>
-                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let subcanal of filteredSubcanales">
                 <td>{{ subcanal.id }}</td>
                 <td>
-                  <div>
+                  <div style="display: block;">
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(subcanal.id)">
                       {{ subcanal.nombre }}
                     </a>
-                    <div class="text-muted fs-7">Canal: {{ subcanal.canalNombre }}</div>
+                    <div class="text-muted fs-7" style="display: block; margin-top: 4px;">Canal: {{ subcanal.canalNombre }}</div>
                   </div>
                 </td>
                 <td>
@@ -99,7 +111,7 @@
                 </td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(subcanal.activo)">
-                    {{ subcanal.activo ? 'Activado' : 'Desactivado' }}
+                    {{ subcanal.activo ? 'Activo' : 'Inactivo' }}
                   </div>
                 </td>
                 <td>
@@ -112,53 +124,49 @@
                     {{ getGastosPorcentaje(subcanal) }}
                   </span>
                 </td>
-                <td class="text-center">
-                  <div class="actions-container">
-                    <!-- Botón de editar -->
-                    <button class="btn-action" title="Editar subcanal" (click)="abrirModalEditarSubcanal(subcanal.id)">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-
-                    <!-- Botón de ver detalle -->
-                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(subcanal.id)">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </div>
-                </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay datos -->
+          <!-- Empty State -->
           <div *ngIf="filteredSubcanales.length === 0" class="text-center p-5">
-            <p *ngIf="searchTerm">No se encontraron subcanales que coincidan con "{{ searchTerm }}".</p>
-            <p *ngIf="!searchTerm">No hay subcanales registrados.</p>
+            <div class="text-center">
+              <i class="bi bi-grid-3x3-gap fs-1 text-muted mb-3"></i>
+              <h4>No se encontraron subcanales</h4>
+              <p class="text-muted" *ngIf="searchTerm">
+                No hay resultados que coincidan con "{{ searchTerm }}"
+              </p>
+              <p class="text-muted" *ngIf="!searchTerm">
+                No hay subcanales registrados en el sistema
+              </p>
+              <button class="btn btn-primary mt-3" (click)="abrirModalNuevoSubcanal()">
+                <i class="bi bi-plus"></i> Nuevo Subcanal
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Modal para crear subcanal -->
-  <app-subcanal-form
-    [isOpen]="modalOpen"
-    (closeModal)="cerrarModal()"
-    (subcanalCreado)="onSubcanalCreado($event)">
-  </app-subcanal-form>
-
-  <!-- Modal para editar subcanal -->
-  <app-modal-editar-subcanal
-    [isOpen]="modalEditarOpen"
-    [subcanalId]="subcanalIdEditar"
-    (closeModal)="cerrarModalEditar()"
-    (subcanalActualizado)="onSubcanalActualizado($event)">
-  </app-modal-editar-subcanal>
-
-  <!-- Modal para ver subcanal -->
-  <app-modal-ver-subcanal
-    [isOpen]="modalVerOpen"
-    [subcanalId]="subcanalIdVer"
-    (closeModal)="cerrarModalVer()"
-    (editRequest)="onEditarSolicitado($event)">
-  </app-modal-ver-subcanal>
 </div>
+
+<!-- Modales -->
+<app-subcanal-form
+  [isOpen]="modalOpen"
+  (closeModal)="cerrarModal()"
+  (subcanalCreado)="onSubcanalCreado($event)">
+</app-subcanal-form>
+
+<app-modal-editar-subcanal
+  [isOpen]="modalEditarOpen"
+  [subcanalId]="subcanalIdEditar"
+  (closeModal)="cerrarModalEditar()"
+  (subcanalActualizado)="onSubcanalActualizado($event)">
+</app-modal-editar-subcanal>
+
+<app-modal-ver-subcanal
+  [isOpen]="modalVerOpen"
+  [subcanalId]="subcanalIdVer"
+  (closeModal)="cerrarModalVer()"
+  (editRequest)="onEditarSolicitado($event)">
+</app-modal-ver-subcanal>

@@ -18,35 +18,31 @@ export class SidebarComponent implements OnInit {
   isSidebarCollapsed: boolean = false;
   isMobile: boolean = false;
 
-  // Menú desplegable
+  // Dropdown menu
   isCanalesExpanded: boolean = false;
 
   // Event emitter for sidebar state changes
   @Output() sidebarStateChanged = new EventEmitter<boolean>();
 
-  // Exponer RolType para usarlo en el template
+  // Expose RolType for template usage
   rolType = RolType;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private sidebarStateService: SidebarStateService
-
   ) {
-
-    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
-
-    // Suscribirse a los eventos de navegación para manejar automáticamente
-    // la expansión del menú de Canales basado en la ruta
+    // Subscribe to navigation events to handle menu expansion
+    // based on current route
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      // Expandir automáticamente el menú de Canales cuando la ruta coincide
+      // Automatically expand Canales menu when route matches
       if (this.isCanalesRelatedRoute(event.url)) {
         this.isCanalesExpanded = true;
       }
 
-      // En dispositivos móviles, colapsar el sidebar después de la navegación
+      // On mobile devices, collapse sidebar after navigation
       if (this.isMobile && !this.isSidebarCollapsed) {
         this.toggleSidebar();
       }
@@ -54,10 +50,10 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Obtener el rol del usuario desde el servicio de autenticación
+    // Get user role from authentication service
     this.getUserRole();
 
-    // Suscribirse a cambios en el usuario actual
+    // Subscribe to changes in current user
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.userRole = user.rolId;
@@ -66,25 +62,23 @@ export class SidebarComponent implements OnInit {
       }
     });
 
-    // Comprobar si estamos en móvil al iniciar
+    // Check if we're on mobile
     this.checkScreenSize();
 
-    // En móvil, el sidebar comienza colapsado
-    this.isSidebarCollapsed = this.isMobile;
-
-    // Verificar la ruta actual para expandir el menú de Canales si es necesario
-    if (this.isCanalesRelatedRoute(this.router.url)) {
-      this.isCanalesExpanded = true;
+    // Always default to expanded on desktop, collapsed on mobile
+    if (this.isMobile) {
+      this.isSidebarCollapsed = true;
+    } else {
+      // On desktop, default to expanded unless explicitly collapsed by user
+      this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     }
 
-    // Cargar la preferencia del sidebar desde localStorage (solo en desktop)
-    if (!this.isMobile) {
-      const savedState = localStorage.getItem('sidebarCollapsed');
-      if (savedState !== null) {
-        this.isSidebarCollapsed = savedState === 'true';
-        // Emit initial state
-        this.sidebarStateChanged.emit(this.isSidebarCollapsed);
-      }
+    // Emit initial state
+    this.sidebarStateChanged.emit(this.isSidebarCollapsed);
+
+    // Check current route to expand Canales menu if needed
+    if (this.isCanalesRelatedRoute(this.router.url)) {
+      this.isCanalesExpanded = true;
     }
   }
 
@@ -97,33 +91,30 @@ export class SidebarComponent implements OnInit {
     const oldIsMobile = this.isMobile;
     this.isMobile = window.innerWidth < 992; // Bootstrap lg breakpoint
 
-    // Si cambiamos de desktop a móvil
+    // If we changed from desktop to mobile
     if (!oldIsMobile && this.isMobile) {
       this.isSidebarCollapsed = true;
       this.sidebarStateChanged.emit(this.isSidebarCollapsed);
     }
-    // Si cambiamos de móvil a desktop, restaurar preferencia guardada
+    // If we changed from mobile to desktop, restore saved preference
     else if (oldIsMobile && !this.isMobile) {
-      const savedState = localStorage.getItem('sidebarCollapsed');
-      this.isSidebarCollapsed = savedState === 'true';
+      this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
       this.sidebarStateChanged.emit(this.isSidebarCollapsed);
     }
   }
 
   /**
-   * Alterna el estado de colapso del sidebar
+   * Toggle sidebar collapsed state
    */
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
 
-    // Notificar a otros componentes
+    // Notify other components
     this.sidebarStateService.setCollapsed(this.isSidebarCollapsed);
-
-    // No es necesario guardar en localStorage aquí, lo hace el servicio
   }
 
   /**
-   * Alterna la expansión del menú de Canales
+   * Toggle Canales menu expansion
    */
   toggleCanalesMenu(event?: Event): void {
     if (event) {
@@ -131,7 +122,7 @@ export class SidebarComponent implements OnInit {
     }
 
     if (this.isSidebarCollapsed) {
-      // En modo colapsado, navegar directamente a la página principal
+      // In collapsed mode, navigate directly to main page
       this.navigateTo('/canales');
     } else {
       this.isCanalesExpanded = !this.isCanalesExpanded;
@@ -139,7 +130,7 @@ export class SidebarComponent implements OnInit {
   }
 
   /**
-   * Método para navegar a una ruta
+   * Navigate to a route
    */
   navigateTo(route: string): void {
     if (this.isMobile) {
@@ -157,21 +148,21 @@ export class SidebarComponent implements OnInit {
   }
 
   /**
-   * Verifica si una ruta está activa
+   * Check if a route is active
    */
   isActiveRoute(route: string): boolean {
     return this.router.url === route || this.router.url.startsWith(route + '/');
   }
 
   /**
-   * Verifica si alguna ruta del menú de canales está activa
+   * Check if any Canales menu route is active
    */
   isCanalesMenuActive(): boolean {
     return this.isCanalesRelatedRoute(this.router.url);
   }
 
   /**
-   * Verifica si la ruta está relacionada con el menú de Canales
+   * Check if the route is related to the Canales menu
    */
   private isCanalesRelatedRoute(url: string): boolean {
     return url === '/canales' ||

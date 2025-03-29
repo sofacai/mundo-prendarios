@@ -6,8 +6,13 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class SidebarStateService {
-  private collapsedSubject = new BehaviorSubject<boolean>(false);
+  private collapsedSubject = new BehaviorSubject<boolean>(this.getInitialState());
   collapsed$ = this.collapsedSubject.asObservable();
+
+  constructor() {
+    // Initialize on service creation
+    this.collapsedSubject.next(this.getInitialState());
+  }
 
   setCollapsed(isCollapsed: boolean): void {
     this.collapsedSubject.next(isCollapsed);

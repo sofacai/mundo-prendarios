@@ -4,45 +4,54 @@
 
   <!-- Contenido principal -->
   <div class="content-area">
-    <!-- Contenido de la tabla -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Listado de Clientes</h2>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Clientes</h1>
       </div>
+      <div class="page-actions">
+        <!-- Si se necesita un botón para crear un nuevo cliente, se podría agregar aquí -->
+      </div>
+    </div>
 
-      <!-- Buscador -->
-      <div class="card-body search-container">
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control search-input"
-            placeholder="Buscar por nombre o email..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          >
-          <button
-            *ngIf="searchTerm"
-            class="btn-clear"
-            (click)="clearSearch()"
-          >
-            <i class="bi bi-x"></i>
-          </button>
+    <!-- Main Content Card -->
+    <div class="card">
+      <!-- Card Header with Search -->
+      <div class="card-header">
+        <div class="search-container">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Buscar cliente por nombre, email, DNI o CUIL..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()">
+            <button
+              *ngIf="searchTerm"
+              class="btn-clear"
+              (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
         </div>
       </div>
 
+      <!-- Card Body with Table -->
       <div class="card-body">
-        <!-- Indicador de carga -->
+        <!-- Loading Indicator -->
         <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary"></div>
           <p class="mt-2">Cargando clientes...</p>
         </div>
 
-        <!-- Mensaje de error -->
+        <!-- Error Message -->
         <div *ngIf="error && !loading" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
           {{ error }}
         </div>
 
-        <!-- Tabla de datos -->
+        <!-- Table Content -->
         <div *ngIf="!loading && !error" class="table-responsive">
           <table class="custom-table">
             <thead>
@@ -74,40 +83,39 @@
                 <th>
                   Canal
                 </th>
-                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let cliente of filteredClientes">
+              <tr *ngFor="let cliente of filteredClientes" (click)="verDetalle(cliente.id)" class="cursor-pointer">
                 <td>{{ cliente.id }}</td>
                 <td>{{ formatDate(cliente.fechaCreacion) }}</td>
                 <td>{{ formatDate(cliente.ultimaModificacion, cliente) }}</td>
                 <td>
-                  <div>
-                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(cliente.id)">
+                  <div style="display: block;">
+                    <span class="text-dark fw-bold text-hover-primary">
                       {{ cliente.nombre }} {{ cliente.apellido }}
-                    </a>
+                    </span>
                   </div>
                 </td>
                 <td>{{ cliente.email }}</td>
                 <td>{{ cliente.telefono }}</td>
                 <td>{{ cliente.canalNombre }}</td>
-                <td class="text-center">
-                  <div class="actions-container">
-                    <!-- Botón de ver detalle -->
-                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(cliente.id)">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </div>
-                </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Mensaje cuando no hay clientes o resultados -->
+          <!-- Empty State -->
           <div *ngIf="filteredClientes.length === 0" class="text-center p-5">
-            <p *ngIf="searchTerm">No se encontraron clientes que coincidan con "{{ searchTerm }}".</p>
-            <p *ngIf="!searchTerm">No hay clientes registrados.</p>
+            <div class="text-center">
+              <i class="bi bi-people fs-1 text-muted mb-3"></i>
+              <h4>No se encontraron clientes</h4>
+              <p class="text-muted" *ngIf="searchTerm">
+                No hay resultados que coincidan con "{{ searchTerm }}"
+              </p>
+              <p class="text-muted" *ngIf="!searchTerm">
+                No hay clientes registrados en el sistema
+              </p>
+            </div>
           </div>
         </div>
       </div>

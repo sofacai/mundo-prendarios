@@ -2,47 +2,63 @@
   <app-sidebar></app-sidebar>
 
   <div class="content-area">
-
-
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Listado de Planes</h2>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Planes</h1>
       </div>
-
-      <!-- Buscador -->
-      <div class="card-body search-container">
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control search-input"
-            placeholder="Buscar por nombre..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          >
-          <button
-            *ngIf="searchTerm"
-            class="btn-clear"
-            (click)="clearSearch()"
-          >
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
+      <div class="page-actions">
         <button class="btn btn-primary" (click)="abrirModalNuevoPlan()">
           <i class="bi bi-plus"></i> Nuevo Plan
         </button>
       </div>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="card">
+      <!-- Card Header with Search -->
+      <div class="card-header">
+        <div class="search-container">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Buscar por nombre..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()">
+            <button
+              *ngIf="searchTerm"
+              class="btn-clear"
+              (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center">
+            <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       <div class="card-body">
-        <!-- Indicador de carga -->
+        <!-- Loading Indicator -->
         <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary"></div>
           <p class="mt-2">Cargando planes...</p>
         </div>
 
+        <!-- Error Message -->
         <div *ngIf="error && !loading" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
           {{ error }}
         </div>
 
+        <!-- Table Content -->
         <div *ngIf="!loading && !error" class="table-responsive">
           <table class="custom-table">
             <thead>
@@ -61,7 +77,6 @@
                 </th>
                 <th>
                   Cuotas
-
                 </th>
                 <th (click)="sortBy('tasa')" class="sortable-header">
                   Tasa
@@ -75,16 +90,15 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
                 </th>
-                <th style="width: 120px" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let plan of filteredPlanes">
+              <tr *ngFor="let plan of filteredPlanes" (click)="verDetalle(plan.id)" class="cursor-pointer">
                 <td>{{ plan.id }}</td>
                 <td>
-                  <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(plan.id)">
+                  <span class="text-dark fw-bold text-hover-primary">
                     {{ plan.nombre }}
-                  </a>
+                  </span>
                 </td>
                 <td>${{ formatMonto(plan.montoMinimo) }} - ${{ formatMonto(plan.montoMaximo) }}</td>
                 <td>
@@ -103,29 +117,28 @@
                 </td>
                 <td>
                   <div class="badge" [ngClass]="getEstadoClass(plan.activo)">
-                    {{ plan.activo ? 'Activado' : 'Desactivado' }}
-                  </div>
-                </td>
-                <td class="text-center">
-                  <div class="actions-container">
-                    <!-- Botón de editar -->
-                    <button class="btn-action" title="Editar plan" (click)="abrirModalEditarPlan(plan.id)">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-
-                    <!-- Botón de ver detalle -->
-                    <button class="btn-action" title="Ver detalles" (click)="verDetalle(plan.id)">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
+                    {{ plan.activo ? 'Activo' : 'Inactivo' }}
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
 
+          <!-- Empty State -->
           <div *ngIf="filteredPlanes.length === 0" class="text-center p-5">
-            <p *ngIf="searchTerm">No se encontraron planes que coincidan con "{{ searchTerm }}".</p>
-            <p *ngIf="!searchTerm">No hay planes registrados.</p>
+            <div class="text-center">
+              <i class="bi bi-clipboard-data fs-1 text-muted mb-3"></i>
+              <h4>No se encontraron planes</h4>
+              <p class="text-muted" *ngIf="searchTerm">
+                No hay resultados que coincidan con "{{ searchTerm }}"
+              </p>
+              <p class="text-muted" *ngIf="!searchTerm">
+                No hay planes registrados en el sistema
+              </p>
+              <button class="btn btn-primary mt-3" (click)="abrirModalNuevoPlan()">
+                <i class="bi bi-plus"></i> Nuevo Plan
+              </button>
+            </div>
           </div>
         </div>
       </div>

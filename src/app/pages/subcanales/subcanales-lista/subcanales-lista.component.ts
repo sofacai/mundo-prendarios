@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
 import { SubcanalFormComponent } from 'src/app/shared/modals/subcanal-form/subcanal-form.component';
 import { ModalEditarSubcanalComponent } from 'src/app/shared/modals/modal-editar-subcanal/modal-editar-subcanal.component';
 import { ModalVerSubcanalComponent } from 'src/app/shared/modals/modal-ver-subcanal/modal-ver-subcanal.component';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 // Tipo para ordenamiento
 interface SortState {
@@ -30,7 +33,7 @@ interface SortState {
   templateUrl: './subcanales-lista.component.html',
   styleUrls: ['./subcanales-lista.component.scss']
 })
-export class SubcanalesListaComponent implements OnInit {
+export class SubcanalesListaComponent implements OnInit, OnDestroy {
   subcanales: Subcanal[] = [];
   filteredSubcanales: Subcanal[] = []; // Lista filtrada para mostrar
   loading = false;
@@ -42,70 +45,126 @@ export class SubcanalesListaComponent implements OnInit {
   subcanalIdVer: number | null = null;
   scrollbarWidth: number = 0;
 
+  // Sidebar collapsed state
+  isSidebarCollapsed = false;
+  private sidebarSubscription: Subscription | null = null;
+  sidebarLayoutLocked = false;
+
   // Búsqueda y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
+  filterActive: string = 'all'; // 'all', 'active', 'inactive'
   sortState: SortState = { column: '', direction: 'asc' };
 
   constructor(
     private subcanalService: SubcanalService,
     private router: Router,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private sidebarStateService: SidebarStateService
   ) { }
 
   ngOnInit() {
-    this.loadSubcanales();
-    // Calcular el ancho de la barra de desplazamiento
-    this.scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    // Lock sidebar state immediately
+    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
+    this.sidebarLayoutLocked = true;
+    this.adjustContentArea();
+
+    // Subscribe for future changes only
+    this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
+      collapsed => {
+        if (!this.sidebarLayoutLocked) {
+          // Only update if not loading data
+          this.isSidebarCollapsed = collapsed;
+          this.adjustContentArea();
+        }
+      }
+    );
+
+    // Now load data when layout is established
+    this.loadSubcanales(); // Replace with your load method
+  }
+
+  ngOnDestroy() {
+    if (this.sidebarSubscription) {
+      this.sidebarSubscription.unsubscribe();
+    }
+  }
+
+  private adjustContentArea() {
+    const contentArea = document.querySelector('.content-area') as HTMLElement;
+    if (contentArea) {
+      if (this.isSidebarCollapsed) {
+        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+      } else {
+        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+      }
+    }
   }
 
   loadSubcanales() {
-    // Si ya está cargando, no hacer nada
-    if (this.loading) return;
-
     this.loading = true;
-    console.log('Cargando lista de subcanales...');
+  this.error = null;
 
-    this.subcanalService.getSubcanales().subscribe({
-      next: (data) => {
-        this.subcanales = data;
-        this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
-        console.log(`${data.length} subcanales cargados`);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar subcanales:', err);
-        this.error = 'No se pudieron cargar los subcanales. Por favor, intente nuevamente.';
-        this.loading = false;
-      }
-    });
-  }
+  // Lock sidebar during loading
+  this.sidebarLayoutLocked = true;
+
+  this.subcanalService.getSubcanales().subscribe({
+    next: (data) => {
+      this.subcanales = data;
+      this.applyFilters();
+      this.loading = false;
+      // Unlock sidebar when done
+      this.sidebarLayoutLocked = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar xxx:', err);
+      this.error = 'No se pudieron cargar los xxx. Por favor, intente nuevamente.';
+      this.loading = false;
+      // Unlock sidebar when done
+      this.sidebarLayoutLocked = false;
+    }
+  });
+}
 
   // Funciones para búsqueda
   onSearchChange() {
     // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
+      console.log(`Searching for: "${this.searchTerm}"`);
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
+    console.log('Clearing search');
     this.searchTerm = '';
     this.applyFilters();
   }
 
   // Aplicar filtros y ordenamiento a la lista
   applyFilters() {
+    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.subcanales];
 
     // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 3) {
       const term = this.searchTerm.toLowerCase();
+      console.log(`Filtering by term: "${term}"`);
       result = result.filter(subcanal =>
-        subcanal.nombre.toLowerCase().includes(term) ||
-        subcanal.canalNombre.toLowerCase().includes(term)
+        subcanal.nombre?.toLowerCase().includes(term) ||
+        subcanal.canalNombre?.toLowerCase().includes(term) ||
+        subcanal.provincia?.toLowerCase().includes(term) ||
+        subcanal.localidad?.toLowerCase().includes(term)
       );
+      console.log(`After filtering: ${result.length} results`);
+    }
+
+    // Apply filter by estado (active/inactive)
+    if (this.filterActive === 'active') {
+      result = result.filter(subcanal => subcanal.activo);
+    } else if (this.filterActive === 'inactive') {
+      result = result.filter(subcanal => !subcanal.activo);
     }
 
     // Aplicar ordenamiento si está configurado
@@ -114,6 +173,7 @@ export class SubcanalesListaComponent implements OnInit {
     }
 
     this.filteredSubcanales = result;
+    console.log(`Final filtered results: ${this.filteredSubcanales.length}`);
   }
 
   // Ordenar los datos según la columna seleccionada
