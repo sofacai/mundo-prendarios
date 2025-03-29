@@ -29,6 +29,7 @@
     "@ionic/angular": "^8.4.3",
     "@ionic/storage-angular": "^4.0.0",
     "bootstrap-icons": "^1.11.3",
+    "chart.js": "^4.4.8",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
