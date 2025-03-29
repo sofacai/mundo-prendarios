@@ -30,6 +30,12 @@ export const routes: Routes = [
     data: { roles: [RolType.Administrador, RolType.OficialComercial] }
   },
   {
+    path: 'canales/:id',
+    loadComponent: () => import('./pages/canales/canal-detalle/canal-detalle.component').then(m => m.CanalDetalleComponent),
+    canActivate: [AuthGuard],
+    data: { roles: [RolType.Administrador, RolType.OficialComercial] }
+  },
+  {
     path: 'subcanales',
     loadComponent: () => import('./pages/subcanales/subcanales-lista/subcanales-lista.component').then(m => m.SubcanalesListaComponent),
     canActivate: [AuthGuard],

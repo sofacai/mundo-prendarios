@@ -1,0 +1,651 @@
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main content -->
+  <div class="content-area">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title d-flex align-items-center">
+        <button class="btn btn-icon btn-light me-3" (click)="goBack()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <h1>Detalle del Canal</h1>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" (click)="editCanal()">
+          <i class="bi bi-pencil"></i> Editar Canal
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando información del canal...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Canal Content -->
+    <div *ngIf="canal && !loading && !error" class="canal-detail">
+      <!-- Canal Header -->
+      <div class="canal-header card mb-4">
+        <div class="card-body">
+          <div class="d-flex flex-wrap align-items-center">
+            <div class="canal-avatar me-3">
+              <div *ngIf="canal.foto" class="symbol symbol-100px">
+                <img [src]="canal.foto" alt="Logo del Canal" />
+              </div>
+              <div *ngIf="!canal.foto" class="symbol symbol-100px">
+                <div class="symbol-label fs-2">
+                  {{ canal.nombreFantasia ? canal.nombreFantasia.substring(0, 2).toUpperCase() : '' }}
+                </div>
+              </div>
+            </div>
+            <div class="canal-info flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
+                <div class="canal-name me-3">
+                  <h2 class="fs-2 fw-bold text-gray-800 mb-1">{{ canal.nombreFantasia }}</h2>
+                  <div class="text-muted fs-7">{{ canal.razonSocial }}</div>
+                </div>
+                <div class="canal-status">
+                  <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
+                    {{ canal.activo ? 'Activo' : 'Inactivo' }}
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap mt-4">
+                <div class="border border-dashed rounded min-w-125px py-3 px-4 me-3 mb-3">
+                  <div class="fs-6 text-gray-800 fw-bold">{{ canal.tipoCanal }}</div>
+                  <div class="fw-semibold fs-7 text-gray-500">Tipo de Canal</div>
+                </div>
+                <div class="border border-dashed rounded min-w-125px py-3 px-4 me-3 mb-3">
+                  <div class="fs-6 text-gray-800 fw-bold">
+                    {{ formatDate(canal.fechaAlta) }}
+                  </div>
+                  <div class="fw-semibold fs-7 text-gray-500">Fecha de Alta</div>
+                </div>
+                <div class="border border-dashed rounded min-w-125px py-3 px-4 me-3 mb-3">
+                  <div class="fs-6 text-gray-800 fw-bold">{{ totalOperaciones }}</div>
+                  <div class="fw-semibold fs-7 text-gray-500">Operaciones</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="canal-tabs card mb-4">
+        <div class="card-body p-0">
+          <div class="tab-navigation border-bottom">
+            <ul class="nav">
+              <li class="nav-item">
+                <a class="nav-link nav-link-border"
+                   [class.active]="activeTab === 'general'"
+                   (click)="setActiveTab('general')">
+                  <i class="bi bi-info-circle me-2"></i>
+                  General
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link nav-link-border"
+                   [class.active]="activeTab === 'subcanales'"
+                   (click)="setActiveTab('subcanales')">
+                  <i class="bi bi-diagram-3 me-2"></i>
+                  Subcanales
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link nav-link-border"
+                   [class.active]="activeTab === 'planes'"
+                   (click)="setActiveTab('planes')">
+                  <i class="bi bi-calendar me-2"></i>
+                  Planes
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link nav-link-border"
+                   [class.active]="activeTab === 'operaciones'"
+                   (click)="setActiveTab('operaciones')">
+                  <i class="bi bi-cash me-2"></i>
+                  Operaciones
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link nav-link-border"
+                   [class.active]="activeTab === 'vendedores'"
+                   (click)="setActiveTab('vendedores')">
+                  <i class="bi bi-people me-2"></i>
+                  Vendedores
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="statistics-row">
+        <div class="row g-3 g-xl-4">
+          <!-- Subcanales Stats -->
+          <div class="col-sm-6 col-xl-3">
+            <div class="card card-stat">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-stat icon-blue">
+                    <i class="bi bi-diagram-3"></i>
+                  </div>
+                  <div class="stat-content ms-3">
+                    <div class="stat-title text-gray-700 fw-bold fs-5">Subcanales</div>
+                    <div class="stat-number d-flex align-items-center fs-2 fw-bold">
+                      {{ subcanalesActivos + subcanalesInactivos }}
+                    </div>
+                    <div class="stat-desc d-flex align-items-center mt-1">
+                      <span class="badge badge-success me-2">{{ subcanalesActivos }}</span> activos
+                      <span class="badge badge-danger mx-2">{{ subcanalesInactivos }}</span> inactivos
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Planes Stats -->
+          <div class="col-sm-6 col-xl-3">
+            <div class="card card-stat">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-stat icon-orange">
+                    <i class="bi bi-calendar"></i>
+                  </div>
+                  <div class="stat-content ms-3">
+                    <div class="stat-title text-gray-700 fw-bold fs-5">Planes</div>
+                    <div class="stat-number d-flex align-items-center fs-2 fw-bold">
+                      {{ planesActivos + planesInactivos }}
+                    </div>
+                    <div class="stat-desc d-flex align-items-center mt-1">
+                      <span class="badge badge-success me-2">{{ planesActivos }}</span> activos
+                      <span class="badge badge-danger mx-2">{{ planesInactivos }}</span> inactivos
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operaciones Stats -->
+          <div class="col-sm-6 col-xl-3">
+            <div class="card card-stat">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-stat icon-green">
+                    <i class="bi bi-cash"></i>
+                  </div>
+                  <div class="stat-content ms-3">
+                    <div class="stat-title text-gray-700 fw-bold fs-5">Operaciones</div>
+                    <div class="stat-number d-flex align-items-center fs-2 fw-bold">
+                      {{ totalOperaciones }}
+                    </div>
+                    <div class="stat-desc d-flex align-items-center mt-1">
+                      <span class="text-muted">Total de operaciones</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vendedores Stats -->
+          <div class="col-sm-6 col-xl-3">
+            <div class="card card-stat">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="icon-stat icon-purple">
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div class="stat-content ms-3">
+                    <div class="stat-title text-gray-700 fw-bold fs-5">Vendedores</div>
+                    <div class="stat-number d-flex align-items-center fs-2 fw-bold">
+                      {{ totalVendedores }}
+                    </div>
+                    <div class="stat-desc d-flex align-items-center mt-1">
+                      <span class="text-muted">Asignados a subcanales</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content mt-4">
+        <!-- General Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'general'">
+          <div class="row g-3">
+            <!-- Información General -->
+            <div class="col-12 col-lg-6">
+              <div class="card detail-card">
+                <div class="card-header">
+                  <h3 class="card-title">Información General</h3>
+                </div>
+                <div class="card-body">
+                  <div class="detail-row">
+                    <div class="detail-label">Nombre Fantasía</div>
+                    <div class="detail-value">{{ canal.nombreFantasia }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Razón Social</div>
+                    <div class="detail-value">{{ canal.razonSocial }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Tipo de Canal</div>
+                    <div class="detail-value">{{ canal.tipoCanal }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Fecha de Alta</div>
+                    <div class="detail-value">{{ formatDate(canal.fechaAlta) }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Estado</div>
+                    <div class="detail-value">
+                      <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
+                        {{ canal.activo ? 'Activo' : 'Inactivo' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="col-12 col-lg-6">
+              <div class="card detail-card">
+                <div class="card-header">
+                  <h3 class="card-title">Ubicación</h3>
+                </div>
+                <div class="card-body">
+                  <div class="detail-row">
+                    <div class="detail-label">Provincia</div>
+                    <div class="detail-value">{{ canal.provincia }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Localidad</div>
+                    <div class="detail-value">{{ canal.localidad }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Dirección</div>
+                    <div class="detail-value">{{ canal.direccion || 'No especificada' }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información Fiscal -->
+            <div class="col-12 col-lg-6">
+              <div class="card detail-card">
+                <div class="card-header">
+                  <h3 class="card-title">Información Fiscal</h3>
+                </div>
+                <div class="card-body">
+                  <div class="detail-row">
+                    <div class="detail-label">CUIT</div>
+                    <div class="detail-value">{{ canal.cuit }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información Bancaria -->
+            <div class="col-12 col-lg-6">
+              <div class="card detail-card">
+                <div class="card-header">
+                  <h3 class="card-title">Información Bancaria</h3>
+                </div>
+                <div class="card-body">
+                  <div class="detail-row">
+                    <div class="detail-label">Banco</div>
+                    <div class="detail-value">{{ canal.banco }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">CBU</div>
+                    <div class="detail-value">{{ canal.cbu }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Alias</div>
+                    <div class="detail-value">{{ canal.alias }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Número de Cuenta</div>
+                    <div class="detail-value">{{ canal.numCuenta }}</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Opciones de Cobro</div>
+                    <div class="detail-value">{{ canal.opcionesCobro || 'No especificadas' }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos del Titular -->
+            <div class="col-12">
+              <div class="card detail-card">
+                <div class="card-header">
+                  <h3 class="card-title">Datos del Titular</h3>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-12 col-md-4">
+                      <div class="detail-row">
+                        <div class="detail-label">Nombre Completo</div>
+                        <div class="detail-value">{{ canal.titularNombreCompleto || 'No especificado' }}</div>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="detail-row">
+                        <div class="detail-label">Teléfono</div>
+                        <div class="detail-value">{{ canal.titularTelefono || 'No especificado' }}</div>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="detail-row">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">{{ canal.titularEmail || 'No especificado' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subcanales Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'subcanales'">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">Subcanales</h3>
+              <button class="btn btn-sm btn-primary">
+                <i class="bi bi-plus"></i> Nuevo Subcanal
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="custom-table" *ngIf="subcanales && subcanales.length > 0">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Provincia</th>
+                      <th>Localidad</th>
+                      <th>Estado</th>
+                      <th class="text-center">Comisión</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let subcanal of subcanales">
+                      <td>{{ subcanal.id }}</td>
+                      <td>
+                        <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleSubcanal(subcanal.id)">
+                          {{ subcanal.nombre }}
+                        </a>
+                      </td>
+                      <td>{{ subcanal.provincia }}</td>
+                      <td>{{ subcanal.localidad }}</td>
+                      <td>
+                        <div class="badge" [ngClass]="getEstadoClass(subcanal.activo)">
+                          {{ subcanal.activo ? 'Activo' : 'Inactivo' }}
+                        </div>
+                      </td>
+                      <td class="text-center">{{ subcanal.comision }}%</td>
+                      <td class="text-center">
+                        <button class="btn-action" title="Ver detalles" (click)="verDetalleSubcanal(subcanal.id)">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Empty State -->
+                <div *ngIf="!subcanales || subcanales.length === 0" class="text-center p-5">
+                  <div class="text-center">
+                    <i class="bi bi-diagram-3-fill fs-2 text-muted"></i>
+                    <h4>No hay subcanales</h4>
+                    <p class="text-muted">
+                      Este canal no tiene subcanales registrados.
+                    </p>
+                    <button class="btn btn-primary mt-3">
+                      <i class="bi bi-plus-lg"></i> Nuevo Subcanal
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Planes Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'planes'">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">Planes Asignados</h3>
+              <button class="btn btn-sm btn-primary">
+                <i class="bi bi-plus"></i> Asignar Plan
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="custom-table" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Fechas</th>
+                      <th>Montos</th>
+                      <th>Tasa</th>
+                      <th>Estado</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let planCanal of canal.planesCanal">
+                      <td>{{ planCanal.planId }}</td>
+                      <td>
+                        <div class="fw-bold">{{ planCanal.plan.nombre }}</div>
+                      </td>
+                      <td>{{ planCanal.plan.fechaInicioStr }} - {{ planCanal.plan.fechaFinStr }}</td>
+                      <td>{{ planCanal.plan.montoMinimo | currency }} - {{ planCanal.plan.montoMaximo | currency }}</td>
+                      <td>{{ planCanal.plan.tasa }}%</td>
+                      <td>
+                        <div class="badge" [ngClass]="getEstadoClass(planCanal.activo)">
+                          {{ planCanal.activo ? 'Activo' : 'Inactivo' }}
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn-action" title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Empty State -->
+                <div *ngIf="!canal.planesCanal || canal.planesCanal.length === 0" class="text-center p-5">
+                  <div class="text-center">
+                    <i class="bi bi-calendar-x fs-2 text-muted"></i>
+                    <h4>No hay planes asignados</h4>
+                    <p class="text-muted">
+                      Este canal no tiene planes asignados.
+                    </p>
+                    <button class="btn btn-primary mt-3">
+                      <i class="bi bi-plus-lg"></i> Asignar Plan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operaciones Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'operaciones'">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">Operaciones</h3>
+              <div>
+                <button class="btn btn-sm btn-light me-2">
+                  <i class="bi bi-filter"></i> Filtrar
+                </button>
+                <button class="btn btn-sm btn-primary">
+                  <i class="bi bi-plus"></i> Nueva Operación
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <!-- Tabla de operaciones -->
+                <table class="custom-table" *ngIf="operaciones && operaciones.length > 0">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Cliente</th>
+                      <th>Monto</th>
+                      <th>Meses</th>
+                      <th>Tasa</th>
+                      <th>Fecha</th>
+                      <th>Estado</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let op of operaciones">
+                      <td>{{ op.id }}</td>
+                      <td>{{ op.clienteNombre || 'N/A' }}</td>
+                      <td>{{ op.monto | currency }}</td>
+                      <td>{{ op.meses }}</td>
+                      <td>{{ op.tasa }}%</td>
+                      <td>{{ op.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                      <td>
+                        <div class="badge badge-light-info">
+                          {{ op.estado || 'Pendiente' }}
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn-action" title="Ver detalles">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Empty State -->
+                <div *ngIf="!operaciones || operaciones.length === 0" class="text-center p-5">
+                  <div class="text-center">
+                    <i class="bi bi-cash-stack fs-2 text-muted"></i>
+                    <h4>No hay operaciones</h4>
+                    <p class="text-muted">
+                      Este canal no tiene operaciones registradas.
+                    </p>
+                    <button class="btn btn-primary mt-3">
+                      <i class="bi bi-plus-lg"></i> Nueva Operación
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendedores Tab -->
+        <div class="tab-pane" [class.active]="activeTab === 'vendedores'">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">Vendedores</h3>
+              <div>
+                <button class="btn btn-sm btn-primary">
+                  <i class="bi bi-plus"></i> Asignar Vendedor
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <!-- Tabla de vendedores -->
+                <table class="custom-table" *ngIf="vendedores && vendedores.length > 0">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Email</th>
+                      <th>Teléfono</th>
+                      <th>Estado</th>
+                      <th class="text-center">Operaciones</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let vendor of vendedores">
+                      <td>{{ vendor.id }}</td>
+                      <td>
+                        <div class="fw-bold">{{ vendor.nombre }} {{ vendor.apellido }}</div>
+                      </td>
+                      <td>{{ vendor.email }}</td>
+                      <td>{{ vendor.telefono }}</td>
+                      <td>
+                        <div class="badge" [ngClass]="getEstadoClass(vendor.activo)">
+                          {{ vendor.activo ? 'Activo' : 'Inactivo' }}
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge badge-light-info">
+                          {{ vendor.cantidadOperaciones || 0 }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn-action" title="Ver detalles">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Empty State -->
+                <div *ngIf="!vendedores || vendedores.length === 0" class="text-center p-5">
+                  <div class="text-center">
+                    <i class="bi bi-people fs-2 text-muted"></i>
+                    <h4>No hay vendedores asignados</h4>
+                    <p class="text-muted">
+                      Este canal no tiene vendedores asignados.
+                    </p>
+                    <button class="btn btn-primary mt-3">
+                      <i class="bi bi-plus-lg"></i> Asignar Vendedor
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar canal -->
+<app-modal-editar-canal
+  [isOpen]="modalEditarOpen"
+  [canalId]="canalId"
+  (closeModal)="cerrarModalEditar()"
+  (canalActualizado)="onCanalActualizado($event)">
+</app-modal-editar-canal>

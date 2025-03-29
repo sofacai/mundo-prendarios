@@ -1,0 +1,230 @@
+.canal-detail {
+  margin-top: 1rem;
+}
+
+.canal-avatar {
+  .symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1faff;
+    overflow: hidden;
+    border-radius: 8px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .symbol-label {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #009ef7;
+      background-color: #f1faff;
+    }
+  }
+}
+
+.canal-info {
+  .fs-2 {
+    font-size: 1.5rem !important;
+  }
+
+  .min-w-125px {
+    min-width: 125px;
+  }
+}
+
+.tab-navigation {
+  border-bottom: 1px solid #eef0f2;
+  background-color: #fff;
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+
+    .nav-item {
+      margin-bottom: -1px;
+
+      .nav-link {
+        display: block;
+        padding: 1rem 1.5rem;
+        color: #5e6278;
+        transition: color 0.2s ease;
+        cursor: pointer;
+
+        &.active {
+          color: #009ef7;
+          font-weight: 500;
+          border-bottom: 2px solid #009ef7;
+        }
+
+        &:hover:not(.active) {
+          color: #009ef7;
+        }
+
+        i {
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
+}
+
+.statistics-row {
+  margin-bottom: 2rem;
+
+  .card-stat {
+    height: 100%;
+
+    .icon-stat {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+
+      &.icon-blue {
+        background-color: #f1faff;
+        color: #009ef7;
+      }
+
+      &.icon-orange {
+        background-color: #fff8dd;
+        color: #ffa800;
+      }
+
+      &.icon-green {
+        background-color: #e8fff3;
+        color: #50cd89;
+      }
+
+      &.icon-purple {
+        background-color: #f8f5ff;
+        color: #7239ea;
+      }
+    }
+
+    .stat-content {
+      .stat-title {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #5e6278;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #181c32;
+      }
+
+      .stat-desc {
+        font-size: 0.9rem;
+        color: #7e8299;
+      }
+    }
+  }
+}
+
+.tab-content {
+  .tab-pane {
+    display: none;
+
+    &.active {
+      display: block;
+    }
+  }
+}
+
+.detail-card {
+  margin-bottom: 1.5rem;
+
+  .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid #eef0f2;
+    padding: 1rem 1.25rem;
+
+    .card-title {
+      margin-bottom: 0;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #181c32;
+    }
+  }
+
+  .card-body {
+    padding: 1.25rem;
+
+    .detail-row {
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .detail-label {
+        font-size: 0.9rem;
+        color: #7e8299;
+        margin-bottom: 0.25rem;
+      }
+
+      .detail-value {
+        font-size: 1rem;
+        color: #181c32;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Responsive styles for tabs
+@media (max-width: 768px) {
+  .tab-navigation .nav .nav-item .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+
+    i {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Custom badges
+.badge {
+  padding: 0.5em 0.85em;
+  font-size: 85%;
+  font-weight: 500;
+  border-radius: 0.475rem;
+
+  &.badge-success {
+    background-color: #e8fff3;
+    color: #50cd89;
+  }
+
+  &.badge-danger {
+    background-color: #fff5f8;
+    color: #f1416c;
+  }
+}
+
+// Card box-shadow
+.card {
+  box-shadow: 0px 0px 20px 0px rgba(76, 87, 125, 0.02);
+}
+
+// Make sure content adapts to sidebar
+@media (min-width: 992px) {
+  :host-context(.sidebar-collapsed) ~ .content-area {
+    margin-left: 70px;
+  }
+}
