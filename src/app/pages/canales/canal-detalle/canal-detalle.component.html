@@ -33,73 +33,65 @@
 
     <!-- Canal Content -->
     <div *ngIf="canal && !loading && !error" class="canal-detail">
-      <!-- Canal Header -->
-      <div class="canal-header card mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex">
-            <!-- Avatar -->
-            <div class="canal-avatar me-4">
-              <div *ngIf="canal.foto" class="symbol symbol-80px">
-                <img [src]="canal.foto" alt="Logo" class="rounded-3" />
-              </div>
-              <div *ngIf="!canal.foto" class="symbol symbol-80px d-flex align-items-center justify-content-center bg-light-primary rounded-3">
-                <span class="fs-2 fw-bold text-primary">
-                  {{ canal.nombreFantasia ? canal.nombreFantasia.substring(0, 2).toUpperCase() : '' }}
-                </span>              </div>
-            </div>
 
-            <!-- Info -->
-            <div class="d-flex flex-column flex-grow-1">
-              <div class="d-flex justify-content-between mb-1">
-                <div>
-                  <h2 class="fs-2 fw-bold text-dark mb-1">{{ canal.nombreFantasia }}</h2>
-                  <div class="text-muted fs-7">{{ canal.razonSocial }}</div>
-                </div>
-                <div>
-                  <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
-                    {{ canal.activo ? 'Activo' : 'Inactivo' }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Titular Info -->
-              <div class="mt-3">
-                <h4 class="fs-6 mb-2">Datos del Titular</h4>
-                <div class="d-flex flex-column">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="bi bi-person me-2 text-muted"></i>
-                    <span>{{ canal.titularNombreCompleto || 'No especificado' }}</span>
-                  </div>
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="bi bi-telephone me-2 text-muted"></i>
-                    <span>{{ canal.titularTelefono || 'No especificado' }}</span>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <i class="bi bi-envelope me-2 text-muted"></i>
-                    <span>{{ canal.titularEmail || 'No especificado' }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Stats -->
-              <div class="d-flex mt-3 gap-3">
-                <div class="border border-dashed rounded py-2 px-3 text-center">
-                  <div class="fs-5 fw-bold text-primary">{{ subcanalesActivos + subcanalesInactivos }}</div>
-                  <div class="fs-7 text-gray-500">Subcanales</div>
-                </div>
-                <div class="border border-dashed rounded py-2 px-3 text-center">
-                  <div class="fs-5 fw-bold text-warning">{{ planesActivos + planesInactivos }}</div>
-                  <div class="fs-7 text-gray-500">Planes</div>
-                </div>
-                <div class="border border-dashed rounded py-2 px-3 text-center">
-                  <div class="fs-5 fw-bold text-success">{{ totalOperaciones }}</div>
-                  <div class="fs-7 text-gray-500">Operaciones</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+<!-- Cabecera Principal -->
+<div class="canal-header-card">
+  <div class="header-main-section">
+    <!-- Logo canal -->
+    <div class="canal-logo">
+      <div *ngIf="canal.foto" class="logo-image">
+        <img [src]="canal.foto" alt="Logo Canal" />
       </div>
+      <div *ngIf="!canal.foto" class="logo-placeholder">
+        <span>{{ canal.nombreFantasia ? canal.nombreFantasia.substring(0, 2).toUpperCase() : '' }}</span>
+      </div>
+    </div>
+
+    <!-- Titulo y badge -->
+    <div class="title-container">
+      <div class="title-badge-wrapper">
+        <h2 class="canal-title">{{ canal.nombreFantasia }}</h2>
+        <span class="status-badge" [ngClass]="canal.activo ? 'active' : 'inactive'">
+          {{ canal.activo ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información contacto -->
+  <div class="owner-contact-info">
+    <div class="contact-item">
+      <i class="bi bi-person"></i>
+      <span>{{ canal.titularNombreCompleto || 'No especificado' }}</span>
+    </div>
+    <div class="contact-item">
+      <i class="bi bi-telephone"></i>
+      <span>{{ canal.titularTelefono || 'No especificado' }}</span>
+    </div>
+    <div class="contact-item">
+      <i class="bi bi-envelope"></i>
+      <span>{{ canal.titularEmail || 'No especificado' }}</span>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-section">
+    <div class="stat-box">
+      <div class="stat-number">{{ subcanalesActivos + subcanalesInactivos }}</div>
+      <div class="stat-label">Subcanales</div>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-number">{{ planesActivos + planesInactivos }}</div>
+      <div class="stat-label">Planes</div>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-number">{{ totalOperaciones }}</div>
+      <div class="stat-label">Operaciones</div>
+    </div>
+  </div>
+</div>
 
       <!-- Tabs Navigation -->
       <div class="canal-tabs card mb-4">

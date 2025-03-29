@@ -1,37 +1,147 @@
-/* canal-detalle.component.scss */
+/* Estilos básicos del componente */
 .canal-detail {
   margin-top: 1rem;
 }
 
-.canal-avatar {
-  .symbol {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 0.5rem;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
+/* Cabecera principal del canal */
+.canal-header-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 1.5rem;
 }
 
-.symbol-80px {
+/* Sección principal con imagen y título */
+.header-main-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.canal-logo {
   width: 80px;
   height: 80px;
-}
+  border-radius: 8px;
+  overflow: hidden;
 
-.canal-header {
-  .canal-info {
-    .fs-2 {
-      font-size: 1.5rem !important;
+  .logo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .logo-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    span {
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
     }
   }
 }
 
+.title-container {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.canal-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #181c32;
+  margin: 0;
+}
+
+/* Badge de estado */
+
+.title-badge-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+
+  &.active {
+    background-color: #e8fff3;
+    color: #50cd89;
+  }
+
+  &.inactive {
+    background-color: #fff5f8;
+    color: #f1416c;
+  }
+}
+
+/* Información del dueño */
+.owner-contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  padding: 15px 0;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i {
+    font-size: 16px;
+    color: #a1a5b7;
+  }
+
+  span {
+    font-size: 14px;
+    color: #7e8299;
+  }
+}
+
+/* Cajas de estadísticas */
+.stats-section {
+  display: flex;
+  gap: 12px;
+  padding-top: 15px;
+}
+
+.stat-box {
+  flex: 1;
+  border: 1px solid #ebedf3;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  max-width: 200px;
+
+  .stat-number {
+    font-size: 22px;
+    font-weight: 600;
+    color: #181c32;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #a1a5b7;
+    margin-top: 4px;
+  }
+}
+
+/* Mantenemos los estilos originales para el resto de la aplicación */
 .tab-navigation {
   border-bottom: 1px solid #eef0f2;
   background-color: #fff;
@@ -112,19 +222,6 @@
   }
 }
 
-// Responsive styles for tabs
-@media (max-width: 768px) {
-  .tab-navigation .nav .nav-item .nav-link {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-
-    i {
-      margin-right: 0.25rem;
-    }
-  }
-}
-
-// Chart container
 .chart-container {
   position: relative;
   width: 100%;
@@ -134,7 +231,6 @@
   }
 }
 
-// Fix double scroll issue
 .content-area {
   overflow-y: auto;
   max-height: 100vh;
@@ -145,21 +241,10 @@
   height: 100vh;
 }
 
-// Card padding
 .card-body.p-4 {
   padding: 1.5rem !important;
 }
 
-// Responsive layouts
-@media (max-width: 991.98px) {
-  .border-start {
-    border-left: none !important;
-    padding-left: 0 !important;
-    margin-top: 1rem;
-  }
-}
-
-// Custom badges
 .badge {
   padding: 0.5em 0.85em;
   font-size: 85%;
@@ -175,4 +260,79 @@
     background-color: #fff5f8;
     color: #f1416c;
   }
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .canal-header-card {
+    padding: 16px;
+  }
+
+  .header-main-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .title-container {
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .owner-contact-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stats-section {
+    flex-wrap: wrap;
+  }
+
+  .stat-box {
+    min-width: calc(33.33% - 8px);
+    max-width: none;
+    padding: 10px;
+
+    .stat-number {
+      font-size: 18px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+    }
+  }
+
+  .tab-navigation .nav .nav-item .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+
+    i {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+@media (max-width: 991.98px) {
+  .border-start {
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-top: 1rem;
+  }
+}
+
+/* Mantener compatibilidad con clases utilizadas en el resto del componente */
+.canal-avatar .symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.symbol-80px {
+  width: 80px;
+  height: 80px;
+}
+
+.canal-header .card-body {
+  padding: 2rem !important;
 }
