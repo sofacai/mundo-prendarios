@@ -12,6 +12,7 @@ import { CanalFormComponent } from 'src/app/shared/modals/canal-form/canal-form.
 import { ModalEditarCanalComponent } from 'src/app/shared/modals/modal-editar-canal/modal-editar-canal.component';
 import { ModalVerCanalComponent } from 'src/app/shared/modals/modal-ver-canal/modal-ver-canal.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { Router } from '@angular/router';
 
 // Tipo para ordenamiento
 interface SortState {
@@ -58,7 +59,8 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   constructor(
     private canalService: CanalService,
     private renderer: Renderer2,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -247,9 +249,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
   // Navegar al detalle del canal
   verDetalle(id: number): void {
-    this.canalIdVer = id;
-    this.modalVerOpen = true;
-    this.manejarAperturaModal();
+    this.router.navigate(['/canales', id]);
   }
 
   // Abrir modal para editar canal

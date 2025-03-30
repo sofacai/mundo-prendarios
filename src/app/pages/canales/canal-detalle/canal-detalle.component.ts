@@ -13,6 +13,7 @@ import { ModalEditarCanalComponent } from 'src/app/shared/modals/modal-editar-ca
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
 import { UsuarioService } from 'src/app/core/services/usuario.service';
 import { ClienteService, Cliente } from 'src/app/core/services/cliente.service';
+import { UbicacionSelectorComponent } from 'src/app/shared/components/ubicacion-selector/ubicacion-selector.component';
 
 // Registrar los componentes de Chart.js
 Chart.register(...registerables);
@@ -25,7 +26,8 @@ Chart.register(...registerables);
     IonicModule,
     RouterModule,
     SidebarComponent,
-    ModalEditarCanalComponent
+    ModalEditarCanalComponent,
+    UbicacionSelectorComponent
   ],
   templateUrl: './canal-detalle.component.html',
   styleUrls: ['./canal-detalle.component.scss']
@@ -65,6 +67,10 @@ editingSections: { [key: string]: boolean } = {
   titular: false
 };
 
+loadingSubcanales: Map<number, boolean> = new Map();
+loadingVendedores: Map<number, boolean> = new Map();
+
+
   canalFormData: any = null;
 
   // Sidebar state
@@ -79,6 +85,7 @@ editingSections: { [key: string]: boolean } = {
   vendedores: any[] = [];
   operaciones: Operacion[] = [];
   clientes: Cliente[] = [];
+  ubicacionService: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -704,5 +711,148 @@ editingSections: { [key: string]: boolean } = {
     if (this.canalFormData) {
       this.canalFormData[field] = checked;
     }
+  }
+
+  onProvinciaChange(provincia: {id: string, nombre: string}) {
+    if (this.canalFormData) {
+      this.canalFormData.provincia = provincia.nombre;
+    }
+  }
+
+  onLocalidadChange(localidad: {id: string, nombre: string}) {
+    if (this.canalFormData) {
+      this.canalFormData.localidad = localidad.nombre;
+    }
+  }
+
+  // Servicio de activar o desactivar
+  toggleCanalEstado() {
+    if (!this.canal) return;
+
+    this.loading = true;
+
+    // Determinar qué endpoint llamar según el estado actual
+    const request = this.canal.activo
+      ? this.canalService.desactivarCanal(this.canal.id)
+      : this.canalService.activarCanal(this.canal.id);
+
+    request.subscribe({
+      next: (canalActualizado) => {
+        this.canal = canalActualizado;
+        this.loading = false;
+        // Opcional: Mostrar mensaje de éxito
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado del canal:', err);
+        this.error = 'No se pudo cambiar el estado del canal. Intente nuevamente.';
+        this.loading = false;
+      }
+    });
+  }
+
+  toggleOficialEstado(oficialId: number, estadoActual: boolean) {
+    this.loadingOficiales = true;
+
+    const request = estadoActual
+      ? this.usuarioService.desactivarUsuario(oficialId)
+      : this.usuarioService.activarUsuario(oficialId);
+
+    request.subscribe({
+      next: () => {
+        // Actualizar el estado en la lista local
+        this.oficialesComerciales = this.oficialesComerciales.map(oficial => {
+          if (oficial.oficialComercialId === oficialId) {
+            return {...oficial, activo: !estadoActual};
+          }
+          return oficial;
+        });
+        this.loadingOficiales = false;
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado del oficial:', err);
+        this.errorOficiales = 'No se pudo cambiar el estado del oficial.';
+        this.loadingOficiales = false;
+      }
+    });
+  }
+
+  toggleSubcanalEstado(subcanalId: number, estadoActual: boolean) {
+    this.loadingSubcanales.set(subcanalId, true);
+
+    const request = estadoActual
+      ? this.subcanalService.desactivarSubcanal(subcanalId)
+      : this.subcanalService.activarSubcanal(subcanalId);
+
+    request.subscribe({
+      next: (subcanalActualizado) => {
+        // Obtener el subcanal completo actualizado
+        this.subcanalService.getSubcanal(subcanalId).subscribe({
+          next: (subcanalCompleto) => {
+            // Actualizar el subcanal en la lista con todos sus datos
+            this.subcanales = this.subcanales.map(subcanal =>
+              subcanal.id === subcanalId ? subcanalCompleto : subcanal
+            );
+
+            // Actualizar contadores
+            this.subcanalesActivos = this.subcanales.filter(s => s.activo).length;
+            this.subcanalesInactivos = this.subcanales.length - this.subcanalesActivos;
+
+            // Quitar indicador de carga
+            this.loadingSubcanales.set(subcanalId, false);
+          },
+          error: (err) => {
+            console.error('Error al obtener detalles actualizados del subcanal:', err);
+            this.loadingSubcanales.set(subcanalId, false);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado del subcanal:', err);
+        this.loadingSubcanales.set(subcanalId, false);
+      }
+    });
+  }
+
+  // Método auxiliar para verificar si un subcanal está cargando
+  isSubcanalLoading(subcanalId: number): boolean {
+    return this.loadingSubcanales.get(subcanalId) === true;
+  }
+
+
+  toggleVendorEstado(vendorId: number, estadoActual: boolean) {
+    this.loadingVendedores.set(vendorId, true);
+
+    const request = estadoActual
+      ? this.usuarioService.desactivarUsuario(vendorId)
+      : this.usuarioService.activarUsuario(vendorId);
+
+    request.subscribe({
+      next: () => {
+        // Obtener el usuario completo actualizado
+        this.usuarioService.getUsuario(vendorId).subscribe({
+          next: (vendorActualizado) => {
+            // Actualizar el vendedor en la lista con todos sus datos
+            this.vendedores = this.vendedores.map(vendor =>
+              vendor.id === vendorId ? vendorActualizado : vendor
+            );
+
+            // Quitar indicador de carga
+            this.loadingVendedores.set(vendorId, false);
+          },
+          error: (err) => {
+            console.error('Error al obtener detalles actualizados del vendedor:', err);
+            this.loadingVendedores.set(vendorId, false);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado del vendedor:', err);
+        this.loadingVendedores.set(vendorId, false);
+      }
+    });
+  }
+
+  isVendorLoading(vendorId: number): boolean {
+    return this.loadingVendedores.get(vendorId) === true;
   }
 }
