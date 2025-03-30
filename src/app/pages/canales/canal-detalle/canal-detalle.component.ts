@@ -56,6 +56,17 @@ errorOficiales: string | null = null;
   totalOperaciones = 0;
   totalVendedores = 0;
 
+// Editar canal
+editingSections: { [key: string]: boolean } = {
+  general: false,
+  ubicacion: false,
+  fiscal: false,
+  bancaria: false,
+  titular: false
+};
+
+  canalFormData: any = null;
+
   // Sidebar state
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
@@ -587,5 +598,111 @@ errorOficiales: string | null = null;
   // Navigate to subcanal detail
   verDetalleSubcanal(subcanalId: number) {
     this.router.navigate(['/subcanales', subcanalId]);
+  }
+
+  toggleEditing(section: string) {
+    // Resetear el objeto de formulario para esta sección específica
+    this.canalFormData = {};
+
+    // Copiar solo los datos relevantes para esta sección
+    if (this.canal) {
+      switch(section) {
+        case 'general':
+          this.canalFormData = {
+            nombreFantasia: this.canal.nombreFantasia,
+            razonSocial: this.canal.razonSocial,
+            tipoCanal: this.canal.tipoCanal,
+            activo: this.canal.activo
+          };
+          break;
+        case 'ubicacion':
+          this.canalFormData = {
+            provincia: this.canal.provincia,
+            localidad: this.canal.localidad,
+            direccion: this.canal.direccion || ''
+          };
+          break;
+        case 'fiscal':
+          this.canalFormData = {
+            cuit: this.canal.cuit
+          };
+          break;
+        case 'bancaria':
+          this.canalFormData = {
+            banco: this.canal.banco,
+            cbu: this.canal.cbu,
+            alias: this.canal.alias,
+            numCuenta: this.canal.numCuenta,
+            opcionesCobro: this.canal.opcionesCobro || ''
+          };
+          break;
+        case 'titular':
+          this.canalFormData = {
+            titularNombreCompleto: this.canal.titularNombreCompleto || '',
+            titularTelefono: this.canal.titularTelefono || '',
+            titularEmail: this.canal.titularEmail || ''
+          };
+          break;
+      }
+    }
+
+    this.editingSections[section] = !this.editingSections[section];
+  }
+
+  saveSection(section: string) {
+    if (!this.canal || !this.canalFormData) return;
+
+    this.loading = true;
+
+    // Preparar el objeto a enviar, incluyendo solo lo necesario
+    const updateData: any = {
+      ...this.canal, // Tomamos los datos base del canal actual
+      ...this.canalFormData // Sobrescribimos solo los campos editados
+    };
+
+    // Aseguramos que no enviamos información de oficiales comerciales
+    delete updateData.oficialesComerciales;
+    // Eliminamos otros campos complejos que no deberían enviarse
+    delete updateData.subcanales;
+    delete updateData.planesCanal;
+
+    this.canalService.updateCanal(this.canal.id, updateData).subscribe({
+      next: (canal) => {
+        this.canal = canal;
+        this.editingSections[section] = false;
+        this.loading = false;
+
+        // Opcional: recargar todos los datos para asegurar consistencia
+        this.loadCanalData();
+      },
+      error: (err) => {
+        console.error('Error al actualizar el canal:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  cancelEditing(section: string) {
+    this.editingSections[section] = false;
+    this.canalFormData = {};
+  }
+
+  // Versión corregida para manejar el event correctamente en TypeScript
+  updateField(field: string, event: Event) {
+    if (this.canalFormData) {
+      const target = event.target as HTMLInputElement | HTMLSelectElement;
+      this.canalFormData[field] = target.value;
+    }
+  }
+
+  isEditing(section: string): boolean {
+    return this.editingSections[section];
+  }
+
+  // Para toggles
+  updateToggle(field: string, checked: boolean) {
+    if (this.canalFormData) {
+      this.canalFormData[field] = checked;
+    }
   }
 }

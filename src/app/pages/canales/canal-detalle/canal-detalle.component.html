@@ -159,53 +159,100 @@
             <!-- Primera fila: Información General y Oficiales Comerciales -->
             <div class="col-12">
               <div class="d-flex flex-column flex-lg-row gap-4">
-                <!-- Información General - 50% -->
-                <div style="flex-basis: 50%;">
-                  <div class="card detail-card h-100">
-                    <div class="card-header">
-                      <h3 class="card-title"><i class="bi bi-info-circle me-2 text-primary"></i>Información General</h3>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Nombre Fantasía</div>
-                            <div class="detail-value">{{ canal.nombreFantasia }}</div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Razón Social</div>
-                            <div class="detail-value">{{ canal.razonSocial }}</div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Tipo de Canal</div>
-                            <div class="detail-value">{{ canal.tipoCanal }}</div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Fecha de Alta</div>
-                            <div class="detail-value">{{ formatDate(canal.fechaAlta) }}</div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row">
-                            <div class="detail-label">Estado</div>
-                            <div class="detail-value">
-                              <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
-                                {{ canal.activo ? 'Activo' : 'Inactivo' }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+<!-- Información General -->
+<div style="flex-basis: 50%;">
+  <div class="card detail-card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <!-- Título con ícono -->
+      <h3 class="card-title">
+        <i class="bi bi-info-circle me-2 text-primary"></i>
+        Información General
+      </h3>
 
+      <!-- Botón de edición -->
+      <div class="edit-controls">
+        <button *ngIf="!isEditing('general')" class="btn-edit" (click)="toggleEditing('general')">
+          <i class="bi bi-pencil"></i>
+        </button>
+
+        <div *ngIf="isEditing('general')" class="action-buttons">
+          <button class="btn-action btn-save me-1" (click)="saveSection('general')">
+            <i class="bi bi-check"></i>
+          </button>
+          <button class="btn-action btn-cancel" (click)="cancelEditing('general')">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="detail-row mb-3">
+            <div class="detail-label">Nombre Fantasía</div>
+            <div class="detail-value" *ngIf="!isEditing('general')">{{ canal!.nombreFantasia }}</div>
+            <input
+              *ngIf="isEditing('general')"
+              type="text"
+              class="form-control"
+              [value]="canalFormData.nombreFantasia"
+              (input)="updateField('nombreFantasia', $event)">
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="detail-row mb-3">
+            <div class="detail-label">Razón Social</div>
+            <div class="detail-value" *ngIf="!isEditing('general')">{{ canal!.razonSocial }}</div>
+            <input
+              *ngIf="isEditing('general')"
+              type="text"
+              class="form-control"
+              [value]="canalFormData.razonSocial"
+              (input)="updateField('razonSocial', $event)">
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="detail-row mb-3">
+            <div class="detail-label">Tipo de Canal</div>
+            <div class="detail-value" *ngIf="!isEditing('general')">{{ canal!.tipoCanal }}</div>
+            <select
+              *ngIf="isEditing('general')"
+              class="form-control"
+              [value]="canalFormData.tipoCanal"
+              (change)="updateField('tipoCanal', $event)">
+              <option value="Concesionario">Concesionario</option>
+              <option value="Multimarca">Multimarca</option>
+              <option value="Agencia">Agencia</option>
+              <option value="Habitualista">Habitualista</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Consumidor Final">Consumidor Final</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="detail-row">
+            <div class="detail-label">Estado</div>
+            <div class="detail-value" *ngIf="!isEditing('general')">
+              <div class="badge" [ngClass]="getEstadoClass(canal!.activo)">
+                {{ canal!.activo ? 'Activo' : 'Inactivo' }}
+              </div>
+            </div>
+            <div *ngIf="isEditing('general')" class="toggle-container">
+              <ion-toggle
+                [checked]="canalFormData.activo"
+                (ionChange)="updateToggle('activo', $event.detail.checked)">
+              </ion-toggle>
+              <span>{{ canalFormData.activo ? 'Activo' : 'Inactivo' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
                 <!-- Oficiales Comerciales - 50% -->
                 <div style="flex-basis: 50%;">
                   <div class="card detail-card h-100">
