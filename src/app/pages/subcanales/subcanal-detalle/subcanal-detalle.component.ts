@@ -15,6 +15,17 @@ import { ClienteService, Cliente } from 'src/app/core/services/cliente.service';
 import { UbicacionSelectorComponent } from 'src/app/shared/components/ubicacion-selector/ubicacion-selector.component';
 import { Gasto, GastoCreate, GastoUpdate } from 'src/app/core/models/gasto.model';
 
+// Importamos los componentes que hemos creado
+import { SubcanalHeaderComponent } from '../components/subcanal-header/subcanal-header.component';
+import { SubcanalTabsNavigationComponent } from '../components/subcanal-tabs-navigation/subcanal-tabs-navigation.component';
+import { SubcanalGeneralTabComponent } from '../components/subcanal-general-tab/subcanal-general-tab.component';
+import { SubcanalVendedoresTabComponent } from '../components/subcanal-vendedores-tab/subcanal-vendedores-tab.component';
+import { SubcanalGastosTabComponent } from '../components/subcanal-gastos-tab/subcanal-gastos-tab.component';
+import { SubcanalClientesTabComponent } from '../components/subcanal-clientes-tab/subcanal-clientes-tab.component';
+import { SubcanalOperacionesTabComponent } from '../components/subcanal-operaciones-tab/subcanal-operaciones-tab.component';
+import { SubcanalEstadisticasTabComponent } from '../components/subcanal-estadisticas-tab/subcanal-estadisticas-tab.component';
+import { GastoFormModalComponent } from '../components/gasto-form-modal/gasto-form-modal.component';
+
 // Registrar los componentes de Chart.js
 Chart.register(...registerables);
 
@@ -28,7 +39,17 @@ Chart.register(...registerables);
     FormsModule,
     ReactiveFormsModule,
     SidebarComponent,
-    UbicacionSelectorComponent
+    UbicacionSelectorComponent,
+    // Importamos los componentes que hemos creado
+    SubcanalHeaderComponent,
+    SubcanalTabsNavigationComponent,
+    SubcanalGeneralTabComponent,
+    SubcanalVendedoresTabComponent,
+    SubcanalGastosTabComponent,
+    SubcanalClientesTabComponent,
+    SubcanalOperacionesTabComponent,
+    SubcanalEstadisticasTabComponent,
+    GastoFormModalComponent
   ],
   templateUrl: './subcanal-detalle.component.html',
   styleUrls: ['./subcanal-detalle.component.scss']
@@ -39,12 +60,6 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
   loading = true;
   error: string | null = null;
   activeTab = 'general'; // Default active tab
-
-  // Referencias a los gráficos
-  private operacionesChart: Chart | null = null;
-  private vendedoresChart: Chart | null = null;
-  private montosChart: Chart | null = null;
-  private clientesChart: Chart | null = null;
 
   // Datos cargados
   vendedores: UsuarioDto[] = [];
@@ -133,19 +148,13 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngAfterViewInit() {
-    // Esperamos a que los datos estén cargados antes de inicializar los gráficos
-    if (!this.loading && this.subcanal) {
-      this.initCharts();
-    }
+    // No necesitamos inicializar gráficos aquí, el componente lo hará
   }
 
   ngOnDestroy() {
     if (this.sidebarSubscription) {
       this.sidebarSubscription.unsubscribe();
     }
-
-    // Destruir gráficos al salir del componente
-    this.destroyCharts();
   }
 
   private adjustContentArea() {
@@ -203,11 +212,6 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
         this.updateStatistics();
 
         this.loading = false;
-
-        // Inicializar gráficos una vez que los datos estén cargados
-        setTimeout(() => {
-          this.initCharts();
-        }, 200);
       },
       error: (err) => {
         console.error('Error cargando datos adicionales:', err);
@@ -234,337 +238,6 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
   // Change active tab
   setActiveTab(tab: string) {
     this.activeTab = tab;
-
-    // Si cambiamos a la pestaña de estadísticas, inicializamos/actualizamos gráficos
-    if (tab === 'estadisticas') {
-      setTimeout(() => {
-        this.destroyCharts();
-        this.initCharts();
-      }, 100);
-    }
-  }
-
-  // Inicializar gráficos
-  initCharts() {
-    if (this.activeTab !== 'estadisticas') return;
-
-    this.initOperacionesChart();
-    this.initVendedoresChart();
-    this.initMontosChart();
-    this.initClientesChart();
-  }
-
-  // Gráfico de operaciones por mes
-  initOperacionesChart() {
-    const ctx = document.getElementById('operacionesChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    // Agrupar operaciones por mes
-    const operacionesPorMes = this.groupOperacionesPorMes();
-
-    // Destruir el gráfico anterior si existe
-    if (this.operacionesChart) {
-      this.operacionesChart.destroy();
-    }
-
-    this.operacionesChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: operacionesPorMes.map(item => item.mes),
-        datasets: [{
-          label: 'Operaciones',
-          data: operacionesPorMes.map(item => item.cantidad),
-          backgroundColor: 'rgba(0, 158, 247, 0.2)',
-          borderColor: 'rgba(0, 158, 247, 1)',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              precision: 0
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top'
-          }
-        }
-      }
-    });
-  }
-
-  // Gráfico de distribución por vendedores
-  initVendedoresChart() {
-    const ctx = document.getElementById('vendedoresChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    // Obtener distribución de operaciones por vendedor
-    const distribucionVendedores = this.getDistribucionVendedores();
-
-    // Destruir el gráfico anterior si existe
-    if (this.vendedoresChart) {
-      this.vendedoresChart.destroy();
-    }
-
-    this.vendedoresChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: distribucionVendedores.map(item => item.nombre),
-        datasets: [{
-          data: distribucionVendedores.map(item => item.operaciones),
-          backgroundColor: [
-            'rgba(80, 205, 137, 0.7)',
-            'rgba(0, 158, 247, 0.7)',
-            'rgba(255, 168, 0, 0.7)',
-            'rgba(241, 65, 108, 0.7)',
-            'rgba(114, 57, 234, 0.7)',
-            'rgba(25, 135, 84, 0.7)'
-          ],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right'
-          }
-        }
-      }
-    });
-  }
-
-  // Gráfico de montos de operaciones por mes
-  initMontosChart() {
-    const ctx = document.getElementById('montosChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    // Agrupar montos por mes
-    const montosPorMes = this.groupMontosPorMes();
-
-    // Destruir el gráfico anterior si existe
-    if (this.montosChart) {
-      this.montosChart.destroy();
-    }
-
-    this.montosChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: montosPorMes.map(item => item.mes),
-        datasets: [{
-          label: 'Montos ($)',
-          data: montosPorMes.map(item => item.monto),
-          backgroundColor: 'rgba(0, 195, 230, 0.7)',
-          borderColor: 'rgba(0, 195, 230, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  }
-
-  // Gráfico de adquisición de clientes por mes
-  initClientesChart() {
-    const ctx = document.getElementById('clientesChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    // Agrupar clientes por mes de creación
-    const clientesPorMes = this.groupClientesPorMes();
-
-    // Destruir el gráfico anterior si existe
-    if (this.clientesChart) {
-      this.clientesChart.destroy();
-    }
-
-    this.clientesChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: clientesPorMes.map(item => item.mes),
-        datasets: [{
-          label: 'Nuevos Clientes',
-          data: clientesPorMes.map(item => item.cantidad),
-          backgroundColor: 'rgba(114, 57, 234, 0.2)',
-          borderColor: 'rgba(114, 57, 234, 1)',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              precision: 0
-            }
-          }
-        }
-      }
-    });
-  }
-
-  // Destruir todos los gráficos
-  destroyCharts() {
-    if (this.operacionesChart) {
-      this.operacionesChart.destroy();
-      this.operacionesChart = null;
-    }
-    if (this.vendedoresChart) {
-      this.vendedoresChart.destroy();
-      this.vendedoresChart = null;
-    }
-    if (this.montosChart) {
-      this.montosChart.destroy();
-      this.montosChart = null;
-    }
-    if (this.clientesChart) {
-      this.clientesChart.destroy();
-      this.clientesChart = null;
-    }
-  }
-
-  // Helpers para procesamiento de datos para gráficos
-  groupOperacionesPorMes() {
-    // Si no hay operaciones, devolver datos de muestra
-    if (!this.operaciones || this.operaciones.length === 0) {
-      return [
-        { mes: 'Ene', cantidad: 0 },
-        { mes: 'Feb', cantidad: 0 },
-        { mes: 'Mar', cantidad: 0 },
-        { mes: 'Abr', cantidad: 0 },
-        { mes: 'May', cantidad: 0 },
-        { mes: 'Jun', cantidad: 0 }
-      ];
-    }
-
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const operacionesPorMes = new Map();
-
-    // Inicializar todos los meses con 0
-    meses.forEach(mes => operacionesPorMes.set(mes, 0));
-
-    // Agrupar operaciones por mes
-    this.operaciones.forEach(op => {
-      if (op.fechaCreacion) {
-        const fecha = new Date(op.fechaCreacion);
-        const mes = meses[fecha.getMonth()];
-        operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
-      }
-    });
-
-    // Convertir el mapa a un array de objetos
-    return Array.from(operacionesPorMes.entries())
-      .map(([mes, cantidad]) => ({ mes, cantidad }))
-      .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
-  }
-
-  getDistribucionVendedores() {
-    // Si no hay vendedores, devolver datos de muestra
-    if (!this.subcanal || !this.subcanal.vendors || this.subcanal.vendors.length === 0) {
-      return [
-        { nombre: 'Sin vendedores', operaciones: 1 }
-      ];
-    }
-
-    // Generar datos basados en los vendedores reales
-    return this.subcanal.vendors
-      .filter(vendor => vendor.activo)
-      .map(vendor => {
-        const operacionesCount = this.operaciones.filter(op => op.vendedorId === vendor.id).length;
-        const nombreCompleto = `${vendor.nombre} ${vendor.apellido}`;
-        return {
-          nombre: operacionesCount > 0 ? nombreCompleto : `${nombreCompleto} (0)`,
-          operaciones: operacionesCount > 0 ? operacionesCount : 0.1 // Valor mínimo para mostrar en el gráfico
-        };
-      });
-  }
-
-  groupMontosPorMes() {
-    // Si no hay operaciones, devolver datos de muestra
-    if (!this.operaciones || this.operaciones.length === 0) {
-      return [
-        { mes: 'Ene', monto: 0 },
-        { mes: 'Feb', monto: 0 },
-        { mes: 'Mar', monto: 0 },
-        { mes: 'Abr', monto: 0 },
-        { mes: 'May', monto: 0 },
-        { mes: 'Jun', monto: 0 }
-      ];
-    }
-
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const montosPorMes = new Map();
-
-    // Inicializar todos los meses con 0
-    meses.forEach(mes => montosPorMes.set(mes, 0));
-
-    // Sumar montos por mes
-    this.operaciones.forEach(op => {
-      if (op.fechaCreacion) {
-        const fecha = new Date(op.fechaCreacion);
-        const mes = meses[fecha.getMonth()];
-        montosPorMes.set(mes, (montosPorMes.get(mes) || 0) + op.monto);
-      }
-    });
-
-    // Convertir el mapa a un array de objetos
-    return Array.from(montosPorMes.entries())
-      .map(([mes, monto]) => ({ mes, monto }))
-      .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
-  }
-
-  groupClientesPorMes() {
-    // Si no hay clientes, devolver datos de muestra
-    if (!this.clientes || this.clientes.length === 0) {
-      return [
-        { mes: 'Ene', cantidad: 0 },
-        { mes: 'Feb', cantidad: 0 },
-        { mes: 'Mar', cantidad: 0 },
-        { mes: 'Abr', cantidad: 0 },
-        { mes: 'May', cantidad: 0 },
-        { mes: 'Jun', cantidad: 0 }
-      ];
-    }
-
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const clientesPorMes = new Map();
-
-    // Inicializar todos los meses con 0
-    meses.forEach(mes => clientesPorMes.set(mes, 0));
-
-    // Agrupar clientes por mes de creación
-    this.clientes.forEach(cliente => {
-      if (cliente.fechaCreacion) {
-        const fecha = new Date(cliente.fechaCreacion);
-        const mes = meses[fecha.getMonth()];
-        clientesPorMes.set(mes, (clientesPorMes.get(mes) || 0) + 1);
-      }
-    });
-
-    // Convertir el mapa a un array de objetos
-    return Array.from(clientesPorMes.entries())
-      .map(([mes, cantidad]) => ({ mes, cantidad }))
-      .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
   }
 
   // Navigate back to subcanales list
@@ -572,19 +245,7 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
     this.router.navigate(['/subcanales']);
   }
 
-  // Format date string
-  formatDate(dateString: string | undefined): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-AR');
-  }
-
-  // Get badge class based on active status
-  getEstadoClass(activo: boolean): string {
-    return activo ? 'badge-success' : 'badge-danger';
-  }
-
-  // Toggle editing state for sections
+  // Métodos para la edición del subcanal
   toggleEditing(section: string) {
     // Resetear el objeto de formulario para esta sección específica
     this.subcanalFormData = {};
@@ -643,15 +304,15 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
     this.subcanalFormData = {};
   }
 
-  updateField(field: string, event: Event) {
+  updateField(event: {field: string, event: Event}) {
     if (this.subcanalFormData) {
-      const target = event.target as HTMLInputElement | HTMLSelectElement;
+      const target = event.event.target as HTMLInputElement | HTMLSelectElement;
 
       // Convertir a número si es el campo de comisión
-      if (field === 'comision') {
-        this.subcanalFormData[field] = parseFloat(target.value);
+      if (event.field === 'comision') {
+        this.subcanalFormData[event.field] = parseFloat(target.value);
       } else {
-        this.subcanalFormData[field] = target.value;
+        this.subcanalFormData[event.field] = target.value;
       }
     }
   }
@@ -667,26 +328,6 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
     }
 
     return this.subcanal.gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
-  }
-
-  getTotalGastosClass(): string {
-    const total = this.getGastosPorcentaje();
-    if (total > 90) return 'text-danger';
-    if (total > 70) return 'text-warning';
-    return 'text-success';
-  }
-
-  getTotalGastosConNuevo(): number {
-    const gastosActuales = this.getGastosPorcentaje();
-    const nuevoGastoPorcentaje = this.gastoForm.get('porcentaje')?.value || 0;
-
-    // Si estamos editando, restamos el porcentaje original y sumamos el nuevo
-    if (this.editingGasto) {
-      return gastosActuales - this.editingGasto.porcentaje + nuevoGastoPorcentaje;
-    }
-
-    // Si es un nuevo gasto, solo sumamos
-    return gastosActuales + nuevoGastoPorcentaje;
   }
 
   abrirModalAgregarGasto() {
@@ -719,14 +360,8 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
     this.errorGasto = null;
   }
 
-  guardarGasto() {
-    if (this.gastoForm.invalid) {
-      this.gastoForm.markAllAsTouched();
-      return;
-    }
-
+  guardarGasto(gastoData: any) {
     this.loadingGasto = true;
-    const gastoData = this.gastoForm.value;
 
     // Si el ID es 0, es un nuevo gasto
     if (!gastoData.id || gastoData.id === 0) {
@@ -874,9 +509,11 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
       });
     }
   }
-isVendorAsignando(vendorId: number): boolean {
+
+  isVendorAsignando(vendorId: number): boolean {
     return this.vendoresAsignando.has(vendorId);
   }
+
   // Métodos para operaciones y clientes
   getVendorOperaciones(vendorId: number): number {
     return this.operaciones.filter(op => op.vendedorId === vendorId).length;
@@ -899,27 +536,22 @@ isVendorAsignando(vendorId: number): boolean {
   }
 
   verDetalleVendor(vendorId: number) {
-    // Implementar navegación a detalle de vendedor
     this.router.navigate(['/usuarios/vendor', vendorId]);
   }
 
   verDetalleCliente(clienteId: number) {
-    // Implementar navegación a detalle de cliente
     this.router.navigate(['/clientes', clienteId]);
   }
 
   verDetalleOperacion(operacionId: number) {
-    // Implementar navegación a detalle de operación
     this.router.navigate(['/operaciones', operacionId]);
   }
 
   filtrarClientes() {
-    // Implementar filtro de clientes
     alert('Funcionalidad de filtrado de clientes en desarrollo');
   }
 
   filtrarOperaciones() {
-    // Implementar filtro de operaciones
     alert('Funcionalidad de filtrado de operaciones en desarrollo');
   }
 
@@ -948,7 +580,8 @@ isVendorAsignando(vendorId: number): boolean {
   }
 
   // Metodos para cambiar estado de vendedores
-  toggleVendorEstado(vendorId: number, estadoActual: boolean) {
+  toggleVendorEstado(params: { vendorId: number, estadoActual: boolean }) {
+    const { vendorId, estadoActual } = params;
     this.loadingVendedores.set(vendorId, true);
 
     const request = estadoActual

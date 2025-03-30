@@ -1,0 +1,82 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">Gastos Configurados</h3>
+    <div>
+      <button class="btn btn-sm btn-primary" (click)="onAgregarGasto()">
+        <i class="bi bi-plus"></i> Agregar Gasto
+      </button>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <div class="gastos-summary mb-4">
+      <div class="gastos-total">
+        <span class="label">Porcentaje total de gastos:</span>
+        <span class="value" [ngClass]="getTotalGastosClass()">
+          {{ getGastosPorcentaje() }}%
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="custom-table" *ngIf="subcanal.gastos && subcanal.gastos.length > 0">
+        <thead>
+          <tr>
+            <th style="width: 50px">ID</th>
+            <th>Nombre</th>
+            <th class="text-center">Porcentaje</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let gasto of subcanal.gastos">
+            <td>{{ gasto.id }}</td>
+            <td>
+              <div class="fw-bold">{{ gasto.nombre }}</div>
+            </td>
+            <td class="text-center">
+              <span class="badge badge-light-primary">
+                {{ gasto.porcentaje }}%
+              </span>
+            </td>
+            <td class="text-center">
+              <button
+                class="btn-action btn-edit me-1"
+                title="Editar gasto"
+                (click)="onEditarGasto(gasto)"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button
+                class="btn-action btn-remove"
+                title="Eliminar gasto"
+                (click)="onEliminarGasto(gasto.id)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div
+        *ngIf="!subcanal.gastos || subcanal.gastos.length === 0"
+        class="text-center p-5"
+      >
+        <div class="text-center">
+          <i class="bi bi-calculator fs-2 text-muted"></i>
+          <h4>No hay gastos configurados</h4>
+          <p class="text-muted">
+            Este subcanal no tiene gastos configurados.
+          </p>
+          <button
+            class="btn btn-primary mt-3"
+            (click)="onAgregarGasto()"
+          >
+            <i class="bi bi-plus"></i> Agregar Gasto
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

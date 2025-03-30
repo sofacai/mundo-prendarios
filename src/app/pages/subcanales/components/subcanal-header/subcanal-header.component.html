@@ -1,0 +1,69 @@
+<div class="subcanal-header-card">
+  <div class="canal-info">
+    <div class="canal-badge">
+      <span>Canal:</span>
+      <a [routerLink]="['/canales', subcanal.canalId]" class="canal-link">
+        {{ subcanal.canalNombre }}
+      </a>
+    </div>
+  </div>
+
+  <div class="header-main-section">
+    <!-- Título y badge -->
+    <div class="title-container">
+      <div class="title-badge-wrapper">
+        <h2 class="subcanal-title">{{ subcanal.nombre }}</h2>
+        <span
+          class="status-badge cursor-pointer"
+          [ngClass]="subcanal.activo ? 'active' : 'inactive'"
+          (click)="toggleEstado.emit()"
+        >
+          {{ subcanal.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </div>
+      <div class="subcanal-ubicacion">
+        <i class="bi bi-geo-alt me-1"></i>
+        {{ subcanal.provincia }}, {{ subcanal.localidad }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Info -->
+  <div class="admin-info">
+    <div class="admin-label">Admin del Subcanal:</div>
+    <div class="admin-name">
+      <i class="bi bi-person-badge me-1"></i>
+      {{ subcanal.adminCanalNombre }}
+    </div>
+    <div class="extra-info">
+      <div class="comision-box">
+        <span class="label">Comisión:</span>
+        <span class="value">{{ subcanal.comision }}%</span>
+      </div>
+      <div class="gastos-box">
+        <span class="label">Gastos Totales:</span>
+        <span class="value">{{ getGastosPorcentaje() }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-section">
+    <div class="stat-box">
+      <div class="stat-number">
+        {{ vendedoresActivos + vendedoresInactivos }}
+      </div>
+      <div class="stat-label">Vendedores</div>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-number">{{ clientesTotal }}</div>
+      <div class="stat-label">Clientes</div>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-number">{{ operacionesTotal }}</div>
+      <div class="stat-label">Operaciones</div>
+    </div>
+  </div>
+</div>

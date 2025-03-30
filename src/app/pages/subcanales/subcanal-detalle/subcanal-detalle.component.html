@@ -28,808 +28,109 @@
 
     <!-- Subcanal Content -->
     <div *ngIf="subcanal && !loading && !error" class="subcanal-detail">
-      <!-- Cabecera Principal -->
-      <div class="subcanal-header-card">
-        <div class="canal-info">
-          <div class="canal-badge">
-            <span>Canal:</span>
-            <a [routerLink]="['/canales', subcanal.canalId]" class="canal-link">
-              {{ subcanal.canalNombre }}
-            </a>
-          </div>
-        </div>
+      <!-- Header Component -->
+      <app-subcanal-header
+        [subcanal]="subcanal"
+        [loading]="loading"
+        [vendedoresActivos]="vendedoresActivos"
+        [vendedoresInactivos]="vendedoresInactivos"
+        [clientesTotal]="clientesTotal"
+        [operacionesTotal]="operacionesTotal"
+        (toggleEstado)="toggleSubcanalEstado()">
+      </app-subcanal-header>
 
-        <div class="header-main-section">
-          <!-- Título y badge -->
-          <div class="title-container">
-            <div class="title-badge-wrapper">
-              <h2 class="subcanal-title">{{ subcanal.nombre }}</h2>
-              <span
-                class="status-badge cursor-pointer"
-                [ngClass]="subcanal.activo ? 'active' : 'inactive'"
-                (click)="toggleSubcanalEstado()"
-              >
-                {{ subcanal.activo ? "Activo" : "Inactivo" }}
-              </span>
-            </div>
-            <div class="subcanal-ubicacion">
-              <i class="bi bi-geo-alt me-1"></i>
-              {{ subcanal.provincia }}, {{ subcanal.localidad }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Admin Info -->
-        <div class="admin-info">
-          <div class="admin-label">Admin del Subcanal:</div>
-          <div class="admin-name">
-            <i class="bi bi-person-badge me-1"></i>
-            {{ subcanal.adminCanalNombre }}
-          </div>
-          <div class="extra-info">
-            <div class="comision-box">
-              <span class="label">Comisión:</span>
-              <span class="value">{{ subcanal.comision }}%</span>
-            </div>
-            <div class="gastos-box">
-              <span class="label">Gastos Totales:</span>
-              <span class="value">{{ getGastosPorcentaje() }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Estadísticas -->
-        <div class="stats-section">
-          <div class="stat-box">
-            <div class="stat-number">
-              {{ vendedoresActivos + vendedoresInactivos }}
-            </div>
-            <div class="stat-label">Vendedores</div>
-          </div>
-
-          <div class="stat-box">
-            <div class="stat-number">{{ clientesTotal }}</div>
-            <div class="stat-label">Clientes</div>
-          </div>
-
-          <div class="stat-box">
-            <div class="stat-number">{{ operacionesTotal }}</div>
-            <div class="stat-label">Operaciones</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs Navigation -->
-      <div class="subcanal-tabs card mb-4">
-        <div class="card-body p-0">
-          <div class="tab-navigation border-bottom">
-            <ul class="nav">
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'general'"
-                  (click)="setActiveTab('general')"
-                >
-                  <i class="bi bi-info-circle me-2"></i>
-                  General
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'vendedores'"
-                  (click)="setActiveTab('vendedores')"
-                >
-                  <i class="bi bi-people me-2"></i>
-                  Vendedores
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'clientes'"
-                  (click)="setActiveTab('clientes')"
-                >
-                  <i class="bi bi-person-lines-fill me-2"></i>
-                  Clientes
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'operaciones'"
-                  (click)="setActiveTab('operaciones')"
-                >
-                  <i class="bi bi-cash me-2"></i>
-                  Operaciones
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'gastos'"
-                  (click)="setActiveTab('gastos')"
-                >
-                  <i class="bi bi-calculator me-2"></i>
-                  Gastos
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'estadisticas'"
-                  (click)="setActiveTab('estadisticas')"
-                >
-                  <i class="bi bi-bar-chart me-2"></i>
-                  Estadísticas
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <!-- Tabs Navigation Component -->
+      <app-subcanal-tabs-navigation
+        [activeTab]="activeTab"
+        (tabSelected)="setActiveTab($event)">
+      </app-subcanal-tabs-navigation>
 
       <!-- Tab Content -->
       <div class="tab-content">
-        <!-- General Tab -->
+        <!-- General Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'general'">
-          <div class="row">
-            <!-- Información General -->
-            <div class="col-12 col-md-6 mb-4">
-              <div class="card detail-card h-100">
-                <div
-                  class="card-header d-flex justify-content-between align-items-center"
-                >
-                  <h3 class="card-title">
-                    <i class="bi bi-info-circle me-2 text-primary"></i>
-                    Información General
-                  </h3>
-                  <div class="edit-controls">
-                    <button
-                      *ngIf="!isEditing('general')"
-                      class="btn-edit"
-                      (click)="toggleEditing('general')"
-                    >
-                      <i class="bi bi-pencil"></i>
-                    </button>
-
-                    <div *ngIf="isEditing('general')" class="action-buttons">
-                      <button
-                        class="btn-action btn-save me-1"
-                        (click)="saveSection('general')"
-                      >
-                        <i class="bi bi-check"></i>
-                      </button>
-                      <button
-                        class="btn-action btn-cancel"
-                        (click)="cancelEditing('general')"
-                      >
-                        <i class="bi bi-x"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-body p-4">
-                  <div class="row">
-                    <div class="col-12">
-                      <div class="detail-row mb-3">
-                        <div class="detail-label">Nombre</div>
-                        <div
-                          class="detail-value"
-                          *ngIf="!isEditing('general')"
-                        >
-                          {{ subcanal.nombre }}
-                        </div>
-                        <input
-                          *ngIf="isEditing('general')"
-                          type="text"
-                          class="form-control"
-                          [value]="subcanalFormData.nombre"
-                          (input)="updateField('nombre', $event)"
-                        />
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="detail-row mb-3">
-                        <div class="detail-label">Provincia</div>
-                        <div
-                          class="detail-value"
-                          *ngIf="!isEditing('general')"
-                        >
-                          {{ subcanal.provincia }}
-                        </div>
-                        <input
-                          *ngIf="isEditing('general')"
-                          type="text"
-                          class="form-control"
-                          [value]="subcanalFormData.provincia"
-                          (input)="updateField('provincia', $event)"
-                        />
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="detail-row mb-3">
-                        <div class="detail-label">Localidad</div>
-                        <div
-                          class="detail-value"
-                          *ngIf="!isEditing('general')"
-                        >
-                          {{ subcanal.localidad }}
-                        </div>
-                        <input
-                          *ngIf="isEditing('general')"
-                          type="text"
-                          class="form-control"
-                          [value]="subcanalFormData.localidad"
-                          (input)="updateField('localidad', $event)"
-                        />
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="detail-row">
-                        <div class="detail-label">Comisión (%)</div>
-                        <div
-                          class="detail-value"
-                          *ngIf="!isEditing('general')"
-                        >
-                          {{ subcanal.comision }}%
-                        </div>
-                        <input
-                          *ngIf="isEditing('general')"
-                          type="number"
-                          class="form-control"
-                          min="0"
-                          max="100"
-                          step="0.01"
-                          [value]="subcanalFormData.comision"
-                          (input)="updateField('comision', $event)"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Canal Relacionado -->
-            <div class="col-12 col-md-6 mb-4">
-              <div class="card detail-card h-100">
-                <div class="card-header">
-                  <h3 class="card-title">
-                    <i class="bi bi-diagram-3 me-2 text-primary"></i>Canal
-                    Relacionado
-                  </h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="canal-relacionado-info">
-                    <div class="detail-row mb-3">
-                      <div class="detail-label">Canal</div>
-                      <div class="detail-value">
-                        {{ subcanal.canalNombre }}
-                      </div>
-                    </div>
-                    <div class="detail-row mb-3">
-                      <div class="detail-label">Administrador del Canal</div>
-                      <div class="detail-value">
-                        {{ subcanal.adminCanalNombre }}
-                      </div>
-                    </div>
-                    <div class="detail-row">
-                      <div class="detail-label">Ir al Canal</div>
-                      <div class="detail-value">
-                        <a
-                          [routerLink]="['/canales', subcanal.canalId]"
-                          class="btn btn-sm btn-light-primary"
-                        >
-                          <i class="bi bi-box-arrow-right me-1"></i> Ver Canal
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-subcanal-general-tab
+            [subcanal]="subcanal"
+            [isEditing]="editingSections['general']"
+            [subcanalFormData]="subcanalFormData"
+            (editingToggled)="toggleEditing($event)"
+            (saveSection)="saveSection($event)"
+            (cancelEditing)="cancelEditing($event)"
+            (updateField)="updateField($event)">
+          </app-subcanal-general-tab>
         </div>
 
-        <!-- Vendedores Tab -->
+        <!-- Vendedores Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'vendedores'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Vendedores Asignados</h3>
-              <div>
-                <button
-                  class="btn btn-sm btn-primary"
-                  (click)="abrirModalAsignarVendedor()"
-                >
-                  <i class="bi bi-plus"></i> Asignar Vendedor
-                </button>
-              </div>
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <table
-                  class="custom-table"
-                  *ngIf="subcanal.vendors && subcanal.vendors.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th style="width: 50px">ID</th>
-                      <th>Nombre</th>
-                      <th>Email</th>
-                      <th>Teléfono</th>
-                      <th>Estado</th>
-                      <th class="text-center">Operaciones</th>
-                      <th class="text-center">Clientes</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let vendor of subcanal.vendors">
-                      <td>{{ vendor.id }}</td>
-                      <td>
-                        <div class="fw-bold">
-                          {{ vendor.nombre }} {{ vendor.apellido }}
-                        </div>
-                      </td>
-                      <td>{{ vendor.email }}</td>
-                      <td>{{ vendor.telefono }}</td>
-                      <td>
-                        <div
-                          class="badge cursor-pointer"
-                          [ngClass]="getEstadoClass(vendor.activo)"
-                          (click)="toggleVendorEstado(vendor.id, vendor.activo)"
-                        >
-                          <span *ngIf="!isVendorLoading(vendor.id)">{{
-                            vendor.activo ? "Activo" : "Inactivo"
-                          }}</span>
-                          <span
-                            *ngIf="isVendorLoading(vendor.id)"
-                            class="spinner-border spinner-border-sm"
-                            role="status"
-                          ></span>
-                        </div>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge badge-light-primary">
-                          {{ getVendorOperaciones(vendor.id) }}
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge badge-light-info">
-                          {{ getVendorClientes(vendor.id) }}
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <button
-                          class="btn-action btn-view me-1"
-                          title="Ver detalle"
-                          (click)="verDetalleVendor(vendor.id)"
-                        >
-                          <i class="bi bi-eye"></i>
-                        </button>
-                        <button
-                          class="btn-action btn-remove"
-                          title="Desasignar"
-                          (click)="desasignarVendor(vendor.id)"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="
-                    !subcanal.vendors || subcanal.vendors.length === 0
-                  "
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-people fs-2 text-muted"></i>
-                    <h4>No hay vendedores asignados</h4>
-                    <p class="text-muted">
-                      Este subcanal no tiene vendedores asignados.
-                    </p>
-                    <button
-                      class="btn btn-primary mt-3"
-                      (click)="abrirModalAsignarVendedor()"
-                    >
-                      <i class="bi bi-plus"></i> Asignar Vendedor
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-subcanal-vendedores-tab
+            [subcanal]="subcanal"
+            [loadingVendedores]="loadingVendedores"
+            [getVendorOperaciones]="getVendorOperaciones.bind(this)"
+            [getVendorClientes]="getVendorClientes.bind(this)"
+            (asignarVendedor)="abrirModalAsignarVendedor()"
+            (toggleVendorEstado)="toggleVendorEstado($event)"
+            (desasignarVendor)="desasignarVendor($event)"
+            (verDetalleVendor)="verDetalleVendor($event)">
+          </app-subcanal-vendedores-tab>
         </div>
 
-        <!-- Clientes Tab -->
+        <!-- Clientes Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'clientes'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Clientes</h3>
-              <div>
-                <button class="btn btn-sm btn-light me-2" (click)="filtrarClientes()">
-                  <i class="bi bi-filter"></i> Filtrar
-                </button>
-              </div>
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <table
-                  class="custom-table"
-                  *ngIf="clientes && clientes.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th style="width: 50px">ID</th>
-                      <th>Nombre</th>
-                      <th>Contacto</th>
-                      <th>DNI/CUIL</th>
-                      <th>Vendedor</th>
-                      <th class="text-center">Operaciones</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let cliente of clientes">
-                      <td>{{ cliente.id }}</td>
-                      <td>
-                        <div class="fw-bold">
-                          {{ cliente.nombre }} {{ cliente.apellido }}
-                        </div>
-                      </td>
-                      <td>
-                        <div>{{ cliente.email }}</div>
-                        <div class="text-muted small">{{ cliente.telefono }}</div>
-                      </td>
-                      <td>
-                        <div *ngIf="cliente.dni">DNI: {{ cliente.dni }}</div>
-                        <div *ngIf="cliente.cuil">CUIL: {{ cliente.cuil }}</div>
-                      </td>
-                      <td>
-                        <div *ngIf="cliente.vendoresAsignados && cliente.vendoresAsignados.length > 0">
-                          {{ getVendorNombre(cliente.vendoresAsignados[0].vendedorId) }}
-                        </div>
-                        <div *ngIf="!cliente.vendoresAsignados || cliente.vendoresAsignados.length === 0" class="text-muted small">
-                          Sin asignar
-                        </div>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge badge-light-primary">
-                          {{ cliente.numeroOperaciones || 0 }}
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <button
-                          class="btn-action btn-view"
-                          title="Ver detalle"
-                          (click)="verDetalleCliente(cliente.id)"
-                        >
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!clientes || clientes.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-person-lines-fill fs-2 text-muted"></i>
-                    <h4>No hay clientes</h4>
-                    <p class="text-muted">
-                      Este subcanal no tiene clientes registrados.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-subcanal-clientes-tab
+            [clientes]="clientes"
+            [subcanal]="subcanal"
+            [getVendorNombre]="getVendorNombre.bind(this)"
+            (filtrarClientes)="filtrarClientes()"
+            (verDetalleCliente)="verDetalleCliente($event)">
+          </app-subcanal-clientes-tab>
         </div>
 
-        <!-- Operaciones Tab -->
+        <!-- Operaciones Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'operaciones'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Operaciones</h3>
-              <div>
-                <button class="btn btn-sm btn-light me-2" (click)="filtrarOperaciones()">
-                  <i class="bi bi-filter"></i> Filtrar
-                </button>
-              </div>
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <table
-                  class="custom-table"
-                  *ngIf="operaciones && operaciones.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th style="width: 50px">ID</th>
-                      <th>Cliente</th>
-                      <th>Vendedor</th>
-                      <th>Monto</th>
-                      <th>Plazo</th>
-                      <th>Tasa</th>
-                      <th>Fecha</th>
-                      <th>Estado</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let op of operaciones">
-                      <td>{{ op.id }}</td>
-                      <td>{{ op.clienteNombre }}</td>
-                      <td>{{ op.vendedorNombre }}</td>
-                      <td>{{ op.monto | currency }}</td>
-                      <td>{{ op.meses }} meses</td>
-                      <td>{{ op.tasa }}%</td>
-                      <td>{{ op.fechaCreacion | date : "dd/MM/yyyy" }}</td>
-                      <td>
-                        <div class="badge badge-light-info">
-                          {{ op.estado || "Pendiente" }}
-                        </div>
-                      </td>
-                      <td class="text-center">
-                        <button
-                          class="btn-action btn-view"
-                          title="Ver detalle"
-                          (click)="verDetalleOperacion(op?.id || 0)"
-                          >
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!operaciones || operaciones.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-cash-stack fs-2 text-muted"></i>
-                    <h4>No hay operaciones</h4>
-                    <p class="text-muted">
-                      Este subcanal no tiene operaciones registradas.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-subcanal-operaciones-tab
+            [operaciones]="operaciones"
+            (filtrarOperaciones)="filtrarOperaciones()"
+            (verDetalleOperacion)="verDetalleOperacion($event)">
+          </app-subcanal-operaciones-tab>
         </div>
 
-        <!-- Gastos Tab -->
+        <!-- Gastos Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'gastos'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Gastos Configurados</h3>
-              <div>
-                <button
-                  class="btn btn-sm btn-primary"
-                  (click)="abrirModalAgregarGasto()"
-                >
-                  <i class="bi bi-plus"></i> Agregar Gasto
-                </button>
-              </div>
-            </div>
-            <div class="card-body p-4">
-              <div class="gastos-summary mb-4">
-                <div class="gastos-total">
-                  <span class="label">Porcentaje total de gastos:</span>
-                  <span class="value" [ngClass]="getTotalGastosClass()">
-                    {{ getGastosPorcentaje() }}%
-                  </span>
-                </div>
-              </div>
-
-              <div class="table-responsive">
-                <table
-                  class="custom-table"
-                  *ngIf="subcanal.gastos && subcanal.gastos.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th style="width: 50px">ID</th>
-                      <th>Nombre</th>
-                      <th class="text-center">Porcentaje</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let gasto of subcanal.gastos">
-                      <td>{{ gasto.id }}</td>
-                      <td>
-                        <div class="fw-bold">{{ gasto.nombre }}</div>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge badge-light-primary">
-                          {{ gasto.porcentaje }}%
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <button
-                          class="btn-action btn-edit me-1"
-                          title="Editar gasto"
-                          (click)="editarGasto(gasto)"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          class="btn-action btn-remove"
-                          title="Eliminar gasto"
-                          (click)="eliminarGasto(gasto.id)"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!subcanal.gastos || subcanal.gastos.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-calculator fs-2 text-muted"></i>
-                    <h4>No hay gastos configurados</h4>
-                    <p class="text-muted">
-                      Este subcanal no tiene gastos configurados.
-                    </p>
-                    <button
-                      class="btn btn-primary mt-3"
-                      (click)="abrirModalAgregarGasto()"
-                    >
-                      <i class="bi bi-plus"></i> Agregar Gasto
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-subcanal-gastos-tab
+            [subcanal]="subcanal"
+            (agregarGasto)="abrirModalAgregarGasto()"
+            (editarGasto)="editarGasto($event)"
+            (eliminarGasto)="eliminarGasto($event)">
+          </app-subcanal-gastos-tab>
         </div>
 
-        <!-- Estadísticas Tab -->
+        <!-- Estadísticas Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'estadisticas'">
-          <div class="row g-3">
-            <!-- Gráfico de Operaciones por Mes -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Operaciones por Mes</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="operacionesChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Distribución por Vendedores -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Distribución por Vendedores</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="vendedoresChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Montos por Mes -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Montos de Operaciones por Mes</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="montosChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Adquisición de Clientes -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Adquisición de Clientes</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="clientesChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-subcanal-estadisticas-tab
+            [operaciones]="operaciones"
+            [clientes]="clientes"
+            [subcanal]="subcanal"
+            [activeTab]="activeTab">
+          </app-subcanal-estadisticas-tab>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal para agregar gasto -->
-<ion-modal [isOpen]="modalGastoOpen" (didDismiss)="cerrarModalGasto()" class="modal-gasto">
-  <ng-template>
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2>{{ editingGasto ? 'Editar Gasto' : 'Agregar Gasto' }}</h2>
-        <ion-button fill="clear" (click)="cerrarModalGasto()">
-          <ion-icon name="close-outline"></ion-icon>
-        </ion-button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="gastoForm" (ngSubmit)="guardarGasto()">
-          <div class="form-group">
-            <label>Nombre del Gasto <span class="required">*</span></label>
-            <input type="text" class="form-control" formControlName="nombre">
-            <small class="text-danger" *ngIf="gastoForm.get('nombre')?.invalid && gastoForm.get('nombre')?.touched">
-              El nombre del gasto es requerido
-            </small>
-          </div>
+<!-- Modal para agregar/editar gasto -->
+<app-gasto-form-modal
+  [isOpen]="modalGastoOpen"
+  [editingGasto]="editingGasto"
+  [subcanalId]="subcanalId"
+  [loadingGasto]="loadingGasto"
+  [errorGasto]="errorGasto"
+  [gastosActualesPorcentaje]="getGastosPorcentaje()"
+  (closeModal)="cerrarModalGasto()"
+  (saveGasto)="guardarGasto($event)">
+</app-gasto-form-modal>
 
-          <div class="form-group">
-            <label>Porcentaje <span class="required">*</span></label>
-            <input type="number" class="form-control" formControlName="porcentaje" min="0" max="100" step="0.01">
-            <small class="text-danger" *ngIf="gastoForm.get('porcentaje')?.invalid && gastoForm.get('porcentaje')?.touched">
-              El porcentaje debe estar entre 0 y 100
-            </small>
-          </div>
-
-          <div class="porcentaje-total mt-3">
-            <strong>Total de gastos con este nuevo: </strong>
-            <span [ngClass]="{'text-danger': getTotalGastosConNuevo() > 100, 'text-success': getTotalGastosConNuevo() <= 100}">
-              {{ getTotalGastosConNuevo() }}%
-            </span>
-            <small class="d-block text-danger" *ngIf="getTotalGastosConNuevo() > 100">
-              El total de gastos no puede superar el 100%
-            </small>
-          </div>
-
-          <div class="form-error" *ngIf="errorGasto">
-            <div class="alert alert-danger">{{ errorGasto }}</div>
-          </div>
-
-          <div class="form-footer">
-            <button type="button" class="btn btn-light" (click)="cerrarModalGasto()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="gastoForm.invalid || getTotalGastosConNuevo() > 100 || loadingGasto">
-              <span *ngIf="!loadingGasto">{{ editingGasto ? 'Guardar Cambios' : 'Agregar Gasto' }}</span>
-              <ion-spinner *ngIf="loadingGasto" name="dots" class="spinner-sm"></ion-spinner>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </ng-template>
-</ion-modal>
-
-<!-- Modal para asignar vendedor -->
+<!-- Modal para vendores - mantiene su implementación original por ahora -->
 <ion-modal [isOpen]="modalVendorOpen" (didDismiss)="cerrarModalVendor()" class="modal-vendor">
   <ng-template>
     <div class="modal-container">

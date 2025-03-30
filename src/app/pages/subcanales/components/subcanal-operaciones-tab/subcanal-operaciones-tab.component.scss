@@ -1,0 +1,148 @@
+/* Estilos para la tarjeta principal */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.card .card-header {
+  background-color: transparent;
+  border-bottom: 1px solid #eef0f2;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  margin-bottom: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #181c32;
+}
+
+.card-body.p-4 {
+  padding: 1.5rem !important;
+}
+
+/* Tabla de operaciones */
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 1rem;
+}
+
+.custom-table thead th {
+  background-color: #f5f8fa;
+  color: #7e8299;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #eef0f2;
+  letter-spacing: 0.5px;
+}
+
+.custom-table tbody td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #eef0f2;
+  color: #181c32;
+  font-size: 14px;
+}
+
+.custom-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Badges */
+.badge {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.badge-light-info {
+  background-color: rgba(0, 195, 230, 0.1);
+  color: #00c3e6;
+}
+
+/* Botones de acción */
+.btn-action {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action.btn-view {
+  color: #009ef7;
+}
+
+.btn-action:hover {
+  background-color: #f5f8fa;
+}
+
+/* Botones */
+.btn {
+  height: 38px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &.btn-sm {
+    height: 32px;
+    padding: 4px 12px;
+    font-size: 13px;
+  }
+
+  &.btn-light {
+    background-color: #f5f8fa;
+    color: #7e8299;
+    border: 1px solid #e4e6ef;
+
+    &:hover {
+      background-color: #eef3f7;
+    }
+  }
+}
+
+/* Utilidades para texto */
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: #a1a5b7;
+}
+
+/* Estado vacío */
+.p-5 {
+  padding: 3rem;
+}
+
+.fs-2 {
+  font-size: 2rem;
+}
+
+.me-2 {
+  margin-right: 0.5rem;
+}

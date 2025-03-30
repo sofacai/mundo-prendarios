@@ -1,0 +1,102 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">Vendedores Asignados</h3>
+    <div>
+      <button class="btn btn-sm btn-primary" (click)="asignarVendedor.emit()">
+        <i class="bi bi-plus"></i> Asignar Vendedor
+      </button>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <div class="table-responsive">
+      <table class="custom-table" *ngIf="subcanal.vendors && subcanal.vendors.length > 0">
+        <thead>
+          <tr>
+            <th style="width: 50px">ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th class="text-center">Operaciones</th>
+            <th class="text-center">Clientes</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let vendor of subcanal.vendors">
+            <td>{{ vendor.id }}</td>
+            <td>
+              <div class="fw-bold">
+                {{ vendor.nombre }} {{ vendor.apellido }}
+              </div>
+            </td>
+            <td>{{ vendor.email }}</td>
+            <td>{{ vendor.telefono }}</td>
+            <td>
+              <div
+                class="badge cursor-pointer"
+                [ngClass]="getEstadoClass(vendor.activo)"
+                (click)="onToggleVendorEstado(vendor.id, vendor.activo)"
+              >
+                <span *ngIf="!isVendorLoading(vendor.id)">{{
+                  vendor.activo ? "Activo" : "Inactivo"
+                }}</span>
+                <span
+                  *ngIf="isVendorLoading(vendor.id)"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                ></span>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="badge badge-light-primary">
+                {{ getVendorOperaciones(vendor.id) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="badge badge-light-info">
+                {{ getVendorClientes(vendor.id) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button
+                class="btn-action btn-view me-1"
+                title="Ver detalle"
+                (click)="onVerDetalleVendor(vendor.id)"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+              <button
+                class="btn-action btn-remove"
+                title="Desasignar"
+                (click)="onDesasignarVendor(vendor.id)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div
+        *ngIf="!subcanal.vendors || subcanal.vendors.length === 0"
+        class="text-center p-5"
+      >
+        <div class="text-center">
+          <i class="bi bi-people fs-2 text-muted"></i>
+          <h4>No hay vendedores asignados</h4>
+          <p class="text-muted">
+            Este subcanal no tiene vendedores asignados.
+          </p>
+          <button
+            class="btn btn-primary mt-3"
+            (click)="asignarVendedor.emit()"
+          >
+            <i class="bi bi-plus"></i> Asignar Vendedor
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

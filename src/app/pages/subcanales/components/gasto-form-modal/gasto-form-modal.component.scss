@@ -1,0 +1,156 @@
+/* Estilos para el modal */
+:host {
+  --width: 500px;
+  --height: auto;
+  --max-height: 90vh;
+  --border-radius: 8px;
+  --backdrop-opacity: 0.7;
+}
+
+.modal-container {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef0f2;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 14px;
+
+    .required {
+      color: #f1416c;
+    }
+  }
+
+  .form-control {
+    width: 100%;
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #e4e6ef;
+    border-radius: 6px;
+    font-size: 14px;
+
+    &:focus {
+      border-color: #009ef7;
+      outline: none;
+      box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.15);
+    }
+  }
+
+  small.text-danger {
+    display: block;
+    margin-top: 4px;
+    color: #f1416c;
+    font-size: 12px;
+  }
+}
+
+.porcentaje-total {
+  margin-bottom: 16px;
+  padding: 10px;
+  background-color: #f5f8fa;
+  border-radius: 6px;
+  font-size: 14px;
+
+  .text-success {
+    color: #50cd89;
+  }
+
+  .text-danger {
+    color: #f1416c;
+  }
+}
+
+.form-error {
+  margin-bottom: 16px;
+}
+
+.alert-danger {
+  background-color: #fff5f8;
+  color: #f1416c;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  height: 40px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 100px;
+
+  &.btn-primary {
+    background-color: #009ef7;
+    color: #fff;
+    border: none;
+
+    &:hover:not(:disabled) {
+      background-color: #0095e8;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &.btn-light {
+    background-color: #f5f8fa;
+    color: #7e8299;
+    border: 1px solid #e4e6ef;
+
+    &:hover {
+      background-color: #eef3f7;
+    }
+  }
+}
+
+/* Spinner */
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.d-block {
+  display: block;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
