@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RolType } from './core/models/usuario.model';
 import { WizardContainerComponent } from './pages/cotizador/wizard-container/wizard-container.component';
+import { SubcanalDetalleComponent } from './pages/subcanales/subcanal-detalle/subcanal-detalle.component';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -21,6 +22,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [AuthGuard]
   },
+
+
+  { path: 'subcanales/:id',
+    component: SubcanalDetalleComponent,
+    data: { roles: [RolType.Administrador, RolType.OficialComercial] } },
+
 
   // Nuevas rutas
   {
