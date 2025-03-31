@@ -1,7 +1,7 @@
 <!-- HTML - Cambios requeridos en step1-monto.component.html -->
 <div class="loan-form">
+  <!-- Header con progreso -->
   <div class="card">
-    <!-- Header con progreso -->
     <div class="header">
       <div class="header-content">
         <h2 class="header-title">Solicitud de Préstamo</h2>
@@ -20,59 +20,65 @@
     </div>
 
     <div class="content">
-      <!-- Tabs -->
-      <div class="tabs">
-        <div class="tab-container">
-          <button class="tab" [class.tab-active]="planSeleccionado === 'Cuotas Fijas'"
-                             [class.tab-inactive]="planSeleccionado !== 'Cuotas Fijas'"
-                             (click)="seleccionarPlan('Cuotas Fijas')">
-            Cuotas Fijas
-          </button>
-          <button class="tab" [class.tab-active]="planSeleccionado === 'UVA'"
-                             [class.tab-inactive]="planSeleccionado !== 'UVA'"
-                             (click)="seleccionarPlan('UVA')">
-            UVA
-          </button>
+      <!-- Primera caja: Input monto del préstamo -->
+      <div class="amount-box">
+        <div class="form-group">
+          <label for="loanAmount" class="form-label">¿Cuánto querés pedir?</label>
+          <div class="input-wrapper">
+            <div class="currency-icon">$</div>
+            <input
+              id="loanAmount"
+              type="text"
+              [(ngModel)]="montoFormateado"
+              (input)="onMontoInputChange($event)"
+              class="loan-input">
+          </div>
+          <p class="min-loan">
+            <span class="min-loan-dot"></span>
+            El mínimo a prestar es $ {{montoMinimo | number:'1.0-0':'es'}}
+          </p>
         </div>
       </div>
 
-      <!-- Input monto del préstamo -->
-      <div class="form-group">
-        <label for="loanAmount" class="form-label">¿Cuánto querés pedir?</label>
-        <div class="input-wrapper">
-          <div class="currency-icon">$</div>
-          <input
-            id="loanAmount"
-            type="text"
-            [(ngModel)]="montoFormateado"
-            (input)="onMontoInputChange($event)"
-            class="loan-input">
+      <!-- Segunda caja: Selección de tabs y plazos -->
+      <div class="term-box">
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab-container">
+            <button class="tab" [class.tab-active]="planSeleccionado === 'Cuotas Fijas'"
+                               [class.tab-inactive]="planSeleccionado !== 'Cuotas Fijas'"
+                               (click)="seleccionarPlan('Cuotas Fijas')">
+              Cuotas Fijas
+            </button>
+            <button class="tab" [class.tab-active]="planSeleccionado === 'UVA'"
+                               [class.tab-inactive]="planSeleccionado !== 'UVA'"
+                               (click)="seleccionarPlan('UVA')">
+              UVA
+            </button>
+          </div>
         </div>
-        <p class="min-loan">
-          <span class="min-loan-dot"></span>
-          El mínimo a prestar es $ {{montoMinimo | number:'1.0-0':'es'}}
-        </p>
-      </div>
 
-      <!-- Selección de plazo -->
-      <div class="form-group">
-        <h3 class="term-heading">Elegí el plazo</h3>
-        <div class="term-options">
-          <button
-            *ngFor="let p of plazosOrdenados"
-            class="term-option"
-            [class.term-option-selected]="plazo === p"
-            (click)="seleccionarPlazo(p)">
-            <div *ngIf="p === 60" class="recommended-badge">Recomendado</div>
-            <div class="option-left">
-              <div class="radio" [class.radio-selected]="plazo === p">
-                <div *ngIf="plazo === p" class="radio-inner"></div>
+        <!-- Selección de plazo -->
+        <div class="form-group">
+          <h3 class="term-heading">Elegí el plazo</h3>
+          <div class="term-options">
+            <button
+              *ngFor="let p of plazosOrdenados"
+              class="term-option"
+              [class.term-option-selected]="plazo === p"
+              (click)="seleccionarPlazo(p)">
+              <div *ngIf="p === 60" class="recommended-badge">Recomendado</div>
+              <div class="option-left">
+                <div class="radio" [class.radio-selected]="plazo === p">
+                  <div *ngIf="plazo === p" class="radio-inner"></div>
+                </div>
+                <span class="term-text">{{p}} Cuotas</span>
               </div>
-              <span class="term-text">{{p}} Cuotas</span>
-            </div>
-            <span class="term-amount" [class.term-amount-selected]="plazo === p">
-              $ {{calcularCuotaPara(p) | number:'1.0-0'}}
-            </span>        </button>
+              <span class="term-amount" [class.term-amount-selected]="plazo === p">
+                $ {{calcularCuotaPara(p) | number:'1.0-0'}}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
