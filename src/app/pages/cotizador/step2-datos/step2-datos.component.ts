@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 
 @Component({
   selector: 'app-step2-datos',
@@ -15,21 +16,25 @@ export class Step2DatosComponent implements OnInit {
   @Output() volver = new EventEmitter<void>();
 
   clienteForm: FormGroup;
-  tipoDocumento: 'DNI' | 'CUIL' = 'DNI';
+  tipoDocumento: 'DNI' | 'CUIL' = 'CUIL'; // Por defecto CUIL
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    public dataService: CotizadorDataService // Inyectamos el servicio
+  ) {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellido: ['', [Validators.required, Validators.minLength(2)]],
       whatsapp: ['', [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
       email: ['', [Validators.required, Validators.email]],
-      dni: ['', [Validators.pattern(/^\d{7,8}$/)]],
-      cuil: ['', [Validators.pattern(/^\d{11}$/)]]
+      dni: [''],
+      cuil: [''],
+      sexo: ['']
     });
 
-    // Inicialmente el DNI es requerido y el CUIL no
-    this.clienteForm.get('dni')?.setValidators([Validators.required, Validators.pattern(/^\d{7,8}$/)]);
-    this.clienteForm.get('dni')?.updateValueAndValidity();
+    // Inicialmente el CUIL es requerido y el DNI no
+    this.clienteForm.get('cuil')?.setValidators([Validators.required, Validators.pattern(/^\d{11}$/)]);
+    this.clienteForm.get('cuil')?.updateValueAndValidity();
   }
 
   ngOnInit() {
@@ -37,8 +42,8 @@ export class Step2DatosComponent implements OnInit {
     console.log('Estado del formulario:', this.clienteForm);
   }
 
-  toggleTipoDocumento() {
-    this.tipoDocumento = this.tipoDocumento === 'DNI' ? 'CUIL' : 'DNI';
+  seleccionarTipoDocumento(tipo: 'DNI' | 'CUIL') {
+    this.tipoDocumento = tipo;
     this.updateValidatorsBasedOnDocType();
   }
 
@@ -47,15 +52,23 @@ export class Step2DatosComponent implements OnInit {
     if (this.tipoDocumento === 'DNI') {
       this.clienteForm.get('dni')?.setValidators([Validators.required, Validators.pattern(/^\d{7,8}$/)]);
       this.clienteForm.get('dni')?.updateValueAndValidity();
+      this.clienteForm.get('sexo')?.setValidators([Validators.required]);
+      this.clienteForm.get('sexo')?.updateValueAndValidity();
+
       this.clienteForm.get('cuil')?.clearValidators();
       this.clienteForm.get('cuil')?.setValue(''); // Limpiar CUIL al cambiar a DNI
       this.clienteForm.get('cuil')?.updateValueAndValidity();
     } else {
       this.clienteForm.get('cuil')?.setValidators([Validators.required, Validators.pattern(/^\d{11}$/)]);
       this.clienteForm.get('cuil')?.updateValueAndValidity();
+
       this.clienteForm.get('dni')?.clearValidators();
       this.clienteForm.get('dni')?.setValue(''); // Limpiar DNI al cambiar a CUIL
       this.clienteForm.get('dni')?.updateValueAndValidity();
+
+      this.clienteForm.get('sexo')?.clearValidators();
+      this.clienteForm.get('sexo')?.setValue(''); // Limpiar sexo al cambiar a CUIL
+      this.clienteForm.get('sexo')?.updateValueAndValidity();
     }
   }
 
@@ -71,7 +84,8 @@ export class Step2DatosComponent implements OnInit {
         telefono: this.clienteForm.get('whatsapp')?.value,
         email: this.clienteForm.get('email')?.value,
         dni: (this.clienteForm.get('dni')?.value || "").toString(),
-        cuil: (this.clienteForm.get('cuil')?.value || "").toString()
+        cuil: (this.clienteForm.get('cuil')?.value || "").toString(),
+        sexo: this.clienteForm.get('sexo')?.value || null
       };
 
       console.log('Datos a enviar:', datos);
@@ -84,6 +98,7 @@ export class Step2DatosComponent implements OnInit {
       });
     }
   }
+
   onVolver() {
     this.volver.emit();
   }
@@ -116,6 +131,11 @@ export class Step2DatosComponent implements OnInit {
 
   get cuilInvalido() {
     const control = this.clienteForm.get('cuil');
+    return control?.touched && control?.invalid;
+  }
+
+  get sexoInvalido() {
+    const control = this.clienteForm.get('sexo');
     return control?.touched && control?.invalid;
   }
 }

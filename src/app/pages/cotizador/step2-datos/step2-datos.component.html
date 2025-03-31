@@ -1,101 +1,138 @@
-<div class="step-container">
-  <div class="header">
-    <div class="logo">
-      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+<div class="loan-form">
+  <div class="card">
+    <!-- Header con progreso -->
+    <div class="header">
+      <div class="header-content">
+        <h2 class="header-title">Solicitud de Préstamo</h2>
+        <div class="progress-dots">
+          <div class="progress-dot progress-dot-completed"></div>
+          <div class="progress-dot progress-dot-active"></div>
+          <div class="progress-dot progress-dot-inactive"></div>
+        </div>
+      </div>
+      <div class="progress-text">
+        <span>Paso 2 de 3</span>
+        <span>Datos del cliente</span>
+      </div>
+      <!-- Borde inferior curvo -->
+      <div class="curved-edge"></div>
     </div>
-    <div class="steps">
-      <div class="step completed">
-        <div class="step-number">1</div>
-        <div class="step-label">Monto</div>
-      </div>
-      <div class="step-line"></div>
-      <div class="step active">
-        <div class="step-number">2</div>
-        <div class="step-label">Datos</div>
-      </div>
-      <div class="step-line"></div>
-      <div class="step">
-        <div class="step-number">3</div>
-        <div class="step-label">Oferta</div>
-      </div>
+
+    <div class="content">
+      <h2 class="title">Datos del Cliente</h2>
+      <!-- Selector de tipo de documento (como tabs) -->
+        <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <!-- Nombre -->
+          <div class="form-group">
+            <label class="form-label">Nombre <span class="required">*</span></label>
+            <input type="text" class="form-control" formControlName="nombre">
+            <small class="text-danger" *ngIf="nombreInvalido">
+              El nombre es requerido
+            </small>
+          </div>
+
+          <!-- Apellido -->
+          <div class="form-group">
+            <label class="form-label">Apellido <span class="required">*</span></label>
+            <input type="text" class="form-control" formControlName="apellido">
+            <small class="text-danger" *ngIf="apellidoInvalido">
+              El apellido es requerido
+            </small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- WhatsApp -->
+          <div class="form-group">
+            <label class="form-label">WhatsApp <span class="required">*</span></label>
+            <input type="tel" class="form-control" formControlName="whatsapp">
+            <small class="text-danger" *ngIf="whatsappInvalido">
+              El número de WhatsApp es requerido y debe contener solo dígitos (10-15 caracteres).
+            </small>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label">Email <span class="required">*</span></label>
+            <input type="email" class="form-control" formControlName="email">
+            <small class="text-danger" *ngIf="emailInvalido">
+              El email es requerido y debe tener un formato válido.
+            </small>
+          </div>
+        </div>
+
+        <!-- Selector de tipo de documento (como tabs) -->
+        <div class="tabs">
+          <div class="tab-container">
+            <button class="tab" [class.tab-active]="tipoDocumento === 'CUIL'"
+                               [class.tab-inactive]="tipoDocumento !== 'CUIL'"
+                               (click)="seleccionarTipoDocumento('CUIL')">
+              CUIL
+            </button>
+            <button class="tab" [class.tab-active]="tipoDocumento === 'DNI'"
+                               [class.tab-inactive]="tipoDocumento !== 'DNI'"
+                               (click)="seleccionarTipoDocumento('DNI')">
+              DNI
+            </button>
+          </div>
+        </div>
+
+        <!-- DNI -->
+        <div class="form-group" *ngIf="tipoDocumento === 'DNI'">
+          <label class="form-label">DNI <span class="required">*</span></label>
+          <input type="number" class="form-control" formControlName="dni">
+          <small class="text-danger" *ngIf="tipoDocumento === 'DNI' && dniInvalido">
+            El DNI debe contener entre 7 y 8 dígitos numéricos.
+          </small>
+        </div>
+
+        <!-- Sexo (solo si es DNI) -->
+        <div class="form-group" *ngIf="tipoDocumento === 'DNI'">
+          <label class="form-label">Sexo <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="masculino" formControlName="sexo" value="Masculino">
+              <label for="masculino">Masculino</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="femenino" formControlName="sexo" value="Femenino">
+              <label for="femenino">Femenino</label>
+            </div>
+          </div>
+          <small class="text-danger" *ngIf="sexoInvalido">
+            Debe seleccionar un sexo.
+          </small>
+        </div>
+
+        <!-- CUIL -->
+        <div class="form-group" *ngIf="tipoDocumento === 'CUIL'">
+          <label class="form-label">CUIL <span class="required">*</span></label>
+          <input type="number" class="form-control" formControlName="cuil">
+          <small class="text-danger" *ngIf="tipoDocumento === 'CUIL' && cuilInvalido">
+            El CUIL debe contener 11 dígitos numéricos.
+          </small>
+        </div>
+
+        <!-- Resumen de la solicitud -->
+        <div class="loan-summary">
+          <h3 class="summary-title">Resumen de la solicitud</h3>
+          <div class="summary-row">
+            <span class="summary-label">${{dataService.monto | number:'1.0-0'}} en {{dataService.plazo}} cuotas</span>
+            <span class="summary-value">Plan {{dataService.planTipo}}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Cuota mensual:</span>
+            <span class="summary-value">$ {{dataService.valorCuota | number:'1.0-0'}}</span>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" (click)="onVolver()">VOLVER</button>
+          <button type="submit" class="btn btn-primary">CONTINUAR</button>
+        </div>
+      </form>
     </div>
-  </div>
-
-  <div class="content">
-    <h2 class="title">Datos del Cliente</h2>
-
-    <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
-      <div class="form-row">
-        <!-- Nombre -->
-        <div class="form-group">
-          <label>Nombre <span class="required">*</span></label>
-          <input type="text" class="form-control" formControlName="nombre">
-          <small class="text-danger" *ngIf="nombreInvalido">
-            El nombre es requerido y debe tener al menos 2 caracteres.
-          </small>
-        </div>
-
-        <!-- Apellido -->
-        <div class="form-group">
-          <label>Apellido <span class="required">*</span></label>
-          <input type="text" class="form-control" formControlName="apellido">
-          <small class="text-danger" *ngIf="apellidoInvalido">
-            El apellido es requerido y debe tener al menos 2 caracteres.
-          </small>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <!-- WhatsApp -->
-        <div class="form-group">
-          <label>WhatsApp <span class="required">*</span></label>
-          <input type="tel" class="form-control" formControlName="whatsapp">
-          <small class="text-danger" *ngIf="whatsappInvalido">
-            El número de WhatsApp es requerido y debe contener solo dígitos (10-15 caracteres).
-          </small>
-        </div>
-
-        <!-- Email -->
-        <div class="form-group">
-          <label>Email <span class="required">*</span></label>
-          <input type="email" class="form-control" formControlName="email">
-          <small class="text-danger" *ngIf="emailInvalido">
-            El email es requerido y debe tener un formato válido.
-          </small>
-        </div>
-      </div>
-
-      <!-- Tipo de documento -->
-      <div class="tipo-documento">
-        <div>
-          Tipo de documento: <span class="tipo-valor">{{tipoDocumento}}</span>
-        </div>
-        <button type="button" class="btn-cambiar" (click)="toggleTipoDocumento()">CAMBIAR</button>
-      </div>
-
-      <!-- DNI -->
-      <div class="form-group" *ngIf="tipoDocumento === 'DNI'">
-        <label>DNI <span class="required">*</span></label>
-        <input type="number" class="form-control" formControlName="dni">
-        <small class="text-danger" *ngIf="tipoDocumento === 'DNI' && dniInvalido">
-          El DNI debe contener entre 7 y 8 dígitos numéricos.
-        </small>
-      </div>
-
-      <!-- CUIL -->
-      <div class="form-group" *ngIf="tipoDocumento === 'CUIL'">
-        <label>CUIL <span class="required">*</span></label>
-        <input type="number" class="form-control" formControlName="cuil">
-        <small class="text-danger" *ngIf="tipoDocumento === 'CUIL' && cuilInvalido">
-          El CUIL debe contener 11 dígitos numéricos.
-        </small>
-      </div>
-
-      <!-- Botones -->
-      <div class="form-footer">
-        <button type="button" class="btn btn-light" (click)="onVolver()">VOLVER</button>
-        <button type="submit" class="btn btn-primary">CONTINUAR</button>
-      </div>
-    </form>
   </div>
 </div>

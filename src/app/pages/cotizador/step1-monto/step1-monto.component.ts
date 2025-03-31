@@ -7,6 +7,7 @@ import { CotizadorService, SubcanalInfo } from 'src/app/core/services/cotizador.
 import { Router } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 registerLocaleData(localeEs, 'es');
 
 @Component({
@@ -14,7 +15,7 @@ registerLocaleData(localeEs, 'es');
   templateUrl: './step1-monto.component.html',
   styleUrls: ['./step1-monto.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule]
+  imports: [CommonModule, IonicModule, FormsModule],
 })
 export class Step1MontoComponent implements OnInit {
   @Input() subcanalInfo: SubcanalInfo | null = null;
@@ -49,7 +50,9 @@ export class Step1MontoComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private cotizadorService: CotizadorService
+    private cotizadorService: CotizadorService,
+    private dataService: CotizadorDataService
+
   ) {}
 
   ngOnInit() {
@@ -215,11 +218,25 @@ export class Step1MontoComponent implements OnInit {
         this.errorMensaje = "El monto o plazo seleccionado no está disponible para este plan.";
         return;
       }
+
+      // Calcular el valor de la cuota para el plan seleccionado
+      const valorCuota = this.calcularCuotaPara(this.plazo);
+
+      // Guardar los datos en el servicio compartido
+      this.dataService.guardarDatosPaso1({
+        monto: this.monto,
+        plazo: this.plazo,
+        planTipo: this.planSeleccionado,
+        valorCuota: valorCuota,
+        planId: planActivo.id
+      });
+
     } else {
       this.errorMensaje = "El plan seleccionado no está disponible.";
       return;
     }
 
+    // Continuar al siguiente paso
     this.continuar.emit({
       monto: this.monto,
       plazo: this.plazo
