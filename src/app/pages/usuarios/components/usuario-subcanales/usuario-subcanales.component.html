@@ -1,3 +1,108 @@
-<p>
-  usuario-subcanales works!
-</p>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">
+      <i class="bi bi-diagram-3 me-2 text-primary"></i>
+      Subcanales
+    </h3>
+
+    <!-- Búsqueda -->
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar subcanal..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()">
+      <button
+        *ngIf="searchTerm"
+        class="btn-clear"
+        (click)="clearSearch()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="text-center p-4">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando subcanales...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Table Content -->
+    <div *ngIf="!loading && !error" class="table-responsive">
+      <table class="custom-table" *ngIf="filteredSubcanales.length > 0">
+        <thead>
+          <tr>
+            <th (click)="onSortChange('id')" class="sortable-header" style="width: 70px">
+              ID
+              <i class="bi" [ngClass]="getSortClass('id')"></i>
+            </th>
+            <th (click)="onSortChange('nombre')" class="sortable-header">
+              Nombre
+              <i class="bi" [ngClass]="getSortClass('nombre')"></i>
+            </th>
+            <th (click)="onSortChange('canalNombre')" class="sortable-header">
+              Canal
+              <i class="bi" [ngClass]="getSortClass('canalNombre')"></i>
+            </th>
+            <th (click)="onSortChange('provincia')" class="sortable-header">
+              Provincia
+              <i class="bi" [ngClass]="getSortClass('provincia')"></i>
+            </th>
+            <th (click)="onSortChange('localidad')" class="sortable-header">
+              Localidad
+              <i class="bi" [ngClass]="getSortClass('localidad')"></i>
+            </th>
+            <th *ngIf="esAdminCanal" (click)="onSortChange('comision')" class="sortable-header">
+              Comisión
+              <i class="bi" [ngClass]="getSortClass('comision')"></i>
+            </th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let subcanal of filteredSubcanales">
+            <td>{{ subcanal.id }}</td>
+            <td>
+              <div class="fw-bold">{{ subcanal.nombre }}</div>
+            </td>
+            <td>{{ subcanal.canalNombre }}</td>
+            <td>{{ subcanal.provincia }}</td>
+            <td>{{ subcanal.localidad }}</td>
+            <td *ngIf="esAdminCanal">{{ subcanal.comision }}%</td>
+            <td class="text-center">
+              <div class="badge" [ngClass]="subcanal.activo ? 'badge-light-success' : 'badge-light-danger'">
+                {{ subcanal.activo ? 'Activo' : 'Inactivo' }}
+              </div>
+            </td>
+            <td class="text-center">
+              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(subcanal.id)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredSubcanales.length === 0" class="text-center p-5">
+        <div class="text-center">
+          <i class="bi bi-diagram-3 fs-2 text-muted mb-3"></i>
+          <h4>No hay subcanales</h4>
+          <p class="text-muted">
+            {{esAdminCanal ? 'No administras ningún subcanal.' : 'No estás asignado a ningún subcanal.'}}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

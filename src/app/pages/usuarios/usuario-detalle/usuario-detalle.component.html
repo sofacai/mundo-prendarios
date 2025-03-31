@@ -1,3 +1,100 @@
-<p>
-  usuario-detalle works!
-</p>
+<div class="canales-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main content -->
+  <div class="content-area">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title d-flex align-items-center">
+        <button class="btn btn-icon btn-light me-3" (click)="goBack()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <h1>Detalle del Usuario</h1>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando información del usuario...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Usuario Content -->
+    <div *ngIf="usuario && !loading && !error" class="usuario-detail">
+      <!-- Header del Usuario -->
+      <app-usuario-header
+        [usuario]="usuario"
+        [estadisticas]="estadisticas"
+        (toggleEstado)="toggleUsuarioEstado()"
+      ></app-usuario-header>
+
+      <!-- Tabs Navigation -->
+      <app-usuario-tabs-navigation
+        [activeTab]="activeTab"
+        [usuarioRol]="usuario.rolId"
+        (tabChange)="setActiveTab($event)"
+      ></app-usuario-tabs-navigation>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Operaciones Tab (Solo para Vendors) -->
+        <div class="tab-pane" [class.active]="activeTab === 'operaciones'" *ngIf="usuario.rolId === 3">
+          <app-usuario-operaciones
+            [operaciones]="operaciones"
+            [loading]="loadingOperaciones"
+            [error]="errorOperaciones"
+            (verDetalle)="verDetalleOperacion($event)"
+          ></app-usuario-operaciones>
+        </div>
+
+        <!-- Clientes Tab (Solo para Vendors) -->
+        <div class="tab-pane" [class.active]="activeTab === 'clientes'" *ngIf="usuario.rolId === 3">
+          <app-usuario-clientes
+            [clientes]="clientes"
+            [loading]="loadingClientes"
+            [error]="errorClientes"
+            (verDetalle)="verDetalleCliente($event)"
+          ></app-usuario-clientes>
+        </div>
+
+        <!-- Subcanales Tab (Para Vendors y AdminCanal) -->
+        <div class="tab-pane" [class.active]="activeTab === 'subcanales'" *ngIf="usuario.rolId === 2 || usuario.rolId === 3">
+          <app-usuario-subcanales
+            [subcanales]="subcanales"
+            [loading]="loadingSubcanales"
+            [error]="errorSubcanales"
+            [esAdminCanal]="usuario.rolId === 2"
+            (verDetalle)="verDetalleSubcanal($event)"
+          ></app-usuario-subcanales>
+        </div>
+
+        <!-- Canales Tab (Solo para Oficial Comercial) -->
+        <div class="tab-pane" [class.active]="activeTab === 'canales'" *ngIf="usuario.rolId === 4">
+          <app-usuario-canales
+            [canales]="canales"
+            [loading]="loadingCanales"
+            [error]="errorCanales"
+            (verDetalle)="verDetalleCanal($event)"
+          ></app-usuario-canales>
+        </div>
+
+        <!-- Estadísticas Tab (Solo para Vendors) -->
+        <div class="tab-pane" [class.active]="activeTab === 'estadisticas'" *ngIf="usuario.rolId === 3">
+          <app-usuario-estadisticas
+            [usuario]="usuario"
+            [estadisticas]="estadisticas"
+            [operaciones]="operaciones"
+            [clientes]="clientes"
+          ></app-usuario-estadisticas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,108 @@
-<p>
-  usuario-canales works!
-</p>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">
+      <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>
+      Canales
+    </h3>
+
+    <!-- Búsqueda -->
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar canal..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()">
+      <button
+        *ngIf="searchTerm"
+        class="btn-clear"
+        (click)="clearSearch()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="text-center p-4">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando canales...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Table Content -->
+    <div *ngIf="!loading && !error" class="table-responsive">
+      <table class="custom-table" *ngIf="filteredCanales.length > 0">
+        <thead>
+          <tr>
+            <th (click)="onSortChange('id')" class="sortable-header" style="width: 70px">
+              ID
+              <i class="bi" [ngClass]="getSortClass('id')"></i>
+            </th>
+            <th (click)="onSortChange('nombreFantasia')" class="sortable-header">
+              Nombre Fantasía
+              <i class="bi" [ngClass]="getSortClass('nombreFantasia')"></i>
+            </th>
+            <th (click)="onSortChange('razonSocial')" class="sortable-header">
+              Razón Social
+              <i class="bi" [ngClass]="getSortClass('razonSocial')"></i>
+            </th>
+            <th (click)="onSortChange('provincia')" class="sortable-header">
+              Provincia
+              <i class="bi" [ngClass]="getSortClass('provincia')"></i>
+            </th>
+            <th (click)="onSortChange('localidad')" class="sortable-header">
+              Localidad
+              <i class="bi" [ngClass]="getSortClass('localidad')"></i>
+            </th>
+            <th (click)="onSortChange('tipoCanal')" class="sortable-header">
+              Tipo
+              <i class="bi" [ngClass]="getSortClass('tipoCanal')"></i>
+            </th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let canal of filteredCanales">
+            <td>{{ canal.id }}</td>
+            <td>
+              <div class="fw-bold">{{ canal.nombreFantasia }}</div>
+            </td>
+            <td>{{ canal.razonSocial }}</td>
+            <td>{{ canal.provincia }}</td>
+            <td>{{ canal.localidad }}</td>
+            <td>{{ canal.tipoCanal }}</td>
+            <td class="text-center">
+              <div class="badge" [ngClass]="canal.activo ? 'badge-light-success' : 'badge-light-danger'">
+                {{ canal.activo ? 'Activo' : 'Inactivo' }}
+              </div>
+            </td>
+            <td class="text-center">
+              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(canal.id)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredCanales.length === 0" class="text-center p-5">
+        <div class="text-center">
+          <i class="bi bi-grid-3x3-gap fs-2 text-muted mb-3"></i>
+          <h4>No hay canales</h4>
+          <p class="text-muted">
+            No tienes canales asignados como Oficial Comercial.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,191 @@
-<p>
-  usuario-estadisticas works!
-</p>
+<div class="row g-4">
+  <!-- Tarjetas de resumen -->
+  <div class="col-12 mb-3">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi bi-bar-chart me-2 text-primary"></i>
+          Resumen Operacional
+        </h3>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <!-- Operaciones Totales -->
+          <div class="col-md-3 col-6">
+            <div class="stat-card">
+              <div class="stat-card-icon bg-light-primary">
+                <i class="bi bi-cash"></i>
+              </div>
+              <div class="stat-card-info">
+                <div class="stat-card-value">{{ estadisticas?.cantidadOperaciones || 0 }}</div>
+                <div class="stat-card-label">Operaciones Totales</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operaciones Activas -->
+          <div class="col-md-3 col-6">
+            <div class="stat-card">
+              <div class="stat-card-icon bg-light-success">
+                <i class="bi bi-check-circle"></i>
+              </div>
+              <div class="stat-card-info">
+                <div class="stat-card-value">{{ operacionesActivas }}</div>
+                <div class="stat-card-label">Operaciones Activas</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clientes Atendidos -->
+          <div class="col-md-3 col-6">
+            <div class="stat-card">
+              <div class="stat-card-icon bg-light-warning">
+                <i class="bi bi-people"></i>
+              </div>
+              <div class="stat-card-info">
+                <div class="stat-card-value">{{ clientes?.length || 0 }}</div>
+                <div class="stat-card-label">Clientes Atendidos</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monto Total -->
+          <div class="col-md-3 col-6">
+            <div class="stat-card">
+              <div class="stat-card-icon bg-light-info">
+                <i class="bi bi-currency-dollar"></i>
+              </div>
+              <div class="stat-card-info">
+                <div class="stat-card-value">{{ formatMonto(montoTotal) }}</div>
+                <div class="stat-card-label">Monto Total</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico de operaciones por mes -->
+  <div class="col-md-7">
+    <div class="card h-100">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi bi-graph-up me-2 text-primary"></i>
+          Operaciones por Mes
+        </h3>
+      </div>
+      <div class="card-body p-4">
+        <div class="chart-container">
+          <canvas #operacionesPorMesChart></canvas>
+          <div *ngIf="!hasSufficientData" class="chart-no-data">
+            <i class="bi bi-bar-chart"></i>
+            <p>No hay suficientes datos para mostrar el gráfico</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas de Rendimiento -->
+  <div class="col-md-5">
+    <div class="card h-100">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi bi-clipboard-data me-2 text-primary"></i>
+          Rendimiento
+        </h3>
+      </div>
+      <div class="card-body p-4">
+        <!-- Promedio Mensual -->
+        <div class="performance-item">
+          <div class="performance-label">Promedio Mensual</div>
+          <div class="performance-data">
+            <div class="performance-value">{{ promedioMensual }} operaciones</div>
+            <div class="performance-trend" [ngClass]="getPerformanceTrendClass(trendMensual)">
+              <i class="bi" [ngClass]="getTrendIconClass(trendMensual)"></i>
+              <span>{{ getTrendPercentage(trendMensual) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monto Promedio -->
+        <div class="performance-item">
+          <div class="performance-label">Monto Promedio</div>
+          <div class="performance-data">
+            <div class="performance-value">{{ formatMonto(montoPromedio) }}</div>
+            <div class="performance-trend" [ngClass]="getPerformanceTrendClass(trendMonto)">
+              <i class="bi" [ngClass]="getTrendIconClass(trendMonto)"></i>
+              <span>{{ getTrendPercentage(trendMonto) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clientes Nuevos (Último Mes) -->
+        <div class="performance-item">
+          <div class="performance-label">Clientes Nuevos (Último Mes)</div>
+          <div class="performance-data">
+            <div class="performance-value">{{ clientesNuevosMes }}</div>
+            <div class="performance-trend" [ngClass]="getPerformanceTrendClass(trendClientes)">
+              <i class="bi" [ngClass]="getTrendIconClass(trendClientes)"></i>
+              <span>{{ getTrendPercentage(trendClientes) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ultimas operaciones -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">
+          <i class="bi bi-clock-history me-2 text-primary"></i>
+          Últimas Operaciones
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="custom-table" *ngIf="ultimasOperaciones.length > 0">
+            <thead>
+              <tr>
+                <th style="width: 70px">ID</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Plazo</th>
+                <th>Tasa</th>
+                <th class="text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let op of ultimasOperaciones">
+                <td>{{ op.id }}</td>
+                <td>{{ formatDate(op.fechaCreacion) }}</td>
+                <td>{{ op.clienteNombre || 'Cliente #' + op.clienteId }}</td>
+                <td>{{ formatMonto(op.monto) }}</td>
+                <td>{{ op.meses }} meses</td>
+                <td>{{ op.tasa }}%</td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="getEstadoClass(op.estado)">
+                    {{ op.estado || 'Pendiente' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Empty State -->
+          <div *ngIf="ultimasOperaciones.length === 0" class="text-center p-5">
+            <div class="text-center">
+              <i class="bi bi-clock-history fs-2 text-muted mb-3"></i>
+              <h4>No hay operaciones recientes</h4>
+              <p class="text-muted">Este vendor no ha realizado operaciones recientemente.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
