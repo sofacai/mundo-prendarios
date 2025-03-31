@@ -21,28 +21,23 @@
           {{ subcanal.activo ? "Activo" : "Inactivo" }}
         </span>
       </div>
-      <div class="subcanal-ubicacion">
-        <i class="bi bi-geo-alt me-1"></i>
-        {{ subcanal.provincia }}, {{ subcanal.localidad }}
-      </div>
-    </div>
-  </div>
 
-  <!-- Admin Info -->
-  <div class="admin-info">
-    <div class="admin-label">Admin del Subcanal:</div>
-    <div class="admin-name">
-      <i class="bi bi-person-badge me-1"></i>
-      {{ subcanal.adminCanalNombre }}
-    </div>
-    <div class="extra-info">
-      <div class="comision-box">
-        <span class="label">Comisión:</span>
-        <span class="value">{{ subcanal.comision }}%</span>
-      </div>
-      <div class="gastos-box">
-        <span class="label">Gastos Totales:</span>
-        <span class="value">{{ getGastosPorcentaje() }}%</span>
+      <div class="subcanal-info-row">
+        <div class="subcanal-ubicacion">
+          <i class="bi bi-geo-alt me-1"></i>
+          {{ subcanal.provincia }}, {{ subcanal.localidad }}
+        </div>
+
+        <div class="extra-info">
+          <div class="comision-box">
+            <span class="label">Comisión:</span>
+            <span class="value">{{ subcanal.comision }}%</span>
+          </div>
+          <div class="gastos-box">
+            <span class="label">Gastos Totales:</span>
+            <span class="value">{{ getGastosPorcentaje() }}%</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

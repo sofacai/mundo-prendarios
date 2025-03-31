@@ -49,15 +49,34 @@
       <div class="tab-content">
         <!-- General Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'general'">
-          <app-subcanal-general-tab
-            [subcanal]="subcanal"
-            [isEditing]="editingSections['general']"
-            [subcanalFormData]="subcanalFormData"
-            (editingToggled)="toggleEditing($event)"
-            (saveSection)="saveSection($event)"
-            (cancelEditing)="cancelEditing($event)"
-            (updateField)="updateField($event)">
-          </app-subcanal-general-tab>
+          <div class="row g-4">
+            <!-- Primera fila: Información General y Oficiales Comerciales -->
+            <div class="col-12">
+              <div class="d-flex flex-column flex-lg-row gap-4">
+                <!-- Información General -->
+                <div style="flex-basis: 50%">
+                  <app-subcanal-general-tab
+                    [subcanal]="subcanal"
+                    [isEditing]="editingSections['general']"
+                    [subcanalFormData]="subcanalFormData"
+                    (editingToggled)="toggleEditing($event)"
+                    (saveSection)="saveSection($event)"
+                    (cancelEditing)="cancelEditing($event)"
+                    (updateField)="updateField($event)">
+                  </app-subcanal-general-tab>
+                </div>
+
+                <!-- Admin del Canal -->
+                <div style="flex-basis: 50%">
+                  <app-subcanal-admin-canal
+                    [adminCanal]="adminCanal"
+                    [loading]="loadingAdminCanal"
+                    [error]="errorAdminCanal">
+                  </app-subcanal-admin-canal>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Vendedores Tab Component -->

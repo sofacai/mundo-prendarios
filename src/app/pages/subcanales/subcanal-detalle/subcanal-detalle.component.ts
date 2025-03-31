@@ -25,6 +25,7 @@ import { SubcanalClientesTabComponent } from '../components/subcanal-clientes-ta
 import { SubcanalOperacionesTabComponent } from '../components/subcanal-operaciones-tab/subcanal-operaciones-tab.component';
 import { SubcanalEstadisticasTabComponent } from '../components/subcanal-estadisticas-tab/subcanal-estadisticas-tab.component';
 import { GastoFormModalComponent } from '../components/gasto-form-modal/gasto-form-modal.component';
+import { SubcanalAdminCanalComponent } from '../components/subcanal-admin-canal/subcanal-admin-canal.component';
 
 // Registrar los componentes de Chart.js
 Chart.register(...registerables);
@@ -48,10 +49,12 @@ Chart.register(...registerables);
     SubcanalClientesTabComponent,
     SubcanalOperacionesTabComponent,
     SubcanalEstadisticasTabComponent,
-    GastoFormModalComponent
+    GastoFormModalComponent,
+    SubcanalAdminCanalComponent
   ],
   templateUrl: './subcanal-detalle.component.html',
-  styleUrls: ['./subcanal-detalle.component.scss']
+  styleUrls: ['./subcanal-detalle.component.scss'],
+  host: {'style': 'display: block; height: 100%;'}
 })
 export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewInit {
   subcanalId!: number;
@@ -59,6 +62,10 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
   loading = true;
   error: string | null = null;
   activeTab = 'general'; // Default active tab
+
+  adminCanal: UsuarioDto | null = null;
+loadingAdminCanal = false;
+errorAdminCanal: string | null = null;
 
   // Datos cargados
   vendedores: UsuarioDto[] = [];
@@ -167,6 +174,28 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
     }
   }
 
+  cargarAdminCanal(adminCanalId: number) {
+    if (!adminCanalId) {
+      return;
+    }
+
+    this.loadingAdminCanal = true;
+    this.errorAdminCanal = null;
+
+    this.usuarioService.getUsuario(adminCanalId).subscribe({
+      next: (admin) => {
+        this.adminCanal = admin;
+        this.loadingAdminCanal = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar admin del canal:', err);
+        this.errorAdminCanal = 'No se pudo cargar la información del administrador';
+        this.loadingAdminCanal = false;
+      }
+    });
+  }
+
+
   loadSubcanalData() {
     this.loading = true;
 
@@ -175,6 +204,11 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
       next: (subcanal) => {
         this.subcanal = subcanal;
         this.calculateBaseStatistics();
+
+        // Cargar el admin del canal si existe
+        if (subcanal.adminCanalId) {
+          this.cargarAdminCanal(subcanal.adminCanalId);
+        }
 
         // Cargar datos adicionales en paralelo
         this.loadAdditionalData();
@@ -558,22 +592,70 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
   toggleSubcanalEstado() {
     if (!this.subcanal) return;
 
+    // Guardar estado original en caso de error
+    const estadoOriginal = this.subcanal.activo;
+
+    // Mostrar indicador de carga
     this.loadingSubcanal = true;
 
-    // Determinar qué endpoint llamar según el estado actual
-    const request = this.subcanal.activo
-      ? this.subcanalService.desactivarSubcanal(this.subcanal.id)
-      : this.subcanalService.activarSubcanal(this.subcanal.id);
+    // Llamar al endpoint correspondiente
+    const request = estadoOriginal
+      ? this.subcanalService.desactivarSubcanal(this.subcanalId)
+      : this.subcanalService.activarSubcanal(this.subcanalId);
 
     request.subscribe({
-      next: (subcanalActualizado) => {
-        this.subcanal = subcanalActualizado;
-        this.loadingSubcanal = false;
+      next: () => {
+        // En vez de usar la respuesta parcial, recargar el objeto completo
+        this.subcanalService.getSubcanal(this.subcanalId).subscribe({
+          next: (subcanalCompleto) => {
+            // Asegurarnos de mantener la referencia a vendors si no viene en la respuesta
+            if (!subcanalCompleto.vendors && this.subcanal && this.subcanal.vendors) {
+              subcanalCompleto.vendors = this.subcanal.vendors;
+            }
+
+            // Actualizar el objeto completo
+            this.subcanal = subcanalCompleto;
+
+            // Recalcular estadísticas
+            this.calculateBaseStatistics();
+
+            // Quitar indicador de carga
+            this.loadingSubcanal = false;
+
+            // Mostrar mensaje de éxito (opcional)
+            console.log(`Subcanal ${this.subcanal.activo ? 'activado' : 'desactivado'} correctamente`);
+          },
+          error: (err) => {
+            // Error al recargar datos
+            console.error('Error al recargar datos del subcanal:', err);
+
+            // Revertir al estado original en la UI
+            if (this.subcanal) {
+              this.subcanal.activo = estadoOriginal;
+            }
+
+            // Quitar indicador de carga
+            this.loadingSubcanal = false;
+
+            // Mostrar mensaje de error
+            this.error = 'Error al actualizar los datos. Por favor, recargue la página.';
+          }
+        });
       },
       error: (err) => {
+        // Error en la operación de activar/desactivar
         console.error('Error al cambiar estado del subcanal:', err);
-        this.error = 'No se pudo cambiar el estado del subcanal. Intente nuevamente.';
+
+        // Revertir al estado original en la UI
+        if (this.subcanal) {
+          this.subcanal.activo = estadoOriginal;
+        }
+
+        // Quitar indicador de carga
         this.loadingSubcanal = false;
+
+        // Mostrar mensaje de error
+        this.error = 'No se pudo cambiar el estado del subcanal. Intente nuevamente.';
       }
     });
   }

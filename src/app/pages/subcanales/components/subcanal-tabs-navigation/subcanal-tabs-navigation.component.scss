@@ -10,6 +10,8 @@
 .tab-navigation {
   border-bottom: 1px solid #eef0f2;
   background-color: #fff;
+  padding: 0 !important;
+
 }
 
 .tab-navigation .nav {
@@ -18,10 +20,12 @@
   padding-left: 0;
   margin-bottom: 0;
   list-style: none;
+
 }
 
 .tab-navigation .nav .nav-item {
   margin-bottom: -1px;
+
 }
 
 .tab-navigation .nav .nav-item .nav-link {
@@ -30,6 +34,8 @@
   color: #5e6278;
   transition: color 0.2s ease;
   cursor: pointer;
+  padding-top:0px!important;
+
 }
 
 .tab-navigation .nav .nav-item .nav-link.active {

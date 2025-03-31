@@ -52,10 +52,17 @@
   margin: 0;
 }
 
+/* Nueva fila para información del subcanal */
+.subcanal-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
 .subcanal-ubicacion {
   color: #7e8299;
   font-size: 14px;
-  margin-top: 4px;
 }
 
 /* Badge de estado */
@@ -83,28 +90,8 @@
   color: #f1416c;
 }
 
-/* Admin info */
-.admin-info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 20px;
-  padding: 15px 0;
-  border-bottom: 1px solid #ebedf3;
-}
-
-.admin-label {
-  font-size: 13px;
-  color: #a1a5b7;
-}
-
-.admin-name {
-  font-weight: 500;
-  color: #181c32;
-}
-
+/* Información extra */
 .extra-info {
-  margin-left: auto;
   display: flex;
   gap: 20px;
 }
@@ -173,15 +160,15 @@
     margin-top: 15px;
   }
 
-  .admin-info {
+  .subcanal-info-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .extra-info {
-    margin-left: 0;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
   }
 
   .stats-section {
