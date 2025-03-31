@@ -61,6 +61,9 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
   subcanales: Subcanal[] = [];
   canales: Canal[] = [];
 
+  operacionesActivas: number = 0;
+montoTotal: number = 0;
+
   // Estados de carga
   loadingOperaciones = false;
   loadingClientes = false;
@@ -368,5 +371,25 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
   // Navegar al detalle de canal
   verDetalleCanal(canalId: number) {
     this.router.navigate(['/canales', canalId]);
+  }
+
+  calcularEstadisticasHeader() {
+    if (!this.operaciones || this.operaciones.length === 0) {
+      this.operacionesActivas = 0;
+      this.montoTotal = 0;
+      return;
+    }
+
+    // Filtrar operaciones activas/aprobadas (no canceladas ni rechazadas)
+    const operacionesActivas = this.operaciones.filter(op =>
+      !op.estado ||
+      (op.estado.toLowerCase() !== 'cancelado' &&
+       op.estado.toLowerCase() !== 'rechazado')
+    );
+
+    this.operacionesActivas = operacionesActivas.length;
+
+    // Calcular monto total SOLO de operaciones activas/aprobadas
+    this.montoTotal = operacionesActivas.reduce((sum, op) => sum + op.monto, 0);
   }
 }

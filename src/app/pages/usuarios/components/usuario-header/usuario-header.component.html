@@ -2,7 +2,7 @@
   <div class="header-main-section">
     <!-- Avatar del usuario -->
     <div class="usuario-avatar">
-      <!-- Reemplazamos la verificación de foto por un avatar de iniciales -->
+      <!-- Avatar de iniciales -->
       <div class="avatar-placeholder">
         <span>{{ getInitials() }}</span>
       </div>
@@ -20,8 +20,25 @@
           {{ usuario.activo ? "Activo" : "Inactivo" }}
         </span>
       </div>
-      <div class="rol-badge" [ngClass]="'rol-' + usuario.rolId">
-        {{ getRolName() }}
+      <div class="role-subcanal-container">
+        <div class="rol-badge" [ngClass]="'rol-' + usuario.rolId">
+          {{ getRolName() }}
+        </div>
+        <!-- Subcanales asignados (solo para Vendors) -->
+        <div class="subcanales-container" *ngIf="usuario.rolId === 3 && subcanales && subcanales.length > 0">
+          <span class="separator">|</span>
+          <div class="subcanales-list">
+            <ng-container *ngFor="let subcanal of subcanales; let last = last">
+              <span
+                class="subcanal-badge cursor-pointer"
+                (click)="onSubcanalClick(subcanal.id)"
+              >
+                {{ subcanal.nombre }}
+              </span>
+              <span *ngIf="!last" class="separator">|</span>
+            </ng-container>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -42,17 +59,61 @@
     </div>
     <div class="contact-item" *ngIf="usuario.rolId === 3">
       <i class="bi bi-activity"></i>
-      <span>Última Operación: {{ formatDate(estadisticas?.fechaUltimaOperacion) }}</span>
+      <span>
+        Última Operación: {{ formatDate(estadisticas?.fechaUltimaOperacion) }}
+        <span
+          *ngIf="estadisticas?.fechaUltimaOperacion"
+          class="days-badge"
+          [ngClass]="getDaysBadgeClass(getDaysSinceLastOperation())"
+        >
+          {{ getDaysSinceLastOperation() }} días
+        </span>
+      </span>
     </div>
   </div>
 
   <!-- Estadísticas (solo para vendors) -->
-  <div class="stats-section" *ngIf="usuario.rolId === 3">
-    <div class="stat-box">
-      <div class="stat-number">
-        {{ estadisticas?.cantidadOperaciones || 0 }}
+  <div class="stats-container" *ngIf="usuario.rolId === 3">
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-icon bg-light-primary">
+          <i class="bi bi-cash"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ estadisticas?.cantidadOperaciones || 0 }}</div>
+          <div class="stat-label">Operaciones Totales</div>
+        </div>
       </div>
-      <div class="stat-label">Operaciones</div>
+
+      <div class="stat-item">
+        <div class="stat-icon bg-light-success">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ operacionesActivas || 0 }}</div>
+          <div class="stat-label">Operaciones Activas</div>
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-icon bg-light-warning">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ clientes?.length || 0 }}</div>
+          <div class="stat-label">Clientes Atendidos</div>
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-icon bg-light-info">
+          <i class="bi bi-currency-dollar"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatMontoSinDecimales(montoTotal) }}</div>
+          <div class="stat-label">Monto Total</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

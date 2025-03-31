@@ -1,80 +1,26 @@
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin-right: -0.75rem;
-  margin-left: -0.75rem;
-}
-
-.g-4 {
-  --bs-gutter-x: 1.5rem;
-  --bs-gutter-y: 1.5rem;
-}
-
-.col-12 {
-  flex: 0 0 auto;
-  width: 100%;
-}
-
-.col-6 {
-  flex: 0 0 auto;
-  width: 50%;
-}
-
-.col-md-3 {
-  @media (min-width: 768px) {
-    flex: 0 0 auto;
-    width: 25%;
-  }
-}
-
-.col-md-5 {
-  @media (min-width: 768px) {
-    flex: 0 0 auto;
-    width: 41.66666667%;
-  }
-}
-
-.col-md-7 {
-  @media (min-width: 768px) {
-    flex: 0 0 auto;
-    width: 58.33333333%;
-  }
-}
-
-.mb-3 {
-  margin-bottom: 1rem !important;
-}
-
-// Card styling
-.card {
-  position: relative;
+// Contenedor principal
+.estadisticas-container {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  word-wrap: break-word;
+  gap: 24px; // Espacio entre secciones principales
+}
+
+// Todas las tarjetas comparten estos estilos
+.stats-card,
+.chart-card,
+.performance-card {
   background-color: #fff;
-  background-clip: border-box;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
-  border: none;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   overflow: hidden;
+  border: none;
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-}
-
+// Encabezados de tarjetas
 .card-header {
   padding: 16px 20px;
   border-bottom: 1px solid #eef0f2;
   background-color: #ffffff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0;
 }
 
 .card-title {
@@ -84,46 +30,54 @@
   color: #181c32;
   display: flex;
   align-items: center;
+
+  i {
+    color: #009ef7;
+    margin-right: 8px;
+  }
 }
 
-.card-title i {
-  color: #009ef7;
-  margin-right: 8px;
-}
-
+// Contenido de tarjetas
 .card-body {
-  flex: 1 1 auto;
-  padding: 0;
+  padding: 20px;
 }
 
-.card-body.p-4 {
-  padding: 1.5rem !important;
+// Grid de 4 cajas para estadísticas principales
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-.h-100 {
-  height: 100% !important;
+// Grid de 2 columnas para las secciones inferiores
+.stats-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (min-width: 992px) {
+    grid-template-columns: 58% 38%;
+  }
 }
 
-// Stat cards
-.stat-card {
+// Cajas de estadísticas individuales
+.stat-box {
   display: flex;
   align-items: center;
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 8px;
-  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
   height: 100%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-.stat-card:hover {
-  background-color: #f5f8fa;
-  transform: translateY(-3px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
-}
-
-.stat-card-icon {
+// Iconos de estadísticas
+.stat-icon {
   width: 48px;
   height: 48px;
   border-radius: 8px;
@@ -133,12 +87,13 @@
   margin-right: 15px;
   flex-shrink: 0;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+
+  i {
+    font-size: 22px;
+  }
 }
 
-.stat-card-icon i {
-  font-size: 22px;
-}
-
+// Colores de fondo para iconos
 .bg-light-primary {
   background-color: #f1faff;
   color: #009ef7;
@@ -159,11 +114,12 @@
   color: #7239ea;
 }
 
-.stat-card-info {
+// Contenido de estadísticas
+.stat-content {
   flex: 1;
 }
 
-.stat-card-value {
+.stat-value {
   font-size: 1.5rem;
   font-weight: 600;
   color: #181c32;
@@ -171,20 +127,21 @@
   line-height: 1.2;
 }
 
-.stat-card-label {
+.stat-label {
   font-size: 0.9rem;
   color: #7e8299;
   white-space: nowrap;
 }
 
-// Chart styles
+// Contenedor del gráfico
 .chart-container {
   position: relative;
-  height: 250px;
+  height: 300px;
   width: 100%;
-  margin-top: 10px;
+  padding: 10px 0;
 }
 
+// Mensaje cuando no hay datos para el gráfico
 .chart-no-data {
   position: absolute;
   top: 0;
@@ -196,30 +153,30 @@
   align-items: center;
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.9);
+
+  i {
+    font-size: 3rem;
+    color: #b5b5c3;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #7e8299;
+  }
 }
 
-.chart-no-data i {
-  font-size: 3rem;
-  color: #b5b5c3;
-  margin-bottom: 1rem;
-}
-
-.chart-no-data p {
-  font-size: 1rem;
-  color: #7e8299;
-}
-
-// Performance items
+// Sección de rendimiento
 .performance-item {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
   border-bottom: 1px solid #eef0f2;
-}
 
-.performance-item:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
+  &:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 }
 
 .performance-label {
@@ -232,6 +189,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  @media (max-width: 767.98px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 
 .performance-value {
@@ -267,155 +230,21 @@
   color: #7e8299;
 }
 
-// Table styling
-.table-responsive {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+// Utilidades de espaciado
+.mb-4 {
+  margin-bottom: 24px;
 }
 
-.custom-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-bottom: 0;
+// Ajustes para Ionic
+:host {
+  --ion-card-margin: 0;
+  --ion-card-border-radius: 8px;
 }
 
-.custom-table th {
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #7e8299;
-  border-bottom: 1px solid #eff2f5;
-  background-color: #fafafa;
-}
-
-.custom-table td {
-  padding: 14px 16px;
-  vertical-align: middle;
-  border-bottom: 1px solid #eff2f5;
-  color: #5e6278;
-  font-size: 0.9rem;
-}
-
-.custom-table tr:last-child td {
-  border-bottom: none;
-}
-
-.custom-table tr:hover {
-  background-color: #f9fafb;
-}
-
-// Badge styling
-.badge {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 6px;
-  display: inline-block;
-}
-
-.badge-light-success {
-  background-color: #e8fff3;
-  color: #50cd89;
-}
-
-.badge-light-danger {
-  background-color: #fff5f8;
-  color: #f1416c;
-}
-
-.badge-light-warning {
-  background-color: #fff8dd;
-  color: #ffc700;
-}
-
-.badge-light-info {
-  background-color: #f1faff;
-  color: #009ef7;
-}
-
-// Empty state
-.text-center {
-  text-align: center;
-}
-
-.text-center i.fs-2 {
-  font-size: 3rem;
-  color: #b5b5c3;
-  margin-bottom: 1rem;
-}
-
-.text-center h4 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #181c32;
-  margin-bottom: 0.5rem;
-}
-
-.text-center p.text-muted {
-  color: #7e8299;
-  font-size: 0.95rem;
-}
-
-// Bootstrap-like utilities
-.d-flex {
-  display: flex !important;
-}
-
-.justify-content-between {
-  justify-content: space-between !important;
-}
-
-.align-items-center {
-  align-items: center !important;
-}
-
-.me-2 {
-  margin-right: 0.5rem !important;
-}
-
-.mb-3 {
-  margin-bottom: 1rem !important;
-}
-
-.p-4 {
-  padding: 1.5rem !important;
-}
-
-.p-5 {
-  padding: 3rem !important;
-}
-
-.text-primary {
-  color: #009ef7 !important;
-}
-
-.text-muted {
-  color: #7e8299 !important;
-}
-
-// Responsive adjustments
-@media (max-width: 767.98px) {
-  .stat-card {
-    margin-bottom: 15px;
-  }
-
-  .chart-container {
-    height: 200px;
-  }
-
-  .performance-data {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .performance-trend {
-    align-self: flex-start;
-  }
-
-  .custom-table {
-    min-width: 650px;
+// Aseguramos compatibilidad con iOS/Android en Ionic
+:host-context(.ios), :host-context(.md) {
+  .card-header {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
   }
 }

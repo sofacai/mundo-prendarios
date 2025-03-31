@@ -66,7 +66,7 @@
               <i class="bi" [ngClass]="getSortClass('tasa')"></i>
             </th>
             <th class="text-center">Estado</th>
-            <th class="text-center">Acciones</th>
+
           </tr>
         </thead>
         <tbody>
@@ -86,11 +86,7 @@
                 {{ op.estado || 'Pendiente' }}
               </div>
             </td>
-            <td class="text-center">
-              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(op.id || 0)">
-                <i class="bi bi-eye"></i>
-              </button>
-            </td>
+
           </tr>
         </tbody>
       </table>
