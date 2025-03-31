@@ -13,6 +13,8 @@ import { Plan, PlanService } from 'src/app/core/services/plan.service';
 })
 export class CanalPlanesComponent implements OnInit {
   @Input() canal!: Canal;
+  @Output() verDetalle = new EventEmitter<number>();
+
 
   planesDisponibles: Plan[] = [];
   loading = false;
@@ -143,4 +145,10 @@ export class CanalPlanesComponent implements OnInit {
   getEstadoClass(activo: boolean): string {
     return activo ? 'badge-success' : 'badge-danger';
   }
+
+  onVerDetalle(planId: number): void {
+    this.verDetalle.emit(planId);
+  }
+
+
 }

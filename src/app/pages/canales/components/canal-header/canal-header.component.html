@@ -3,8 +3,8 @@
   <div class="header-main-section">
     <!-- Logo canal -->
     <div class="canal-logo">
-      <div *ngIf="canal.foto" class="logo-image">
-        <img [src]="canal.foto" alt="Logo Canal" />
+      <div *ngIf="canal.foto" class="logo-image" (click)="onImageClick()">
+        <img [src]="canal.foto" alt="Logo Canal" class="cursor-pointer" />
       </div>
       <div *ngIf="!canal.foto" class="logo-placeholder">
         <span>{{
@@ -64,5 +64,15 @@
       <div class="stat-number">{{ totalOperaciones }}</div>
       <div class="stat-label">Operaciones</div>
     </div>
+  </div>
+</div>
+
+<!-- Modal de previsualización de imagen -->
+<div class="image-preview-overlay" *ngIf="showImagePreview" (click)="closeImagePreview()">
+  <div class="image-preview-container" (click)="$event.stopPropagation()">
+    <button class="btn-close-preview" (click)="closeImagePreview()">
+      <i class="bi bi-x"></i>
+    </button>
+    <img [src]="canal.foto" alt="Vista previa" class="preview-image" *ngIf="canal.foto" />
   </div>
 </div>

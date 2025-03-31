@@ -49,9 +49,22 @@
   color: #009ef7;
 }
 
-.btn-action-danger:hover {
-  background-color: #fff5f8;
+.btn-action {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar {
   color: #f1416c;
+}
+
+.btn-eliminar:hover {
+  color: #d9214b;
+  background-color: rgba(241, 65, 108, 0.1);
 }
 
 /* Estilos para las tarjetas de planes disponibles */

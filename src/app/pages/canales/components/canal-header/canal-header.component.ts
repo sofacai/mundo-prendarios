@@ -20,9 +20,28 @@ export class CanalHeaderComponent {
 
   @Output() toggleEstado = new EventEmitter<void>();
 
+  // Control de previsualización de imagen
+  showImagePreview: boolean = false;
+
   constructor() { }
 
   onToggleEstado(): void {
     this.toggleEstado.emit();
+  }
+
+  // Método para mostrar la previsualización
+  onImageClick(): void {
+    if (this.canal && this.canal.foto) {
+      this.showImagePreview = true;
+      // Evitar scroll del body mientras el modal está abierto
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  // Método para cerrar la previsualización
+  closeImagePreview(): void {
+    this.showImagePreview = false;
+    // Restaurar scroll del body
+    document.body.style.overflow = '';
   }
 }

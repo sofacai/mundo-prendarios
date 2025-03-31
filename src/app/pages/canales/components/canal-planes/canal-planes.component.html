@@ -1,9 +1,5 @@
 <!-- canal-planes.component.html -->
 <div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Planes del Canal</h3>
-  </div>
-
   <div class="card-body p-4">
     <!-- Indicador de carga general -->
     <div *ngIf="loading" class="text-center py-3">
@@ -37,7 +33,7 @@
                 <th>Tasa</th>
                 <th>Cuotas</th>
                 <th>Estado</th>
-                <th class="text-center">Acciones</th>
+                <th class="text-center">Eliminar</th>
               </tr>
             </thead>
             <tbody>
@@ -67,7 +63,7 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <button class="btn-action btn-action-danger" title="Quitar plan" (click)="onDesasignarPlan(planCanal.id)">
+                  <button class="btn-action btn-eliminar" title="Eliminar plan" (click)="onDesasignarPlan(planCanal.id)">
                     <i class="bi bi-trash"></i>
                   </button>
                 </td>
@@ -86,11 +82,11 @@
         </div>
       </div>
 
-      <!-- Planes Disponibles -->
-      <div class="planes-disponibles">
+      <!-- Planes Disponibles solo si hay planes -->
+      <div class="planes-disponibles" *ngIf="planesDisponibles.length > 0">
         <h4 class="section-title">Planes Disponibles para Asignar</h4>
 
-        <div class="planes-grid" *ngIf="planesDisponibles.length > 0">
+        <div class="planes-grid">
           <div class="plan-card" *ngFor="let plan of planesDisponibles">
             <div class="plan-header">
               <h5>{{ plan.nombre }}</h5>
@@ -118,15 +114,6 @@
               </button>
             </div>
           </div>
-        </div>
-
-        <!-- Empty State -->
-        <div *ngIf="planesDisponibles.length === 0" class="empty-state">
-          <i class="bi bi-card-checklist"></i>
-          <h5>No hay planes disponibles</h5>
-          <p class="text-muted">
-            No hay planes adicionales para asignar a este canal.
-          </p>
         </div>
       </div>
     </div>

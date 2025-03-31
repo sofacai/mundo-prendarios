@@ -29,6 +29,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.canal-logo .logo-image img:hover {
+  transform: scale(1.05);
 }
 
 .canal-logo .logo-placeholder {
@@ -144,6 +150,80 @@
 .status-badge.cursor-pointer:hover {
   opacity: 0.8;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el modal de previsualización de imagen */
+.image-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.92);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+.image-preview-container {
+  position: relative;
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+}
+
+.preview-image {
+  display: block;
+  max-width: 95vw;
+  max-height: 85vh; /* Ligeramente menor para dejar espacio para la X */
+  object-fit: contain;
+  margin: auto;
+}
+
+.btn-close-preview {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2001;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-close-preview:hover {
+  background-color: #fff;
+  transform: scale(1.1);
+}
+
+.btn-close-preview i {
+  font-size: 22px;
+  color: #181c32;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 767px) {
