@@ -28,144 +28,22 @@
 
     <!-- Canal Content -->
     <div *ngIf="canal && !loading && !error" class="canal-detail">
-      <!-- Cabecera Principal -->
-      <div class="canal-header-card">
-        <div class="header-main-section">
-          <!-- Logo canal -->
-          <div class="canal-logo">
-            <div *ngIf="canal.foto" class="logo-image">
-              <img [src]="canal.foto" alt="Logo Canal" />
-            </div>
-            <div *ngIf="!canal.foto" class="logo-placeholder">
-              <span>{{
-                canal.nombreFantasia
-                  ? canal.nombreFantasia.substring(0, 2).toUpperCase()
-                  : ""
-              }}</span>
-            </div>
-          </div>
-
-          <!-- Titulo y badge -->
-          <div class="title-container">
-            <div class="title-badge-wrapper">
-              <h2 class="canal-title">{{ canal.nombreFantasia }}</h2>
-              <span
-                class="status-badge cursor-pointer"
-                [ngClass]="canal.activo ? 'active' : 'inactive'"
-                (click)="toggleCanalEstado()"
-              >
-                {{ canal.activo ? "Activo" : "Inactivo" }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Información contacto -->
-        <div class="owner-contact-info">
-          <div class="contact-item">
-            <i class="bi bi-person"></i>
-            <span>{{ canal.titularNombreCompleto || "No especificado" }}</span>
-          </div>
-          <div class="contact-item">
-            <i class="bi bi-telephone"></i>
-            <span>{{ canal.titularTelefono || "No especificado" }}</span>
-          </div>
-          <div class="contact-item">
-            <i class="bi bi-envelope"></i>
-            <span>{{ canal.titularEmail || "No especificado" }}</span>
-          </div>
-        </div>
-
-        <!-- Estadísticas -->
-        <div class="stats-section">
-          <div class="stat-box">
-            <div class="stat-number">
-              {{ subcanalesActivos + subcanalesInactivos }}
-            </div>
-            <div class="stat-label">Subcanales</div>
-          </div>
-
-          <div class="stat-box">
-            <div class="stat-number">{{ planesActivos + planesInactivos }}</div>
-            <div class="stat-label">Planes</div>
-          </div>
-
-          <div class="stat-box">
-            <div class="stat-number">{{ totalOperaciones }}</div>
-            <div class="stat-label">Operaciones</div>
-          </div>
-        </div>
-      </div>
+      <!-- Header del Canal -->
+      <app-canal-header
+        [canal]="canal"
+        [subcanalesActivos]="subcanalesActivos"
+        [subcanalesInactivos]="subcanalesInactivos"
+        [planesActivos]="planesActivos"
+        [planesInactivos]="planesInactivos"
+        [totalOperaciones]="totalOperaciones"
+        (toggleEstado)="toggleCanalEstado()"
+      ></app-canal-header>
 
       <!-- Tabs Navigation -->
-      <div class="canal-tabs card mb-4">
-        <div class="card-body p-0">
-          <div class="tab-navigation border-bottom">
-            <ul class="nav">
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'general'"
-                  (click)="setActiveTab('general')"
-                >
-                  <i class="bi bi-info-circle me-2"></i>
-                  General
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'subcanales'"
-                  (click)="setActiveTab('subcanales')"
-                >
-                  <i class="bi bi-diagram-3 me-2"></i>
-                  Subcanales
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'planes'"
-                  (click)="setActiveTab('planes')"
-                >
-                  <i class="bi bi-calendar me-2"></i>
-                  Planes
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'operaciones'"
-                  (click)="setActiveTab('operaciones')"
-                >
-                  <i class="bi bi-cash me-2"></i>
-                  Operaciones
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'vendedores'"
-                  (click)="setActiveTab('vendedores')"
-                >
-                  <i class="bi bi-people me-2"></i>
-                  Vendedores
-                </a>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link nav-link-border"
-                  [class.active]="activeTab === 'estadisticas'"
-                  (click)="setActiveTab('estadisticas')"
-                >
-                  <i class="bi bi-bar-chart me-2"></i>
-                  Estadísticas
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <app-canal-tabs-navigation
+        [activeTab]="activeTab"
+        (tabChange)="setActiveTab($event)"
+      ></app-canal-tabs-navigation>
 
       <!-- Tab Content -->
       <div class="tab-content">
@@ -177,290 +55,42 @@
               <div class="d-flex flex-column flex-lg-row gap-4">
                 <!-- Información General -->
                 <div style="flex-basis: 50%">
-                  <div class="card detail-card h-100">
-                    <div
-                      class="card-header d-flex justify-content-between align-items-center"
-                    >
-                      <!-- Título con ícono -->
-                      <h3 class="card-title">
-                        <i class="bi bi-info-circle me-2 text-primary"></i>
-                        Información General
-                      </h3>
-
-                      <!-- Botón de edición -->
-                      <div class="edit-controls">
-                        <button
-                          *ngIf="!isEditing('general')"
-                          class="btn-edit"
-                          (click)="toggleEditing('general')"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-
-                        <div
-                          *ngIf="isEditing('general')"
-                          class="action-buttons"
-                        >
-                          <button
-                            class="btn-action btn-save me-1"
-                            (click)="saveSection('general')"
-                          >
-                            <i class="bi bi-check"></i>
-                          </button>
-                          <button
-                            class="btn-action btn-cancel"
-                            (click)="cancelEditing('general')"
-                          >
-                            <i class="bi bi-x"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Nombre Fantasía</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('general')"
-                            >
-                              {{ canal!.nombreFantasia }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('general')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.nombreFantasia"
-                              (input)="updateField('nombreFantasia', $event)"
-                            />
-                          </div>
-                        </div>
-
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Razón Social</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('general')"
-                            >
-                              {{ canal!.razonSocial }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('general')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.razonSocial"
-                              (input)="updateField('razonSocial', $event)"
-                            />
-                          </div>
-                        </div>
-
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Tipo de Canal</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('general')"
-                            >
-                              {{ canal!.tipoCanal }}
-                            </div>
-                            <select
-                              *ngIf="isEditing('general')"
-                              class="form-control"
-                              [value]="canalFormData.tipoCanal"
-                              (change)="updateField('tipoCanal', $event)"
-                            >
-                              <option value="Concesionario">
-                                Concesionario
-                              </option>
-                              <option value="Multimarca">Multimarca</option>
-                              <option value="Agencia">Agencia</option>
-                              <option value="Habitualista">Habitualista</option>
-                              <option value="Freelance">Freelance</option>
-                              <option value="Consumidor Final">
-                                Consumidor Final
-                              </option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <app-canal-general-info
+                    [canal]="canal"
+                    [isEditing]="isEditing('general')"
+                    [canalFormData]="canalFormData"
+                    (toggleEdit)="toggleEditing('general')"
+                    (saveChanges)="saveSection('general')"
+                    (cancelEdit)="cancelEditing('general')"
+                    (fieldChange)="updateField($event.field, $event.value)"
+                  ></app-canal-general-info>
                 </div>
-                <!-- Oficiales Comerciales - 50% -->
+
+                <!-- Oficiales Comerciales -->
                 <div style="flex-basis: 50%">
-                  <div class="card detail-card h-100">
-                    <div class="card-header">
-                      <h3 class="card-title">
-                        <i class="bi bi-person-badge me-2 text-primary"></i
-                        >Oficiales Comerciales
-                      </h3>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="oficiales-comerciales-container">
-                        <!-- Loading Indicator -->
-                        <div *ngIf="loadingOficiales" class="text-center my-3">
-                          <div class="spinner-border spinner-border-sm"></div>
-                          <p class="mt-2 small">Cargando...</p>
-                        </div>
-
-                        <!-- Error Message -->
-                        <div
-                          *ngIf="errorOficiales && !loadingOficiales"
-                          class="alert alert-danger py-2 small"
-                        >
-                          {{ errorOficiales }}
-                        </div>
-
-                        <!-- Tabla de Oficiales Comerciales -->
-                        <div
-                          *ngIf="!loadingOficiales && !errorOficiales"
-                          class="table-responsive"
-                        >
-                          <table
-                            class="custom-table table-sm"
-                            *ngIf="
-                              oficialesComerciales &&
-                              oficialesComerciales.length > 0
-                            "
-                          >
-                            <thead>
-                              <tr>
-                                <th>NOMBRE</th>
-                                <th>ESTADO</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr *ngFor="let oficial of oficialesComerciales">
-                                <td>
-                                  <div class="oficial-info">
-                                    <div class="fw-bold">
-                                      {{ oficial.oficialComercialNombre }}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td>
-                                  <div
-                                    class="badge cursor-pointer"
-                                    [ngClass]="getEstadoClass(oficial.activo)"
-                                    (click)="
-                                      toggleOficialEstado(
-                                        oficial.oficialComercialId,
-                                        oficial.activo
-                                      )
-                                    "
-                                  >
-                                    {{ oficial.activo ? "Activo" : "Inactivo" }}
-                                  </div>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-
-                          <!-- Empty State -->
-                          <div
-                            *ngIf="
-                              !oficialesComerciales ||
-                              oficialesComerciales.length === 0
-                            "
-                            class="text-center py-4"
-                          >
-                            <i class="bi bi-people"></i>
-                            <p class="small text-muted mt-2 mb-0">
-                              No hay oficiales comerciales asignados a este
-                              canal
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <app-canal-oficiales
+                    [oficialesComerciales]="oficialesComerciales"
+                    [loading]="loadingOficiales"
+                    [error]="errorOficiales"
+                    (toggleEstado)="toggleOficialEstado($event.oficialId, $event.estadoActual)"
+                  ></app-canal-oficiales>
                 </div>
               </div>
             </div>
 
             <!-- Ubicación -->
             <div class="col-12 mt-2">
-              <div class="card detail-card">
-                <div
-                  class="card-header d-flex justify-content-between align-items-center"
-                >
-                  <h3 class="card-title">
-                    <i class="bi bi-geo-alt me-2 text-primary"></i>Ubicación
-                  </h3>
-
-                  <div class="edit-controls">
-                    <button
-                      *ngIf="!isEditing('ubicacion')"
-                      class="btn-edit"
-                      (click)="toggleEditing('ubicacion')"
-                    >
-                      <i class="bi bi-pencil"></i>
-                    </button>
-
-                    <div *ngIf="isEditing('ubicacion')" class="action-buttons">
-                      <button
-                        class="btn-action btn-save me-1"
-                        (click)="saveSection('ubicacion')"
-                      >
-                        <i class="bi bi-check"></i>
-                      </button>
-                      <button
-                        class="btn-action btn-cancel"
-                        (click)="cancelEditing('ubicacion')"
-                      >
-                        <i class="bi bi-x"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-body p-4">
-                  <div class="row" *ngIf="!isEditing('ubicacion')">
-                    <div class="col-md-6">
-                      <div class="detail-row mb-3">
-                        <div class="detail-label">Provincia</div>
-                        <div class="detail-value">{{ canal.provincia }}</div>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="detail-row mb-3">
-                        <div class="detail-label">Localidad</div>
-                        <div class="detail-value">{{ canal.localidad }}</div>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="detail-row">
-                        <div class="detail-label">Dirección</div>
-                        <div class="detail-value">
-                          {{ canal.direccion || "No especificada" }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Selector de ubicación en modo edición -->
-                  <div *ngIf="isEditing('ubicacion')">
-                    <app-ubicacion-selector
-                      [initialProvincia]="canal.provincia"
-                      [initialLocalidad]="canal.localidad"
-                      (provinciaChange)="onProvinciaChange($event)"
-                      (localidadChange)="onLocalidadChange($event)"
-                    >
-                    </app-ubicacion-selector>
-
-                    <div class="form-group mt-3">
-                      <label>Dirección</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        [value]="canalFormData.direccion"
-                        (input)="updateField('direccion', $event)"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <app-canal-ubicacion
+                [canal]="canal"
+                [isEditing]="isEditing('ubicacion')"
+                [canalFormData]="canalFormData"
+                (toggleEdit)="toggleEditing('ubicacion')"
+                (saveChanges)="saveSection('ubicacion')"
+                (cancelEdit)="cancelEditing('ubicacion')"
+                (fieldChange)="updateField($event.field, $event.value)"
+                (provinciaChange)="onProvinciaChange($event)"
+                (localidadChange)="onLocalidadChange($event)"
+              ></app-canal-ubicacion>
             </div>
 
             <!-- Tercera fila: Información Fiscal y Bancaria -->
@@ -468,201 +98,28 @@
               <div class="d-flex flex-column flex-lg-row gap-4">
                 <!-- Información Fiscal -->
                 <div style="flex-basis: 50%">
-                  <div class="card detail-card h-100">
-                    <div
-                      class="card-header d-flex justify-content-between align-items-center"
-                    >
-                      <h3 class="card-title">
-                        <i class="bi bi-file-text me-2 text-primary"></i
-                        >Información Fiscal
-                      </h3>
-
-                      <!-- Botón de edición -->
-                      <div class="edit-controls">
-                        <button
-                          *ngIf="!isEditing('fiscal')"
-                          class="btn-edit"
-                          (click)="toggleEditing('fiscal')"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-
-                        <div *ngIf="isEditing('fiscal')" class="action-buttons">
-                          <button
-                            class="btn-action btn-save me-1"
-                            (click)="saveSection('fiscal')"
-                          >
-                            <i class="bi bi-check"></i>
-                          </button>
-                          <button
-                            class="btn-action btn-cancel"
-                            (click)="cancelEditing('fiscal')"
-                          >
-                            <i class="bi bi-x"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="row">
-                        <div class="col-12">
-                          <div class="detail-row">
-                            <div class="detail-label">CUIT</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('fiscal')"
-                            >
-                              {{ canal.cuit }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('fiscal')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.cuit"
-                              (input)="updateField('cuit', $event)"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <app-canal-info-fiscal
+                    [canal]="canal"
+                    [isEditing]="isEditing('fiscal')"
+                    [canalFormData]="canalFormData"
+                    (toggleEdit)="toggleEditing('fiscal')"
+                    (saveChanges)="saveSection('fiscal')"
+                    (cancelEdit)="cancelEditing('fiscal')"
+                    (fieldChange)="updateField($event.field, $event.value)"
+                  ></app-canal-info-fiscal>
                 </div>
 
                 <!-- Información Bancaria -->
                 <div style="flex-basis: 50%">
-                  <div class="card detail-card h-100">
-                    <div
-                      class="card-header d-flex justify-content-between align-items-center"
-                    >
-                      <h3 class="card-title">
-                        <i class="bi bi-bank me-2 text-primary"></i>Información
-                        Bancaria
-                      </h3>
-
-                      <!-- Botón de edición -->
-                      <div class="edit-controls">
-                        <button
-                          *ngIf="!isEditing('bancaria')"
-                          class="btn-edit"
-                          (click)="toggleEditing('bancaria')"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-
-                        <div
-                          *ngIf="isEditing('bancaria')"
-                          class="action-buttons"
-                        >
-                          <button
-                            class="btn-action btn-save me-1"
-                            (click)="saveSection('bancaria')"
-                          >
-                            <i class="bi bi-check"></i>
-                          </button>
-                          <button
-                            class="btn-action btn-cancel"
-                            (click)="cancelEditing('bancaria')"
-                          >
-                            <i class="bi bi-x"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Banco</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('bancaria')"
-                            >
-                              {{ canal.banco }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('bancaria')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.banco"
-                              (input)="updateField('banco', $event)"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">CBU</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('bancaria')"
-                            >
-                              {{ canal.cbu }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('bancaria')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.cbu"
-                              (input)="updateField('cbu', $event)"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Alias</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('bancaria')"
-                            >
-                              {{ canal.alias }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('bancaria')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.alias"
-                              (input)="updateField('alias', $event)"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="detail-row mb-3">
-                            <div class="detail-label">Número de Cuenta</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('bancaria')"
-                            >
-                              {{ canal.numCuenta }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('bancaria')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.numCuenta"
-                              (input)="updateField('numCuenta', $event)"
-                            />
-                          </div>
-                        </div>
-                        <div class="col-12">
-                          <div class="detail-row">
-                            <div class="detail-label">Opciones de Cobro</div>
-                            <div
-                              class="detail-value"
-                              *ngIf="!isEditing('bancaria')"
-                            >
-                              {{ canal.opcionesCobro || "No especificadas" }}
-                            </div>
-                            <input
-                              *ngIf="isEditing('bancaria')"
-                              type="text"
-                              class="form-control"
-                              [value]="canalFormData.opcionesCobro"
-                              (input)="updateField('opcionesCobro', $event)"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <app-canal-info-bancaria
+                    [canal]="canal"
+                    [isEditing]="isEditing('bancaria')"
+                    [canalFormData]="canalFormData"
+                    (toggleEdit)="toggleEditing('bancaria')"
+                    (saveChanges)="saveSection('bancaria')"
+                    (cancelEdit)="cancelEditing('bancaria')"
+                    (fieldChange)="updateField($event.field, $event.value)"
+                  ></app-canal-info-bancaria>
                 </div>
               </div>
             </div>
@@ -671,399 +128,49 @@
 
         <!-- Subcanales Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'subcanales'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Subcanales</h3>
-              <!-- Botón de agregar oculto por ahora -->
-              <!-- <button class="btn btn-sm btn-primary">
-            <i class="bi bi-plus"></i> Nuevo Subcanal
-          </button> -->
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <table
-                  class="custom-table"
-                  *ngIf="subcanales && subcanales.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Nombre</th>
-                      <th>Provincia</th>
-                      <th>Localidad</th>
-                      <th>Estado</th>
-                      <th class="text-center">Comisión</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let subcanal of subcanales">
-                      <td>{{ subcanal.id }}</td>
-                      <td>
-                        <a
-                          class="text-dark fw-bold text-hover-primary cursor-pointer"
-                          (click)="verDetalleSubcanal(subcanal.id)"
-                        >
-                          {{ subcanal.nombre }}
-                        </a>
-                      </td>
-                      <td>{{ subcanal.provincia }}</td>
-                      <td>{{ subcanal.localidad }}</td>
-                      <td>
-                        <div
-                          class="badge cursor-pointer"
-                          [ngClass]="getEstadoClass(subcanal.activo)"
-                          (click)="
-                            toggleSubcanalEstado(subcanal.id, subcanal.activo)
-                          "
-                        >
-                          <span *ngIf="!isSubcanalLoading(subcanal.id)">{{
-                            subcanal.activo ? "Activo" : "Inactivo"
-                          }}</span>
-                          <span
-                            *ngIf="isSubcanalLoading(subcanal.id)"
-                            class="spinner-border spinner-border-sm"
-                            role="status"
-                          ></span>
-                        </div>
-                      </td>
-                      <td class="text-center">{{ subcanal.comision }}%</td>
-                      <td class="text-center">
-                        <button
-                          class="btn-action"
-                          title="Ver detalles"
-                          (click)="verDetalleSubcanal(subcanal.id)"
-                        >
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!subcanales || subcanales.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-diagram-3-fill fs-2 text-muted"></i>
-                    <h4>No hay subcanales</h4>
-                    <p class="text-muted">
-                      Este canal no tiene subcanales registrados.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-canal-subcanales
+            [subcanales]="subcanales"
+            [loadingSubcanales]="loadingSubcanales"
+            (toggleEstado)="toggleSubcanalEstado($event.subcanalId, $event.estadoActual)"
+            (verDetalle)="verDetalleSubcanal($event)"
+          ></app-canal-subcanales>
         </div>
 
         <!-- Planes Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'planes'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Planes Asignados</h3>
-              <!-- Botón de agregar oculto por ahora -->
-              <!-- <button class="btn btn-sm btn-primary">
-            <i class="bi bi-plus"></i> Asignar Plan
-          </button> -->
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <table
-                  class="custom-table"
-                  *ngIf="canal.planesCanal && canal.planesCanal.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Nombre</th>
-                      <th>Fechas</th>
-                      <th>Montos</th>
-                      <th>Tasa</th>
-                      <th>Estado</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let planCanal of canal.planesCanal">
-                      <td>{{ planCanal.planId }}</td>
-                      <td>
-                        <div class="fw-bold">{{ planCanal.plan.nombre }}</div>
-                      </td>
-                      <td>
-                        {{ planCanal.plan.fechaInicioStr }} -
-                        {{ planCanal.plan.fechaFinStr }}
-                      </td>
-                      <td>
-                        {{ planCanal.plan.montoMinimo | currency }} -
-                        {{ planCanal.plan.montoMaximo | currency }}
-                      </td>
-                      <td>{{ planCanal.plan.tasa }}%</td>
-                      <td>
-                        <div
-                          class="badge"
-                          [ngClass]="getEstadoClass(planCanal.activo)"
-                        >
-                          {{ planCanal.activo ? "Activo" : "Inactivo" }}
-                        </div>
-                      </td>
-                      <td class="text-center">
-                        <button class="btn-action" title="Ver detalles">
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!canal.planesCanal || canal.planesCanal.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-calendar-x fs-2 text-muted"></i>
-                    <h4>No hay planes asignados</h4>
-                    <p class="text-muted">
-                      Este canal no tiene planes asignados.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-canal-planes
+            [canal]="canal"
+            (verDetalle)="verDetallePlan($event)"
+          ></app-canal-planes>
         </div>
+
         <!-- Operaciones Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'operaciones'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Operaciones</h3>
-              <div>
-                <button class="btn btn-sm btn-light me-2">
-                  <i class="bi bi-filter"></i> Filtrar
-                </button>
-                <!-- Botón de agregar oculto por ahora -->
-                <!-- <button class="btn btn-sm btn-primary">
-                  <i class="bi bi-plus"></i> Nueva Operación
-                </button> -->
-              </div>
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <!-- Tabla de operaciones -->
-                <table
-                  class="custom-table"
-                  *ngIf="operaciones && operaciones.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Cliente</th>
-                      <th>Monto</th>
-                      <th>Meses</th>
-                      <th>Tasa</th>
-                      <th>Fecha</th>
-                      <th>Estado</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let op of operaciones">
-                      <td>{{ op.id }}</td>
-                      <td>{{ op.clienteNombre || "N/A" }}</td>
-                      <td>{{ op.monto | currency }}</td>
-                      <td>{{ op.meses }}</td>
-                      <td>{{ op.tasa }}%</td>
-                      <td>{{ op.fechaCreacion | date : "dd/MM/yyyy" }}</td>
-                      <td>
-                        <div class="badge badge-light-info">
-                          {{ op.estado || "Pendiente" }}
-                        </div>
-                      </td>
-                      <td class="text-center">
-                        <button class="btn-action" title="Ver detalles">
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!operaciones || operaciones.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-cash-stack fs-2 text-muted"></i>
-                    <h4>No hay operaciones</h4>
-                    <p class="text-muted">
-                      Este canal no tiene operaciones registradas.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-canal-operaciones
+            [operaciones]="operaciones"
+            (verDetalle)="verDetalleOperacion($event)"
+            (filtrar)="filtrarOperaciones()"
+          ></app-canal-operaciones>
         </div>
 
         <!-- Vendedores Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'vendedores'">
-          <div class="card">
-            <div
-              class="card-header d-flex justify-content-between align-items-center"
-            >
-              <h3 class="card-title">Vendedores</h3>
-              <!-- Botón de agregar oculto por ahora -->
-              <!-- <div>
-                <button class="btn btn-sm btn-primary">
-                  <i class="bi bi-plus"></i> Asignar Vendedor
-                </button>
-              </div> -->
-            </div>
-            <div class="card-body p-4">
-              <div class="table-responsive">
-                <!-- Tabla de vendedores -->
-                <table
-                  class="custom-table"
-                  *ngIf="vendedores && vendedores.length > 0"
-                >
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Nombre</th>
-                      <th>Email</th>
-                      <th>Teléfono</th>
-                      <th>Estado</th>
-                      <th class="text-center">Operaciones</th>
-                      <th class="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let vendor of vendedores">
-                      <td>{{ vendor.id }}</td>
-                      <td>
-                        <div class="fw-bold">
-                          {{ vendor.nombre }} {{ vendor.apellido }}
-                        </div>
-                      </td>
-                      <td>{{ vendor.email }}</td>
-                      <td>{{ vendor.telefono }}</td>
-                      <td>
-                        <div
-                          class="badge cursor-pointer"
-                          [ngClass]="getEstadoClass(vendor.activo)"
-                          (click)="toggleVendorEstado(vendor.id, vendor.activo)"
-                        >
-                          <span *ngIf="!isVendorLoading(vendor.id)">{{
-                            vendor.activo ? "Activo" : "Inactivo"
-                          }}</span>
-                          <span
-                            *ngIf="isVendorLoading(vendor.id)"
-                            class="spinner-border spinner-border-sm"
-                            role="status"
-                          ></span>
-                        </div>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge badge-light-info">
-                          {{ vendor.cantidadOperaciones || 0 }}
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <button class="btn-action" title="Ver detalles">
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div
-                  *ngIf="!vendedores || vendedores.length === 0"
-                  class="text-center p-5"
-                >
-                  <div class="text-center">
-                    <i class="bi bi-people fs-2 text-muted"></i>
-                    <h4>No hay vendedores asignados</h4>
-                    <p class="text-muted">
-                      Este canal no tiene vendedores asignados.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-canal-vendedores
+            [vendedores]="vendedores"
+            [loadingVendedores]="loadingVendedores"
+            (toggleEstado)="toggleVendorEstado($event.vendorId, $event.estadoActual)"
+            (verDetalle)="verDetalleVendedor($event)"
+          ></app-canal-vendedores>
         </div>
 
         <!-- Estadísticas Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'estadisticas'">
-          <div class="row g-3">
-            <!-- Gráfico de Operaciones por Mes -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Operaciones por Mes</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="operacionesChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Distribución por Planes -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Distribución por Planes</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="planesChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Operaciones por Subcanal -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Operaciones por Subcanal</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="subcanalesChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Rendimiento de Vendedores -->
-            <div class="col-12 col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Rendimiento de Vendedores</h3>
-                </div>
-                <div class="card-body p-4">
-                  <div class="chart-container" style="height: 300px">
-                    <canvas id="vendedoresChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-canal-estadisticas
+            [canal]="canal"
+            [operaciones]="operaciones"
+            [subcanales]="subcanales"
+            [vendedores]="vendedores"
+          ></app-canal-estadisticas>
         </div>
       </div>
     </div>

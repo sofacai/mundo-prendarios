@@ -1,0 +1,53 @@
+<div class="card detail-card h-100">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">
+      <i class="bi bi-file-text me-2 text-primary"></i>
+      Información Fiscal
+    </h3>
+
+    <!-- Botón de edición -->
+    <div class="edit-controls">
+      <button
+        *ngIf="!isEditing"
+        class="btn-edit"
+        (click)="onToggleEdit()"
+      >
+        <i class="bi bi-pencil"></i>
+      </button>
+
+      <div *ngIf="isEditing" class="action-buttons">
+        <button
+          class="btn-action btn-save me-1"
+          (click)="onSave()"
+        >
+          <i class="bi bi-check"></i>
+        </button>
+        <button
+          class="btn-action btn-cancel"
+          (click)="onCancel()"
+        >
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="detail-row">
+          <div class="detail-label">CUIT</div>
+          <div class="detail-value" *ngIf="!isEditing">
+            {{ canal.cuit }}
+          </div>
+          <input
+            *ngIf="isEditing"
+            type="text"
+            class="form-control"
+            [value]="canalFormData.cuit"
+            (input)="updateField('cuit', $event)"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

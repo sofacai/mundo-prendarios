@@ -1,0 +1,68 @@
+<!-- Archivo: src/app/pages/canales/components/canal-header/canal-header.component.html -->
+<div class="canal-header-card">
+  <div class="header-main-section">
+    <!-- Logo canal -->
+    <div class="canal-logo">
+      <div *ngIf="canal.foto" class="logo-image">
+        <img [src]="canal.foto" alt="Logo Canal" />
+      </div>
+      <div *ngIf="!canal.foto" class="logo-placeholder">
+        <span>{{
+          canal.nombreFantasia
+            ? canal.nombreFantasia.substring(0, 2).toUpperCase()
+            : ""
+        }}</span>
+      </div>
+    </div>
+
+    <!-- Titulo y badge -->
+    <div class="title-container">
+      <div class="title-badge-wrapper">
+        <h2 class="canal-title">{{ canal.nombreFantasia }}</h2>
+        <span
+          class="status-badge cursor-pointer"
+          [ngClass]="canal.activo ? 'active' : 'inactive'"
+          (click)="onToggleEstado()"
+        >
+          {{ canal.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información contacto -->
+  <div class="owner-contact-info">
+    <div class="contact-item">
+      <i class="bi bi-person"></i>
+      <span>{{ canal.titularNombreCompleto || "No especificado" }}</span>
+    </div>
+    <div class="contact-item">
+      <i class="bi bi-telephone"></i>
+      <span>{{ canal.titularTelefono || "No especificado" }}</span>
+    </div>
+    <div class="contact-item">
+      <i class="bi bi-envelope"></i>
+      <span>{{ canal.titularEmail || "No especificado" }}</span>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-section">
+    <div class="stat-box">
+      <div class="stat-number">
+        {{ subcanalesActivos + subcanalesInactivos }}
+      </div>
+      <div class="stat-label">Subcanales</div>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-number">{{ planesActivos + planesInactivos }}</div>
+      <div class="stat-label">Planes</div>
+    </div>
+
+    <div class="stat-box">
+      <div class="stat-number">{{ totalOperaciones }}</div>
+      <div class="stat-label">Operaciones</div>
+    </div>
+  </div>
+</div>

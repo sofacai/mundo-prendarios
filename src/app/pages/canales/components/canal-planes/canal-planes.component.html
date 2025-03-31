@@ -1,0 +1,60 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">Planes Asignados</h3>
+  </div>
+  <div class="card-body p-4">
+    <div class="table-responsive">
+      <table class="custom-table" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Fechas</th>
+            <th>Montos</th>
+            <th>Tasa</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let planCanal of canal.planesCanal">
+            <td>{{ planCanal.planId }}</td>
+            <td>
+              <div class="fw-bold">{{ planCanal.plan.nombre }}</div>
+            </td>
+            <td>
+              {{ planCanal.plan.fechaInicioStr }} -
+              {{ planCanal.plan.fechaFinStr }}
+            </td>
+            <td>
+              {{ planCanal.plan.montoMinimo | currency }} -
+              {{ planCanal.plan.montoMaximo | currency }}
+            </td>
+            <td>{{ planCanal.plan.tasa }}%</td>
+            <td>
+              <div class="badge" [ngClass]="getEstadoClass(planCanal.activo)">
+                {{ planCanal.activo ? "Activo" : "Inactivo" }}
+              </div>
+            </td>
+            <td class="text-center">
+              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(planCanal.planId)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="!canal.planesCanal || canal.planesCanal.length === 0" class="text-center p-5">
+        <div class="text-center">
+          <i class="bi bi-calendar-x fs-2 text-muted"></i>
+          <h4>No hay planes asignados</h4>
+          <p class="text-muted">
+            Este canal no tiene planes asignados.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

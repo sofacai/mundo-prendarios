@@ -1,0 +1,73 @@
+<div class="card detail-card h-100">
+  <div class="card-header">
+    <h3 class="card-title">
+      <i class="bi bi-person-badge me-2 text-primary"></i>Oficiales Comerciales
+    </h3>
+  </div>
+  <div class="card-body p-4">
+    <div class="oficiales-comerciales-container">
+      <!-- Loading Indicator -->
+      <div *ngIf="loading" class="text-center my-3">
+        <div class="spinner-border spinner-border-sm"></div>
+        <p class="mt-2 small">Cargando...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div
+        *ngIf="error && !loading"
+        class="alert alert-danger py-2 small"
+      >
+        {{ error }}
+      </div>
+
+      <!-- Tabla de Oficiales Comerciales -->
+      <div
+        *ngIf="!loading && !error"
+        class="table-responsive"
+      >
+        <table
+          class="custom-table table-sm"
+          *ngIf="oficialesComerciales && oficialesComerciales.length > 0"
+        >
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let oficial of oficialesComerciales">
+              <td>
+                <div class="oficial-info">
+                  <div class="fw-bold">
+                    {{ oficial.oficialComercialNombre }}
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div
+                  class="badge cursor-pointer"
+                  [ngClass]="getEstadoClass(oficial.activo)"
+                  (click)="onToggleEstado(oficial.oficialComercialId, oficial.activo)"
+                >
+                  {{ oficial.activo ? "Activo" : "Inactivo" }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div
+          *ngIf="!oficialesComerciales || oficialesComerciales.length === 0"
+          class="text-center py-4"
+        >
+          <i class="bi bi-people"></i>
+          <p class="small text-muted mt-2 mb-0">
+            No hay oficiales comerciales asignados a este canal
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

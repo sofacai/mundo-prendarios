@@ -1,0 +1,59 @@
+// src/app/pages/canales/components/canal-tabs-navigation/canal-tabs-navigation.component.scss
+@import '../canal-card.styles.scss';
+
+.canal-tabs {
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.tab-navigation {
+  border-bottom: 1px solid #eef0f2;
+  background-color: #fff;
+}
+
+.tab-navigation .nav {
+  display: flex;
+  flex-wrap: wrap;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.tab-navigation .nav .nav-item {
+  margin-bottom: -1px;
+}
+
+.tab-navigation .nav .nav-item .nav-link {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: #5e6278;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.tab-navigation .nav .nav-item .nav-link.active {
+  color: #009ef7;
+  font-weight: 500;
+  border-bottom: 2px solid #009ef7;
+}
+
+.tab-navigation .nav .nav-item .nav-link:hover:not(.active) {
+  color: #009ef7;
+}
+
+.tab-navigation .nav .nav-item .nav-link i {
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 767px) {
+  .tab-navigation .nav .nav-item .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tab-navigation .nav .nav-item .nav-link i {
+    margin-right: 0.25rem;
+  }
+}

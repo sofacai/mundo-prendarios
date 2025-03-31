@@ -1,0 +1,174 @@
+@import '../canal-card.styles.scss';
+
+// Cabecera del Canal
+.canal-header-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 1.5rem;
+}
+
+/* Sección principal con imagen y título */
+.header-main-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.canal-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.canal-logo .logo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.canal-logo .logo-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canal-logo .logo-placeholder span {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.title-container {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.canal-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #181c32;
+  margin: 0;
+}
+
+/* Badge de estado */
+.title-badge-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.status-badge.active {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.status-badge.inactive {
+  background-color: #fff5f8;
+  color: #f1416c;
+}
+
+/* Información del dueño */
+.owner-contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  padding: 15px 0;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-item i {
+  font-size: 16px;
+  color: #a1a5b7;
+}
+
+.contact-item span {
+  font-size: 14px;
+  color: #7e8299;
+}
+
+/* Cajas de estadísticas */
+.stats-section {
+  display: flex;
+  gap: 12px;
+  padding-top: 15px;
+}
+
+.stat-box {
+  flex: 1;
+  border: 1px solid #ebedf3;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  max-width: 200px;
+}
+
+.stat-box .stat-number {
+  font-size: 22px;
+  font-weight: 600;
+  color: #181c32;
+}
+
+.stat-box .stat-label {
+  font-size: 12px;
+  color: #a1a5b7;
+  margin-top: 4px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.status-badge.cursor-pointer:hover {
+  opacity: 0.8;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767px) {
+  .header-main-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .title-container {
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .owner-contact-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stats-section {
+    flex-wrap: wrap;
+  }
+
+  .stat-box {
+    min-width: calc(33.33% - 8px);
+    max-width: none;
+    padding: 10px;
+  }
+}
