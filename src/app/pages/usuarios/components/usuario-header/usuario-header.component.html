@@ -1,0 +1,58 @@
+<div class="usuario-header-card">
+  <div class="header-main-section">
+    <!-- Avatar del usuario -->
+    <div class="usuario-avatar">
+      <!-- Reemplazamos la verificación de foto por un avatar de iniciales -->
+      <div class="avatar-placeholder">
+        <span>{{ getInitials() }}</span>
+      </div>
+    </div>
+
+    <!-- Titulo y badge -->
+    <div class="title-container">
+      <div class="title-badge-wrapper">
+        <h2 class="usuario-title">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+        <span
+          class="status-badge cursor-pointer"
+          [ngClass]="usuario.activo ? 'active' : 'inactive'"
+          (click)="onToggleEstado()"
+        >
+          {{ usuario.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </div>
+      <div class="rol-badge" [ngClass]="'rol-' + usuario.rolId">
+        {{ getRolName() }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Información contacto -->
+  <div class="contact-info">
+    <div class="contact-item">
+      <i class="bi bi-envelope"></i>
+      <span>{{ usuario.email || "No especificado" }}</span>
+    </div>
+    <div class="contact-item">
+      <i class="bi bi-telephone"></i>
+      <span>{{ usuario.telefono || "No especificado" }}</span>
+    </div>
+    <div class="contact-item" *ngIf="usuario.rolId === 3">
+      <i class="bi bi-calendar"></i>
+      <span>Fecha Alta: {{ formatDate(estadisticas?.fechaAlta) }}</span>
+    </div>
+    <div class="contact-item" *ngIf="usuario.rolId === 3">
+      <i class="bi bi-activity"></i>
+      <span>Última Operación: {{ formatDate(estadisticas?.fechaUltimaOperacion) }}</span>
+    </div>
+  </div>
+
+  <!-- Estadísticas (solo para vendors) -->
+  <div class="stats-section" *ngIf="usuario.rolId === 3">
+    <div class="stat-box">
+      <div class="stat-number">
+        {{ estadisticas?.cantidadOperaciones || 0 }}
+      </div>
+      <div class="stat-label">Operaciones</div>
+    </div>
+  </div>
+</div>

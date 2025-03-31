@@ -1,0 +1,16 @@
+<div class="usuario-tabs card mb-4">
+  <div class="card-body p-0">
+    <div class="tab-navigation">
+      <ul class="nav">
+        <li class="nav-item" *ngFor="let tab of visibleTabs">
+          <a class="nav-link"
+             [class.active]="activeTab === tab.id"
+             (click)="setActiveTab(tab.id)">
+            <i [class]="'bi ' + tab.icon + ' me-2'"></i>
+            {{tab.label}}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

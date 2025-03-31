@@ -3,6 +3,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { RolType } from './core/models/usuario.model';
 import { WizardContainerComponent } from './pages/cotizador/wizard-container/wizard-container.component';
 import { SubcanalDetalleComponent } from './pages/subcanales/subcanal-detalle/subcanal-detalle.component';
+import { UsuarioDetalleComponent } from './pages/usuarios/usuario-detalle/usuario-detalle.component';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -23,6 +24,10 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
+  {
+    path: 'usuarios/:id',
+    component: UsuarioDetalleComponent,
+    data: { roles: [RolType.Administrador, RolType.OficialComercial, RolType.AdminCanal] } },
 
   { path: 'subcanales/:id',
     component: SubcanalDetalleComponent,

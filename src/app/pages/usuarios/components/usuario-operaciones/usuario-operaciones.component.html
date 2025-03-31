@@ -1,0 +1,110 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">
+      <i class="bi bi-cash me-2 text-primary"></i>
+      Operaciones
+    </h3>
+
+    <!-- Búsqueda -->
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar operación..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()">
+      <button
+        *ngIf="searchTerm"
+        class="btn-clear"
+        (click)="clearSearch()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="text-center p-4">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando operaciones...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Table Content -->
+    <div *ngIf="!loading && !error" class="table-responsive">
+      <table class="custom-table" *ngIf="filteredOperaciones.length > 0">
+        <thead>
+          <tr>
+            <th (click)="onSortChange('id')" class="sortable-header" style="width: 70px">
+              ID
+              <i class="bi" [ngClass]="getSortClass('id')"></i>
+            </th>
+            <th (click)="onSortChange('fechaCreacion')" class="sortable-header">
+              Fecha
+              <i class="bi" [ngClass]="getSortClass('fechaCreacion')"></i>
+            </th>
+            <th (click)="onSortChange('cliente')" class="sortable-header">
+              Cliente
+              <i class="bi" [ngClass]="getSortClass('cliente')"></i>
+            </th>
+            <th (click)="onSortChange('monto')" class="sortable-header">
+              Monto
+              <i class="bi" [ngClass]="getSortClass('monto')"></i>
+            </th>
+            <th (click)="onSortChange('meses')" class="sortable-header">
+              Plazo
+              <i class="bi" [ngClass]="getSortClass('meses')"></i>
+            </th>
+            <th (click)="onSortChange('tasa')" class="sortable-header">
+              Tasa
+              <i class="bi" [ngClass]="getSortClass('tasa')"></i>
+            </th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let op of filteredOperaciones">
+            <td>{{ op.id }}</td>
+            <td>{{ formatDate(op.fechaCreacion) }}</td>
+            <td>
+              <div class="fw-bold">
+                {{ op.clienteNombre || 'Cliente #' + op.clienteId }}
+              </div>
+            </td>
+            <td>{{ formatCurrency(op.monto) }}</td>
+            <td>{{ op.meses }} meses</td>
+            <td>{{ op.tasa }}%</td>
+            <td class="text-center">
+              <div class="badge" [ngClass]="getEstadoClass(op.estado)">
+                {{ op.estado || 'Pendiente' }}
+              </div>
+            </td>
+            <td class="text-center">
+              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(op.id || 0)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredOperaciones.length === 0" class="text-center p-5">
+        <div class="text-center">
+          <i class="bi bi-cash-stack fs-2 text-muted mb-3"></i>
+          <h4>No hay operaciones</h4>
+          <p class="text-muted">
+            Este vendor no tiene operaciones registradas.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
