@@ -7,6 +7,7 @@ export interface SubcanalInfo {
   subcanalId: number;
   subcanalNombre: string;
   subcanalActivo: boolean;
+  subcanalComision?: number; // Añadido para manejar la comisión del subcanal
   canalId: number;
   gastos: Array<{
     id: number;

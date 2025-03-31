@@ -1,75 +1,98 @@
-<div class="step-container">
-  <div class="header">
-    <div class="logo">
-      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
-    </div>
-    <div class="steps">
-      <div class="step active">
-        <div class="step-number">1</div>
-        <div class="step-label">Monto</div>
-      </div>
-      <div class="step-line"></div>
-      <div class="step">
-        <div class="step-number">2</div>
-        <div class="step-label">Datos</div>
-      </div>
-      <div class="step-line"></div>
-      <div class="step">
-        <div class="step-number">3</div>
-        <div class="step-label">Oferta</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="content">
-    <h2 class="title">¿Qué monto buscas?</h2>
-
-    <div class="form-group">
-      <label>Monto <span class="required">*</span></label>
-      <div class="input-group">
-        <span class="input-prefix">$</span>
-        <input
-          type="text"
-          [(ngModel)]="monto"
-          [min]="montoMinimo"
-          [max]="montoMaximo"
-          class="form-control"
-          placeholder="0">
-      </div>
-    </div>
-
-    <div class="slider-container">
-      <ion-range
-        [min]="montoMinimo"
-        [max]="montoMaximo"
-        [value]="monto"
-        (ionChange)="onSliderChange($event)"
-        step="10000">
-        <ion-label slot="start">{{montoMinimo | currency:'ARS':'symbol':'1.0-0'}}</ion-label>
-        <ion-label slot="end">{{montoMaximo | currency:'ARS':'symbol':'1.0-0'}}</ion-label>
-      </ion-range>
-    </div>
-
-    <div class="form-group full-width">
-      <label>¿En qué plazo? <span class="required">*</span></label>
-      <div class="cuotas-container">
-        <div
-          *ngFor="let p of plazosDisponibles"
-          class="cuota-option"
-          [class.selected]="plazo === p"
-          (click)="seleccionarPlazo(p)">
-          {{p}} meses
+<div class="loan-form">
+  <div class="card">
+    <!-- Header con progreso -->
+    <div class="header">
+      <div class="header-content">
+        <h2 class="header-title">Solicitud de Préstamo</h2>
+        <div class="progress-dots">
+          <div class="progress-dot progress-dot-active"></div>
+          <div class="progress-dot progress-dot-inactive"></div>
+          <div class="progress-dot progress-dot-inactive"></div>
         </div>
       </div>
+      <div class="progress-text">
+        <span>Paso 1 de 3</span>
+        <span>Monto y Plazo</span>
+      </div>
+      <!-- Borde inferior curvo -->
+      <div class="curved-edge"></div>
     </div>
 
-    <div *ngIf="errorMensaje" class="alert alert-danger">
-      <span>{{errorMensaje}}</span>
-    </div>
+    <div class="content">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab-container">
+          <button class="tab" [class.tab-active]="planSeleccionado === 'Cuotas Fijas'"
+                             [class.tab-inactive]="planSeleccionado !== 'Cuotas Fijas'"
+                             (click)="seleccionarPlan('Cuotas Fijas')">
+            Cuotas Fijas
+          </button>
+          <button class="tab" [class.tab-active]="planSeleccionado === 'UVA'"
+                             [class.tab-inactive]="planSeleccionado !== 'UVA'"
+                             (click)="seleccionarPlan('UVA')">
+            UVA
+          </button>
+        </div>
+      </div>
 
-    <div class="form-footer">
-      <button type="button" class="btn btn-light" (click)="onVolver()">VOLVER</button>
-      <button type="button" class="btn btn-primary" (click)="onContinuar()">ME INTERESA</button>
+      <!-- Input monto del préstamo -->
+      <div class="form-group">
+        <label for="loanAmount" class="form-label">¿Cuánto querés pedir?</label>
+        <div class="input-wrapper">
+          <div class="currency-icon">$</div>
+          <input
+            id="loanAmount"
+            type="text"
+            [(ngModel)]="montoFormateado"
+            (input)="onMontoInputChange($event)"
+            class="loan-input">
+        </div>
+        <p class="min-loan">
+          <span class="min-loan-dot"></span>
+          El mínimo a prestar es $ {{montoMinimo | number:'1.0-0':'es'}}
+        </p>
+      </div>
+
+      <!-- Selección de plazo -->
+      <div class="form-group">
+        <h3 class="term-heading">Elegí el plazo</h3>
+        <div class="term-options">
+          <button
+            *ngFor="let p of plazosOrdenados"
+            class="term-option"
+            [class.term-option-selected]="plazo === p"
+            (click)="seleccionarPlazo(p)">
+            <div class="option-left">
+              <div class="radio" [class.radio-selected]="plazo === p">
+                <div *ngIf="plazo === p" class="radio-inner"></div>
+              </div>
+              <div class="term-text-container">
+                <div *ngIf="p === 60" class="recommended-badge">Recomendado</div>
+                <span class="term-text">{{p}} Cuotas</span>
+              </div>
+            </div>
+            <span class="term-amount" [class.term-amount-selected]="plazo === p">$ {{calcularCuotaPara(p) | number:'1.0-0':'es'}}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div *ngIf="errorMensaje" class="error-message">
+        <span>{{errorMensaje}}</span>
+      </div>
+
+      <!-- Botón continuar -->
+      <button class="btn btn-primary" (click)="onContinuar()">
+        <span>Continuar</span>
+        <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+
+      <!-- Nota para UVA -->
+      <p *ngIf="planSeleccionado === 'UVA'" class="uva-note">
+        Nota: Las cuotas UVA pueden variar según la inflación.
+      </p>
     </div>
   </div>
 </div>
