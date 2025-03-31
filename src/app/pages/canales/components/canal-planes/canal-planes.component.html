@@ -1,57 +1,131 @@
+<!-- canal-planes.component.html -->
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h3 class="card-title">Planes Asignados</h3>
+  <div class="card-header">
+    <h3 class="card-title">Planes del Canal</h3>
   </div>
-  <div class="card-body p-4">
-    <div class="table-responsive">
-      <table class="custom-table" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Fechas</th>
-            <th>Montos</th>
-            <th>Tasa</th>
-            <th>Estado</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let planCanal of canal.planesCanal">
-            <td>{{ planCanal.planId }}</td>
-            <td>
-              <div class="fw-bold">{{ planCanal.plan.nombre }}</div>
-            </td>
-            <td>
-              {{ planCanal.plan.fechaInicioStr }} -
-              {{ planCanal.plan.fechaFinStr }}
-            </td>
-            <td>
-              {{ planCanal.plan.montoMinimo | currency }} -
-              {{ planCanal.plan.montoMaximo | currency }}
-            </td>
-            <td>{{ planCanal.plan.tasa }}%</td>
-            <td>
-              <div class="badge" [ngClass]="getEstadoClass(planCanal.activo)">
-                {{ planCanal.activo ? "Activo" : "Inactivo" }}
-              </div>
-            </td>
-            <td class="text-center">
-              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(planCanal.planId)">
-                <i class="bi bi-eye"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
 
-      <!-- Empty State -->
-      <div *ngIf="!canal.planesCanal || canal.planesCanal.length === 0" class="text-center p-5">
-        <div class="text-center">
-          <i class="bi bi-calendar-x fs-2 text-muted"></i>
-          <h4>No hay planes asignados</h4>
+  <div class="card-body p-4">
+    <!-- Indicador de carga general -->
+    <div *ngIf="loading" class="text-center py-3">
+      <div class="spinner-border"></div>
+      <p class="mt-2">Cargando planes...</p>
+    </div>
+
+    <!-- Indicador de carga para acciones -->
+    <div *ngIf="loadingAction" class="loading-overlay">
+      <div class="spinner-border spinner-border-sm"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <div *ngIf="!loading">
+      <!-- Planes Asignados -->
+      <div class="planes-asignados mb-5">
+        <h4 class="section-title">Planes Asignados</h4>
+
+        <div class="table-responsive" *ngIf="canal.planesCanal && canal.planesCanal.length > 0">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Fechas</th>
+                <th>Montos</th>
+                <th>Tasa</th>
+                <th>Cuotas</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let planCanal of canal.planesCanal">
+                <td>
+                  <div class="fw-bold">{{ planCanal.plan.nombre }}</div>
+                </td>
+                <td>
+                  {{ planCanal.plan.fechaInicioStr }} - {{ planCanal.plan.fechaFinStr }}
+                </td>
+                <td>
+                  {{ planCanal.plan.montoMinimo | currency }} - {{ planCanal.plan.montoMaximo | currency }}
+                </td>
+                <td>{{ planCanal.plan.tasa }}%</td>
+                <td>
+                  <div class="cuotas-list">
+                    <span class="cuota-tag" *ngFor="let cuota of planCanal.plan.cuotasAplicablesList">
+                      {{ cuota }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="badge cursor-pointer"
+                       [ngClass]="getEstadoClass(planCanal.activo)"
+                       (click)="onToggleEstado(planCanal.id, planCanal.activo)">
+                    {{ planCanal.activo ? "Activo" : "Inactivo" }}
+                  </div>
+                </td>
+                <td class="text-center">
+                  <button class="btn-action btn-action-danger" title="Quitar plan" (click)="onDesasignarPlan(planCanal.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!canal.planesCanal || canal.planesCanal.length === 0" class="empty-state">
+          <i class="bi bi-card-list"></i>
+          <h5>No hay planes asignados</h5>
           <p class="text-muted">
             Este canal no tiene planes asignados.
+          </p>
+        </div>
+      </div>
+
+      <!-- Planes Disponibles -->
+      <div class="planes-disponibles">
+        <h4 class="section-title">Planes Disponibles para Asignar</h4>
+
+        <div class="planes-grid" *ngIf="planesDisponibles.length > 0">
+          <div class="plan-card" *ngFor="let plan of planesDisponibles">
+            <div class="plan-header">
+              <h5>{{ plan.nombre }}</h5>
+              <span class="plan-tasa">{{ plan.tasa }}%</span>
+            </div>
+            <div class="plan-details">
+              <div class="detail-row">
+                <span class="detail-label">Montos:</span>
+                <span class="detail-value">{{ plan.montoMinimo | currency }} - {{ plan.montoMaximo | currency }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Vigencia:</span>
+                <span class="detail-value">{{ plan.fechaInicioStr }} - {{ plan.fechaFinStr }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Cuotas:</span>
+                <div class="cuotas-list">
+                  <span class="cuota-tag" *ngFor="let cuota of plan.cuotasAplicablesList">{{ cuota }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="plan-actions">
+              <button class="btn btn-sm btn-primary w-100" (click)="onAsignarPlan(plan.id)">
+                <i class="bi bi-plus-circle me-2"></i> Asignar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="planesDisponibles.length === 0" class="empty-state">
+          <i class="bi bi-card-checklist"></i>
+          <h5>No hay planes disponibles</h5>
+          <p class="text-muted">
+            No hay planes adicionales para asignar a este canal.
           </p>
         </div>
       </div>

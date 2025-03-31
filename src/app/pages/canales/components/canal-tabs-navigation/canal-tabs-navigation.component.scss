@@ -5,12 +5,15 @@
   margin-bottom: 1.5rem;
   border-radius: 8px;
   overflow: hidden;
+  padding: 0 !important;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .tab-navigation {
   border-bottom: 1px solid #eef0f2;
   background-color: #fff;
+  padding: 0 !important;
+
 }
 
 .tab-navigation .nav {
@@ -19,6 +22,8 @@
   padding-left: 0;
   margin-bottom: 0;
   list-style: none;
+  margin: 0 !important;
+
 }
 
 .tab-navigation .nav .nav-item {

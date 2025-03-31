@@ -39,7 +39,6 @@ Chart.register(...registerables);
     FormsModule,
     ReactiveFormsModule,
     SidebarComponent,
-    UbicacionSelectorComponent,
     // Importamos los componentes que hemos creado
     SubcanalHeaderComponent,
     SubcanalTabsNavigationComponent,

@@ -1,18 +1,13 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 /* ===============================
    ESTRUCTURA BÁSICA
    =============================== */
    .canal-detail {
     margin-top: 1rem;
-  }
-
-  .content-area {
-    overflow-y: auto;
-    max-height: 100vh;
-  }
-
-  .canales-container {
-    overflow: hidden;
-    height: 100vh;
   }
 
   /* ===============================
