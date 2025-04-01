@@ -24,25 +24,26 @@
 
   <!-- Selector de subcanal -->
   <app-subcanal-selector
-  *ngIf="!error && !cargando && necesitaSeleccionarSubcanal && datosWizard?.subcanales"
-  [subcanales]="datosWizard?.subcanales || []"
-  (seleccionarSubcanal)="seleccionarSubcanal($event)">
-</app-subcanal-selector>
+    *ngIf="!error && !cargando && necesitaSeleccionarSubcanal && datosWizard?.subcanales"
+    [subcanales]="datosWizard?.subcanales || []"
+    (seleccionarSubcanal)="seleccionarSubcanal($event)">
+  </app-subcanal-selector>
 
   <!-- Paso 1 -->
   <app-step1-monto
-  *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 1"
-  [subcanalInfo]="subcanalSeleccionadoInfo"
-  (continuar)="continuarPaso1($event)"
-  (volver)="volverAlSeleccionSubcanal()">
-</app-step1-monto>
+    *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 1"
+    [subcanalInfo]="subcanalSeleccionadoInfo"
+    (continuar)="continuarPaso1($event)"
+    (volver)="volverAlSeleccionSubcanal()">
+  </app-step1-monto>
+
   <!-- Paso 2 -->
-  <div *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 2">
-    <app-step2-datos
-      (continuar)="continuarPaso2($event)"
-      (volver)="volverAlPasoAnterior()">
-    </app-step2-datos>
-  </div>
+  <app-step2-datos
+    *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 2"
+    [clienteData]="wizardData"
+    (continuar)="continuarPaso2($event)"
+    (volver)="volverAlPasoAnterior()">
+  </app-step2-datos>
 
   <!-- Paso 3 -->
   <app-step3-oferta
@@ -56,3 +57,4 @@
     (volver)="volverAlPasoAnterior()"
     (realizarOtraOferta)="reiniciarWizard()">
   </app-step3-oferta>
+</div>

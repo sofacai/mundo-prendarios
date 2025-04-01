@@ -50,6 +50,8 @@ export class Step3OfertaComponent implements OnInit {
     }
   }
 
+
+
   togglePaymentDetail() {
     this.showPaymentDetail = !this.showPaymentDetail;
   }

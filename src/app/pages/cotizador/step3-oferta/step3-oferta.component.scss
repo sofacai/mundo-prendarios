@@ -322,4 +322,22 @@
   border-top-right-radius: 100%;
 }
 
-/* Puedes agregar aquí más estilos compartidos si es necesario */
+.animated-offer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem 0;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.offer-text {
+  flex: 1 1 60%;
+}
+
+.offer-animation {
+  width: 120px;
+  height: 120px;
+  flex: 0 0 auto;
+}
