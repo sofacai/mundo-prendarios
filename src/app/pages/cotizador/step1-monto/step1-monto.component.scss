@@ -25,26 +25,54 @@
   position: relative;
 }
 
-.header-content {
+/* Nuevos estilos para el header */
+.header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.header-title {
-  color: white;
-  font-size: 1.125rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.progress-text {
+.logo {
   display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  height: 2.5rem;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+.menu-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: white;
+  cursor: pointer;
+}
+
+.hamburger-icon {
+  width: 1.5rem;
+  height: 1.25rem;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.8125rem;
-  font-weight: 500;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: white;
+  border-radius: 2px;
+}
+
+/* Actualización de los estilos de texto de progreso */
+.progress-text {
+  display: none;
 }
 
 .curved-edge {
@@ -262,20 +290,18 @@
   min-width: 5rem; /* Ancho mínimo para acomodar cifras */
   text-align: right;
 }
-/* Mejora para la opción completa de 60 cuotas */
+
 .term-option-selected {
   background-color: #f0f7ff;
   border: 1px solid #3378f6;
 }
 
-/* Estilo específico para la opción recomendada */
 .term-option-recommended {
   border-color: #3378f6;
   border-width: 2px;
   background-color: #f6f9ff;
 }
 
-/* Estilos para mejorar la alineación */
 .option-left {
   display: flex;
   align-items: center;

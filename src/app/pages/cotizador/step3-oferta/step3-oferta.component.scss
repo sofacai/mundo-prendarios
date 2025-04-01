@@ -259,3 +259,67 @@
 .disclaimer p {
   margin-bottom: 0.25rem;
 }
+
+/* Estilos del header para todos los steps */
+.header {
+  background: #3378f6;
+  padding: 1.25rem;
+  padding-bottom: 2rem;
+  position: relative;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  height: 2.5rem;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+.menu-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: white;
+  cursor: pointer;
+}
+
+.hamburger-icon {
+  width: 1.5rem;
+  height: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: white;
+  border-radius: 2px;
+}
+
+.curved-edge {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  background-color: white;
+  border-top-left-radius: 100%;
+  border-top-right-radius: 100%;
+}
+
+/* Puedes agregar aquí más estilos compartidos si es necesario */
