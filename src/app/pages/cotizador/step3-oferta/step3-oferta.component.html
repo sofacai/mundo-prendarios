@@ -1,74 +1,94 @@
-<div class="step-container">
-  <div class="header">
-    <div class="logo">
-      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+<div class="loan-form">
+  <!-- Header con progreso -->
+  <div class="card">
+    <div class="header">
+      <div class="header-content">
+        <h2 class="header-title">Solicitud de Préstamo</h2>
+        <div class="progress-dots">
+          <div class="progress-dot progress-dot-completed"></div>
+          <div class="progress-dot progress-dot-completed"></div>
+          <div class="progress-dot progress-dot-active"></div>
+        </div>
+      </div>
+      <div class="progress-text">
+        <span>Paso 3 de 3</span>
+        <span>Oferta</span>
+      </div>
+      <!-- Borde inferior curvo -->
+      <div class="curved-edge"></div>
     </div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <div class="step-label">Monto</div>
-      </div>
-      <div class="step-line"></div>
-      <div class="step">
-        <div class="step-number">2</div>
-        <div class="step-label">Datos</div>
-      </div>
-      <div class="step-line"></div>
-      <div class="step active">
-        <div class="step-number">3</div>
-        <div class="step-label">Oferta</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="content">
-    <h2 class="title">"{{nombreCompleto}}", esta es la oferta que tenemos para vos:</h2>
+    <div class="content">
+      <!-- Mensaje de éxito -->
+      <div class="success-message">
+        <div class="success-icon">
+          <div class="check-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+        </div>
+        <h2 class="success-title">{{ clienteNombre }}, esta es la oferta que tenemos para vos!</h2>
+      </div>
 
-    <div class="oferta-card">
-      <div class="oferta-details">
-        <div class="detail-row">
-          <div class="detail-label">Monto de la prenda</div>
-          <div class="detail-value">{{ monto | currency:'ARS':'symbol':'1.0-0' }}</div>
+      <!-- Resumen de la oferta -->
+      <div class="offer-summary">
+        <div class="summary-row">
+          <span class="summary-label">Monto solicitado:</span>
+          <span class="summary-value">$ {{ monto | number:'1.0-0':'es' }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Plan:</span>
+          <span class="summary-value">{{ planSeleccionado.nombre }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Cuotas:</span>
+          <span class="summary-value">{{ plazo }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Valor de cuota:</span>
+          <span class="summary-value">$ {{ valorCuota | number:'1.0-0':'es' }}</span>
+        </div>
+      </div>
+
+      <!-- Detalle de cuotas (desplegable) -->
+      <div class="payment-details">
+        <div class="payment-header" (click)="togglePaymentDetail()">
+          <span>Ver detalle de cuotas</span>
+          <ion-icon [name]="showPaymentDetail ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
         </div>
 
-        <ng-container *ngIf="planes && planes.length > 0">
-          <div class="detail-row">
-            <div class="detail-label">Tipo de tasa</div>
-            <div class="detail-value">UVA</div>
+        <div class="payment-table" *ngIf="showPaymentDetail">
+          <div class="payment-table-header">
+            <span>Cuota</span>
+            <span>Monto</span>
           </div>
-
-          <div class="detail-row">
-            <div class="detail-label">Cantidad de cuotas</div>
-            <div class="detail-value">{{ plazo }}</div>
+          <div class="payment-table-row" *ngFor="let cuota of cuotas; let i = index">
+            <span>Cuota {{ i + 1 }}</span>
+            <span>$ {{ cuota | number:'1.0-0':'es' }}</span>
           </div>
-
-          <div class="detail-row">
-            <div class="detail-label">Valor de la cuota</div>
-            <div class="detail-value">{{ planes[0].cuota | currency:'ARS':'symbol':'1.0-0' }}</div>
-          </div>
-        </ng-container>
+        </div>
       </div>
 
-      <div class="oferta-actions">
-        <button class="btn-action whatsapp" (click)="onSeleccionarPlan(planes[0]?.id)">
+      <!-- Acciones -->
+      <div class="actions">
+        <button class="btn-whatsapp" (click)="enviarPorWhatsapp()">
           <ion-icon name="logo-whatsapp"></ion-icon>
-          Enviar por Whatsapp
+          <span>Enviar por WhatsApp</span>
         </button>
 
-        <button class="btn-action pre-aprobacion" (click)="onSeleccionarPlan(planes[0]?.id)">
-          Completar datos para pre-aprobación
-        </button>
+        <div class="secondary-actions">
+          <button class="btn-secondary" (click)="volver.emit()">Volver</button>
+          <button class="btn-secondary" (click)="realizarOtraOferta.emit()">Nueva oferta</button>
+        </div>
       </div>
 
-      <div class="oferta-disclaimer">
-        <p>*Montos y plazos estimativos, sujeto a evaluación financiera del cliente.</p>
-        <p>**Los montos no incluyen seguro</p>
+      <!-- Disclaimer -->
+      <div class="disclaimer">
+        <p>*Los montos son estimativos y están sujetos a evaluación crediticia.</p>
+        <p>**Las cuotas no incluyen gastos administrativos ni seguros.</p>
       </div>
-    </div>
-
-    <div class="bottom-actions">
-      <button class="btn-secondary" (click)="onVolver()">VOLVER</button>
-      <button class="btn-primary" (click)="onRealizarOtraOferta()">REALIZAR OTRA OFERTA</button>
     </div>
   </div>
 </div>

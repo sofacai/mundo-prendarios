@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 
 @Component({
   selector: 'app-step3-oferta',
@@ -19,20 +20,54 @@ export class Step3OfertaComponent implements OnInit {
   @Output() volver = new EventEmitter<void>();
   @Output() realizarOtraOferta = new EventEmitter<void>();
 
-  constructor() {}
+  showPaymentDetail: boolean = false;
+  cuotas: number[] = [];
+  valorCuota: number = 0;
+  planSeleccionado: any = {};
 
-  ngOnInit() {}
+  constructor(private dataService: CotizadorDataService) {}
 
-  onSeleccionarPlan(planId: number) {
-    this.seleccionarPlan.emit(planId);
+  ngOnInit() {
+    // Usar el primer plan disponible o el plan seleccionado en los pasos anteriores
+    if (this.planes && this.planes.length > 0) {
+      this.planSeleccionado = this.planes[0];
+      this.valorCuota = this.planSeleccionado.cuota;
+
+      // Generar las cuotas (en este caso todas iguales)
+      this.generarCuotas();
+    } else {
+      // Fallback a datos del servicio si los planes no están definidos como Input
+      this.monto = this.dataService.monto;
+      this.plazo = this.dataService.plazo;
+      this.valorCuota = this.dataService.valorCuota;
+      this.planSeleccionado = {
+        nombre: this.dataService.planTipo,
+        id: this.dataService.planId
+      };
+
+      // Generar las cuotas
+      this.generarCuotas();
+    }
   }
 
-  onVolver() {
-    this.volver.emit();
+  togglePaymentDetail() {
+    this.showPaymentDetail = !this.showPaymentDetail;
   }
 
-  onRealizarOtraOferta() {
-    this.realizarOtraOferta.emit();
+  generarCuotas() {
+    // Generar array de cuotas (por simplicidad todas iguales)
+    this.cuotas = Array(this.plazo).fill(this.valorCuota);
+
+    // En un caso real, aquí se podría aplicar lógica para cuotas diferentes
+    // Por ejemplo, para inflación o tasas crecientes
+  }
+
+  enviarPorWhatsapp() {
+    if (this.planSeleccionado && this.planSeleccionado.id) {
+      this.seleccionarPlan.emit(this.planSeleccionado.id);
+    } else {
+      console.error('No hay plan seleccionado para enviar');
+    }
   }
 
   // Helper para mostrar el nombre completo

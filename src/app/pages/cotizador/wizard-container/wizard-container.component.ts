@@ -5,12 +5,14 @@ import { SubcanalSelectorComponent } from "../subcanal-selector/subcanal-selecto
 import { RolType } from 'src/app/core/models/usuario.model';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { DatosWizard, SubcanalInfo, CotizadorService } from 'src/app/core/services/cotizador.service';
-import { ClienteService, Cliente } from 'src/app/core/services/cliente.service';
-import { OperacionService } from 'src/app/core/services/operacion.service';
+import { ClienteService, Cliente, ClienteCrearDto } from 'src/app/core/services/cliente.service';
+import { OperacionService, Operacion } from 'src/app/core/services/operacion.service';
 import { ClienteVendorService } from 'src/app/core/services/cliente-vendor.service';
+import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { switchMap, catchError, of, finalize } from 'rxjs';
 
 interface WizardData {
   paso: number;
@@ -23,6 +25,7 @@ interface WizardData {
   clienteEmail?: string;
   clienteDni?: string;
   clienteCuil?: string;
+  clienteSexo?: string;
   planesDisponibles?: any[];
 }
 
@@ -50,8 +53,8 @@ export class WizardContainerComponent implements OnInit {
     private clienteService: ClienteService,
     private clienteVendorService: ClienteVendorService,
     private operacionService: OperacionService,
+    private dataService: CotizadorDataService,
     private cdr: ChangeDetectorRef
-
   ) {}
 
   ngOnInit() {
@@ -118,12 +121,6 @@ export class WizardContainerComponent implements OnInit {
 
     // Forzar detección de cambios
     this.cdr.detectChanges();
-
-    // Timeout para asegurar que la UI se actualice
-    setTimeout(() => {
-      console.log('Estado actual después del timeout:', this.wizardData);
-      this.cdr.detectChanges();
-    }, 100);
   }
 
   continuarPaso2(datos: any) {
@@ -138,144 +135,161 @@ export class WizardContainerComponent implements OnInit {
       clienteWhatsapp: datos.whatsapp,
       clienteEmail: datos.email,
       clienteDni: datos.dni || "",
-      clienteCuil: datos.cuil || ""
+      clienteCuil: datos.cuil || "",
+      clienteSexo: datos.sexo || ""
     };
 
-    // Primero buscar por DNI si está disponible
+    // Guardar los datos en el servicio compartido para acceder desde Step3
+    this.dataService.guardarDatosPaso2({
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      whatsapp: datos.whatsapp,
+      email: datos.email,
+      dni: datos.dni || undefined,
+      cuil: datos.cuil || undefined,
+      sexo: datos.sexo || undefined,
+      clienteId: undefined
+    });
+
+    // Primero buscar por DNI o CUIL si están disponibles
     if (datos.dni) {
       this.buscarClientePorDNI(datos);
-    }
-    // Si no hay DNI pero sí CUIL
-    else if (datos.cuil) {
+    } else if (datos.cuil) {
       this.buscarClientePorCUIL(datos);
-    }
-    // Si no hay ni DNI ni CUIL, crear directamente
-    else {
+    } else {
       this.crearCliente(datos);
     }
   }
 
- // Método para buscar cliente por CUIL
-private buscarClientePorCUIL(datos: any) {
-  this.clienteService.getClientePorCuil(datos.cuil).subscribe({
-    next: (cliente: Cliente) => {
-      console.log("Cliente encontrado por CUIL:", cliente);
-      // Asegurarnos que el ID no es undefined
-      if (cliente && typeof cliente.id === 'number') {
-        this.wizardData.clienteId = cliente.id;
-        this.asignarVendorACliente(cliente.id);
-      } else {
-        console.error("Cliente sin ID válido");
+  // Método para buscar cliente por CUIL
+  private buscarClientePorCUIL(datos: any) {
+    this.clienteService.getClientePorCuil(datos.cuil).subscribe({
+      next: (cliente: Cliente) => {
+        console.log("Cliente encontrado por CUIL:", cliente);
+        // Asegurarnos que el ID no es undefined
+        if (cliente && typeof cliente.id === 'number') {
+          this.wizardData.clienteId = cliente.id;
+          this.dataService.clienteId = cliente.id;
+          this.asignarVendorACliente(cliente.id);
+        } else {
+          console.error("Cliente sin ID válido");
+          this.crearCliente(datos);
+        }
+      },
+      error: (err) => {
+        console.log("No se encontró cliente por CUIL, error:", err);
+        // No se encontró, crear nuevo cliente
         this.crearCliente(datos);
       }
-    },
-    error: (_) => {
-      // No se encontró, crear nuevo cliente
-      this.crearCliente(datos);
-    }
-  });
-}
+    });
+  }
 
-// Método para buscar cliente por DNI
-private buscarClientePorDNI(datos: any) {
-  this.clienteService.getClientePorDni(datos.dni).subscribe({
-    next: (cliente: Cliente) => {
-      console.log("Cliente encontrado por DNI:", cliente);
-      // Asegurarnos que el ID no es undefined
-      if (cliente && typeof cliente.id === 'number') {
-        this.wizardData.clienteId = cliente.id;
-        this.asignarVendorACliente(cliente.id);
-      } else {
-        console.error("Cliente sin ID válido");
+  // Método para buscar cliente por DNI
+  private buscarClientePorDNI(datos: any) {
+    this.clienteService.getClientePorDni(datos.dni).subscribe({
+      next: (cliente: Cliente) => {
+        console.log("Cliente encontrado por DNI:", cliente);
+        // Asegurarnos que el ID no es undefined
+        if (cliente && typeof cliente.id === 'number') {
+          this.wizardData.clienteId = cliente.id;
+          this.dataService.clienteId = cliente.id;
+          this.asignarVendorACliente(cliente.id);
+        } else {
+          console.error("Cliente sin ID válido");
+          if (datos.cuil) {
+            this.buscarClientePorCUIL(datos);
+          } else {
+            this.crearCliente(datos);
+          }
+        }
+      },
+      error: (err) => {
+        console.log("No se encontró cliente por DNI, error:", err);
+        // No se encontró por DNI, intentar con CUIL si existe
         if (datos.cuil) {
           this.buscarClientePorCUIL(datos);
         } else {
+          // Si no hay CUIL, crear nuevo cliente
           this.crearCliente(datos);
         }
       }
-    },
-    error: (_) => {
-      // No se encontró por DNI, intentar con CUIL si existe
-      if (datos.cuil) {
-        this.buscarClientePorCUIL(datos);
-      } else {
-        // Si no hay CUIL, crear nuevo cliente
-        this.crearCliente(datos);
+    });
+  }
+
+  // Método para crear cliente
+  private crearCliente(datos: any) {
+    const clienteData: ClienteCrearDto = {
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      telefono: datos.whatsapp,
+      email: datos.email,
+      dni: datos.dni || undefined,
+      cuil: datos.cuil || undefined,
+      sexo: datos.sexo || undefined,
+      canalId: this.subcanalSeleccionadoInfo?.canalId,
+      // Para crear clientes en el canal correcto
+      autoasignarVendor: true // Permitir autoasignación del vendor actual
+    };
+
+    console.log("Creando nuevo cliente:", clienteData);
+
+    this.clienteService.crearCliente(clienteData).subscribe({
+      next: (cliente: Cliente) => {
+        console.log("Cliente creado con éxito:", cliente);
+        if (cliente && typeof cliente.id === 'number') {
+          this.wizardData.clienteId = cliente.id;
+          this.dataService.clienteId = cliente.id;
+          this.asignarVendorACliente(cliente.id);
+        } else {
+          console.error("Cliente creado sin ID válido");
+          this.obtenerPlanesYAvanzar();
+        }
+      },
+      error: (error) => {
+        console.error("Error al crear cliente:", error);
+        if (error.status === 409) {
+          this.error = "Ya existe un cliente con ese DNI o CUIL.";
+        } else if (error.status === 400) {
+          this.error = "Datos inválidos. Verifica los campos obligatorios.";
+        } else {
+          this.error = "Error al crear cliente. Por favor, intenta nuevamente.";
+        }
+        this.cargando = false;
       }
+    });
+  }
+
+  // Método para asignar vendor a cliente
+  private asignarVendorACliente(clienteId: number) {
+    // Es crucial que clienteId sea un número válido en este punto
+    if (typeof clienteId !== 'number' || isNaN(clienteId) || clienteId <= 0) {
+      console.error('ID de cliente inválido:', clienteId);
+      this.obtenerPlanesYAvanzar();
+      return;
     }
-  });
-}
 
-// Método para crear cliente
-private crearCliente(datos: any) {
-  const clienteData = {
-    nombre: datos.nombre,
-    apellido: datos.apellido,
-    telefono: datos.whatsapp,
-    email: datos.email,
-    dni: String(datos.dni || ""),
-    cuil: String(datos.cuil || ""),
-    canalId: this.subcanalSeleccionadoInfo?.canalId || 1
-  };
+    const vendorId = this.authService.currentUserValue?.id;
 
-  console.log("Creando nuevo cliente:", clienteData);
+    if (!vendorId) {
+      console.error("ID de vendor no disponible");
+      this.obtenerPlanesYAvanzar();
+      return;
+    }
 
-  this.clienteService.crearCliente(clienteData).subscribe({
-    next: (cliente: Cliente) => {
-      console.log("Cliente creado con éxito:", cliente);
-      if (cliente && typeof cliente.id === 'number') {
-        this.wizardData.clienteId = cliente.id;
-        this.asignarVendorACliente(cliente.id);
-      } else {
-        console.error("Cliente creado sin ID válido");
+    console.log(`Asignando vendor ${vendorId} al cliente ${clienteId}`);
+
+    this.clienteVendorService.asignarVendorACliente(clienteId, vendorId).subscribe({
+      next: (resultado) => {
+        console.log("Vendor asignado exitosamente al cliente:", resultado);
+        this.obtenerPlanesYAvanzar();
+      },
+      error: (error) => {
+        console.warn("Error al asignar vendor (continuando de todas formas):", error);
+        // Continuar de todas formas
         this.obtenerPlanesYAvanzar();
       }
-    },
-    error: (error) => {
-      console.error("Error al crear cliente:", error);
-      if (error.status === 409) {
-        this.error = "Ya existe un cliente con ese DNI o CUIL.";
-      } else if (error.status === 400) {
-        this.error = "Datos inválidos. Verifica los campos obligatorios.";
-      } else {
-        this.error = "Error al crear cliente. Por favor, intenta nuevamente.";
-      }
-      this.cargando = false;
-    }
-  });
-}
-
-// Método para asignar vendor a cliente
-private asignarVendorACliente(clienteId: number) {
-  // Es crucial que clienteId sea un número válido en este punto
-  if (typeof clienteId !== 'number' || isNaN(clienteId) || clienteId <= 0) {
-    console.error('ID de cliente inválido:', clienteId);
-    this.obtenerPlanesYAvanzar();
-    return;
+    });
   }
-
-  const vendorId = this.authService.currentUserValue?.id;
-
-  if (!vendorId) {
-    console.error("ID de vendor no disponible");
-    this.obtenerPlanesYAvanzar();
-    return;
-  }
-
-  console.log(`Asignando vendor ${vendorId} al cliente ${clienteId}`);
-
-  this.clienteVendorService.asignarVendorACliente(clienteId, vendorId).subscribe({
-    next: (resultado) => {
-      console.log("Vendor asignado exitosamente al cliente:", resultado);
-      this.obtenerPlanesYAvanzar();
-    },
-    error: (error) => {
-      console.error("Error al asignar vendor:", error);
-      // Continuar de todas formas
-      this.obtenerPlanesYAvanzar();
-    }
-  });
-}
 
   private obtenerPlanesYAvanzar() {
     if (!this.subcanalSeleccionado || !this.wizardData.monto || !this.wizardData.plazo) {
@@ -309,12 +323,22 @@ private asignarVendorACliente(clienteId: number) {
 
       // Calcular cuota para cada plan
       const planesConCuotas = planesAplicables.map(plan => {
-        const cuota = this.cotizadorService.calcularCuota(
+        // Verifica si hay comisión del subcanal
+        const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
+
+        // Calcular cuota básica
+        let cuota = this.cotizadorService.calcularCuota(
           this.wizardData.monto!,
           this.wizardData.plazo!,
           plan.tasa,
           this.gastosSeleccionados
         );
+
+        // Aplicar comisión del subcanal si existe
+        if (comisionSubcanal > 0) {
+          cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
+          console.log(`Aplicando comisión de subcanal ${comisionSubcanal}%: cuota final=${cuota}`);
+        }
 
         return {
           ...plan,
@@ -324,10 +348,22 @@ private asignarVendorACliente(clienteId: number) {
 
       console.log('Planes con cuotas calculadas:', planesConCuotas);
 
-      // Guardar planes y avanzar al paso 3
+      // Guardar planes en el wizard
       this.wizardData.planesDisponibles = planesConCuotas;
-      this.wizardData.paso = 3;
-      this.cargando = false;
+
+      // Seleccionar el plan con mejor tasa por defecto (normalmente el primero)
+      const planSeleccionado = planesConCuotas[0];
+
+      // Crear la operación inmediatamente antes de avanzar al paso 3
+      this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then(() => {
+        // Una vez creada la operación, avanzar al paso 3
+        this.wizardData.paso = 3;
+        this.cargando = false;
+      }).catch(error => {
+        console.error('Error al crear la operación:', error);
+        this.error = "Hubo un problema al crear la operación. Por favor, intenta nuevamente.";
+        this.cargando = false;
+      });
     } else {
       console.error('No hay información de planes en el subcanal seleccionado');
       this.error = "No se encontraron planes disponibles para el subcanal seleccionado.";
@@ -379,40 +415,80 @@ private asignarVendorACliente(clienteId: number) {
       return;
     }
 
-    // Preparar los datos del cliente
-    const clienteData = {
-      nombre: this.wizardData.clienteNombre || "",
-      apellido: this.wizardData.clienteApellido || "",
-      whatsapp: this.wizardData.clienteWhatsapp || "",
-      telefono: this.wizardData.clienteWhatsapp || "",
-      email: this.wizardData.clienteEmail || "",
-      dni: this.wizardData.clienteDni || "",
-      cuil: this.wizardData.clienteCuil || ""
-    };
+    // Enviamos el WhatsApp directamente (la operación ya fue creada en el paso anterior)
+    this.enviarOfertaPorWhatsApp(planSeleccionado);
+    this.cargando = false;
+  }
 
-    // Preparar los datos de la operación
-    const operacionData = {
-      monto: this.wizardData.monto,
-      meses: this.wizardData.plazo,
-      tasa: planSeleccionado.tasa,
-      planId: planId,
-      subcanalId: this.subcanalSeleccionado,
-      canalId: this.subcanalSeleccionadoInfo?.canalId || 0
-    };
+  // Método para crear operación (devuelve una promesa)
+  private crearOperacion(planId: number, tasa: number): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.wizardData.clienteId) {
+        // Si no tenemos ID de cliente, vamos a crear uno junto con la operación
+        // Preparar los datos del cliente
+        const clienteData = {
+          nombre: this.wizardData.clienteNombre || "",
+          apellido: this.wizardData.clienteApellido || "",
+          whatsapp: this.wizardData.clienteWhatsapp || "",
+          telefono: this.wizardData.clienteWhatsapp || "",
+          email: this.wizardData.clienteEmail || "",
+          dni: this.wizardData.clienteDni || "",
+          cuil: this.wizardData.clienteCuil || "",
+          sexo: this.wizardData.clienteSexo || "",
+          provincia: "",
+          estadoCivil: ""
+        };
 
-    // Crear cliente y operación en una sola llamada
-    this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
-      next: (operacionCreada) => {
-        console.log('Operación creada con éxito:', operacionCreada);
-        this.cargando = false;
+        // Preparar los datos de la operación
+        const operacionData = {
+          monto: this.wizardData.monto!,
+          meses: this.wizardData.plazo!,
+          tasa: tasa,
+          planId: planId,
+          subcanalId: this.subcanalSeleccionado!,
+          canalId: this.subcanalSeleccionadoInfo?.canalId || 0
+        };
 
-        // También enviamos por WhatsApp si es necesario
-        this.enviarOfertaPorWhatsApp(planSeleccionado);
-      },
-      error: (error) => {
-        console.error('Error al crear operación:', error);
-        this.error = "Error al guardar la oferta. Por favor, intenta nuevamente.";
-        this.cargando = false;
+        console.log('Creando cliente y operación con datos:', {
+          cliente: clienteData,
+          operacion: operacionData
+        });
+
+        // Crear cliente y operación en una sola llamada
+        this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
+          next: (operacionCreada) => {
+            console.log('Operación creada con éxito:', operacionCreada);
+            resolve(operacionCreada);
+          },
+          error: (error) => {
+            console.error('Error al crear operación:', error);
+            reject(error);
+          }
+        });
+      } else {
+        // Si ya tenemos ID de cliente, solo creamos la operación
+        const operacion: Operacion = {
+          monto: this.wizardData.monto!,
+          meses: this.wizardData.plazo!,
+          tasa: tasa,
+          clienteId: this.wizardData.clienteId,
+          planId: planId,
+          subcanalId: this.subcanalSeleccionado!,
+          canalId: this.subcanalSeleccionadoInfo?.canalId || 0
+        };
+
+        console.log('Creando operación con datos:', operacion);
+
+        this.operacionService.crearOperacion(operacion).subscribe({
+          next: (operacionCreada) => {
+            console.log('Operación creada con éxito:', operacionCreada);
+            resolve(operacionCreada);
+          },
+          error: (error) => {
+            console.error('Error al crear operación:', error);
+            reject(error);
+          }
+        });
       }
     });
   }
@@ -461,6 +537,7 @@ private asignarVendorACliente(clienteId: number) {
     this.wizardData = {
       paso: 1
     };
+    this.dataService.reiniciarDatos();
     this.cargarDatosIniciales();
   }
 }
