@@ -129,7 +129,7 @@ h1 {
   transition: background-color 0.15s ease;
 
   &:hover:not(:disabled) {
-    background-color: var(--primary-hover);
+    background-color: #1b85ffb2;
   }
 
   &:disabled {
