@@ -1,5 +1,3 @@
-// src/app/pages/canales/canales-lista/canales-lista.component.ts
-
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
@@ -14,7 +12,6 @@ import { ModalVerCanalComponent } from 'src/app/shared/modals/modal-ver-canal/mo
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { Router } from '@angular/router';
 
-// Tipo para ordenamiento
 interface SortState {
   column: string;
   direction: 'asc' | 'desc';
@@ -37,7 +34,7 @@ interface SortState {
 })
 export class CanalesListaComponent implements OnInit, OnDestroy {
   canales: Canal[] = [];
-  filteredCanales: Canal[] = []; // Lista filtrada para mostrar
+  filteredCanales: Canal[] = [];
   loading = true;
   error: string | null = null;
   modalOpen = false;
@@ -46,24 +43,22 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   canalIdEditar: number | null = null;
   canalIdVer: number | null = null;
 
+  loadingCanales: Map<number, boolean> = new Map();
+
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
 
-
-  // Búsqueda, filtrado y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
-  filterActive: string = 'all'; // 'all', 'active', 'inactive'
+  filterActive: string = 'all';
   sortState: SortState = { column: 'id', direction: 'asc' };
 
-  // Paginación
   paginaActual: number = 1;
   itemsPorPagina: number = 10;
   totalCanales: number = 0;
   totalPaginas: number = 1;
 
-  paginatedCanales: Canal[] = []; // Lista paginada para mostrar
-
+  paginatedCanales: Canal[] = [];
 
   constructor(
     private canalService: CanalService,
@@ -81,11 +76,9 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       }
     );
 
-    // Inicializar paginación
     this.paginaActual = 1;
     this.itemsPorPagina = 10;
 
-    // Load canales only once
     this.loadCanales();
   }
 
@@ -99,96 +92,80 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       if (this.isSidebarCollapsed) {
-        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+        contentArea.style.marginLeft = '70px';
       } else {
-        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+        contentArea.style.marginLeft = '260px';
       }
     }
   }
 
   loadCanales() {
     this.loading = true;
-    console.log('Loading canales...');
     this.canalService.getCanales().subscribe({
       next: (data) => {
-        console.log(`Loaded ${data.length} canales`);
         this.canales = data;
         this.totalCanales = data.length;
-        this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
+        this.applyFilters();
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error al cargar canales:', err);
         this.error = 'No se pudieron cargar los canales. Por favor, intente nuevamente.';
         this.loading = false;
       }
     });
   }
 
-  // Funciones para búsqueda
   onSearchChange() {
-    // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
-      this.paginaActual = 1; // Volver a la primera página al buscar
+      this.paginaActual = 1;
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
     this.searchTerm = '';
-    this.paginaActual = 1; // Volver a la primera página al limpiar la búsqueda
+    this.paginaActual = 1;
     this.applyFilters();
   }
-  // Aplicar filtros, búsqueda y ordenamiento a la lista
+
   applyFilters() {
-    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.canales];
 
-    // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 2) {
       const term = this.searchTerm.toLowerCase();
-      console.log(`Filtering by term: "${term}"`);
       result = result.filter(canal =>
         canal.nombreFantasia?.toLowerCase().includes(term) ||
         canal.razonSocial?.toLowerCase().includes(term) ||
         canal.tipoCanal?.toLowerCase().includes(term) ||
         (canal.provincia && canal.provincia.toLowerCase().includes(term))
       );
-      console.log(`After filtering: ${result.length} results`);
     }
 
-    // Aplicar filtro por estado
     if (this.filterActive === 'active') {
       result = result.filter(canal => canal.activo);
     } else if (this.filterActive === 'inactive') {
       result = result.filter(canal => !canal.activo);
     }
 
-    // Aplicar ordenamiento si está configurado
     if (this.sortState.column) {
       result = this.sortData(result);
     }
 
-    // Actualizar canales filtrados
     this.filteredCanales = result;
-    console.log(`Final filtered results: ${this.filteredCanales.length}`);
-
-    // Actualizar total de canales y recalcular paginación
     this.totalCanales = this.filteredCanales.length;
     this.calcularTotalPaginas();
     this.paginarCanales();
   }
+
   calcularTotalPaginas() {
     this.totalPaginas = Math.ceil(this.filteredCanales.length / this.itemsPorPagina);
 
-    // Si la página actual es mayor que el total de páginas, ir a la última página
     if (this.paginaActual > this.totalPaginas) {
       this.paginaActual = Math.max(1, this.totalPaginas);
     }
   }
 
-  // Paginar los canales
   paginarCanales() {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
     const fin = Math.min(inicio + this.itemsPorPagina, this.filteredCanales.length);
@@ -196,12 +173,9 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     this.paginatedCanales = this.filteredCanales.slice(inicio, fin);
   }
 
-  // Cambiar de página
   cambiarPagina(pagina: any) {
-    // Asegurarse de que pagina es un número
     const paginaNum = Number(pagina);
 
-    // Verificar si es un número válido
     if (isNaN(paginaNum) || paginaNum < 1 || paginaNum > this.totalPaginas) {
       return;
     }
@@ -210,92 +184,68 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     this.paginarCanales();
   }
 
-  // Obtener el array de páginas a mostrar (con elipsis para muchas páginas)
   obtenerPaginas(): (number | string)[] {
-    const paginasMostradas = 5; // Número máximo de páginas a mostrar
+    const paginasMostradas = 5;
     let paginas: (number | string)[] = [];
 
     if (this.totalPaginas <= paginasMostradas) {
-      // Si hay pocas páginas, mostrar todas
       for (let i = 1; i <= this.totalPaginas; i++) {
         paginas.push(i);
       }
     } else {
-      // Si hay muchas páginas, mostrar con elipsis
-
-      // Siempre incluir la primera página
       paginas.push(1);
 
-      // Calcular inicio y fin del rango central
       let inicio = Math.max(2, this.paginaActual - 1);
       let fin = Math.min(this.totalPaginas - 1, this.paginaActual + 1);
 
-      // Ajustar para mostrar siempre 3 páginas en el centro
       if (inicio === 2) fin = Math.min(4, this.totalPaginas - 1);
       if (fin === this.totalPaginas - 1) inicio = Math.max(2, this.totalPaginas - 3);
 
-      // Agregar elipsis antes del rango si es necesario
       if (inicio > 2) paginas.push('...');
 
-      // Agregar el rango de páginas
       for (let i = inicio; i <= fin; i++) {
         paginas.push(i);
       }
 
-      // Agregar elipsis después del rango si es necesario
       if (fin < this.totalPaginas - 1) paginas.push('...');
 
-      // Siempre incluir la última página
       paginas.push(this.totalPaginas);
     }
 
     return paginas;
   }
 
-
-
-
-  // Resto del código permanece igual...
-
-  // Ordenar los datos según la columna seleccionada
   sortData(data: Canal[]): Canal[] {
     const { column, direction } = this.sortState;
     const factor = direction === 'asc' ? 1 : -1;
 
     return [...data].sort((a: any, b: any) => {
-      // Para ordenar por ID (numérico)
       if (column === 'id') {
         return (a.id - b.id) * factor;
       }
-      // Para texto (nombre, provincia)
       else if (column === 'nombreFantasia' || column === 'tipoCanal') {
         const valueA = (a[column] || '').toLowerCase();
         const valueB = (b[column] || '').toLowerCase();
         return valueA.localeCompare(valueB) * factor;
       }
-      // Para ordenar por estado (activo/inactivo)
       else if (column === 'activo') {
         return (a[column] === b[column] ? 0 : a[column] ? -1 : 1) * factor;
       }
-      // Para ordenar por cantidad de planes
       else if (column === 'planes') {
         const countA = this.getPlanesCantidad(a);
         const countB = this.getPlanesCantidad(b);
         return (countA - countB) * factor;
       }
-      // Para ordenar por cantidad de subcanales
       else if (column === 'subcanales') {
         const countA = this.getSubcanalesCantidad(a);
         const countB = this.getSubcanalesCantidad(b);
         return (countA - countB) * factor;
       }
-      // Para ordenar por fecha de alta
       else if (column === 'fechaAlta') {
         const dateA = a.fechaAlta ? new Date(a.fechaAlta).getTime() : 0;
         const dateB = b.fechaAlta ? new Date(b.fechaAlta).getTime() : 0;
         return (dateA - dateB) * factor;
       }
-      // Para ordenar por operaciones
       else if (column === 'operaciones') {
         const countA = a.numeroOperaciones || 0;
         const countB = b.numeroOperaciones || 0;
@@ -307,18 +257,16 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   }
 
   sortBy(column: string) {
-    // Si es la misma columna, cambiar dirección, si no, ordenar asc por la nueva columna
     if (this.sortState.column === column) {
       this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortState = { column, direction: 'asc' };
     }
 
-    this.paginaActual = 1; // Volver a la primera página al cambiar el ordenamiento
+    this.paginaActual = 1;
     this.applyFilters();
   }
 
-  // Obtener el icono para la columna de ordenamiento
   getSortIcon(column: string): string {
     if (this.sortState.column !== column) {
       return 'bi-arrow-down-up text-muted';
@@ -329,7 +277,52 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       : 'bi-sort-up-alt';
   }
 
-  // Obtener iniciales para el avatar
+  getEstadoClass(activo: boolean): string {
+    return activo ? 'badge-success' : 'badge-danger';
+  }
+
+  isCanalLoading(canalId: number): boolean {
+    return this.loadingCanales.get(canalId) === true;
+  }
+
+  toggleCanalEstado(canal: Canal): void {
+    this.loadingCanales.set(canal.id, true);
+
+    const request = canal.activo
+      ? this.canalService.desactivarCanal(canal.id)
+      : this.canalService.activarCanal(canal.id);
+
+    request.subscribe({
+      next: (canalActualizado) => {
+        this.canales = this.canales.map(c => {
+          if (c.id === canal.id) {
+            return {...c, activo: !canal.activo};
+          }
+          return c;
+        });
+
+        this.filteredCanales = this.filteredCanales.map(c => {
+          if (c.id === canal.id) {
+            return {...c, activo: !canal.activo};
+          }
+          return c;
+        });
+
+        this.paginatedCanales = this.paginatedCanales.map(c => {
+          if (c.id === canal.id) {
+            return {...c, activo: !canal.activo};
+          }
+          return c;
+        });
+
+        this.loadingCanales.set(canal.id, false);
+      },
+      error: (err) => {
+        this.loadingCanales.set(canal.id, false);
+      }
+    });
+  }
+
   getInitials(name: string): string {
     if (!name) return '';
 
@@ -341,88 +334,68 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     return name.substring(0, 2).toUpperCase();
   }
 
-  // Navegar al detalle del canal
   verDetalle(id: number): void {
     this.router.navigate(['/canales', id]);
   }
 
-  // Abrir modal para editar canal
   abrirModalEditarCanal(id: number): void {
     this.canalIdEditar = id;
     this.modalEditarOpen = true;
     this.manejarAperturaModal();
   }
 
-  // Cierra el modal de visualización
   cerrarModalVer() {
     this.modalVerOpen = false;
     this.canalIdVer = null;
     this.manejarCierreModal();
   }
 
-  // Cierra el modal de edición
   cerrarModalEditar() {
     this.modalEditarOpen = false;
     this.canalIdEditar = null;
     this.manejarCierreModal();
   }
 
-  // Maneja la solicitud de edición desde el modal de visualización
   onEditarSolicitado(id: number) {
-    // Cerrar modal de visualización
     this.modalVerOpen = false;
     this.canalIdVer = null;
 
-    // Abrir modal de edición
     setTimeout(() => {
       this.abrirModalEditarCanal(id);
-    }, 300); // Pequeño retraso para evitar superposición de modales
+    }, 300);
   }
 
-  // Devuelve el conteo de planes activos
   getPlanesCantidad(canal: Canal): number {
     return canal.planesCanal?.filter(pc => pc.activo)?.length || 0;
   }
 
-  // Devuelve la cantidad de subcanales
   getSubcanalesCantidad(canal: Canal): number {
     return canal.subcanales?.length || 0;
   }
 
-  // Devuelve la clase CSS según el estado
-  getEstadoClass(activo: boolean): string {
-    return activo ? 'badge-success' : 'badge-danger';
-  }
-
-  // Abre el modal para nuevo canal
   abrirModalNuevoCanal() {
     this.modalOpen = true;
     this.manejarAperturaModal();
   }
 
-  // Cierra el modal de creación
   cerrarModal() {
     this.modalOpen = false;
     this.manejarCierreModal();
   }
 
-  // Maneja la creación de un canal
   onCanalCreado(canal: Canal) {
-    this.paginaActual = 1; // Volver a la primera página
-    this.loadCanales(); // Recargar lista completa para asegurar datos actualizados
-  }
-  // Maneja la actualización de un canal
-  onCanalActualizado(canal: Canal) {
-    this.loadCanales(); // Recargar lista completa para asegurar datos actualizados
+    this.paginaActual = 1;
+    this.loadCanales();
   }
 
-  // Funciones helper para manejar estilos del body
+  onCanalActualizado(canal: Canal) {
+    this.loadCanales();
+  }
+
   private manejarAperturaModal() {
-    // Añadir clase al cuerpo para mantener la barra de desplazamiento
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       this.renderer.addClass(contentArea, 'content-area-with-modal');
-      // Fijar la posición del body para evitar desplazamiento
       this.renderer.setStyle(document.body, 'position', 'fixed');
       this.renderer.setStyle(document.body, 'width', '100%');
       this.renderer.setStyle(document.body, 'overflow-y', 'scroll');
@@ -430,7 +403,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   }
 
   private manejarCierreModal() {
-    // Solo restaurar si no hay ningún otro modal abierto
     if (!this.modalOpen && !this.modalEditarOpen && !this.modalVerOpen) {
       const contentArea = document.querySelector('.content-area') as HTMLElement;
       if (contentArea) {
@@ -441,6 +413,4 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       }
     }
   }
-
-
 }

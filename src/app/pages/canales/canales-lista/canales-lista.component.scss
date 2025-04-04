@@ -300,3 +300,23 @@
   }
 }
 
+.badge {
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+}
+
+.badge.cursor-pointer {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.badge.cursor-pointer:hover {
+  opacity: 0.8;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}

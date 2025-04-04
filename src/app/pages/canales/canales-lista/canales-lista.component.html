@@ -117,8 +117,9 @@
                   <span class="badge badge-light-info">{{ canal.tipoCanal }}</span>
                 </td>
                 <td>
-                  <div class="badge" [ngClass]="getEstadoClass(canal.activo)">
-                    {{ canal.activo ? 'Activo' : 'Inactivo' }}
+                  <div class="badge cursor-pointer" [ngClass]="getEstadoClass(canal.activo)" (click)="toggleCanalEstado(canal)">
+                    <span *ngIf="!isCanalLoading(canal.id)">{{ canal.activo ? 'Activo' : 'Inactivo' }}</span>
+                    <span *ngIf="isCanalLoading(canal.id)" class="spinner-border spinner-border-sm" role="status"></span>
                   </div>
                 </td>
                 <td class="text-center">
