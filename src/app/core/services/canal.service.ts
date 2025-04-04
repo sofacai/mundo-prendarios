@@ -217,4 +217,13 @@ export class CanalService {
       'Authorization': `Bearer ${token}`
     });
   }
+
+  // Añadir al final de CanalService antes del cierre de la clase
+uploadCanalImage(formData: FormData): Observable<{imageUrl: string}> {
+  const token = this.authService.getToken();
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`
+  });
+  return this.http.post<{imageUrl: string}>(`${this.apiUrl}/upload-image`, formData, { headers });
+}
 }
