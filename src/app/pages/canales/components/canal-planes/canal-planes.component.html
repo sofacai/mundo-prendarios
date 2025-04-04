@@ -32,14 +32,15 @@
                 <th>Montos</th>
                 <th>Tasa</th>
                 <th>Cuotas</th>
-                <th>Estado</th>
                 <th class="text-center">Eliminar</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let planCanal of canal.planesCanal">
                 <td>
-                  <div class="fw-bold">{{ planCanal.plan.nombre }}</div>
+                  <div class="fw-bold cursor-pointer text-hover-primary" (click)="onVerDetalle(planCanal.planId)">
+                    {{ planCanal.plan.nombre }}
+                  </div>
                 </td>
                 <td>
                   {{ planCanal.plan.fechaInicioStr }} - {{ planCanal.plan.fechaFinStr }}
@@ -55,13 +56,7 @@
                     </span>
                   </div>
                 </td>
-                <td>
-                  <div class="badge cursor-pointer"
-                       [ngClass]="getEstadoClass(planCanal.activo)"
-                       (click)="onToggleEstado(planCanal.id, planCanal.activo)">
-                    {{ planCanal.activo ? "Activo" : "Inactivo" }}
-                  </div>
-                </td>
+
                 <td class="text-center">
                   <button class="btn-action btn-eliminar" title="Eliminar plan" (click)="onDesasignarPlan(planCanal.id)">
                     <i class="bi bi-trash"></i>

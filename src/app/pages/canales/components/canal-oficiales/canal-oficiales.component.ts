@@ -15,11 +15,17 @@ export class CanalOficialesComponent {
   @Input() error: string | null = null;
 
   @Output() toggleEstado = new EventEmitter<{oficialId: number, estadoActual: boolean}>();
+  @Output() verDetalle = new EventEmitter<number>();
+
 
   constructor() { }
 
   onToggleEstado(oficialId: number, estadoActual: boolean): void {
     this.toggleEstado.emit({ oficialId, estadoActual });
+  }
+
+  onVerDetalle(oficialId: number): void {
+    this.verDetalle.emit(oficialId);
   }
 
   getEstadoClass(activo: boolean): string {

@@ -503,16 +503,11 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
 
   // Método para ver detalle de un plan
   verDetallePlan(planId: number): void {
-    // Implementar navegación al detalle del plan
-    console.log('Ver detalle del plan:', planId);
-    // this.router.navigate(['/planes', planId]);
+    this.router.navigate(['/planes', planId]);
   }
 
-  // Método para ver detalle de una operación
   verDetalleOperacion(operacionId: number): void {
-    // Implementar navegación al detalle de la operación
-    console.log('Ver detalle de la operación:', operacionId);
-    // this.router.navigate(['/operaciones', operacionId]);
+    this.router.navigate(['/operaciones', operacionId]);
   }
 
   // Método para filtrar operaciones
@@ -524,8 +519,12 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
 
   // Método para ver detalle de un vendedor
   verDetalleVendedor(vendorId: number): void {
-    // Implementar navegación al detalle del vendedor
-    console.log('Ver detalle del vendedor:', vendorId);
-    // this.router.navigate(['/usuarios', vendorId]);
+    this.router.navigate(['/usuarios', vendorId]);
   }
+
+  // Método para ver detalle de un usuario (oficial comercial)
+  verDetalleUsuario(userId: number): void {
+    this.router.navigate(['/usuarios', userId]);
+  }
+
 }

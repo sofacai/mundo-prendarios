@@ -56,6 +56,15 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   filterActive: string = 'all'; // 'all', 'active', 'inactive'
   sortState: SortState = { column: 'id', direction: 'asc' };
 
+  // Paginación
+  paginaActual: number = 1;
+  itemsPorPagina: number = 10;
+  totalCanales: number = 0;
+  totalPaginas: number = 1;
+
+  paginatedCanales: Canal[] = []; // Lista paginada para mostrar
+
+
   constructor(
     private canalService: CanalService,
     private renderer: Renderer2,
@@ -71,6 +80,10 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
         this.adjustContentArea();
       }
     );
+
+    // Inicializar paginación
+    this.paginaActual = 1;
+    this.itemsPorPagina = 10;
 
     // Load canales only once
     this.loadCanales();
@@ -100,6 +113,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       next: (data) => {
         console.log(`Loaded ${data.length} canales`);
         this.canales = data;
+        this.totalCanales = data.length;
         this.applyFilters(); // Aplicar filtros y ordenamiento iniciales
         this.loading = false;
       },
@@ -116,17 +130,16 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
-      console.log(`Searching for: "${this.searchTerm}"`);
+      this.paginaActual = 1; // Volver a la primera página al buscar
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
-    console.log('Clearing search');
     this.searchTerm = '';
+    this.paginaActual = 1; // Volver a la primera página al limpiar la búsqueda
     this.applyFilters();
   }
-
   // Aplicar filtros, búsqueda y ordenamiento a la lista
   applyFilters() {
     console.log('Applying filters. Search term:', this.searchTerm);
@@ -157,9 +170,90 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       result = this.sortData(result);
     }
 
+    // Actualizar canales filtrados
     this.filteredCanales = result;
     console.log(`Final filtered results: ${this.filteredCanales.length}`);
+
+    // Actualizar total de canales y recalcular paginación
+    this.totalCanales = this.filteredCanales.length;
+    this.calcularTotalPaginas();
+    this.paginarCanales();
   }
+  calcularTotalPaginas() {
+    this.totalPaginas = Math.ceil(this.filteredCanales.length / this.itemsPorPagina);
+
+    // Si la página actual es mayor que el total de páginas, ir a la última página
+    if (this.paginaActual > this.totalPaginas) {
+      this.paginaActual = Math.max(1, this.totalPaginas);
+    }
+  }
+
+  // Paginar los canales
+  paginarCanales() {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    const fin = Math.min(inicio + this.itemsPorPagina, this.filteredCanales.length);
+
+    this.paginatedCanales = this.filteredCanales.slice(inicio, fin);
+  }
+
+  // Cambiar de página
+  cambiarPagina(pagina: any) {
+    // Asegurarse de que pagina es un número
+    const paginaNum = Number(pagina);
+
+    // Verificar si es un número válido
+    if (isNaN(paginaNum) || paginaNum < 1 || paginaNum > this.totalPaginas) {
+      return;
+    }
+
+    this.paginaActual = paginaNum;
+    this.paginarCanales();
+  }
+
+  // Obtener el array de páginas a mostrar (con elipsis para muchas páginas)
+  obtenerPaginas(): (number | string)[] {
+    const paginasMostradas = 5; // Número máximo de páginas a mostrar
+    let paginas: (number | string)[] = [];
+
+    if (this.totalPaginas <= paginasMostradas) {
+      // Si hay pocas páginas, mostrar todas
+      for (let i = 1; i <= this.totalPaginas; i++) {
+        paginas.push(i);
+      }
+    } else {
+      // Si hay muchas páginas, mostrar con elipsis
+
+      // Siempre incluir la primera página
+      paginas.push(1);
+
+      // Calcular inicio y fin del rango central
+      let inicio = Math.max(2, this.paginaActual - 1);
+      let fin = Math.min(this.totalPaginas - 1, this.paginaActual + 1);
+
+      // Ajustar para mostrar siempre 3 páginas en el centro
+      if (inicio === 2) fin = Math.min(4, this.totalPaginas - 1);
+      if (fin === this.totalPaginas - 1) inicio = Math.max(2, this.totalPaginas - 3);
+
+      // Agregar elipsis antes del rango si es necesario
+      if (inicio > 2) paginas.push('...');
+
+      // Agregar el rango de páginas
+      for (let i = inicio; i <= fin; i++) {
+        paginas.push(i);
+      }
+
+      // Agregar elipsis después del rango si es necesario
+      if (fin < this.totalPaginas - 1) paginas.push('...');
+
+      // Siempre incluir la última página
+      paginas.push(this.totalPaginas);
+    }
+
+    return paginas;
+  }
+
+
+
 
   // Resto del código permanece igual...
 
@@ -212,7 +306,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Cambiar el ordenamiento cuando se hace clic en una columna
   sortBy(column: string) {
     // Si es la misma columna, cambiar dirección, si no, ordenar asc por la nueva columna
     if (this.sortState.column === column) {
@@ -221,6 +314,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       this.sortState = { column, direction: 'asc' };
     }
 
+    this.paginaActual = 1; // Volver a la primera página al cambiar el ordenamiento
     this.applyFilters();
   }
 
@@ -314,9 +408,9 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
   // Maneja la creación de un canal
   onCanalCreado(canal: Canal) {
+    this.paginaActual = 1; // Volver a la primera página
     this.loadCanales(); // Recargar lista completa para asegurar datos actualizados
   }
-
   // Maneja la actualización de un canal
   onCanalActualizado(canal: Canal) {
     this.loadCanales(); // Recargar lista completa para asegurar datos actualizados
@@ -347,4 +441,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+
 }

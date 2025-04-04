@@ -21,7 +21,7 @@
           <tr *ngFor="let vendor of vendedores">
             <td>{{ vendor.id }}</td>
             <td>
-              <div class="fw-bold">
+              <div class="fw-bold cursor-pointer text-hover-primary" (click)="onVerDetalle(vendor.id)">
                 {{ vendor.nombre }} {{ vendor.apellido }}
               </div>
             </td>

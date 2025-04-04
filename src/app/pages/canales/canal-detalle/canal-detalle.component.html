@@ -73,6 +73,7 @@
                     [loading]="loadingOficiales"
                     [error]="errorOficiales"
                     (toggleEstado)="toggleOficialEstado($event.oficialId, $event.estadoActual)"
+                    (verDetalle)="verDetalleUsuario($event)"
                   ></app-canal-oficiales>
                 </div>
               </div>

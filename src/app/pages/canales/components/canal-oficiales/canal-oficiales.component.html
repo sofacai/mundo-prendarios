@@ -39,7 +39,7 @@
             <tr *ngFor="let oficial of oficialesComerciales">
               <td>
                 <div class="oficial-info">
-                  <div class="fw-bold">
+                  <div class="fw-bold cursor-pointer text-hover-primary" (click)="onVerDetalle(oficial.oficialComercialId)">
                     {{ oficial.oficialComercialNombre }}
                   </div>
                 </div>

@@ -26,8 +26,11 @@
         <tbody>
           <tr *ngFor="let op of operaciones">
             <td>{{ op.id }}</td>
-            <td>{{ op.clienteNombre || "N/A" }}</td>
-            <td>{{ op.monto | currency }}</td>
+            <td>
+              <span class="cursor-pointer text-hover-primary" (click)="onVerDetalle(op.id || 0)">
+                {{ op.clienteNombre || "N/A" }}
+              </span>
+            </td>            <td>{{ op.monto | currency }}</td>
             <td>{{ op.meses }}</td>
             <td>{{ op.tasa }}%</td>
             <td>{{ op.fechaCreacion | date : "dd/MM/yyyy" }}</td>
