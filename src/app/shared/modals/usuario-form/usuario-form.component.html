@@ -46,7 +46,13 @@
 
             <div class="form-group">
               <label>Teléfono <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="telefono">
+              <input
+                type="text"
+                class="form-control"
+                formControlName="telefono"
+                (focus)="onTelefonoFocus($event)"
+                (input)="onTelefonoInput($event)"
+                (blur)="onTelefonoBlur($event)">
               <small class="text-danger" *ngIf="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched">
                 Campo requerido
               </small>

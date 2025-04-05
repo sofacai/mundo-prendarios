@@ -82,15 +82,6 @@
                   Rol
                   <i class="bi" [ngClass]="getSortIcon('rolId')"></i>
                 </th>
-                <!-- Nuevas columnas -->
-                <th (click)="sortBy('fechaAlta')" class="sortable-header">
-                  Alta
-                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
-                </th>
-                <th (click)="sortBy('fechaUltimaOperacion')" class="sortable-header">
-                  Ult. Operación
-                  <i class="bi" [ngClass]="getSortIcon('fechaUltimaOperacion')"></i>
-                </th>
                 <th (click)="sortBy('cantidadOperaciones')" class="sortable-header">
                   Cant. Operaciones
                   <i class="bi" [ngClass]="getSortIcon('cantidadOperaciones')"></i>
@@ -102,13 +93,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let usuario of filteredUsuarios" (click)="verDetalle(usuario.id)" class="cursor-pointer">
+              <tr *ngFor="let usuario of paginatedUsuarios">
                 <td>{{ usuario.id }}</td>
                 <td>
                   <div style="display: block;">
-                    <span class="text-dark fw-bold text-hover-primary">
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(usuario.id)">
                       {{ usuario.nombre }} {{ usuario.apellido }}
-                    </span>
+                    </a>
                   </div>
                 </td>
                 <td>{{ usuario.email }}</td>
@@ -117,17 +108,15 @@
                     {{ usuario.rolNombre }}
                   </div>
                 </td>
-                <!-- Nuevas columnas con datos -->
-                <td>{{ usuario.fechaAlta | date:'dd/MM/yy' }}</td>
-                <td>{{ usuario.fechaUltimaOperacion | date:'dd/MM/yy' }}</td>
                 <td>
                   <span class="badge badge-light-primary">
                     {{ usuario.cantidadOperaciones }}
                   </span>
                 </td>
                 <td>
-                  <div class="badge" [ngClass]="getEstadoClass(usuario.activo)">
-                    {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                  <div class="badge cursor-pointer" [ngClass]="getEstadoClass(usuario.activo)" (click)="toggleUsuarioEstado(usuario)">
+                    <span *ngIf="!isUsuarioLoading(usuario.id)">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span>
+                    <span *ngIf="isUsuarioLoading(usuario.id)" class="spinner-border spinner-border-sm" role="status"></span>
                   </div>
                 </td>
               </tr>
@@ -150,13 +139,11 @@
               </button>
             </div>
           </div>
-        </div>
 
-      <!-- Agregar antes del cierre de div.table-responsive -->
           <!-- Paginación y contador de usuarios -->
           <div class="pagination-container" *ngIf="filteredUsuarios.length > 0">
             <!-- Contador de usuarios -->
-            <div class="canales-count mb-3 text-start">
+            <div class="canales-count mb-3">
               Mostrando {{ paginatedUsuarios.length }} de {{ totalUsuarios }} usuarios
             </div>
 
@@ -182,6 +169,7 @@
               </a>
             </div>
           </div>
+        </div>
       </div>
     </div>
   </div>

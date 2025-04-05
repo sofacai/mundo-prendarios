@@ -12,7 +12,6 @@ import { ModalEditarUsuarioComponent } from 'src/app/shared/modals/modal-editar-
 import { ModalVerUsuarioComponent } from 'src/app/shared/modals/modal-ver-usuario/modal-ver-usuario.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
-// Tipo para ordenamiento
 interface SortState {
   column: string;
   direction: 'asc' | 'desc';
@@ -35,7 +34,8 @@ interface SortState {
 })
 export class UsuariosListaComponent implements OnInit, OnDestroy {
   usuarios: UsuarioDto[] = [];
-  filteredUsuarios: UsuarioDto[] = []; // Lista filtrada para mostrar
+  filteredUsuarios: UsuarioDto[] = [];
+  paginatedUsuarios: UsuarioDto[] = [];
   loading = true;
   error: string | null = null;
   modalOpen = false;
@@ -43,9 +43,8 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   modalVerOpen = false;
   usuarioIdEditar: number | null = null;
   usuarioIdVer: number | null = null;
-  scrollbarWidth: number = 0;
+  loadingUsuarios: Map<number, boolean> = new Map();
 
-  // Sidebar collapsed state
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
   sidebarLayoutLocked = false;
@@ -54,14 +53,11 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   itemsPorPagina: number = 10;
   totalUsuarios: number = 0;
   totalPaginas: number = 1;
-  paginatedUsuarios: UsuarioDto[] = [];
 
-
-  // Búsqueda y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
-  filterActive: string = 'all'; // 'all', 'active', 'inactive'
-  sortState: SortState = { column: '', direction: 'asc' };
+  filterActive: string = 'all';
+  sortState: SortState = { column: 'id', direction: 'asc' };
 
   constructor(
     private usuarioService: UsuarioService,
@@ -71,24 +67,20 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    // Lock sidebar state immediately
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarLayoutLocked = true;
     this.adjustContentArea();
 
-    // Subscribe for future changes only
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
       collapsed => {
         if (!this.sidebarLayoutLocked) {
-          // Only update if not loading data
           this.isSidebarCollapsed = collapsed;
           this.adjustContentArea();
         }
       }
     );
 
-    // Now load data when layout is established
-    this.loadUsuarios(); // Replace with your load method
+    this.loadUsuarios();
   }
 
   ngOnDestroy() {
@@ -101,9 +93,9 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       if (this.isSidebarCollapsed) {
-        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+        contentArea.style.marginLeft = '70px';
       } else {
-        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+        contentArea.style.marginLeft = '260px';
       }
     }
   }
@@ -111,8 +103,6 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   loadUsuarios() {
     this.loading = true;
     this.error = null;
-
-    // Lock sidebar during loading
     this.sidebarLayoutLocked = true;
 
     this.usuarioService.getUsuarios().subscribe({
@@ -120,14 +110,11 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
         this.usuarios = data;
         this.applyFilters();
         this.loading = false;
-        // Unlock sidebar when done
         this.sidebarLayoutLocked = false;
       },
       error: (err) => {
-        console.error('Error al cargar xxx:', err);
-        this.error = 'No se pudieron cargar los xxx. Por favor, intente nuevamente.';
+        this.error = 'No se pudieron cargar los usuarios. Por favor, intente nuevamente.';
         this.loading = false;
-        // Unlock sidebar when done
         this.sidebarLayoutLocked = false;
       }
     });
@@ -147,31 +134,28 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  // Aplicar filtros y ordenamiento a la lista
   applyFilters() {
-    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.usuarios];
 
-    // Aplicar búsqueda si hay término
-    if (this.searchTerm && this.searchTerm.length >= 3) {
-      const term = this.searchTerm.toLowerCase();
-      console.log(`Filtering by term: "${term}"`);
+    // Modificar la búsqueda para permitir términos más cortos y búsquedas parciales
+    if (this.searchTerm && this.searchTerm.length >= 1) {
+      const term = this.searchTerm.toLowerCase().trim();
       result = result.filter(usuario =>
-        usuario.nombre?.toLowerCase().includes(term) ||
-        usuario.apellido?.toLowerCase().includes(term) ||
-        usuario.email?.toLowerCase().includes(term)
+        // Buscar en el nombre completo (nombre + apellido)
+        `${usuario.nombre || ''} ${usuario.apellido || ''}`.toLowerCase().includes(term) ||
+        // También buscar en campos individuales
+        (usuario.nombre && usuario.nombre.toLowerCase().includes(term)) ||
+        (usuario.apellido && usuario.apellido.toLowerCase().includes(term)) ||
+        (usuario.email && usuario.email.toLowerCase().includes(term))
       );
-      console.log(`After filtering: ${result.length} results`);
     }
 
-    // Aplicar filtro por estado
     if (this.filterActive === 'active') {
       result = result.filter(usuario => usuario.activo);
     } else if (this.filterActive === 'inactive') {
       result = result.filter(usuario => !usuario.activo);
     }
 
-    // Aplicar ordenamiento si está configurado
     if (this.sortState.column) {
       result = this.sortData(result);
     }
@@ -182,49 +166,28 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     this.paginarUsuarios();
   }
 
-  // Ordenar los datos según la columna seleccionada
   sortData(data: UsuarioDto[]): UsuarioDto[] {
     const { column, direction } = this.sortState;
     const factor = direction === 'asc' ? 1 : -1;
 
     return [...data].sort((a: any, b: any) => {
-      // Para ordenar por ID (numérico)
       if (column === 'id') {
         return (a.id - b.id) * factor;
       }
-      // Para ordenar por nombre (concatenando nombre y apellido)
       else if (column === 'nombre') {
         const nombreA = `${a.nombre || ''} ${a.apellido || ''}`.toLowerCase();
         const nombreB = `${b.nombre || ''} ${b.apellido || ''}`.toLowerCase();
         return nombreA.localeCompare(nombreB) * factor;
       }
-      // Para ordenar por email
       else if (column === 'email') {
         return (a.email || '').toLowerCase().localeCompare((b.email || '').toLowerCase()) * factor;
       }
-      // Para ordenar por rol (usando rolId numérico)
       else if (column === 'rolId') {
         return (a.rolId - b.rolId) * factor;
       }
-      // Para ordenar por estado (activo/inactivo)
       else if (column === 'activo') {
         return (a[column] === b[column] ? 0 : a[column] ? -1 : 1) * factor;
       }
-      // Para ordenar por fechaAlta
-      else if (column === 'fechaAlta') {
-        // Manejar caso donde alguna fecha pueda ser null o undefined
-        if (!a.fechaAlta) return factor; // Si a no tiene fecha, va al final
-        if (!b.fechaAlta) return -factor; // Si b no tiene fecha, va al final
-        return (new Date(a.fechaAlta).getTime() - new Date(b.fechaAlta).getTime()) * factor;
-      }
-      // Para ordenar por fechaUltimaOperacion
-      else if (column === 'fechaUltimaOperacion') {
-        // Manejar caso donde alguna fecha pueda ser null o undefined
-        if (!a.fechaUltimaOperacion) return factor;
-        if (!b.fechaUltimaOperacion) return -factor;
-        return (new Date(a.fechaUltimaOperacion).getTime() - new Date(b.fechaUltimaOperacion).getTime()) * factor;
-      }
-      // Para ordenar por cantidadOperaciones
       else if (column === 'cantidadOperaciones') {
         return (a.cantidadOperaciones - b.cantidadOperaciones) * factor;
       }
@@ -240,11 +203,10 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
       this.sortState = { column, direction: 'asc' };
     }
 
-    this.paginaActual = 1; // Resetear a primera página al ordenar
+    this.paginaActual = 1;
     this.applyFilters();
   }
 
-  // Obtener el icono para la columna de ordenamiento
   getSortIcon(column: string): string {
     if (this.sortState.column !== column) {
       return 'bi-arrow-down-up text-muted';
@@ -255,50 +217,60 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
       : 'bi-sort-up-alt';
   }
 
-  // Navegar al detalle del usuario
   verDetalle(id: number): void {
-    this.usuarioIdVer = id;
-    this.modalVerOpen = true;
-    this.manejarAperturaModal();
+    this.router.navigate(['/usuarios', id]);
   }
 
-  // Abrir modal para editar usuario
-  abrirModalEditarUsuario(id: number): void {
-    this.usuarioIdEditar = id;
-    this.modalEditarOpen = true;
-    this.manejarAperturaModal();
+  toggleUsuarioEstado(usuario: UsuarioDto): void {
+    this.loadingUsuarios.set(usuario.id, true);
+
+    const request = usuario.activo
+      ? this.usuarioService.desactivarUsuario(usuario.id)
+      : this.usuarioService.activarUsuario(usuario.id);
+
+    request.subscribe({
+      next: (usuarioActualizado) => {
+        this.usuarios = this.usuarios.map(u => {
+          if (u.id === usuario.id) {
+            return {...u, activo: !usuario.activo};
+          }
+          return u;
+        });
+
+        this.filteredUsuarios = this.filteredUsuarios.map(u => {
+          if (u.id === usuario.id) {
+            return {...u, activo: !usuario.activo};
+          }
+          return u;
+        });
+
+        this.paginarUsuarios();
+        this.loadingUsuarios.set(usuario.id, false);
+      },
+      error: (err) => {
+        this.loadingUsuarios.set(usuario.id, false);
+      }
+    });
   }
 
-  // Cierra el modal de visualización
-  cerrarModalVer() {
-    this.modalVerOpen = false;
-    this.usuarioIdVer = null;
-    this.manejarCierreModal();
+  isUsuarioLoading(usuarioId: number): boolean {
+    return this.loadingUsuarios.get(usuarioId) === true;
   }
 
-  // Cierra el modal de edición
-  cerrarModalEditar() {
-    this.modalEditarOpen = false;
-    this.usuarioIdEditar = null;
-    this.manejarCierreModal();
-  }
-
-  // Devuelve la clase CSS según el estado
   getEstadoClass(activo: boolean): string {
     return activo ? 'badge-success' : 'badge-danger';
   }
 
-  // Devuelve la clase CSS según el rol
   getRolClass(rolId: number): string {
     switch (rolId) {
-      case 1: // Admin
-        return '';  // Sin clase específica para Admin
-      case 2: // AdminCanal
-        return 'badge-light-info';  // Color azul claro para AdminCanal
-      case 3: // Vendor
-        return 'badge-light-warning';  // Color amarillo claro para Vendor
-      case 4: // OficialComercial - Agregado nuevo rol
-        return 'badge-light-primary';  // Color primario para OficialComercial
+      case 1:
+        return '';
+      case 2:
+        return 'badge-light-info';
+      case 3:
+        return 'badge-light-warning';
+      case 4:
+        return 'badge-light-primary';
       default:
         return '';
     }
@@ -360,46 +332,56 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
 
     return paginas;
   }
-  // Abre el modal para nuevo usuario
+
   abrirModalNuevoUsuario() {
     this.modalOpen = true;
     this.manejarAperturaModal();
   }
 
-  // Cierra el modal de creación
   cerrarModal() {
     this.modalOpen = false;
     this.manejarCierreModal();
   }
 
-  // Maneja la solicitud de edición desde el modal de visualización
+  abrirModalEditarUsuario(id: number): void {
+    this.usuarioIdEditar = id;
+    this.modalEditarOpen = true;
+    this.manejarAperturaModal();
+  }
+
+  cerrarModalVer() {
+    this.modalVerOpen = false;
+    this.usuarioIdVer = null;
+    this.manejarCierreModal();
+  }
+
+  cerrarModalEditar() {
+    this.modalEditarOpen = false;
+    this.usuarioIdEditar = null;
+    this.manejarCierreModal();
+  }
+
   onEditarSolicitado(id: number) {
-    // Cerrar modal de visualización
     this.modalVerOpen = false;
     this.usuarioIdVer = null;
 
-    // Abrir modal de edición
     setTimeout(() => {
       this.abrirModalEditarUsuario(id);
-    }, 300); // Pequeño retraso para evitar superposición de modales
+    }, 300);
   }
 
-  // Maneja la creación o edición de un usuario
   onUsuarioCreado(usuario: UsuarioDto) {
-    this.loadUsuarios(); // Recargar la lista completa para asegurar datos actualizados
+    this.loadUsuarios();
   }
 
   onUsuarioActualizado(usuario: UsuarioDto) {
-    this.loadUsuarios(); // Recargar la lista completa para asegurar datos actualizados
+    this.loadUsuarios();
   }
 
-  // Funciones helper para manejar estilos del body
   private manejarAperturaModal() {
-    // Añadir clase al cuerpo para mantener la barra de desplazamiento
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       this.renderer.addClass(contentArea, 'content-area-with-modal');
-      // Fijar la posición del body para evitar desplazamiento
       this.renderer.setStyle(document.body, 'position', 'fixed');
       this.renderer.setStyle(document.body, 'width', '100%');
       this.renderer.setStyle(document.body, 'overflow-y', 'scroll');
@@ -407,7 +389,6 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   }
 
   private manejarCierreModal() {
-    // Solo restaurar si no hay ningún otro modal abierto
     if (!this.modalOpen && !this.modalEditarOpen && !this.modalVerOpen) {
       const contentArea = document.querySelector('.content-area') as HTMLElement;
       if (contentArea) {

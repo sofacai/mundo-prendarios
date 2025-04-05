@@ -4,7 +4,6 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { IonicModule } from '@ionic/angular';
 import { UsuarioService, UsuarioCrearDto } from 'src/app/core/services/usuario.service';
 
-// Define la interfaz de roles con id y nombre
 interface Rol {
   id: number;
   nombre: string;
@@ -26,9 +25,11 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
   loading = false;
   error: string | null = null;
 
-  // Roles disponibles
+  private readonly phonePrefix = '+54 9 ';
+
   roles: Rol[] = [
     { id: 1, nombre: 'Admin' },
+    { id: 4, nombre: 'Oficial Comercial' },
     { id: 2, nombre: 'AdminCanal' },
     { id: 3, nombre: 'Vendor' }
   ];
@@ -52,32 +53,22 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
     if (changes['isOpen']) {
       if (changes['isOpen'].currentValue) {
         this.resetForm();
-        // Calculamos el ancho de la barra de desplazamiento
         const scrollWidth = window.innerWidth - document.documentElement.clientWidth;
-
-        // Añadir clase al body cuando se abre el modal
         this.renderer.addClass(document.body, 'modal-open');
-
-        // Establece un padding-right al body para compensar la barra de desplazamiento
         this.renderer.setStyle(document.body, 'padding-right', `${scrollWidth}px`);
-        console.log('Modal abierto:', this.isOpen);
       } else if (!changes['isOpen'].firstChange) {
-        // Remover clase y estilos cuando se cierra el modal
         this.renderer.removeClass(document.body, 'modal-open');
         this.renderer.removeStyle(document.body, 'padding-right');
-        console.log('Modal cerrado');
       }
     }
   }
 
   ngOnDestroy(): void {
-    // Asegurarse de remover la clase cuando el componente se destruye
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
   }
 
   cerrarModal() {
-    // Remover clase del body al cerrar el modal
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
     this.closeModal.emit(true);
@@ -85,14 +76,78 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
 
   resetForm() {
     this.usuarioForm.reset({
-      rolId: ''
+      rolId: '',
+      telefono: this.phonePrefix
     });
     this.error = null;
   }
 
+  onTelefonoInput(event: any) {
+    let value = event.target.value;
+
+    if (!value.startsWith(this.phonePrefix)) {
+      const cursorPos = event.target.selectionStart;
+      const deletedChars = this.phonePrefix.length -
+        this.phonePrefix.split('').filter((char: string, i: number) => value.length > i && value[i] === char).length;
+
+      value = this.phonePrefix + value.replace(new RegExp(`^.{0,${this.phonePrefix.length}}`), '');
+      this.usuarioForm.get('telefono')?.setValue(value);
+
+      setTimeout(() => {
+        const newPosition = Math.max(this.phonePrefix.length, cursorPos - deletedChars);
+        event.target.selectionStart = event.target.selectionEnd = newPosition;
+      });
+      return;
+    }
+
+    const numbers = value.slice(this.phonePrefix.length).replace(/\D/g, '');
+    if (numbers.length > 0) {
+      let formatted = this.phonePrefix;
+
+      if (numbers.length <= 2) {
+        formatted += numbers;
+      } else if (numbers.length <= 6) {
+        formatted += numbers.substring(0, 2) + ' ' + numbers.substring(2);
+      } else {
+        formatted += numbers.substring(0, 2) + ' ' +
+                  numbers.substring(2, 6) + ' ' +
+                  numbers.substring(6, 10);
+      }
+
+      if (formatted !== value) {
+        const cursorPos = event.target.selectionStart;
+        const addedChars = formatted.length - value.length;
+        this.usuarioForm.get('telefono')?.setValue(formatted);
+
+        setTimeout(() => {
+          event.target.selectionStart = event.target.selectionEnd = cursorPos + addedChars;
+        });
+      }
+    }
+  }
+
+  onTelefonoFocus(event: any) {
+    if (!event.target.value) {
+      this.usuarioForm.get('telefono')?.setValue(this.phonePrefix);
+      setTimeout(() => {
+        event.target.selectionStart = event.target.selectionEnd = this.phonePrefix.length;
+      });
+    } else if (event.target.value === this.phonePrefix) {
+      setTimeout(() => {
+        event.target.selectionStart = event.target.selectionEnd = this.phonePrefix.length;
+      });
+    }
+  }
+
+  onTelefonoBlur(event: any) {
+    const value = event.target.value;
+    if (value === this.phonePrefix) {
+      this.usuarioForm.get('telefono')?.setValue('');
+    }
+  }
+
   guardarUsuario() {
     if (this.usuarioForm.invalid) {
-      // Marcar todos los campos como tocados para mostrar errores
       Object.keys(this.usuarioForm.controls).forEach(key => {
         const control = this.usuarioForm.get(key);
         control?.markAsTouched();
@@ -101,11 +156,8 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
     }
 
     this.loading = true;
-
-    // Obtenemos los valores del formulario
     const formValues = this.usuarioForm.value;
 
-    // Crear el DTO para enviar al servidor
     const usuarioDto: UsuarioCrearDto = {
       nombre: formValues.nombre,
       apellido: formValues.apellido,
@@ -124,7 +176,6 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
       error: (err) => {
         this.loading = false;
         this.error = 'Error al crear el usuario. Intente nuevamente.';
-        console.error('Error creando usuario:', err);
       }
     });
   }
