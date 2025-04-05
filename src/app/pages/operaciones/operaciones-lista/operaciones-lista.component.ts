@@ -24,7 +24,6 @@ export interface OperacionDto {
   canal?: string;
 }
 
-// Tipo para ordenamiento
 interface SortState {
   column: string;
   direction: 'asc' | 'desc';
@@ -45,21 +44,24 @@ interface SortState {
 })
 export class OperacionesListaComponent implements OnInit, OnDestroy {
   operaciones: OperacionDto[] = [];
-  filteredOperaciones: OperacionDto[] = []; // Lista filtrada para mostrar
+  filteredOperaciones: OperacionDto[] = [];
+  paginatedOperaciones: OperacionDto[] = [];
   loading = true;
   error: string | null = null;
 
-  // Sidebar collapsed state
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
 
-  // Búsqueda y ordenamiento
   searchTerm: string = '';
   searchTimeout: any;
-  filterActive: string = 'all'; // 'all', 'active', 'pending', 'completed', 'cancelled'
+  filterActive: string = 'all';
   sortState: SortState = { column: '', direction: 'asc' };
 
-  // Variables para controlar el modal
+  paginaActual: number = 1;
+  itemsPorPagina: number = 10;
+  totalOperaciones: number = 0;
+  totalPaginas: number = 1;
+
   operacionIdSeleccionada: number | null = null;
   modalVerOperacionOpen = false;
 
@@ -71,7 +73,6 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    // Initialize sidebar state
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
       collapsed => {
@@ -93,9 +94,9 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       if (this.isSidebarCollapsed) {
-        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+        contentArea.style.marginLeft = '70px';
       } else {
-        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+        contentArea.style.marginLeft = '260px';
       }
     }
   }
@@ -103,12 +104,10 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   loadOperaciones() {
     this.loading = true;
     this.error = null;
-    console.log('Cargando lista de operaciones...');
 
     this.operacionService.getOperaciones()
       .pipe(
         catchError(error => {
-          console.error('Error al cargar operaciones:', error);
           this.error = 'No se pudieron cargar las operaciones. Por favor, intente nuevamente.';
           return of([]);
         }),
@@ -117,9 +116,7 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(operaciones => {
-        // Transformar datos del API al formato del componente
         this.operaciones = operaciones.map((op: any) => {
-          // Obtener nombre y apellido del cliente
           let nombre = '';
           let apellido = '';
 
@@ -129,10 +126,8 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
             apellido = partes.slice(1).join(' ') || '';
           }
 
-          // Determinar estado basado en lógica de negocio
           let estado = 'Activo';
 
-          // Formatear fecha
           let fechaCreacion = '';
           if (op.fechaCreacion) {
             try {
@@ -161,103 +156,141 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
           };
         });
 
-        console.log(`${operaciones.length} operaciones cargadas`);
         this.applyFilters();
       });
   }
 
-  // Funciones para búsqueda
   onSearchChange() {
-    // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
-      console.log(`Searching for: "${this.searchTerm}"`);
+      this.paginaActual = 1;
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
-    console.log('Clearing search');
     this.searchTerm = '';
+    this.paginaActual = 1;
     this.applyFilters();
   }
 
-  // Aplicar filtros y ordenamiento a la lista
   applyFilters() {
-    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.operaciones];
 
-    // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 3) {
       const term = this.searchTerm.toLowerCase();
-      console.log(`Filtering by term: "${term}"`);
       result = result.filter(operacion =>
         (operacion.nombreCliente?.toLowerCase() || '').includes(term) ||
         (operacion.apellidoCliente?.toLowerCase() || '').includes(term) ||
         (operacion.plan?.toLowerCase() || '').includes(term) ||
         (operacion.canal?.toLowerCase() || '').includes(term)
       );
-      console.log(`After filtering: ${result.length} results`);
     }
 
-    // Aplicar filtro por estado si no es 'all'
     if (this.filterActive !== 'all') {
       const estadoFiltro = this.filterActive.charAt(0).toUpperCase() + this.filterActive.slice(1);
       result = result.filter(operacion => operacion.estado === estadoFiltro);
     }
 
-    // Aplicar ordenamiento si está configurado
     if (this.sortState.column) {
       result = this.sortData(result);
     }
 
     this.filteredOperaciones = result;
-    console.log(`Final filtered results: ${this.filteredOperaciones.length}`);
+    this.totalOperaciones = this.filteredOperaciones.length;
+    this.calcularTotalPaginas();
+    this.paginarOperaciones();
   }
 
-  // Ordenar los datos según la columna seleccionada
+  calcularTotalPaginas() {
+    this.totalPaginas = Math.ceil(this.filteredOperaciones.length / this.itemsPorPagina);
+
+    if (this.paginaActual > this.totalPaginas) {
+      this.paginaActual = Math.max(1, this.totalPaginas);
+    }
+  }
+
+  paginarOperaciones() {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    const fin = Math.min(inicio + this.itemsPorPagina, this.filteredOperaciones.length);
+
+    this.paginatedOperaciones = this.filteredOperaciones.slice(inicio, fin);
+  }
+
+  cambiarPagina(pagina: any) {
+    const paginaNum = Number(pagina);
+
+    if (isNaN(paginaNum) || paginaNum < 1 || paginaNum > this.totalPaginas) {
+      return;
+    }
+
+    this.paginaActual = paginaNum;
+    this.paginarOperaciones();
+  }
+
+  obtenerPaginas(): (number | string)[] {
+    const paginasMostradas = 5;
+    let paginas: (number | string)[] = [];
+
+    if (this.totalPaginas <= paginasMostradas) {
+      for (let i = 1; i <= this.totalPaginas; i++) {
+        paginas.push(i);
+      }
+    } else {
+      paginas.push(1);
+
+      let inicio = Math.max(2, this.paginaActual - 1);
+      let fin = Math.min(this.totalPaginas - 1, this.paginaActual + 1);
+
+      if (inicio === 2) fin = Math.min(4, this.totalPaginas - 1);
+      if (fin === this.totalPaginas - 1) inicio = Math.max(2, this.totalPaginas - 3);
+
+      if (inicio > 2) paginas.push('...');
+
+      for (let i = inicio; i <= fin; i++) {
+        paginas.push(i);
+      }
+
+      if (fin < this.totalPaginas - 1) paginas.push('...');
+
+      paginas.push(this.totalPaginas);
+    }
+
+    return paginas;
+  }
+
   sortData(data: OperacionDto[]): OperacionDto[] {
     const { column, direction } = this.sortState;
     const factor = direction === 'asc' ? 1 : -1;
 
     return [...data].sort((a: any, b: any) => {
-      // Para ordenar por ID (numérico)
       if (column === 'id') {
         return (a.id - b.id) * factor;
       }
-      // Para ordenar por nombre completo
       else if (column === 'nombreCompleto') {
         const nombreA = `${a.nombreCliente || ''} ${a.apellidoCliente || ''}`.toLowerCase();
         const nombreB = `${b.nombreCliente || ''} ${b.apellidoCliente || ''}`.toLowerCase();
         return nombreA.localeCompare(nombreB) * factor;
       }
-      // Para ordenar por plan
       else if (column === 'plan') {
         return (a.plan || '').toLowerCase().localeCompare((b.plan || '').toLowerCase()) * factor;
       }
-      // Para ordenar por meses
       else if (column === 'meses') {
         return (a.meses - b.meses) * factor;
       }
-      // Para ordenar por gasto
       else if (column === 'gasto') {
         return (a.gasto - b.gasto) * factor;
       }
-      // Para ordenar por monto
       else if (column === 'monto') {
         return (a.monto - b.monto) * factor;
       }
-      // Para ordenar por fecha de creación
       else if (column === 'fechaCreacion') {
         return (a.fechaCreacion || '').localeCompare((b.fechaCreacion || '')) * factor;
       }
-      // Para ordenar por canal
       else if (column === 'canal') {
         return (a.canal || '').toLowerCase().localeCompare((b.canal || '').toLowerCase()) * factor;
       }
-      // Para ordenar por estado
       else if (column === 'estado') {
-        // Orden personalizado para estados
         const estadoOrden: {[key: string]: number} = {
           'Activo': 1,
           'Pendiente': 2,
@@ -273,19 +306,17 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Cambiar el ordenamiento cuando se hace clic en una columna
   sortBy(column: string) {
-    // Si es la misma columna, cambiar dirección, si no, ordenar asc por la nueva columna
     if (this.sortState.column === column) {
       this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortState = { column, direction: 'asc' };
     }
 
+    this.paginaActual = 1;
     this.applyFilters();
   }
 
-  // Obtener el icono para la columna de ordenamiento
   getSortIcon(column: string): string {
     if (this.sortState.column !== column) {
       return 'bi-arrow-down-up text-muted';
@@ -297,13 +328,11 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   }
 
   verDetalle(id: number): void {
-    console.log(`Ver detalle de la operación ${id}`);
     this.operacionIdSeleccionada = id;
     this.modalVerOperacionOpen = true;
     this.manejarAperturaModal();
   }
 
-  // Método para cerrar el modal
   cerrarModalVerOperacion() {
     this.modalVerOperacionOpen = false;
     this.operacionIdSeleccionada = null;
@@ -329,13 +358,10 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
-  // Funciones helper para manejar estilos del body al abrir modal
   private manejarAperturaModal() {
-    // Añadir clase al cuerpo para mantener la barra de desplazamiento
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       this.renderer.addClass(contentArea, 'content-area-with-modal');
-      // Fijar la posición del body para evitar desplazamiento
       this.renderer.setStyle(document.body, 'position', 'fixed');
       this.renderer.setStyle(document.body, 'width', '100%');
       this.renderer.setStyle(document.body, 'overflow-y', 'scroll');
@@ -343,7 +369,6 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   }
 
   private manejarCierreModal() {
-    // Solo restaurar si no hay ningún otro modal abierto
     if (!this.modalVerOperacionOpen) {
       const contentArea = document.querySelector('.content-area') as HTMLElement;
       if (contentArea) {

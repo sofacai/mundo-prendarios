@@ -115,3 +115,82 @@ tr.cursor-pointer {
     background-color: #f1f8ff !important;
   }
 }
+
+// Agregar al final del SCSS actual
+.pagination-container {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #eef0f2;
+}
+
+.canales-count {
+  color: #7e8299;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f5f8fa;
+  color: #5e6278;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: #e9ecef;
+    color: #009ef7;
+    text-decoration: none;
+  }
+
+  &.active {
+    background-color: #009ef7;
+    color: #ffffff;
+  }
+}
+
+.pagination-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5e6278;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  text-decoration: none;
+
+  &:hover {
+    color: #009ef7;
+    text-decoration: none;
+  }
+
+  &.disabled {
+    color: #c5c5c5;
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+
+.pagination-dots {
+  color: #7e8299;
+  font-size: 0.95rem;
+}

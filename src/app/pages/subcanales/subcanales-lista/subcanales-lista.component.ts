@@ -31,6 +31,7 @@ interface SortState {
 export class SubcanalesListaComponent implements OnInit, OnDestroy {
   subcanales: Subcanal[] = [];
   filteredSubcanales: Subcanal[] = [];
+  paginatedSubcanales: Subcanal[] = [];
   loading = false;
   error: string | null = null;
   modalOpen = false;
@@ -45,6 +46,11 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   searchTimeout: any;
   filterActive: string = 'all';
   sortState: SortState = { column: '', direction: 'asc' };
+
+  paginaActual: number = 1;
+  itemsPorPagina: number = 10;
+  totalSubcanales: number = 0;
+  totalPaginas: number = 1;
 
   constructor(
     private subcanalService: SubcanalService,
@@ -110,12 +116,14 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   onSearchChange() {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
+      this.paginaActual = 1;
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
     this.searchTerm = '';
+    this.paginaActual = 1;
     this.applyFilters();
   }
 
@@ -143,6 +151,66 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
     }
 
     this.filteredSubcanales = result;
+    this.totalSubcanales = this.filteredSubcanales.length;
+    this.calcularTotalPaginas();
+    this.paginarSubcanales();
+  }
+
+  calcularTotalPaginas() {
+    this.totalPaginas = Math.ceil(this.filteredSubcanales.length / this.itemsPorPagina);
+
+    if (this.paginaActual > this.totalPaginas) {
+      this.paginaActual = Math.max(1, this.totalPaginas);
+    }
+  }
+
+  paginarSubcanales() {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    const fin = Math.min(inicio + this.itemsPorPagina, this.filteredSubcanales.length);
+
+    this.paginatedSubcanales = this.filteredSubcanales.slice(inicio, fin);
+  }
+
+  cambiarPagina(pagina: any) {
+    const paginaNum = Number(pagina);
+
+    if (isNaN(paginaNum) || paginaNum < 1 || paginaNum > this.totalPaginas) {
+      return;
+    }
+
+    this.paginaActual = paginaNum;
+    this.paginarSubcanales();
+  }
+
+  obtenerPaginas(): (number | string)[] {
+    const paginasMostradas = 5;
+    let paginas: (number | string)[] = [];
+
+    if (this.totalPaginas <= paginasMostradas) {
+      for (let i = 1; i <= this.totalPaginas; i++) {
+        paginas.push(i);
+      }
+    } else {
+      paginas.push(1);
+
+      let inicio = Math.max(2, this.paginaActual - 1);
+      let fin = Math.min(this.totalPaginas - 1, this.paginaActual + 1);
+
+      if (inicio === 2) fin = Math.min(4, this.totalPaginas - 1);
+      if (fin === this.totalPaginas - 1) inicio = Math.max(2, this.totalPaginas - 3);
+
+      if (inicio > 2) paginas.push('...');
+
+      for (let i = inicio; i <= fin; i++) {
+        paginas.push(i);
+      }
+
+      if (fin < this.totalPaginas - 1) paginas.push('...');
+
+      paginas.push(this.totalPaginas);
+    }
+
+    return paginas;
   }
 
   sortData(data: Subcanal[]): Subcanal[] {
@@ -188,6 +256,7 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
       this.sortState = { column, direction: 'asc' };
     }
 
+    this.paginaActual = 1;
     this.applyFilters();
   }
 
@@ -228,6 +297,13 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
           return s;
         });
 
+        this.paginatedSubcanales = this.paginatedSubcanales.map(s => {
+          if (s.id === subcanal.id) {
+            return {...s, activo: !subcanal.activo};
+          }
+          return s;
+        });
+
         this.loadingSubcanales.set(subcanal.id, false);
       },
       error: (err) => {
@@ -243,8 +319,6 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   verDetalle(id: number): void {
     this.router.navigate(['/subcanales', id]);
   }
-
-
 
   getGastosPorcentaje(subcanal: Subcanal): string {
     if (!subcanal.gastos || subcanal.gastos.length === 0) {

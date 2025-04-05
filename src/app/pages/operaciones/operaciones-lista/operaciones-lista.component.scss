@@ -1,11 +1,58 @@
-@import '../../../../theme/variables.scss';
-
-// Additional CSS to complement global styles
-
-// Filter actions styling
-.filter-actions {
+.filter-container {
   display: flex;
+  align-items: center;
   gap: 10px;
+}
+
+.filter-label {
+  color: #7e8299;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.search-box {
+  position: relative;
+  min-width: 250px;
+  flex-grow: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7e8299;
+  font-size: 0.85rem;
+}
+
+.search-input {
+  padding-left: 35px !important;
+  background-color: #f5f8fa;
+}
+
+.btn-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #7e8299;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
 }
 
 .form-select {
@@ -24,7 +71,6 @@
   }
 }
 
-// Card improvements
 .card {
   box-shadow: var(--card-box-shadow, 0 0 20px rgba(76, 87, 125, 0.05));
   border-radius: var(--border-radius-md, 0.75rem);
@@ -35,7 +81,6 @@
   }
 }
 
-// Improve table hover states
 .custom-table tbody tr {
   transition: background-color 0.2s ease;
 
@@ -44,34 +89,6 @@
   }
 }
 
-// Responsive search and filter container
-@media (max-width: 767.98px) {
-  .search-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .search-box, .filter-actions {
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .filter-actions {
-    .form-select {
-      width: 100%;
-    }
-  }
-}
-
-// Make sure content adapts to sidebar
-@media (min-width: 992px) {
-  :host-context(.sidebar-collapsed) ~ .content-area {
-    margin-left: 70px;
-  }
-}
-
-// Make entire row clickable and improve appearance
 tr.cursor-pointer {
   cursor: pointer;
 
@@ -80,7 +97,6 @@ tr.cursor-pointer {
   }
 }
 
-/* Estilos para badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -91,6 +107,8 @@ tr.cursor-pointer {
   line-height: 1;
   border-radius: 0.25rem;
   white-space: nowrap;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
 
   &.badge-success {
     background-color: rgba(80, 205, 137, 0.1);
@@ -115,5 +133,121 @@ tr.cursor-pointer {
   &.badge-light {
     background-color: rgba(222, 226, 230, 0.5);
     color: #7e8299;
+  }
+}
+
+.pagination-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-top: 1px solid #eef0f2;
+}
+
+.canales-count {
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+.pagination-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-top: 1px solid #eef0f2;
+}
+
+.canales-count {
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left:20px;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f5f8fa;
+  color: #5e6278;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: #e9ecef;
+    color: #009ef7;
+    text-decoration: none;
+  }
+
+  &.active {
+    background-color: #009ef7;
+    color: #ffffff;
+  }
+}
+
+.pagination-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5e6278;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  text-decoration: none;
+
+  &:hover {
+    color: #009ef7;
+    text-decoration: none;
+  }
+
+  &.disabled {
+    color: #c5c5c5;
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+
+.pagination-dots {
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 767.98px) {
+  .search-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .search-box, .filter-actions {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .canales-count {
+    text-align: center;
+  }
+}
+
+@media (min-width: 992px) {
+  :host-context(.sidebar-collapsed) ~ .content-area {
+    margin-left: 70px;
   }
 }

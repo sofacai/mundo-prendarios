@@ -157,42 +157,33 @@
           </div>
 
              <!-- Paginación y contador de canales -->
-             <div class="pagination-container d-flex justify-content-between align-items-center mt-4" *ngIf="filteredCanales.length > 0">
+             <div class="pagination-container" *ngIf="filteredCanales.length > 0">
               <!-- Contador de canales -->
-              <div class="canales-count">
+              <div class="canales-count mb-3">
                 Mostrando {{ paginatedCanales.length }} de {{ totalCanales }} canales
               </div>
 
               <!-- Paginación -->
-              <nav aria-label="Paginación de canales" *ngIf="totalPaginas > 1">
-                <ul class="pagination">
-                  <!-- Botón de página anterior -->
-                  <li class="page-item" [class.disabled]="paginaActual === 1">
-                    <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual - 1)">
-                      <i class="bi bi-chevron-left"></i>
-                    </a>
-                  </li>
+              <div class="pagination-buttons d-flex align-items-center justify-content-center" *ngIf="totalPaginas > 1">
+                <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
 
-                  <!-- Páginas -->
+                <div class="pagination-pages">
                   <ng-container *ngFor="let pagina of obtenerPaginas()">
-                    <li class="page-item" [class.active]="pagina === paginaActual" *ngIf="pagina !== '...'">
-                      <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(pagina)">
-                        {{ pagina }}
-                      </a>
-                    </li>
-                    <li class="page-item disabled" *ngIf="pagina === '...'">
-                      <span class="page-link">...</span>
-                    </li>
+                    <a href="javascript:void(0)"
+                       class="pagination-page"
+                       [class.active]="pagina === paginaActual"
+                       *ngIf="pagina !== '...'"
+                       (click)="cambiarPagina(pagina)">{{ pagina }}</a>
+                    <span class="pagination-dots" *ngIf="pagina === '...'">...</span>
                   </ng-container>
+                </div>
 
-                  <!-- Botón de página siguiente -->
-                  <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
-                    <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual + 1)">
-                      <i class="bi bi-chevron-right"></i>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
+                <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </div>
             </div>
         </div>
       </div>
