@@ -24,6 +24,7 @@ export class UsuarioHeaderComponent {
   @Input() subcanales: Subcanal[] = [];
 
   @Output() toggleEstado = new EventEmitter<void>();
+  @Output() changePassword = new EventEmitter<void>();
 
   // Constantes para mapear el tipo de rol a un nombre legible
   readonly ROL_NAMES = {
@@ -37,6 +38,10 @@ export class UsuarioHeaderComponent {
 
   onToggleEstado(): void {
     this.toggleEstado.emit();
+  }
+
+  onChangePassword(): void {
+    this.changePassword.emit();
   }
 
   // Obtener iniciales del nombre para el avatar

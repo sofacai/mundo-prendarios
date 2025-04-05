@@ -23,6 +23,7 @@ import { UsuarioClientesComponent } from '../components/usuario-clientes/usuario
 import { UsuarioSubcanalesComponent } from '../components/usuario-subcanales/usuario-subcanales.component';
 import { UsuarioCanalesComponent } from '../components/usuario-canales/usuario-canales.component';
 import { UsuarioEstadisticasComponent } from '../components/usuario-estadisticas/usuario-estadisticas.component';
+import { UsuarioPasswordComponent } from '../components/usuario-password/usuario-password.component';
 
 @Component({
   selector: 'app-usuario-detalle',
@@ -38,7 +39,8 @@ import { UsuarioEstadisticasComponent } from '../components/usuario-estadisticas
     UsuarioClientesComponent,
     UsuarioSubcanalesComponent,
     UsuarioCanalesComponent,
-    UsuarioEstadisticasComponent
+    UsuarioEstadisticasComponent,
+    UsuarioPasswordComponent
   ],
   templateUrl: './usuario-detalle.component.html',
   styleUrls: ['./usuario-detalle.component.scss']
@@ -53,6 +55,9 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
   // Sidebar state
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
+
+  showPasswordModal = false;
+
 
   // Datos para el detalle
   estadisticas: VendorEstadisticasDto | null = null;
@@ -391,5 +396,32 @@ montoTotal: number = 0;
 
     // Calcular monto total SOLO de operaciones activas/aprobadas
     this.montoTotal = operacionesActivas.reduce((sum, op) => sum + op.monto, 0);
+  }
+
+  openPasswordModal() {
+    this.showPasswordModal = true;
+  }
+
+  closePasswordModal() {
+    this.showPasswordModal = false;
+  }
+
+  handlePasswordChange(password: string) {
+    const passwordComponent = document.querySelector('app-usuario-password') as any;
+
+    this.usuarioService.updatePassword(this.usuarioId, password).subscribe({
+      next: () => {
+        this.showPasswordModal = false;
+        // Opcional: mostrar notificación de éxito
+      },
+      error: (err) => {
+        console.error('Error al cambiar la contraseña:', err);
+
+        // Mostrar error en el componente
+        if (passwordComponent) {
+          passwordComponent.setError('No se pudo actualizar la contraseña. Inténtelo de nuevo.');
+        }
+      }
+    });
   }
 }

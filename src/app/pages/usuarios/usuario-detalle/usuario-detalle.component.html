@@ -30,15 +30,16 @@
     <div *ngIf="usuario && !loading && !error" class="usuario-detail">
       <!-- Header del Usuario -->
       <app-usuario-header
-      [usuario]="usuario"
-      [estadisticas]="estadisticas"
-      [clientes]="clientes"
-      [operaciones]="operaciones"
-      [operacionesActivas]="operacionesActivas"
-      [montoTotal]="montoTotal"
-      [subcanales]="subcanales"
-      (toggleEstado)="toggleUsuarioEstado()"
-    ></app-usuario-header>
+        [usuario]="usuario"
+        [estadisticas]="estadisticas"
+        [clientes]="clientes"
+        [operaciones]="operaciones"
+        [operacionesActivas]="operacionesActivas"
+        [montoTotal]="montoTotal"
+        [subcanales]="subcanales"
+        (toggleEstado)="toggleUsuarioEstado()"
+        (changePassword)="openPasswordModal()"
+      ></app-usuario-header>
 
       <!-- Tabs Navigation -->
       <app-usuario-tabs-navigation
@@ -101,5 +102,18 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Modal de cambio de contraseña -->
+<div class="password-modal" *ngIf="showPasswordModal">
+  <div class="modal-backdrop" (click)="closePasswordModal()"></div>
+  <div class="modal-content">
+    <app-usuario-password
+      [usuarioId]="usuarioId"
+      [usuarioNombre]="usuario?.nombre + ' ' + usuario?.apellido"
+      (passwordChange)="handlePasswordChange($event)"
+      (cancel)="closePasswordModal()"
+    ></app-usuario-password>
   </div>
 </div>

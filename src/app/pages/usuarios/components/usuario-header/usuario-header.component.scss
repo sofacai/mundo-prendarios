@@ -14,6 +14,7 @@
   gap: 20px;
   padding-bottom: 15px;
   border-bottom: 1px solid #ebedf3;
+  position: relative; /* Para posicionar botón de contraseña */
 }
 
 .usuario-avatar {
@@ -63,6 +64,33 @@
   font-weight: 600;
   color: #181c32;
   margin: 0;
+}
+
+/* Botón de cambio de contraseña */
+.btn-password-change {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: #f1faff;
+  color: #009ef7;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.btn-password-change:hover {
+  background-color: #009ef7;
+  color: #ffffff;
+}
+
+.btn-password-change i {
+  font-size: 16px;
 }
 
 /* Badge de estado */
@@ -328,5 +356,10 @@
 
   .stats-row {
     grid-template-columns: 1fr;
+  }
+
+  .btn-password-change {
+    top: 5px;
+    right: 5px;
   }
 }

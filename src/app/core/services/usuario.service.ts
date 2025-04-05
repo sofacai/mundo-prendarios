@@ -30,6 +30,11 @@ export interface UsuarioCrearDto {
   fechaAlta?: Date;
 }
 
+export interface PasswordUpdateDto {
+  usuarioId: number;
+  password: string;
+}
+
 export interface VendorEstadisticasDto {
   id: number;
   nombre: string;
@@ -111,5 +116,14 @@ export class UsuarioService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
+  }
+
+  updatePassword(usuarioId: number, password: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<any>(
+      `${this.apiUrl}/${usuarioId}`,
+      { password },
+      { headers }
+    );
   }
 }
