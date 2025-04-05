@@ -90,6 +90,10 @@
                   Gastos
                   <i class="bi" [ngClass]="getSortIcon('gastos')"></i>
                 </th>
+                <th (click)="sortBy('operaciones')" class="sortable-header text-center">
+                  Operaciones
+                  <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -110,8 +114,12 @@
                   </div>
                 </td>
                 <td>
-                  <div class="badge" [ngClass]="getEstadoClass(subcanal.activo)">
-                    {{ subcanal.activo ? 'Activo' : 'Inactivo' }}
+                  <div
+                    class="badge cursor-pointer"
+                    [ngClass]="getEstadoClass(subcanal.activo)"
+                    (click)="toggleSubcanalEstado(subcanal)">
+                    <span *ngIf="!isSubcanalLoading(subcanal.id)">{{ subcanal.activo ? 'Activo' : 'Inactivo' }}</span>
+                    <span *ngIf="isSubcanalLoading(subcanal.id)" class="spinner-border spinner-border-sm" role="status"></span>
                   </div>
                 </td>
                 <td>
@@ -122,6 +130,11 @@
                 <td>
                   <span class="badge badge-light-info">
                     {{ getGastosPorcentaje(subcanal) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-light-warning">
+                    {{ subcanal.numeroOperaciones || 0 }}
                   </span>
                 </td>
               </tr>
@@ -150,23 +163,9 @@
   </div>
 </div>
 
-<!-- Modales -->
+<!-- Modal de creación -->
 <app-subcanal-form
   [isOpen]="modalOpen"
   (closeModal)="cerrarModal()"
   (subcanalCreado)="onSubcanalCreado($event)">
 </app-subcanal-form>
-
-<app-modal-editar-subcanal
-  [isOpen]="modalEditarOpen"
-  [subcanalId]="subcanalIdEditar"
-  (closeModal)="cerrarModalEditar()"
-  (subcanalActualizado)="onSubcanalActualizado($event)">
-</app-modal-editar-subcanal>
-
-<app-modal-ver-subcanal
-  [isOpen]="modalVerOpen"
-  [subcanalId]="subcanalIdVer"
-  (closeModal)="cerrarModalVer()"
-  (editRequest)="onEditarSolicitado($event)">
-</app-modal-ver-subcanal>

@@ -106,3 +106,127 @@
   text-transform: capitalize;
   letter-spacing: 0.2px;
 }
+// Additional CSS to complement global styles
+
+// Filter actions styling
+.filter-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-select {
+  height: 38px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid #e4e6ef;
+  background-color: #f5f8fa;
+  padding: 0.35rem 2rem 0.35rem 1rem;
+  font-size: 0.95rem;
+  min-width: 140px;
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.15);
+    outline: none;
+  }
+}
+
+// Empty state styling
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  max-width: 450px;
+  margin: 0 auto;
+
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 1.25rem;
+  }
+
+  .btn-primary {
+    margin: 0 auto;
+  }
+}
+
+// Card improvements
+.card {
+  box-shadow: var(--card-box-shadow, 0 0 20px rgba(76, 87, 125, 0.05));
+  border-radius: var(--border-radius-md, 0.75rem);
+  overflow: hidden;
+
+  .card-header {
+    background-color: transparent;
+  }
+}
+
+// Improve table hover states
+.custom-table tbody tr {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}
+
+// Style for rounded images
+.rounded-circle {
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+}
+
+// Responsive search and filter container
+@media (max-width: 767.98px) {
+  .search-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .search-box, .filter-actions {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .filter-actions {
+    .form-select {
+      width: 100%;
+    }
+  }
+}
+
+// Make sure content adapts to sidebar
+@media (min-width: 992px) {
+  :host-context(.sidebar-collapsed) ~ .content-area {
+    margin-left: 70px;
+  }
+}
+
+// Improve badge styling
+.badge {
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+}
+
+.badge.cursor-pointer {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.badge.cursor-pointer:hover {
+  opacity: 0.8;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}

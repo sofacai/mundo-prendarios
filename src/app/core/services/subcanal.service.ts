@@ -25,9 +25,10 @@ export interface Subcanal {
   adminCanalId: number;
   adminCanalNombre: string;
   activo: boolean;
-  comision: number; // Nuevo campo de comisión
-  gastos: Gasto[];
+  comision: number;
   vendors: Vendor[];
+  numeroOperaciones?: number;
+  gastos: Gasto[];
 }
 
 export interface SubcanalCrearDto {
@@ -35,8 +36,8 @@ export interface SubcanalCrearDto {
   provincia: string;
   localidad: string;
   canalId: number;
-  adminCanalId: number;
-  comision: number; // Nuevo campo de comisión
+  adminCanalId?: number;
+  comision: number;
 }
 
 // Interfaz para actualizar la comisión

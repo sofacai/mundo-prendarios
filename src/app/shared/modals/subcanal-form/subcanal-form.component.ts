@@ -5,7 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { SubcanalService, SubcanalCrearDto } from 'src/app/core/services/subcanal.service';
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
-import { forkJoin } from 'rxjs';
+import { UbicacionService, Provincia, Localidad } from 'src/app/core/services/ubicacion.service';
 import { Gasto, GastoCreate } from 'src/app/core/models/gasto.model';
 
 @Component({
@@ -26,48 +26,68 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
   canales: Canal[] = [];
   administradores: UsuarioDto[] = [];
 
-  // Variables para el dropdown personalizado
-  dropdownOpen = false;
-  selectedAdminText = '';
+  // Provincias y localidades
+  provincias: Provincia[] = [];
+  localidades: Localidad[] = [];
+  provinciaSeleccionada: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private subcanalService: SubcanalService,
     private canalService: CanalService,
     private usuarioService: UsuarioService,
+    private ubicacionService: UbicacionService,
     private renderer: Renderer2
   ) {
-    this.subcanalForm = this.fb.group({
+    this.subcanalForm = this.createForm();
+  }
+
+  createForm(): FormGroup {
+    return this.fb.group({
       nombre: ['', Validators.required],
       provincia: ['', Validators.required],
       localidad: ['', Validators.required],
       canalId: ['', Validators.required],
-      adminCanalId: ['', Validators.required],
-      comision: [0, [Validators.required, Validators.min(0), Validators.max(100)]], // Nuevo campo comisión
-      // Campos para el gasto
-      gastoNombre: [''],
-      gastoPorcentaje: [0, [Validators.min(0), Validators.max(100)]]
+      adminCanalId: [''],
+      gastoValor: [7, [Validators.min(0), Validators.max(100)]]
     });
   }
 
   ngOnInit() {
-    // Escuchar cambios en el valor de adminCanalId para actualizar texto del dropdown
-    this.subcanalForm.get('adminCanalId')?.valueChanges.subscribe(value => {
-      if (value) {
-        const admin = this.administradores.find(a => a.id === +value);
-        if (admin) {
-          this.selectedAdminText = `${admin.nombre} ${admin.apellido}`;
-        }
-      } else {
-        this.selectedAdminText = '';
+    this.cargarProvincias();
+  }
+
+  cargarProvincias(): void {
+    this.ubicacionService.getProvincias().subscribe({
+      next: (provincias) => {
+        this.provincias = provincias;
+      },
+      error: () => {
+        this.error = 'Error al cargar las provincias.';
       }
     });
+  }
 
-    // Cerrar dropdown cuando se hace clic fuera
-    this.renderer.listen('document', 'click', (event: Event) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.custom-select') && this.dropdownOpen) {
-        this.dropdownOpen = false;
+  onProvinciaChange(event: Event): void {
+    const provinciaId = (event.target as HTMLSelectElement).value;
+
+    if (provinciaId) {
+      this.provinciaSeleccionada = provinciaId;
+      this.subcanalForm.get('localidad')?.setValue('');
+      this.cargarLocalidades(provinciaId);
+    } else {
+      this.provinciaSeleccionada = null;
+      this.localidades = [];
+    }
+  }
+
+  cargarLocalidades(provinciaId: string): void {
+    this.ubicacionService.getLocalidades(provinciaId).subscribe({
+      next: (localidades) => {
+        this.localidades = localidades;
+      },
+      error: () => {
+        this.error = 'Error al cargar las localidades.';
       }
     });
   }
@@ -77,42 +97,21 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
       next: (data) => {
         this.canales = data;
       },
-      error: (err) => {
-        console.error('Error al cargar canales:', err);
+      error: () => {
         this.error = 'Error al cargar la lista de canales.';
       }
     });
   }
 
   cargarAdministradores() {
-    // Cargamos los usuarios con rol 2 (AdminCanal)
     this.usuarioService.getUsuariosPorRol(2).subscribe({
       next: (data) => {
         this.administradores = data;
-        console.log('Administradores cargados:', this.administradores);
       },
-      error: (err) => {
-        console.error('Error al cargar administradores:', err);
+      error: () => {
         this.error = 'Error al cargar la lista de administradores.';
       }
     });
-  }
-
-  // Métodos para manejar el dropdown personalizado
-  toggleDropdown(event: Event) {
-    event.stopPropagation(); // Evitar que el evento se propague
-    this.dropdownOpen = !this.dropdownOpen;
-  }
-
-  selectAdmin(admin: UsuarioDto, event: Event) {
-    event.stopPropagation(); // Evitar que el evento se propague
-    this.subcanalForm.get('adminCanalId')?.setValue(admin.id);
-    this.selectedAdminText = `${admin.nombre} ${admin.apellido}`;
-    this.dropdownOpen = false;
-  }
-
-  formatAdminLabel(admin: UsuarioDto): string {
-    return `${admin.nombre} ${admin.apellido} (${admin.email})`;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -132,12 +131,10 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
 
         // Establece un padding-right al body para compensar la barra de desplazamiento
         this.renderer.setStyle(document.body, 'padding-right', `${scrollWidth}px`);
-        console.log('Modal de subcanal abierto:', this.isOpen);
       } else if (!changes['isOpen'].firstChange) {
         // Remover clase y estilos cuando se cierra el modal
         this.renderer.removeClass(document.body, 'modal-open');
         this.renderer.removeStyle(document.body, 'padding-right');
-        console.log('Modal de subcanal cerrado');
       }
     }
   }
@@ -162,17 +159,15 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
       localidad: '',
       canalId: '',
       adminCanalId: '',
-      comision: 0, // Valor por defecto para comisión
-      gastoNombre: '',
-      gastoPorcentaje: 0
+      gastoValor: 7
     });
-    this.selectedAdminText = '';
+    this.provinciaSeleccionada = null;
+    this.localidades = [];
     this.error = null;
   }
 
   guardarSubcanal() {
     if (this.subcanalForm.invalid) {
-      // Marcar todos los campos como tocados para mostrar errores
       Object.keys(this.subcanalForm.controls).forEach(key => {
         const control = this.subcanalForm.get(key);
         control?.markAsTouched();
@@ -181,57 +176,49 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.loading = true;
-
-    // Obtener los valores del formulario
     const formValues = this.subcanalForm.value;
+    const provinciaSeleccionada = this.provincias.find(p => p.id === formValues.provincia);
+    const localidadSeleccionada = this.localidades.find(l => l.id === formValues.localidad);
 
-    // Crear el DTO con los valores del formulario
     const subcanalDto: SubcanalCrearDto = {
       nombre: formValues.nombre,
-      provincia: formValues.provincia,
-      localidad: formValues.localidad,
+      provincia: provinciaSeleccionada ? provinciaSeleccionada.nombre : '',
+      localidad: localidadSeleccionada ? localidadSeleccionada.nombre : '',
       canalId: parseInt(formValues.canalId),
-      adminCanalId: parseInt(formValues.adminCanalId),
-      comision: formValues.comision // Enviamos el valor de comisión
+      adminCanalId: formValues.adminCanalId ? parseInt(formValues.adminCanalId) : undefined,
+      comision: 0
     };
 
     this.subcanalService.createSubcanal(subcanalDto).subscribe({
       next: (subcanal) => {
-        // Verificar si se ha ingresado un gasto para agregarlo
-        if (formValues.gastoNombre && formValues.gastoPorcentaje > 0) {
+        if (formValues.gastoValor > 0) {
           const gasto: GastoCreate = {
-            nombre: formValues.gastoNombre,
-            porcentaje: formValues.gastoPorcentaje,
+            nombre: 'Gastos Generales',
+            porcentaje: formValues.gastoValor,
             subcanalId: subcanal.id
           };
 
-          // Agregar el gasto al subcanal
           this.subcanalService.agregarGasto(subcanal.id, gasto).subscribe({
             next: (gastoCreado) => {
-              console.log('Gasto agregado correctamente:', gastoCreado);
               this.loading = false;
               this.subcanalCreado.emit({...subcanal, gastos: [gastoCreado]});
               this.cerrarModal();
             },
-            error: (err) => {
-              console.error('Error al agregar el gasto:', err);
-              // Aún así, emitimos que el subcanal se creó correctamente
+            error: () => {
               this.loading = false;
               this.subcanalCreado.emit(subcanal);
               this.cerrarModal();
             }
           });
         } else {
-          // Si no hay gasto, simplemente cerramos
           this.loading = false;
           this.subcanalCreado.emit(subcanal);
           this.cerrarModal();
         }
       },
-      error: (err) => {
+      error: () => {
         this.loading = false;
         this.error = 'Error al crear el subcanal. Intente nuevamente.';
-        console.error('Error creando subcanal:', err);
       }
     });
   }

@@ -300,3 +300,30 @@ select.form-control option {
   font-size: 0.9em;
   margin-left: 4px;
 }
+.checkbox-wrapper {
+  margin-top: 10px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  font-size: 14px;
+  user-select: none;
+}
+
+.text-muted {
+  color: #6c757d;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
