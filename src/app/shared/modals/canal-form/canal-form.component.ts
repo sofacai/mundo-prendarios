@@ -6,7 +6,6 @@ import { CanalService, CanalCrearDto } from 'src/app/core/services/canal.service
 import { PlanService } from 'src/app/core/services/plan.service';
 import { UbicacionService, Provincia, Localidad } from 'src/app/core/services/ubicacion.service';
 
-// Define la interfaz de tipos de canal con id y nombre
 interface TipoCanal {
   id: number;
   nombre: string;
@@ -32,15 +31,12 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
   imagePreview: string | null = null;
   imageFile: File | null = null;
 
-  // Provincias y localidades
   provincias: Provincia[] = [];
   localidades: Localidad[] = [];
   provinciaSeleccionada: string | null = null;
 
-  // Flag para control de método de cobro
   esTransferencia = false;
 
-  // Tipos de canal disponibles
   tiposCanal: TipoCanal[] = [
     { id: 1, nombre: 'Concesionario' },
     { id: 2, nombre: 'Multimarca' },
@@ -50,9 +46,11 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     { id: 6, nombre: 'Consumidor Final' }
   ];
 
-  // Planes disponibles y seleccionados
   planes: any[] = [];
   selectedPlanIds: number[] = [];
+
+  // Prefijos para formato de teléfono
+  private readonly phonePrefix = '+54 9 ';
 
   constructor(
     private fb: FormBuilder,
@@ -73,14 +71,11 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       cuit: ['', Validators.required],
       tipoCanal: ['', Validators.required],
       activo: [true],
-      // Método de cobro
       metodoCobro: ['', Validators.required],
-      // Campos bancarios (requeridos condicionalmente)
       cbu: [''],
       alias: [''],
       banco: [''],
       numCuenta: [''],
-      // Otros campos
       direccion: [''],
       opcionesCobro: [''],
       titularNombreCompleto: [''],
@@ -93,7 +88,6 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     this.cargarPlanes();
     this.cargarProvincias();
 
-    // Observar cambios en el método de cobro
     this.canalForm.get('metodoCobro')?.valueChanges.subscribe(value => {
       this.onMetodoCobroChange();
     });
@@ -123,8 +117,7 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       next: (provincias) => {
         this.provincias = provincias;
       },
-      error: (err) => {
-        console.error('Error cargando provincias:', err);
+      error: () => {
         this.error = 'Error al cargar las provincias.';
       }
     });
@@ -136,8 +129,6 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     if (provinciaId) {
       this.provinciaSeleccionada = provinciaId;
       this.canalForm.get('localidad')?.setValue('');
-
-      // Cargar localidades para esta provincia
       this.cargarLocalidades(provinciaId);
     } else {
       this.provinciaSeleccionada = null;
@@ -150,8 +141,7 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       next: (localidades) => {
         this.localidades = localidades;
       },
-      error: (err) => {
-        console.error('Error cargando localidades:', err);
+      error: () => {
         this.error = 'Error al cargar las localidades.';
       }
     });
@@ -160,14 +150,12 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
   onMetodoCobroChange(): void {
     const metodoCobro = this.canalForm.get('metodoCobro')?.value;
 
-    // Resetear validadores para campos bancarios
     const camposBancarios = ['banco', 'cbu', 'numCuenta', 'alias'];
     camposBancarios.forEach(campo => {
       this.canalForm.get(campo)?.clearValidators();
       this.canalForm.get(campo)?.updateValueAndValidity();
     });
 
-    // Si es transferencia, aplicar validadores
     if (metodoCobro === 'transferencia') {
       this.esTransferencia = true;
       this.canalForm.get('banco')?.setValidators([Validators.required]);
@@ -176,7 +164,6 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       this.esTransferencia = false;
     }
 
-    // Actualizar validación
     camposBancarios.forEach(campo => {
       this.canalForm.get(campo)?.updateValueAndValidity();
     });
@@ -187,8 +174,7 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
       next: (planes) => {
         this.planes = planes;
       },
-      error: (err) => {
-        console.error('Error cargando planes:', err);
+      error: () => {
         this.error = 'Error al cargar los planes disponibles.';
       }
     });
@@ -230,6 +216,90 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     this.localidades = [];
   }
 
+  // Formatear CUIT mientras se escribe
+  onCuitInput(event: any) {
+    let value = event.target.value.replace(/\D/g, '').slice(0, 11);
+    let formatted = '';
+
+    if (value.length <= 2) {
+      formatted = value;
+    } else if (value.length <= 10) {
+      formatted = `${value.slice(0, 2)}-${value.slice(2)}`;
+    } else {
+      formatted = `${value.slice(0, 2)}-${value.slice(2, 10)}-${value.slice(10)}`;
+    }
+
+    event.target.value = formatted;
+    this.canalForm.get('cuit')?.setValue(formatted, { emitEvent: false });
+  }
+
+  // Formatear teléfono mientras se escribe
+  onTelefonoInput(event: any) {
+    let value = event.target.value;
+
+    // Asegurar que comience con el prefijo
+    if (!value.startsWith(this.phonePrefix)) {
+      const cursorPos = event.target.selectionStart;
+      const deletedChars = this.phonePrefix.length -
+        this.phonePrefix.split('').filter((char: string, i: number) => value.length > i && value[i] === char).length;
+
+      value = this.phonePrefix + value.replace(new RegExp(`^.{0,${this.phonePrefix.length}}`), '');
+      this.canalForm.get('titularTelefono')?.setValue(value);
+
+      setTimeout(() => {
+        const newPosition = Math.max(this.phonePrefix.length, cursorPos - deletedChars);
+        event.target.selectionStart = event.target.selectionEnd = newPosition;
+      });
+      return;
+    }
+
+    // Formatear los números después del prefijo
+    const numbers = value.slice(this.phonePrefix.length).replace(/\D/g, '');
+    if (numbers.length > 0) {
+      let formatted = this.phonePrefix;
+
+      if (numbers.length <= 2) {
+        formatted += numbers;
+      } else if (numbers.length <= 6) {
+        formatted += numbers.substring(0, 2) + ' ' + numbers.substring(2);
+      } else {
+        formatted += numbers.substring(0, 2) + ' ' +
+                   numbers.substring(2, 6) + ' ' +
+                   numbers.substring(6, 10);
+      }
+
+      if (formatted !== value) {
+        const cursorPos = event.target.selectionStart;
+        const addedChars = formatted.length - value.length;
+        this.canalForm.get('titularTelefono')?.setValue(formatted);
+
+        setTimeout(() => {
+          event.target.selectionStart = event.target.selectionEnd = cursorPos + addedChars;
+        });
+      }
+    }
+  }
+
+  onTelefonoFocus(event: any) {
+    if (!event.target.value) {
+      this.canalForm.get('titularTelefono')?.setValue(this.phonePrefix);
+      setTimeout(() => {
+        event.target.selectionStart = event.target.selectionEnd = this.phonePrefix.length;
+      });
+    } else if (event.target.value === this.phonePrefix) {
+      setTimeout(() => {
+        event.target.selectionStart = event.target.selectionEnd = this.phonePrefix.length;
+      });
+    }
+  }
+
+  onTelefonoBlur(event: any) {
+    const value = event.target.value;
+    if (value === this.phonePrefix) {
+      this.canalForm.get('titularTelefono')?.setValue('');
+    }
+  }
+
   // Métodos para manejo de imágenes
   onDragOver(event: Event): void {
     event.preventDefault();
@@ -262,59 +332,46 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
   processFile(file: File): void {
     this.imageError = null;
 
-    // Validar tipo de archivo
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
       this.imageError = 'Solo se permiten archivos JPG o PNG';
       return;
     }
 
-    // Validar tamaño (max 500KB)
     const maxSize = 500 * 1024; // 500KB en bytes
     if (file.size > maxSize) {
       this.imageError = 'La imagen no debe superar los 500KB';
       return;
     }
 
-    // Leer y mostrar la imagen
     const reader = new FileReader();
     reader.onload = (e) => {
       this.imagePreview = e.target?.result as string;
     };
     reader.readAsDataURL(file);
 
-    // Guardar archivo para subirlo después
     this.imageFile = file;
   }
 
   removeImage(event: Event): void {
-    event.stopPropagation(); // Evitar que se active el selector de archivos
+    event.stopPropagation();
     this.imagePreview = null;
     this.imageFile = null;
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
   }
+
   async uploadImage(): Promise<string | null> {
     if (!this.imageFile) return null;
 
     try {
-      // Generar un nombre único para el archivo
       const timestamp = new Date().getTime();
       const extension = this.imageFile.name.split('.').pop();
       const fileName = `canal_${timestamp}.${extension}`;
-
-      // Construir la URL que se usará en la aplicación
       const imageUrl = `assets/canales/profiles/${fileName}`;
-
-      // Aquí normalmente guardarías el archivo en el servidor
-      // Como no tenemos esa funcionalidad, solo devolvemos la URL simulada
-      console.log('Archivo imagen:', this.imageFile.name);
-      console.log('URL generada:', imageUrl);
-
       return imageUrl;
     } catch (error) {
-      console.error('Error al procesar la imagen:', error);
       this.error = 'No se pudo procesar la imagen. Intente nuevamente.';
       return null;
     }
@@ -331,7 +388,6 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     this.loading = true;
     let imageUrl = null;
 
-    // Si hay imagen, generar URL simulada
     if (this.imageFile) {
       imageUrl = await this.uploadImage();
       if (this.error) {
@@ -343,36 +399,41 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
     const formValues = this.canalForm.value;
     const tipoSeleccionado = this.tiposCanal.find(tipo => tipo.id.toString() === formValues.tipoCanal);
 
-    // Para provincia y localidad, necesitamos los nombres
     const provinciaSeleccionada = this.provincias.find(p => p.id === formValues.provincia);
     const localidadSeleccionada = this.localidades.find(l => l.id === formValues.localidad);
 
-    // Crear objeto para guardar
+    // Limpiar el cuit de guiones
+    const cuitLimpio = formValues.cuit.replace(/\D/g, '');
+
+    // Para el teléfono, mantener el prefijo pero quitar espacios
+    let titularTelefono = formValues.titularTelefono || '';
+    if (titularTelefono) {
+      // Solo reemplazar espacios, mantener el prefijo y números
+      titularTelefono = titularTelefono.replace(/\s/g, '');
+    }
+
     const canalDto: CanalCrearDto = {
       nombreFantasia: formValues.nombreFantasia,
       razonSocial: formValues.razonSocial,
       provincia: provinciaSeleccionada ? provinciaSeleccionada.nombre : '',
       localidad: localidadSeleccionada ? localidadSeleccionada.nombre : '',
-      cuit: formValues.cuit,
+      cuit: cuitLimpio,
       tipoCanal: tipoSeleccionado ? tipoSeleccionado.nombre : '',
       activo: true,
       direccion: formValues.direccion || '',
       opcionesCobro: formValues.metodoCobro || '',
-      foto: imageUrl || '',  // Usar la URL simulada
+      foto: imageUrl || '',
       titularNombreCompleto: formValues.titularNombreCompleto || '',
-      titularTelefono: formValues.titularTelefono || '',
+      titularTelefono: titularTelefono,
       titularEmail: formValues.titularEmail || '',
-      // Datos bancarios solo si es transferencia
       cbu: this.esTransferencia ? formValues.cbu : '',
       banco: this.esTransferencia ? formValues.banco : '',
       alias: this.esTransferencia ? (formValues.alias || '') : '',
       numCuenta: this.esTransferencia ? (formValues.numCuenta || '') : ''
     };
 
-    // Guardar canal
     this.canalService.createCanal(canalDto).subscribe({
       next: (canal) => {
-        // Si hay planes seleccionados, asignarlos
         if (this.selectedPlanIds.length > 0) {
           const asignacionesPromises = this.selectedPlanIds.map(planId =>
             this.canalService.asignarPlanACanal(canal.id, planId).toPromise()
@@ -386,14 +447,14 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
                   this.canalCreado.emit(canalActualizado);
                   this.cerrarModal();
                 },
-                error: (err) => {
+                error: () => {
                   this.loading = false;
                   this.canalCreado.emit(canal);
                   this.cerrarModal();
                 }
               });
             })
-            .catch(err => {
+            .catch(() => {
               this.loading = false;
               this.error = 'Error al asignar planes al canal.';
               this.canalCreado.emit(canal);
@@ -404,10 +465,9 @@ export class CanalFormComponent implements OnChanges, OnDestroy, OnInit {
           this.cerrarModal();
         }
       },
-      error: (err) => {
+      error: () => {
         this.loading = false;
         this.error = 'Error al crear el canal. Intente nuevamente.';
-        console.error('Error creando canal:', err);
       }
     });
   }
