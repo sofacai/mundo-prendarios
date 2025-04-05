@@ -61,34 +61,36 @@
               Localidad
               <i class="bi" [ngClass]="getSortClass('localidad')"></i>
             </th>
-            <th *ngIf="esAdminCanal" (click)="onSortChange('comision')" class="sortable-header">
-              Comisión
-              <i class="bi" [ngClass]="getSortClass('comision')"></i>
-            </th>
+
             <th class="text-center">Estado</th>
-            <th class="text-center">Acciones</th>
+
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let subcanal of filteredSubcanales">
             <td>{{ subcanal.id }}</td>
             <td>
-              <div class="fw-bold">{{ subcanal.nombre }}</div>
-            </td>
-            <td>{{ subcanal.canalNombre }}</td>
-            <td>{{ subcanal.provincia }}</td>
-            <td>{{ subcanal.localidad }}</td>
-            <td *ngIf="esAdminCanal">{{ subcanal.comision }}%</td>
-            <td class="text-center">
-              <div class="badge" [ngClass]="subcanal.activo ? 'badge-light-success' : 'badge-light-danger'">
-                {{ subcanal.activo ? 'Activo' : 'Inactivo' }}
+              <div class="fw-bold cursor-pointer" (click)="navigateToSubcanal(subcanal.id)">
+                {{ subcanal.nombre }}
               </div>
             </td>
-            <td class="text-center">
-              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(subcanal.id)">
-                <i class="bi bi-eye"></i>
-              </button>
+            <td>
+              <span class="cursor-pointer text-primary fw-bold" (click)="navigateToCanal(subcanal.canalId)">
+                {{ subcanal.canalNombre }}
+              </span>
             </td>
+            <td>{{ subcanal.provincia }}</td>
+            <td>{{ subcanal.localidad }}</td>
+
+            <td class="text-center">
+              <div class="badge cursor-pointer"
+                   [ngClass]="subcanal.activo ? 'badge-light-success' : 'badge-light-danger'"
+                   (click)="toggleSubcanalEstado(subcanal)">
+                <span *ngIf="!isSubcanalLoading(subcanal.id)">{{ subcanal.activo ? 'Activo' : 'Inactivo' }}</span>
+                <span *ngIf="isSubcanalLoading(subcanal.id)" class="spinner-border spinner-border-sm" role="status"></span>
+              </div>
+            </td>
+
           </tr>
         </tbody>
       </table>

@@ -24,6 +24,7 @@ import { UsuarioSubcanalesComponent } from '../components/usuario-subcanales/usu
 import { UsuarioCanalesComponent } from '../components/usuario-canales/usuario-canales.component';
 import { UsuarioEstadisticasComponent } from '../components/usuario-estadisticas/usuario-estadisticas.component';
 import { UsuarioPasswordComponent } from '../components/usuario-password/usuario-password.component';
+import { UsuarioUsuariosComponent } from '../components/usuario-usuarios/usuario-usuarios.component';
 
 @Component({
   selector: 'app-usuario-detalle',
@@ -40,7 +41,8 @@ import { UsuarioPasswordComponent } from '../components/usuario-password/usuario
     UsuarioSubcanalesComponent,
     UsuarioCanalesComponent,
     UsuarioEstadisticasComponent,
-    UsuarioPasswordComponent
+    UsuarioPasswordComponent,
+    UsuarioUsuariosComponent
   ],
   templateUrl: './usuario-detalle.component.html',
   styleUrls: ['./usuario-detalle.component.scss']
@@ -65,6 +67,10 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
   clientes: Cliente[] = [];
   subcanales: Subcanal[] = [];
   canales: Canal[] = [];
+
+  usuariosRelacionados: UsuarioDto[] = [];
+loadingUsuariosRelacionados = false;
+errorUsuariosRelacionados: string | null = null;
 
   operacionesActivas: number = 0;
 montoTotal: number = 0;
@@ -173,22 +179,17 @@ montoTotal: number = 0;
   }
 
   loadDataBasedOnRole() {
-    // Carga de datos común para todos los roles
     this.loading = true;
 
-    // Para los vendors cargar estadísticas
     if (this.usuario.rolId === RolType.Vendor) {
       this.loadVendorData();
     }
-    // Para adminCanal cargar subcanales
     else if (this.usuario.rolId === RolType.AdminCanal) {
       this.loadAdminCanalData();
     }
-    // Para oficialComercial cargar canales
     else if (this.usuario.rolId === RolType.OficialComercial) {
       this.loadOficialComercialData();
     }
-    // Para administrador, no se cargan datos adicionales
     else {
       this.loading = false;
     }
@@ -272,15 +273,18 @@ montoTotal: number = 0;
 
   loadAdminCanalData() {
     this.loadingSubcanales = true;
+
+    // Primero cargar subcanales
     this.subcanalService.getSubcanales().subscribe({
       next: (subcanales) => {
-        // Filtrar subcanales donde adminCanalId es igual a usuarioId
         this.subcanales = subcanales.filter(subcanal => subcanal.adminCanalId === this.usuarioId);
         this.loadingSubcanales = false;
         this.loading = false;
+
+        // Luego cargar usuarios relacionados (vendors)
+        this.cargarUsuariosAdminCanal();
       },
       error: (err) => {
-        console.error('Error cargando subcanales del admin de canal:', err);
         this.errorSubcanales = 'Error al cargar los subcanales administrados.';
         this.loadingSubcanales = false;
         this.loading = false;
@@ -288,21 +292,102 @@ montoTotal: number = 0;
     });
   }
 
-  loadOficialComercialData() {
-    this.loadingCanales = true;
-    this.canalService.getCanales().subscribe({
-      next: (canales) => {
-        // Filtrar canales donde el oficial comercial aparezca en la lista
-        this.canales = canales.filter(canal =>
-          canal.oficialesComerciales && canal.oficialesComerciales.some(oficial => oficial.id === this.usuarioId)
+  cargarUsuariosAdminCanal() {
+    // Solo cargar si tenemos subcanales
+    if (this.subcanales.length === 0) return;
+
+    this.loadingUsuariosRelacionados = true;
+
+    // Obtener todos los vendors
+    this.usuarioService.getUsuariosPorRol(RolType.Vendor).subscribe({
+      next: (vendors) => {
+        // Filtrar solo los que estén en estos subcanales
+        const subcanalIds = this.subcanales.map(s => s.id);
+
+        // Asignar usuarios
+        this.usuariosRelacionados = vendors.filter(v =>
+          this.subcanales.some(s =>
+            s.vendors && s.vendors.some(sv => sv.id === v.id)
+          )
         );
-        this.loadingCanales = false;
-        this.loading = false;
+
+        this.loadingUsuariosRelacionados = false;
       },
       error: (err) => {
-        console.error('Error cargando canales del oficial comercial:', err);
+        this.errorUsuariosRelacionados = 'Error al cargar usuarios.';
+        this.loadingUsuariosRelacionados = false;
+      }
+    });
+  }
+
+  loadOficialComercialData() {
+    this.loadingCanales = true;
+    this.loadingUsuariosRelacionados = true;
+
+    forkJoin({
+      canales: this.canalService.getCanales(),
+      estadisticas: this.usuarioService.getVendorEstadisticas(this.usuarioId)
+    }).subscribe({
+      next: (results) => {
+        // Filtrar canales donde el oficial comercial aparezca
+        this.canales = results.canales.filter(canal =>
+          canal.oficialesComerciales &&
+          canal.oficialesComerciales.some(oficial => oficial.id === this.usuarioId));
+        this.loadingCanales = false;
+
+        this.estadisticas = results.estadisticas;
+
+        // Cargar operaciones y usuarios de estos canales
+        this.cargarDatosCanales();
+      },
+      error: (err) => {
+        console.error('Error cargando canales:', err);
         this.errorCanales = 'Error al cargar los canales asignados.';
         this.loadingCanales = false;
+        this.loading = false;
+      }
+    });
+  }
+
+  // Nuevo método para cargar datos de canales
+  cargarDatosCanales() {
+    if (this.canales.length === 0) {
+      this.loading = false;
+      this.loadingUsuariosRelacionados = false;
+      return;
+    }
+
+    const canalIds = this.canales.map(c => c.id);
+
+    forkJoin({
+      operaciones: this.operacionService.getOperaciones(),
+      usuarios: this.usuarioService.getUsuarios()
+    }).subscribe({
+      next: (results) => {
+        // Filtrar operaciones por canalId
+        this.operaciones = results.operaciones.filter(op =>
+          canalIds.includes(op.canalId || 0));
+
+        // Filtrar usuarios asociados a estos canales
+        const vendorIds = new Set<number>();
+        this.operaciones.forEach(op => {
+          if (op.vendedorId) vendorIds.add(op.vendedorId);
+        });
+
+        this.usuariosRelacionados = results.usuarios.filter(u =>
+          u.rolId === RolType.Vendor &&
+          vendorIds.has(u.id));
+
+        this.loadingUsuariosRelacionados = false;
+        this.loading = false;
+
+        // Calcular métricas adicionales
+        this.calcularEstadisticasHeader();
+      },
+      error: (err) => {
+        console.error('Error cargando datos relacionados:', err);
+        this.errorUsuariosRelacionados = 'Error al cargar usuarios relacionados.';
+        this.loadingUsuariosRelacionados = false;
         this.loading = false;
       }
     });

@@ -1,8 +1,9 @@
-// src/app/pages/usuarios/components/usuario-subcanales/usuario-subcanales.component.ts
 import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subcanal } from 'src/app/core/services/subcanal.service';
+import { SubcanalService } from 'src/app/core/services/subcanal.service';
 
 @Component({
   selector: 'app-usuario-subcanales',
@@ -18,12 +19,18 @@ export class UsuarioSubcanalesComponent implements OnChanges {
   @Input() esAdminCanal: boolean = false;
 
   @Output() verDetalle = new EventEmitter<number>();
+  @Output() toggleEstado = new EventEmitter<{id: number, activo: boolean}>();
 
-  // Propiedades para filtrado y ordenamiento
   filteredSubcanales: Subcanal[] = [];
   searchTerm: string = '';
   sortField: string = 'nombre';
   sortDirection: 'asc' | 'desc' = 'asc';
+  loadingSubcanales: Map<number, boolean> = new Map();
+
+  constructor(
+    private router: Router,
+    private subcanalService: SubcanalService
+  ) {}
 
   ngOnChanges() {
     this.applyFilters();
@@ -32,7 +39,6 @@ export class UsuarioSubcanalesComponent implements OnChanges {
   applyFilters() {
     let resultado = [...this.subcanales];
 
-    // Aplicar búsqueda si hay un término
     if (this.searchTerm && this.searchTerm.length > 0) {
       const term = this.searchTerm.toLowerCase();
       resultado = resultado.filter(subcanal =>
@@ -43,9 +49,7 @@ export class UsuarioSubcanalesComponent implements OnChanges {
       );
     }
 
-    // Aplicar ordenamiento
     resultado = this.sortSubcanales(resultado);
-
     this.filteredSubcanales = resultado;
   }
 
@@ -53,7 +57,6 @@ export class UsuarioSubcanalesComponent implements OnChanges {
     return subcanales.sort((a, b) => {
       let comparison = 0;
 
-      // Determinar el campo a comparar
       switch (this.sortField) {
         case 'id':
           comparison = a.id - b.id;
@@ -70,24 +73,18 @@ export class UsuarioSubcanalesComponent implements OnChanges {
         case 'localidad':
           comparison = (a.localidad || '').localeCompare(b.localidad || '');
           break;
-        case 'comision':
-          comparison = (a.comision || 0) - (b.comision || 0);
-          break;
         default:
           comparison = 0;
       }
 
-      // Aplicar dirección
       return this.sortDirection === 'asc' ? comparison : -comparison;
     });
   }
 
   onSortChange(field: string) {
     if (this.sortField === field) {
-      // Si ya estamos ordenando por este campo, invertir dirección
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      // Nuevo campo, establecer dirección predeterminada
       this.sortField = field;
       this.sortDirection = 'asc';
     }
@@ -112,7 +109,34 @@ export class UsuarioSubcanalesComponent implements OnChanges {
     this.applyFilters();
   }
 
-  onVerDetalle(subcanalId: number) {
-    this.verDetalle.emit(subcanalId);
+  navigateToSubcanal(subcanalId: number) {
+    this.router.navigate(['/subcanales', subcanalId]);
+  }
+
+  navigateToCanal(canalId: number) {
+    this.router.navigate(['/canales', canalId]);
+  }
+
+  toggleSubcanalEstado(subcanal: Subcanal) {
+    this.loadingSubcanales.set(subcanal.id, true);
+
+    const request = subcanal.activo
+      ? this.subcanalService.desactivarSubcanal(subcanal.id)
+      : this.subcanalService.activarSubcanal(subcanal.id);
+
+    request.subscribe({
+      next: () => {
+        subcanal.activo = !subcanal.activo;
+        this.loadingSubcanales.set(subcanal.id, false);
+        this.toggleEstado.emit({id: subcanal.id, activo: subcanal.activo});
+      },
+      error: () => {
+        this.loadingSubcanales.set(subcanal.id, false);
+      }
+    });
+  }
+
+  isSubcanalLoading(subcanalId: number): boolean {
+    return this.loadingSubcanales.get(subcanalId) === true;
   }
 }

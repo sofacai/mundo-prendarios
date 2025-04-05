@@ -36,7 +36,7 @@ export class UsuarioTabsNavigationComponent implements OnChanges {
       id: 'clientes',
       label: 'Clientes',
       icon: 'bi-people',
-      roles: [RolType.Vendor]
+      roles: [RolType.Vendor, RolType.AdminCanal, RolType.OficialComercial]
     },
     {
       id: 'subcanales',
@@ -51,10 +51,16 @@ export class UsuarioTabsNavigationComponent implements OnChanges {
       roles: [RolType.OficialComercial]
     },
     {
+      id: 'usuarios',
+      label: 'Usuarios',
+      icon: 'bi-people-fill',
+      roles: [RolType.AdminCanal, RolType.OficialComercial]
+    },
+    {
       id: 'estadisticas',
       label: 'Estadísticas',
       icon: 'bi-bar-chart',
-      roles: [RolType.Vendor]
+      roles: [RolType.Vendor, RolType.AdminCanal, RolType.OficialComercial]
     }
   ];
 

@@ -73,7 +73,9 @@
           <tr *ngFor="let canal of filteredCanales">
             <td>{{ canal.id }}</td>
             <td>
-              <div class="fw-bold">{{ canal.nombreFantasia }}</div>
+              <div class="fw-bold cursor-pointer" (click)="onCanalNombreClick(canal.id)">
+                {{ canal.nombreFantasia }}
+              </div>
             </td>
             <td>{{ canal.razonSocial }}</td>
             <td>{{ canal.provincia }}</td>

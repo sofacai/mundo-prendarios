@@ -1,0 +1,113 @@
+<!-- src/app/pages/usuarios/components/usuario-usuarios/usuario-usuarios.component.html -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">
+      <i class="bi bi-people-fill me-2 text-primary"></i>
+      Usuarios
+    </h3>
+
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar usuario..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()">
+      <button
+        *ngIf="searchTerm"
+        class="btn-clear"
+        (click)="clearSearch()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div *ngIf="loading" class="text-center p-4">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando usuarios...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <div *ngIf="!loading && !error" class="table-responsive">
+      <table class="custom-table" *ngIf="filteredUsuarios.length > 0">
+        <thead>
+          <tr>
+            <th (click)="onSortChange('id')" class="sortable-header" style="width: 70px">
+              ID
+              <i class="bi" [ngClass]="getSortClass('id')"></i>
+            </th>
+            <th (click)="onSortChange('nombre')" class="sortable-header">
+              Nombre
+              <i class="bi" [ngClass]="getSortClass('nombre')"></i>
+            </th>
+            <th (click)="onSortChange('email')" class="sortable-header">
+              Email
+              <i class="bi" [ngClass]="getSortClass('email')"></i>
+            </th>
+            <th (click)="onSortChange('telefono')" class="sortable-header">
+              Teléfono
+              <i class="bi" [ngClass]="getSortClass('telefono')"></i>
+            </th>
+            <th (click)="onSortChange('canalNombre')" class="sortable-header">
+              Canal
+              <i class="bi" [ngClass]="getSortClass('canalNombre')"></i>
+            </th>
+            <th (click)="onSortChange('subcanalNombre')" class="sortable-header">
+              Subcanal
+              <i class="bi" [ngClass]="getSortClass('subcanalNombre')"></i>
+            </th>
+            <th (click)="onSortChange('cantidadOperaciones')" class="sortable-header text-center">
+              Operaciones
+              <i class="bi" [ngClass]="getSortClass('cantidadOperaciones')"></i>
+            </th>
+            <th class="text-center">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let usuario of filteredUsuarios">
+            <td>{{ usuario.id }}</td>
+            <td>
+              <div class="fw-bold cursor-pointer" (click)="verDetalleUsuario(usuario.id)">
+                {{ usuario.nombre }} {{ usuario.apellido }}
+              </div>
+              <div class="badge" [ngClass]="getRolClass(usuario.rolId)">
+                {{ usuario.rolNombre }}
+              </div>
+            </td>
+            <td>{{ usuario.email || 'No especificado' }}</td>
+            <td>{{ usuario.telefono || 'No especificado' }}</td>
+            <td class="text-center">
+              <span class="badge badge-light-primary">
+                {{ usuario.cantidadOperaciones || 0 }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="badge cursor-pointer"
+                  [ngClass]="usuario.activo ? 'badge-light-success' : 'badge-light-danger'"
+                  (click)="toggleUsuarioEstado(usuario)">
+                <span *ngIf="!isUsuarioLoading(usuario.id)">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span>
+                <span *ngIf="isUsuarioLoading(usuario.id)" class="spinner-border spinner-border-sm" role="status"></span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredUsuarios.length === 0" class="text-center p-5">
+        <div class="text-center">
+          <i class="bi bi-people-fill fs-2 text-muted mb-3"></i>
+          <h4>No hay usuarios</h4>
+          <p class="text-muted">
+            {{ tipoUsuario === 'adminCanal' ? 'No tienes usuarios asignados a tus subcanales.' : 'No tienes usuarios asignados a tus canales.' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

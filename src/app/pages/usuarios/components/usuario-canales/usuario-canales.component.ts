@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Canal } from 'src/app/core/services/canal.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-usuario-canales',
@@ -23,6 +24,9 @@ export class UsuarioCanalesComponent implements OnChanges {
   searchTerm: string = '';
   sortField: string = 'nombreFantasia';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  constructor(private router: Router) {}
+
 
   ngOnChanges() {
     this.applyFilters();
@@ -115,4 +119,9 @@ export class UsuarioCanalesComponent implements OnChanges {
   onVerDetalle(canalId: number) {
     this.verDetalle.emit(canalId);
   }
+
+  onCanalNombreClick(canalId: number) {
+    this.router.navigate(['/canales', canalId]);
+  }
+
 }
