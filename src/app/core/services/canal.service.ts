@@ -200,7 +200,7 @@ export class CanalService {
   // Obtener oficiales comerciales de un canal
   getOficialesComercialCanal(canalId: number): Observable<any[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<any[]>(`${this.apiUrl}/${canalId}/oficialescomerciales`, { headers });
+    return this.http.get<any[]>(`${this.apiUrl}/${canalId}`, { headers });
   }
 
   // Desasignar un oficial comercial de un canal

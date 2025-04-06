@@ -11,6 +11,8 @@ import { ModalEditarCanalComponent } from 'src/app/shared/modals/modal-editar-ca
 import { ModalVerCanalComponent } from 'src/app/shared/modals/modal-ver-canal/modal-ver-canal.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { RolType } from 'src/app/core/models/usuario.model';
 
 interface SortState {
   column: string;
@@ -60,11 +62,18 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
   paginatedCanales: Canal[] = [];
 
+  // Variables para manejar permisos
+  usuarioActual: any = null;
+  esAdministrador = false;
+  esOficialComercial = false;
+  idOficialComercial: number | null = null;
+
   constructor(
     private canalService: CanalService,
     private renderer: Renderer2,
     private sidebarStateService: SidebarStateService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
@@ -79,7 +88,18 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     this.paginaActual = 1;
     this.itemsPorPagina = 10;
 
-    this.loadCanales();
+    // Obtener información del usuario actual
+    this.authService.currentUser.subscribe(usuario => {
+      this.usuarioActual = usuario;
+
+      if (usuario) {
+        this.esAdministrador = usuario.rolId === RolType.Administrador;
+        this.esOficialComercial = usuario.rolId === RolType.OficialComercial;
+        this.idOficialComercial = this.esOficialComercial ? usuario.id : null;
+      }
+
+      this.loadCanales();
+    });
   }
 
   ngOnDestroy() {
@@ -101,6 +121,9 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
   loadCanales() {
     this.loading = true;
+
+    // Usamos el mismo endpoint para todos los usuarios
+    // El backend se encargará de filtrar según el rol del usuario
     this.canalService.getCanales().subscribe({
       next: (data) => {
         this.canales = data;
@@ -251,6 +274,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
         const countB = b.numeroOperaciones || 0;
         return (countA - countB) * factor;
       }
+      else if (column === 'gasto') {
+        const gastoA = a.gasto || 0;
+        const gastoB = b.gasto || 0;
+        return (gastoA - gastoB) * factor;
+      }
 
       return 0;
     });
@@ -286,6 +314,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   }
 
   toggleCanalEstado(canal: Canal): void {
+    // Solo permitir a administradores cambiar el estado
+    if (!this.esAdministrador) {
+      return;
+    }
+
     this.loadingCanales.set(canal.id, true);
 
     const request = canal.activo
@@ -339,6 +372,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   }
 
   abrirModalEditarCanal(id: number): void {
+    // Solo permitir a administradores editar
+    if (!this.esAdministrador) {
+      return;
+    }
+
     this.canalIdEditar = id;
     this.modalEditarOpen = true;
     this.manejarAperturaModal();
@@ -357,6 +395,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   }
 
   onEditarSolicitado(id: number) {
+    // Solo permitir a administradores editar
+    if (!this.esAdministrador) {
+      return;
+    }
+
     this.modalVerOpen = false;
     this.canalIdVer = null;
 
@@ -374,6 +417,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   }
 
   abrirModalNuevoCanal() {
+    // Solo permitir a administradores crear nuevos canales
+    if (!this.esAdministrador) {
+      return;
+    }
+
     this.modalOpen = true;
     this.manejarAperturaModal();
   }

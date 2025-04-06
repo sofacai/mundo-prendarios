@@ -9,7 +9,7 @@
       <div class="page-title">
         <h1>Canales</h1>
       </div>
-      <div class="page-actions">
+      <div class="page-actions" *ngIf="esAdministrador">
         <button class="btn btn-primary" (click)="abrirModalNuevoCanal()">
           <i class="bi bi-plus-lg"></i> Nuevo Canal
         </button>
@@ -71,10 +71,7 @@
                   ID
                   <i class="bi" [ngClass]="getSortIcon('id')"></i>
                 </th>
-                <th (click)="sortBy('fechaAlta')" class="sortable-header">
-                  Fecha Alta
-                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
-                </th>
+
                 <th (click)="sortBy('nombreFantasia')" class="sortable-header">
                   Nombre
                   <i class="bi" [ngClass]="getSortIcon('nombreFantasia')"></i>
@@ -87,7 +84,7 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
                 </th>
-                <th (click)="sortBy('planes')" class="sortable-header text-center">
+                <th *ngIf="esAdministrador" (click)="sortBy('planes')" class="sortable-header text-center">
                   Planes
                   <i class="bi" [ngClass]="getSortIcon('planes')"></i>
                 </th>
@@ -99,12 +96,18 @@
                   Operaciones
                   <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
                 </th>
+
+                <th (click)="sortBy('fechaAlta')" class="sortable-header">
+                  Fecha Alta
+                  <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
+                </th>
+
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let canal of paginatedCanales">
                 <td>{{ canal.id }}</td>
-                <td>{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</td>
+
                 <td>
                   <div>
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(canal.id)">
@@ -122,7 +125,7 @@
                     <span *ngIf="isCanalLoading(canal.id)" class="spinner-border spinner-border-sm" role="status"></span>
                   </div>
                 </td>
-                <td class="text-center">
+                <td *ngIf="esAdministrador" class="text-center">
                   <span class="badge badge-light-primary">
                     {{ getPlanesCantidad(canal) }}
                   </span>
@@ -137,6 +140,7 @@
                     {{ canal.numeroOperaciones || 0 }}
                   </span>
                 </td>
+                <td>{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</td>
               </tr>
             </tbody>
           </table>
