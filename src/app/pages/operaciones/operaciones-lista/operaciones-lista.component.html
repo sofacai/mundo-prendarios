@@ -106,13 +106,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let operacion of paginatedOperaciones" (click)="verDetalle(operacion.id)" class="cursor-pointer">
+              <tr *ngFor="let operacion of paginatedOperaciones" class="cursor-pointer">
                 <td>{{ operacion.id }}</td>
                 <td>
                   <div style="display: block;">
-                    <span class="text-dark fw-bold text-hover-primary">
-                      {{ operacion.nombreCliente }} {{ operacion.apellidoCliente }}
-                    </span>
+                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(operacion.id)">
+                      {{ operacion.nombreCliente}}   {{ operacion.apellidoCliente }}
+                    </a>
                   </div>
                 </td>
                 <td>{{ operacion.plan }}</td>
@@ -120,8 +120,9 @@
                 <td>{{ operacion.gasto}} %</td>
                 <td>${{ formatNumber(operacion.monto) }}</td>
                 <td>{{ operacion.fechaCreacion }}</td>
-                <td>{{ operacion.canal }}</td>
-                <td>
+                <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(operacion.canalId || 0)">
+                  {{ operacion.canalNombre }}
+                </a>                <td>
                   <div class="badge" [ngClass]="getEstadoClass(operacion.estado)">
                     {{ operacion.estado }}
                   </div>

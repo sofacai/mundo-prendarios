@@ -28,7 +28,6 @@ export interface PlanCrearDto {
   montoMaximo: number;
   cuotasAplicables: number[];
   tasa: number;
-  montoFijo: number;
   activo: boolean;
 }
 

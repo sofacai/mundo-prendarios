@@ -21,7 +21,8 @@ export interface OperacionDto {
   monto: number;
   estado: string;
   fechaCreacion?: string;
-  canal?: string;
+  canalId?: number;
+  canalNombre?: string;
 }
 
 interface SortState {
@@ -183,7 +184,7 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
         (operacion.nombreCliente?.toLowerCase() || '').includes(term) ||
         (operacion.apellidoCliente?.toLowerCase() || '').includes(term) ||
         (operacion.plan?.toLowerCase() || '').includes(term) ||
-        (operacion.canal?.toLowerCase() || '').includes(term)
+        (operacion.canalNombre?.toLowerCase() || '').includes(term)
       );
     }
 
@@ -328,9 +329,11 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   }
 
   verDetalle(id: number): void {
-    this.operacionIdSeleccionada = id;
-    this.modalVerOperacionOpen = true;
-    this.manejarAperturaModal();
+    this.router.navigate(['/operaciones', id]);
+  }
+
+  verDetalleCanal(id: number): void {
+    this.router.navigate(['/canales', id]);
   }
 
   cerrarModalVerOperacion() {

@@ -40,7 +40,6 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
       montoMaximo: [0, [Validators.required, Validators.min(0)]],
       cuotasAplicables: this.fb.array([], Validators.required),
       tasa: [0, [Validators.required, Validators.min(0)]],
-      montoFijo: [0, [Validators.required, Validators.min(0)]],
       activo: [true]
     });
   }
@@ -110,7 +109,6 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
           montoMinimo: plan.montoMinimo,
           montoMaximo: plan.montoMaximo,
           tasa: plan.tasa,
-          montoFijo: plan.montoFijo,
           activo: plan.activo
         });
 
@@ -195,7 +193,6 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
       montoMaximo: formValues.montoMaximo,
       cuotasAplicables: formValues.cuotasAplicables,
       tasa: formValues.tasa,
-      montoFijo: formValues.montoFijo,
       activo: formValues.activo
     };
 

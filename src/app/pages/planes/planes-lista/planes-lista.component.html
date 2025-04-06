@@ -90,10 +90,13 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
                 </th>
+                <th class="text-center">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let plan of filteredPlanes" (click)="verDetalle(plan.id)" class="cursor-pointer">
+              <tr *ngFor="let plan of filteredPlanes">
                 <td>{{ plan.id }}</td>
                 <td>
                   <span class="text-dark fw-bold text-hover-primary">
@@ -119,6 +122,11 @@
                   <div class="badge" [ngClass]="getEstadoClass(plan.activo)">
                     {{ plan.activo ? 'Activo' : 'Inactivo' }}
                   </div>
+                </td>
+                <td class="text-center">
+                  <button class="btn-action" title="Ver detalles" (click)="abrirModalEditarPlan(plan.id); $event.stopPropagation()">
+                    <i class="bi bi-eye"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>

@@ -87,7 +87,6 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       montoMinimo: ['', [Validators.required, Validators.min(0)]],
       montoMaximo: ['', [Validators.required, Validators.min(0)]],
       tasa: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      montoFijo: ['', [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -99,7 +98,6 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       montoMinimo: '',
       montoMaximo: '',
       tasa: '',
-      montoFijo: 0
     });
 
     // Resetear selección de cuotas
@@ -120,7 +118,6 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
           montoMinimo: plan.montoMinimo,
           montoMaximo: plan.montoMaximo,
           tasa: plan.tasa,
-          montoFijo: plan.montoFijo
         });
 
         // Marcar las cuotas que ya están seleccionadas
@@ -213,7 +210,6 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       montoMaximo: this.planForm.value.montoMaximo,
       cuotasAplicables: cuotasSeleccionadas,
       tasa: this.planForm.value.tasa,
-      montoFijo: this.planForm.value.montoFijo,
       activo: true
     };
 

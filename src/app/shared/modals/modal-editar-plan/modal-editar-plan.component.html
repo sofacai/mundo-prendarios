@@ -69,17 +69,6 @@
             </div>
 
             <div class="form-group">
-              <label>Monto Fijo <span class="required">*</span></label>
-              <div class="input-group">
-                <span class="input-group-text">$</span>
-                <input type="number" class="form-control" formControlName="montoFijo" min="0" step="1">
-              </div>
-              <small class="text-danger" *ngIf="planForm.get('montoFijo')?.invalid && planForm.get('montoFijo')?.touched">
-                Valor inválido
-              </small>
-            </div>
-
-            <div class="form-group">
               <label>Estado</label>
               <div class="toggle-container">
                 <ion-toggle formControlName="activo"></ion-toggle>
