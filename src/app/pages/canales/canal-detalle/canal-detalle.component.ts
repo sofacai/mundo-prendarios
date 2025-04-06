@@ -72,6 +72,7 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
   totalOperaciones = 0;
   totalVendedores = 0;
 
+
   // Editar canal
   editingSections: { [key: string]: boolean } = {
     general: false,
@@ -178,6 +179,7 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
 
     this.canalService.getOficialesComercialCanal(canalId).subscribe({
       next: (data) => {
+        console.log('Oficiales comerciales data:', data); // Add this logging
         this.oficialesComerciales = data;
         this.loadingOficiales = false;
       },
@@ -188,7 +190,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   loadAdditionalData() {
     // Usamos forkJoin para manejar múltiples solicitudes en paralelo
     forkJoin({
