@@ -153,7 +153,8 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
             monto: op.monto || 0,
             estado: estado,
             fechaCreacion: fechaCreacion,
-            canal: op.canalNombre || 'Sin canal'
+            canalNombre: op.canalNombre || 'Sin canal',
+            canalId : op.canalId,
           };
         });
 

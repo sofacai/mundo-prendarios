@@ -120,9 +120,11 @@
                 <td>{{ operacion.gasto}} %</td>
                 <td>${{ formatNumber(operacion.monto) }}</td>
                 <td>{{ operacion.fechaCreacion }}</td>
-                <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(operacion.canalId || 0)">
-                  {{ operacion.canalNombre }}
-                </a>                <td>
+                <td>
+                  <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleCanal(operacion.canalId || 0)">
+                    {{ operacion.canalNombre }}
+                  </a>
+                </td>             <td>
                   <div class="badge" [ngClass]="getEstadoClass(operacion.estado)">
                     {{ operacion.estado }}
                   </div>
