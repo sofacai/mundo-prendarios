@@ -1,4 +1,3 @@
-<!-- src/app/pages/usuarios/components/usuario-usuarios/usuario-usuarios.component.html -->
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3 class="card-title">
@@ -46,6 +45,10 @@
               Nombre
               <i class="bi" [ngClass]="getSortClass('nombre')"></i>
             </th>
+            <th (click)="onSortChange('rolId')" class="sortable-header">
+              Rol
+              <i class="bi" [ngClass]="getSortClass('rolId')"></i>
+            </th>
             <th (click)="onSortChange('email')" class="sortable-header">
               Email
               <i class="bi" [ngClass]="getSortClass('email')"></i>
@@ -76,21 +79,37 @@
               <div class="fw-bold cursor-pointer" (click)="verDetalleUsuario(usuario.id)">
                 {{ usuario.nombre }} {{ usuario.apellido }}
               </div>
+            </td>
+            <td>
               <div class="badge" [ngClass]="getRolClass(usuario.rolId)">
                 {{ usuario.rolNombre }}
               </div>
             </td>
             <td>{{ usuario.email || 'No especificado' }}</td>
             <td>{{ usuario.telefono || 'No especificado' }}</td>
+            <td>
+              <div *ngIf="getCanalNombre(usuario)">
+                {{ getCanalNombre(usuario) }}
+              </div>
+              <div *ngIf="!getCanalNombre(usuario)" class="text-muted small">
+                No asignado
+              </div>
+            </td>
+            <td>
+              <div *ngIf="getSubcanalNombre(usuario)">
+                {{ getSubcanalNombre(usuario) }}
+              </div>
+              <div *ngIf="!getSubcanalNombre(usuario)" class="text-muted small">
+                No asignado
+              </div>
+            </td>
             <td class="text-center">
               <span class="badge badge-light-primary">
-                {{ usuario.cantidadOperaciones || 0 }}
+                {{ getOperacionesCount(usuario) }}
               </span>
             </td>
             <td class="text-center">
-              <div class="badge cursor-pointer"
-                  [ngClass]="usuario.activo ? 'badge-light-success' : 'badge-light-danger'"
-                  (click)="toggleUsuarioEstado(usuario)">
+              <div class="badge cursor-pointer" [ngClass]="getEstadoClass(usuario.activo)" (click)="toggleUsuarioEstado(usuario)">
                 <span *ngIf="!isUsuarioLoading(usuario.id)">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span>
                 <span *ngIf="isUsuarioLoading(usuario.id)" class="spinner-border spinner-border-sm" role="status"></span>
               </div>
@@ -99,6 +118,7 @@
         </tbody>
       </table>
 
+      <!-- Empty State -->
       <div *ngIf="filteredUsuarios.length === 0" class="text-center p-5">
         <div class="text-center">
           <i class="bi bi-people-fill fs-2 text-muted mb-3"></i>

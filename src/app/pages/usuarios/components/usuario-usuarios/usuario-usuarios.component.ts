@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioDto, UsuarioService } from 'src/app/core/services/usuario.service';
+import { Canal } from 'src/app/core/services/canal.service';
+import { Subcanal } from 'src/app/core/services/subcanal.service';
+import { Operacion } from 'src/app/core/services/operacion.service';
 
 @Component({
   selector: 'app-usuario-usuarios',
@@ -16,6 +19,9 @@ export class UsuarioUsuariosComponent implements OnChanges {
   @Input() loading: boolean = false;
   @Input() error: string | null = null;
   @Input() tipoUsuario: 'adminCanal' | 'oficialComercial' = 'adminCanal';
+  @Input() canales: Canal[] = [];
+  @Input() subcanales: Subcanal[] = [];
+  @Input() operaciones: Operacion[] = [];
 
   filteredUsuarios: UsuarioDto[] = [];
   searchTerm: string = '';
@@ -40,7 +46,9 @@ export class UsuarioUsuariosComponent implements OnChanges {
       resultado = resultado.filter(usuario =>
         (`${usuario.nombre || ''} ${usuario.apellido || ''}`.toLowerCase().includes(term)) ||
         (usuario.email && usuario.email.toLowerCase().includes(term)) ||
-        (usuario.telefono && usuario.telefono.toLowerCase().includes(term))
+        (usuario.telefono && usuario.telefono.toLowerCase().includes(term)) ||
+        (this.getCanalNombre(usuario) && this.getCanalNombre(usuario).toLowerCase().includes(term)) ||
+        (this.getSubcanalNombre(usuario) && this.getSubcanalNombre(usuario).toLowerCase().includes(term))
       );
     }
 
@@ -64,8 +72,23 @@ export class UsuarioUsuariosComponent implements OnChanges {
         case 'email':
           comparison = (a.email || '').localeCompare(b.email || '');
           break;
+        case 'telefono':
+          comparison = (a.telefono || '').localeCompare(b.telefono || '');
+          break;
+        case 'canalNombre':
+          const canalA = this.getCanalNombre(a) || '';
+          const canalB = this.getCanalNombre(b) || '';
+          comparison = canalA.localeCompare(canalB);
+          break;
+        case 'subcanalNombre':
+          const subcanalA = this.getSubcanalNombre(a) || '';
+          const subcanalB = this.getSubcanalNombre(b) || '';
+          comparison = subcanalA.localeCompare(subcanalB);
+          break;
         case 'cantidadOperaciones':
-          comparison = (a.cantidadOperaciones || 0) - (b.cantidadOperaciones || 0);
+          const opsA = this.getOperacionesCount(a);
+          const opsB = this.getOperacionesCount(b);
+          comparison = opsA - opsB;
           break;
         default:
           comparison = 0;
@@ -137,5 +160,50 @@ export class UsuarioUsuariosComponent implements OnChanges {
       case 4: return 'badge-light-primary';
       default: return '';
     }
+  }
+
+  getEstadoClass(activo: boolean): string {
+    return activo ? 'badge-light-success' : 'badge-light-danger';
+  }
+
+  // Helper methods to get canal and subcanal information
+  getCanalNombre(usuario: UsuarioDto): string {
+    // For vendor, find the canal through subcanal
+    if (usuario.rolId === 3) {
+      // Find subcanal assigned to this vendor
+      const subcanalAsignado = this.subcanales.find(subcanal =>
+        subcanal.vendors && subcanal.vendors.some(vendor => vendor.id === usuario.id)
+      );
+
+      if (subcanalAsignado) {
+        // Find canal for this subcanal
+        const canal = this.canales.find(c => c.id === subcanalAsignado.canalId);
+        return canal ? canal.nombreFantasia : '';
+      }
+    }
+
+    return '';
+  }
+
+  getSubcanalNombre(usuario: UsuarioDto): string {
+    // For vendor, find assigned subcanal
+    if (usuario.rolId === 3) {
+      const subcanalAsignado = this.subcanales.find(subcanal =>
+        subcanal.vendors && subcanal.vendors.some(vendor => vendor.id === usuario.id)
+      );
+
+      return subcanalAsignado ? subcanalAsignado.nombre : '';
+    }
+
+    return '';
+  }
+
+  getOperacionesCount(usuario: UsuarioDto): number {
+    // For vendors, count their operations
+    if (usuario.rolId === 3) {
+      return this.operaciones.filter(op => op.vendedorId === usuario.id).length;
+    }
+
+    return usuario.cantidadOperaciones || 0;
   }
 }

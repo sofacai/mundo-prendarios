@@ -61,10 +61,19 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   constructor() { }
 
   ngOnInit() {
+    console.log('UsuarioEstadisticasComponent - ngOnInit');
+    console.log('Usuario:', this.usuario);
+    console.log('Operaciones:', this.operaciones.length);
+    console.log('Clientes:', this.clientes.length);
+    console.log('Canales:', this.canales.length);
+    console.log('Subcanales:', this.subcanales.length);
+    console.log('Vendors:', this.vendors.length);
+
     this.calcularEstadisticas();
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    console.log('UsuarioEstadisticasComponent - ngOnChanges');
     if (changes['operaciones'] || changes['clientes'] || changes['canales'] || changes['subcanales'] || changes['vendors']) {
       this.calcularEstadisticas();
       if (this.chartInitialized) {
@@ -74,20 +83,26 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   ngAfterViewInit() {
+    console.log('UsuarioEstadisticasComponent - ngAfterViewInit');
+    // Usar setTimeout para asegurar que los elementos del DOM estén listos
     setTimeout(() => {
       this.initializeCharts();
-    }, 100);
+    }, 300);
   }
 
   initializeCharts() {
+    console.log('UsuarioEstadisticasComponent - initializeCharts');
     this.inicializarGraficoOperaciones();
 
+    // Inicializar gráficos según el rol del usuario
+    if (this.usuario.rolId === RolType.AdminCanal) {
+      this.inicializarGraficoSubcanales();
+    } else if (this.usuario.rolId === RolType.OficialComercial) {
+      this.inicializarGraficoCanales();
+    }
+
+    // El gráfico de vendors se muestra para AdminCanal y OficialComercial
     if (this.usuario.rolId === RolType.AdminCanal || this.usuario.rolId === RolType.OficialComercial) {
-      if (this.usuario.rolId === RolType.AdminCanal) {
-        this.inicializarGraficoSubcanales();
-      } else if (this.usuario.rolId === RolType.OficialComercial) {
-        this.inicializarGraficoCanales();
-      }
       this.inicializarGraficoVendors();
     }
 
@@ -95,6 +110,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularEstadisticas() {
+    console.log('UsuarioEstadisticasComponent - calcularEstadisticas');
     // Estadísticas generales
     this.calcularOperacionesActivas();
     this.calcularMontoTotal();
@@ -150,7 +166,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularTendencias() {
-    // Lógica existente para calcular tendencias
+    console.log('UsuarioEstadisticasComponent - calcularTendencias');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     this.trendMensual = this.calcularTendenciaMensual(operacionesPorMes);
     this.trendMonto = this.calcularTendenciaMonto();
@@ -181,6 +197,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Estadísticas por tipo de usuario
   calcularEstadisticasSubcanales() {
+    console.log('UsuarioEstadisticasComponent - calcularEstadisticasSubcanales');
     if (!this.subcanales || this.subcanales.length === 0) return;
 
     // Calcular operaciones por subcanal
@@ -201,6 +218,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularEstadisticasCanales() {
+    console.log('UsuarioEstadisticasComponent - calcularEstadisticasCanales');
     if (!this.canales || this.canales.length === 0) return;
 
     // Calcular operaciones por canal
@@ -221,6 +239,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularEstadisticasVendors() {
+    console.log('UsuarioEstadisticasComponent - calcularEstadisticasVendors');
     if (!this.vendors || this.vendors.length === 0) return;
 
     // Calcular operaciones por vendor
@@ -243,15 +262,26 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Inicialización de gráficos
   inicializarGraficoOperaciones() {
-    if (!this.operacionesPorMesChartRef) return;
+    console.log('UsuarioEstadisticasComponent - inicializarGraficoOperaciones');
+    if (!this.operacionesPorMesChartRef) {
+      console.warn('Chart reference not found: operacionesPorMesChartRef');
+      return;
+    }
 
     const canvas = this.operacionesPorMesChartRef.nativeElement as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('Canvas element not found for operacionesPorMesChart');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Could not get 2D context for operacionesPorMesChart');
+      return;
+    }
 
     const { labels, data } = this.prepareChartData();
+    console.log('Chart data prepared:', { labels, data });
 
     if (this.operacionesChart) {
       this.operacionesChart.destroy();
@@ -287,16 +317,28 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         }
       }
     });
+
+    console.log('Operaciones chart initialized');
   }
 
   inicializarGraficoCanales() {
-    if (!this.canalesOperacionesChartRef) return;
+    console.log('UsuarioEstadisticasComponent - inicializarGraficoCanales');
+    if (!this.canalesOperacionesChartRef) {
+      console.warn('Chart reference not found: canalesOperacionesChartRef');
+      return;
+    }
 
     const canvas = this.canalesOperacionesChartRef.nativeElement as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('Canvas element not found for canalesOperacionesChart');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Could not get 2D context for canalesOperacionesChart');
+      return;
+    }
 
     const labels = Object.keys(this.operacionesPorCanal);
     const data = Object.values(this.operacionesPorCanal);
@@ -332,17 +374,28 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         }
       }
     });
+
+    console.log('Canales chart initialized');
   }
 
   inicializarGraficoSubcanales() {
-    // Similar a inicializarGraficoCanales pero para subcanales
-    if (!this.canalesOperacionesChartRef) return;
+    console.log('UsuarioEstadisticasComponent - inicializarGraficoSubcanales');
+    if (!this.canalesOperacionesChartRef) {
+      console.warn('Chart reference not found for subcanal chart: canalesOperacionesChartRef');
+      return;
+    }
 
     const canvas = this.canalesOperacionesChartRef.nativeElement as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('Canvas element not found for subcanales chart');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Could not get 2D context for subcanales chart');
+      return;
+    }
 
     const labels = Object.keys(this.operacionesPorSubcanal);
     const data = Object.values(this.operacionesPorSubcanal);
@@ -378,16 +431,28 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         }
       }
     });
+
+    console.log('Subcanales chart initialized');
   }
 
   inicializarGraficoVendors() {
-    if (!this.vendorsOperacionesChartRef) return;
+    console.log('UsuarioEstadisticasComponent - inicializarGraficoVendors');
+    if (!this.vendorsOperacionesChartRef) {
+      console.warn('Chart reference not found: vendorsOperacionesChartRef');
+      return;
+    }
 
     const canvas = this.vendorsOperacionesChartRef.nativeElement as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('Canvas element not found for vendorsOperacionesChart');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Could not get 2D context for vendorsOperacionesChart');
+      return;
+    }
 
     const labels = Object.keys(this.operacionesPorVendor);
     const data = Object.values(this.operacionesPorVendor);
@@ -427,6 +492,8 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         }
       }
     });
+
+    console.log('Vendors chart initialized');
   }
 
   // Métodos auxiliares
@@ -485,10 +552,12 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularTendenciaClientes(): number {
-    return 15; // Valor de ejemplo simplificado
+    // Valor simulado para esta implementación
+    return Math.floor(Math.random() * 30) - 10; // Valor entre -10 y 20
   }
 
   prepareChartData(): { labels: string[], data: number[] } {
+    console.log('UsuarioEstadisticasComponent - prepareChartData');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     const today = new Date();
     const labels: string[] = [];
@@ -510,6 +579,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   updateChartData() {
+    console.log('UsuarioEstadisticasComponent - updateChartData');
     if (this.operacionesChart) {
       const { labels, data } = this.prepareChartData();
       this.operacionesChart.data.labels = labels;

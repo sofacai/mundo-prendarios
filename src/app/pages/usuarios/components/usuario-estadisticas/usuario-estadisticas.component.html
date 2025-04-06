@@ -67,4 +67,47 @@
       </div>
     </div>
   </div>
+
+  <!-- Segunda fila con gráficos específicos por rol -->
+  <div class="stats-grid-2col mt-4">
+    <!-- Gráfico específico según rol (Subcanales para AdminCanal, Canales para OficialComercial) -->
+    <div class="chart-card" *ngIf="usuario.rolId === 2 || usuario.rolId === 4">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi" [ngClass]="usuario.rolId === 2 ? 'bi-diagram-3' : 'bi-grid-3x3-gap'" class="me-2 text-primary"></i>
+          {{ usuario.rolId === 2 ? 'Operaciones por Subcanal' : 'Operaciones por Canal' }}
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-container">
+          <canvas #canalesOperacionesChart></canvas>
+          <div *ngIf="(usuario.rolId === 2 && (!subcanales || subcanales.length === 0)) ||
+                     (usuario.rolId === 4 && (!canales || canales.length === 0))"
+               class="chart-no-data">
+            <i class="bi" [ngClass]="usuario.rolId === 2 ? 'bi-diagram-3' : 'bi-grid-3x3-gap'"></i>
+            <p>No hay datos para mostrar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de vendedores (para AdminCanal y OficialComercial) -->
+    <div class="chart-card" *ngIf="usuario.rolId === 2 || usuario.rolId === 4">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi bi-people me-2 text-primary"></i>
+          Rendimiento de Vendedores
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-container">
+          <canvas #vendorsOperacionesChart></canvas>
+          <div *ngIf="!vendors || vendors.length === 0" class="chart-no-data">
+            <i class="bi bi-people"></i>
+            <p>No hay vendedores asignados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

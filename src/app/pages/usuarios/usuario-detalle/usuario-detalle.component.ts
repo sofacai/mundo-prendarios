@@ -3,7 +3,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { switchMap, catchError, tap } from 'rxjs/operators';
 
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
@@ -60,7 +61,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
 
   showPasswordModal = false;
 
-
   // Datos para el detalle
   estadisticas: VendorEstadisticasDto | null = null;
   operaciones: Operacion[] = [];
@@ -69,11 +69,11 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
   canales: Canal[] = [];
 
   usuariosRelacionados: UsuarioDto[] = [];
-loadingUsuariosRelacionados = false;
-errorUsuariosRelacionados: string | null = null;
+  loadingUsuariosRelacionados = false;
+  errorUsuariosRelacionados: string | null = null;
 
   operacionesActivas: number = 0;
-montoTotal: number = 0;
+  montoTotal: number = 0;
 
   // Estados de carga
   loadingOperaciones = false;
@@ -211,6 +211,7 @@ montoTotal: number = 0;
           next: (operaciones) => {
             this.operaciones = operaciones.filter(op => op.vendedorId === this.usuarioId);
             this.loadingOperaciones = false;
+            this.calcularEstadisticasHeader();
             this.checkLoadingComplete();
           },
           error: (err) => {
@@ -273,49 +274,78 @@ montoTotal: number = 0;
 
   loadAdminCanalData() {
     this.loadingSubcanales = true;
+    this.loadingUsuariosRelacionados = true;
+    this.loadingOperaciones = true;
+    this.loadingClientes = true;
 
-    // Primero cargar subcanales
-    this.subcanalService.getSubcanales().subscribe({
-      next: (subcanales) => {
+    // Obtener todos los subcanales que administra
+    this.subcanalService.getSubcanales().pipe(
+      switchMap(subcanales => {
+        // Filtramos los subcanales administrados por este usuario
         this.subcanales = subcanales.filter(subcanal => subcanal.adminCanalId === this.usuarioId);
         this.loadingSubcanales = false;
-        this.loading = false;
 
-        // Luego cargar usuarios relacionados (vendors)
-        this.cargarUsuariosAdminCanal();
-      },
-      error: (err) => {
-        this.errorSubcanales = 'Error al cargar los subcanales administrados.';
-        this.loadingSubcanales = false;
-        this.loading = false;
-      }
-    });
-  }
+        if (this.subcanales.length === 0) {
+          return of({ operaciones: [], usuarios: [], clientes: [] });
+        }
 
-  cargarUsuariosAdminCanal() {
-    // Solo cargar si tenemos subcanales
-    if (this.subcanales.length === 0) return;
-
-    this.loadingUsuariosRelacionados = true;
-
-    // Obtener todos los vendors
-    this.usuarioService.getUsuariosPorRol(RolType.Vendor).subscribe({
-      next: (vendors) => {
-        // Filtrar solo los que estén en estos subcanales
+        // Obtenemos los IDs de los subcanales para los siguientes filtros
         const subcanalIds = this.subcanales.map(s => s.id);
 
-        // Asignar usuarios
-        this.usuariosRelacionados = vendors.filter(v =>
-          this.subcanales.some(s =>
-            s.vendors && s.vendors.some(sv => sv.id === v.id)
-          )
-        );
+        // Cargamos operaciones, usuarios y clientes relacionados con estos subcanales
+        return forkJoin({
+          operaciones: this.operacionService.getOperaciones(),
+          usuarios: this.usuarioService.getUsuariosPorRol(RolType.Vendor),
+          clientes: this.clienteService.getClientes()
+        });
+      })
+    ).subscribe({
+      next: (results) => {
+        // Procesamos los resultados si tenemos subcanales
+        if (this.subcanales.length > 0) {
+          const subcanalIds = this.subcanales.map(s => s.id);
 
-        this.loadingUsuariosRelacionados = false;
+          // Filtramos operaciones de estos subcanales
+          this.operaciones = results.operaciones.filter(op =>
+            subcanalIds.includes(op.subcanalId || 0)
+          );
+          this.loadingOperaciones = false;
+          this.calcularEstadisticasHeader();
+
+          // Filtramos usuarios (vendors) asignados a estos subcanales
+          this.usuariosRelacionados = results.usuarios.filter(v =>
+            this.subcanales.some(s =>
+              s.vendors && s.vendors.some(sv => sv.id === v.id)
+            )
+          );
+          this.loadingUsuariosRelacionados = false;
+
+          // Filtramos clientes relacionados con estos subcanales
+          // Esto es aproximado - podría necesitar ajustes según la lógica de negocio
+          this.clientes = results.clientes.filter(cliente =>
+            this.operaciones.some(op => op.clienteId === cliente.id)
+          );
+          this.loadingClientes = false;
+        } else {
+          // Si no hay subcanales, limpiamos los datos relacionados
+          this.operaciones = [];
+          this.loadingOperaciones = false;
+          this.usuariosRelacionados = [];
+          this.loadingUsuariosRelacionados = false;
+          this.clientes = [];
+          this.loadingClientes = false;
+        }
+
+        this.loading = false;
       },
       error: (err) => {
-        this.errorUsuariosRelacionados = 'Error al cargar usuarios.';
+        console.error('Error cargando datos del AdminCanal:', err);
+        this.errorSubcanales = 'Error al cargar los datos.';
+        this.loadingSubcanales = false;
         this.loadingUsuariosRelacionados = false;
+        this.loadingOperaciones = false;
+        this.loadingClientes = false;
+        this.loading = false;
       }
     });
   }
@@ -323,22 +353,78 @@ montoTotal: number = 0;
   loadOficialComercialData() {
     this.loadingCanales = true;
     this.loadingUsuariosRelacionados = true;
+    this.loadingOperaciones = true;
+    this.loadingClientes = true;
 
-    forkJoin({
-      canales: this.canalService.getCanales(),
-      estadisticas: this.usuarioService.getVendorEstadisticas(this.usuarioId)
-    }).subscribe({
-      next: (results) => {
-        // Filtrar canales donde el oficial comercial aparezca
-        this.canales = results.canales.filter(canal =>
+    // Get canals only - don't try to get vendor statistics for OficialComercial role
+    this.canalService.getCanales().subscribe({
+      next: (canales) => {
+        // Filter canals where this oficial comercial appears
+        this.canales = canales.filter(canal =>
           canal.oficialesComerciales &&
           canal.oficialesComerciales.some(oficial => oficial.id === this.usuarioId));
         this.loadingCanales = false;
 
-        this.estadisticas = results.estadisticas;
+        if (this.canales.length === 0) {
+          this.loading = false;
+          return;
+        }
 
-        // Cargar operaciones y usuarios de estos canales
-        this.cargarDatosCanales();
+        // Get IDs of canals for filtering
+        const canalIds = this.canales.map(c => c.id);
+
+        // Load operations
+        this.operacionService.getOperaciones().subscribe({
+          next: (operaciones) => {
+            this.operaciones = operaciones.filter(op =>
+              canalIds.includes(op.canalId || 0));
+            this.loadingOperaciones = false;
+            this.calcularEstadisticasHeader();
+            this.checkLoadingComplete();
+
+            // Get vendors based on operations
+            const vendorIds = new Set<number>();
+            this.operaciones.forEach(op => {
+              if (op.vendedorId) vendorIds.add(op.vendedorId);
+            });
+
+            // Load related vendors
+            this.usuarioService.getUsuariosPorRol(RolType.Vendor).subscribe({
+              next: (vendors) => {
+                this.usuariosRelacionados = vendors.filter(v =>
+                  vendorIds.has(v.id));
+                this.loadingUsuariosRelacionados = false;
+                this.checkLoadingComplete();
+              },
+              error: (err) => {
+                console.error('Error loading vendors:', err);
+                this.loadingUsuariosRelacionados = false;
+                this.checkLoadingComplete();
+              }
+            });
+
+            // Load related clients
+            this.clienteService.getClientes().subscribe({
+              next: (clientes) => {
+                this.clientes = clientes.filter(cliente =>
+                  canalIds.includes(cliente.canalId || 0));
+                this.loadingClientes = false;
+                this.checkLoadingComplete();
+              },
+              error: (err) => {
+                console.error('Error loading clients:', err);
+                this.loadingClientes = false;
+                this.checkLoadingComplete();
+              }
+            });
+          },
+          error: (err) => {
+            console.error('Error loading operations:', err);
+            this.errorOperaciones = 'Error al cargar las operaciones.';
+            this.loadingOperaciones = false;
+            this.checkLoadingComplete();
+          }
+        });
       },
       error: (err) => {
         console.error('Error cargando canales:', err);
@@ -348,51 +434,6 @@ montoTotal: number = 0;
       }
     });
   }
-
-  // Nuevo método para cargar datos de canales
-  cargarDatosCanales() {
-    if (this.canales.length === 0) {
-      this.loading = false;
-      this.loadingUsuariosRelacionados = false;
-      return;
-    }
-
-    const canalIds = this.canales.map(c => c.id);
-
-    forkJoin({
-      operaciones: this.operacionService.getOperaciones(),
-      usuarios: this.usuarioService.getUsuarios()
-    }).subscribe({
-      next: (results) => {
-        // Filtrar operaciones por canalId
-        this.operaciones = results.operaciones.filter(op =>
-          canalIds.includes(op.canalId || 0));
-
-        // Filtrar usuarios asociados a estos canales
-        const vendorIds = new Set<number>();
-        this.operaciones.forEach(op => {
-          if (op.vendedorId) vendorIds.add(op.vendedorId);
-        });
-
-        this.usuariosRelacionados = results.usuarios.filter(u =>
-          u.rolId === RolType.Vendor &&
-          vendorIds.has(u.id));
-
-        this.loadingUsuariosRelacionados = false;
-        this.loading = false;
-
-        // Calcular métricas adicionales
-        this.calcularEstadisticasHeader();
-      },
-      error: (err) => {
-        console.error('Error cargando datos relacionados:', err);
-        this.errorUsuariosRelacionados = 'Error al cargar usuarios relacionados.';
-        this.loadingUsuariosRelacionados = false;
-        this.loading = false;
-      }
-    });
-  }
-
   // Verificar si todas las cargas han finalizado
   checkLoadingComplete() {
     if (this.usuario.rolId === RolType.Vendor) {
@@ -401,12 +442,12 @@ montoTotal: number = 0;
       }
     }
     else if (this.usuario.rolId === RolType.AdminCanal) {
-      if (!this.loadingSubcanales) {
+      if (!this.loadingSubcanales && !this.loadingUsuariosRelacionados && !this.loadingOperaciones && !this.loadingClientes) {
         this.loading = false;
       }
     }
     else if (this.usuario.rolId === RolType.OficialComercial) {
-      if (!this.loadingCanales) {
+      if (!this.loadingCanales && !this.loadingUsuariosRelacionados && !this.loadingOperaciones && !this.loadingClientes) {
         this.loading = false;
       }
     }

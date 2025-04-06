@@ -1,3 +1,4 @@
+<!-- src/app/pages/usuarios/usuario-detalle/usuario-detalle.component.html -->
 <div class="canales-container">
   <!-- Sidebar -->
   <app-sidebar></app-sidebar>
@@ -60,8 +61,8 @@
           ></app-usuario-operaciones>
         </div>
 
-        <!-- Clientes Tab (Solo para Vendors) -->
-        <div class="tab-pane" [class.active]="activeTab === 'clientes'" *ngIf="usuario.rolId === 3">
+        <!-- Clientes Tab (Para Vendors, AdminCanal y OficialComercial) -->
+        <div class="tab-pane" [class.active]="activeTab === 'clientes'" *ngIf="usuario.rolId === 3 || usuario.rolId === 2 || usuario.rolId === 4">
           <app-usuario-clientes
             [clientes]="clientes"
             [loading]="loadingClientes"
@@ -91,13 +92,29 @@
           ></app-usuario-canales>
         </div>
 
-        <!-- Estadísticas Tab (Solo para Vendors) -->
-        <div class="tab-pane" [class.active]="activeTab === 'estadisticas'" *ngIf="usuario.rolId === 3">
+        <!-- Usuarios Tab (Para AdminCanal y OficialComercial) -->
+        <div class="tab-pane" [class.active]="activeTab === 'usuarios'" *ngIf="usuario.rolId === 2 || usuario.rolId === 4">
+          <app-usuario-usuarios
+            [usuarios]="usuariosRelacionados"
+            [loading]="loadingUsuariosRelacionados"
+            [error]="errorUsuariosRelacionados"
+            [tipoUsuario]="usuario.rolId === 2 ? 'adminCanal' : 'oficialComercial'"
+            [canales]="canales"
+            [subcanales]="subcanales"
+            [operaciones]="operaciones"
+          ></app-usuario-usuarios>
+        </div>
+
+        <!-- Estadísticas Tab (Para todos los roles) -->
+        <div class="tab-pane" [class.active]="activeTab === 'estadisticas'" *ngIf="usuario.rolId === 3 || usuario.rolId === 2 || usuario.rolId === 4">
           <app-usuario-estadisticas
             [usuario]="usuario"
             [estadisticas]="estadisticas"
             [operaciones]="operaciones"
             [clientes]="clientes"
+            [canales]="canales"
+            [subcanales]="subcanales"
+            [vendors]="usuariosRelacionados"
           ></app-usuario-estadisticas>
         </div>
       </div>
