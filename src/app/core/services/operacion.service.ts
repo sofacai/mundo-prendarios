@@ -13,7 +13,7 @@ export interface Operacion {
   clienteNombre?: string;
   planId: number;
   planNombre?: string;
-  vendedorId: number;
+  vendedorId?: number;
   vendedorNombre?: string;
   subcanalId: number;
   subcanalNombre?: string;

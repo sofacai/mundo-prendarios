@@ -88,7 +88,7 @@
           <div class="detail-section">
             <div class="detail-row">
               <div class="detail-label">Nombre:</div>
-              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleUsuario(operacion.vendedorId)">
+              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleUsuario(operacion.vendedorId || 0)">
                 {{ operacion.vendedorNombre}}
               </a>              </div>
             <div class="detail-row">
