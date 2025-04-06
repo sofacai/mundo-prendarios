@@ -88,16 +88,7 @@
           <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Usuarios</div>
         </li>
 
-        <!-- Clientes -->
-        <li class="menu-item" [class.active]="isActiveRoute('/clientes')" *ngIf="userRole === rolType.Administrador">
-          <a (click)="navigateTo('/clientes')" class="menu-link">
-            <div class="menu-icon">
-              <i class="bi bi-person"></i>
-            </div>
-            <span class="menu-text" *ngIf="!isSidebarCollapsed">Clientes</span>
-          </a>
-          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Clientes</div>
-        </li>
+
 
         <!-- Operaciones -->
         <li class="menu-item" [class.active]="isActiveRoute('/operaciones')">

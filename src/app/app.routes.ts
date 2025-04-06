@@ -59,12 +59,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: [RolType.Administrador, RolType.AdminCanal, RolType.OficialComercial] }
   },
-  {
-    path: 'clientes',
-    loadComponent: () => import('./pages/clientes/clientes-lista/clientes-lista.component').then(m => m.ClientesListaComponent),
-    canActivate: [AuthGuard],
-    data: { roles: [RolType.Administrador, RolType.OficialComercial] }
-  },
+
   {
     path: 'operaciones',
     loadComponent: () => import('./pages/operaciones/operaciones-lista/operaciones-lista.component').then(m => m.OperacionesListaComponent),

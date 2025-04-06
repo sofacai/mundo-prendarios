@@ -93,16 +93,7 @@
           </app-subcanal-vendedores-tab>
         </div>
 
-        <!-- Clientes Tab Component -->
-        <div class="tab-pane" [class.active]="activeTab === 'clientes'">
-          <app-subcanal-clientes-tab
-            [clientes]="clientes"
-            [subcanal]="subcanal"
-            [getVendorNombre]="getVendorNombre.bind(this)"
-            (filtrarClientes)="filtrarClientes()"
-            (verDetalleCliente)="verDetalleCliente($event)">
-          </app-subcanal-clientes-tab>
-        </div>
+
 
         <!-- Operaciones Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'operaciones'">

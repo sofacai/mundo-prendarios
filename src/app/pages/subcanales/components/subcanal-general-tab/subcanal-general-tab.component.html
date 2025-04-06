@@ -88,27 +88,7 @@
               />
             </div>
           </div>
-          <div class="col-12">
-            <div class="detail-row">
-              <div class="detail-label">Comisión (%)</div>
-              <div
-                class="detail-value"
-                *ngIf="!isEditing"
-              >
-                {{ subcanal.comision }}%
-              </div>
-              <input
-                *ngIf="isEditing"
-                type="number"
-                class="form-control"
-                min="0"
-                max="100"
-                step="0.01"
-                [value]="subcanalFormData.comision"
-                (input)="onUpdateField('comision', $event)"
-              />
-            </div>
-          </div>
+
         </div>
       </div>
     </div>

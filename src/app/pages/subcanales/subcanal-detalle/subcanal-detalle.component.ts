@@ -21,7 +21,6 @@ import { SubcanalTabsNavigationComponent } from '../components/subcanal-tabs-nav
 import { SubcanalGeneralTabComponent } from '../components/subcanal-general-tab/subcanal-general-tab.component';
 import { SubcanalVendedoresTabComponent } from '../components/subcanal-vendedores-tab/subcanal-vendedores-tab.component';
 import { SubcanalGastosTabComponent } from '../components/subcanal-gastos-tab/subcanal-gastos-tab.component';
-import { SubcanalClientesTabComponent } from '../components/subcanal-clientes-tab/subcanal-clientes-tab.component';
 import { SubcanalOperacionesTabComponent } from '../components/subcanal-operaciones-tab/subcanal-operaciones-tab.component';
 import { SubcanalEstadisticasTabComponent } from '../components/subcanal-estadisticas-tab/subcanal-estadisticas-tab.component';
 import { GastoFormModalComponent } from '../components/gasto-form-modal/gasto-form-modal.component';
@@ -46,7 +45,6 @@ Chart.register(...registerables);
     SubcanalGeneralTabComponent,
     SubcanalVendedoresTabComponent,
     SubcanalGastosTabComponent,
-    SubcanalClientesTabComponent,
     SubcanalOperacionesTabComponent,
     SubcanalEstadisticasTabComponent,
     GastoFormModalComponent,
