@@ -4,6 +4,7 @@ import { RolType } from './core/models/usuario.model';
 import { WizardContainerComponent } from './pages/cotizador/wizard-container/wizard-container.component';
 import { SubcanalDetalleComponent } from './pages/subcanales/subcanal-detalle/subcanal-detalle.component';
 import { UsuarioDetalleComponent } from './pages/usuarios/usuario-detalle/usuario-detalle.component';
+import { OperacionDetalleComponent } from './pages/operaciones/operacion-detalle/operacion-detalle.component';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -75,6 +76,10 @@ export const routes: Routes = [
     path: 'cotizador',
     component: WizardContainerComponent,
     canActivate: [AuthGuard] // Si tienes un guard
+  },
+  {
+    path: 'operaciones/:id',
+    component: OperacionDetalleComponent,
   },
 
   // Redirecciones

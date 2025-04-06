@@ -1,0 +1,296 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* ===============================
+   ESTRUCTURA BÁSICA
+   =============================== */
+
+.operacion-detail {
+  margin-top: 1rem;
+}
+
+/* Contenedor principal de cartas */
+.components-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Tarjeta de encabezado de operación */
+.operacion-header-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 1.5rem;
+}
+
+.header-main-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.operacion-info {
+  flex: 1;
+}
+
+.title-badge-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.operacion-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #181c32;
+  margin: 0;
+}
+
+.estado-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.plan-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+.separator {
+  color: #d1d3e0;
+  margin: 0 6px;
+}
+
+.financials {
+  text-align: right;
+}
+
+.amount-label {
+  color: #7e8299;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+
+.amount-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #181c32;
+}
+
+.additional-info {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 15px;
+  border-top: 1px solid #ebedf3;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+.info-item i {
+  margin-right: 8px;
+  color: #a1a5b7;
+}
+
+/* Estilos de cartas de detalle */
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: none;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef0f2;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #181c32;
+  display: flex;
+  align-items: center;
+}
+
+.card-title i {
+  color: #009ef7;
+  margin-right: 8px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.details-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title {
+  font-size: 1rem;
+  color: #7e8299;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+.detail-value {
+  color: #181c32;
+  font-size: 1rem;
+  text-align: right;
+}
+
+.detail-value.fw-bold {
+  font-weight: 600;
+}
+
+.btn-link {
+  color: #009ef7;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.btn-link:hover {
+  color: #0073b9;
+}
+
+.badge {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.badge-success {
+  background-color: rgba(80, 205, 137, 0.1);
+  color: #50cd89;
+}
+
+.badge-warning {
+  background-color: rgba(255, 199, 0, 0.1);
+  color: #ffc700;
+}
+
+.badge-info {
+  background-color: rgba(0, 158, 247, 0.1);
+  color: #009ef7;
+}
+
+.badge-danger {
+  background-color: rgba(241, 65, 108, 0.1);
+  color: #f1416c;
+}
+
+.badge-light {
+  background-color: rgba(181, 181, 195, 0.1);
+  color: #b5b5c3;
+}
+
+/* Estilos de detalle de canal y subcanal */
+.canal-info, .subcanal-info {
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.detail-icon {
+  margin-right: 15px;
+  color: #7e8299;
+}
+
+.detail-content {
+  flex: 1;
+}
+
+.detail-content .detail-label {
+  color: #7e8299;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.detail-content .detail-value {
+  color: #181c32;
+  font-size: 1rem;
+  text-align: left;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .components-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .header-main-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .operacion-info {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .financials {
+    width: 100%;
+    text-align: left;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}

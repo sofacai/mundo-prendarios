@@ -1,0 +1,115 @@
+<div class="canales-container">
+<app-sidebar></app-sidebar>
+<!-- Loading Indicator -->
+<div class="content-area">
+<div *ngIf="loading" class="text-center p-5">
+  <div class="spinner-border text-primary"></div>
+  <p class="mt-2">Cargando información de la operación...</p>
+</div>
+
+<!-- Error Message -->
+<div *ngIf="error && !loading" class="alert alert-danger">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  {{ error }}
+</div>
+
+<!-- Operación Content -->
+<div *ngIf="operacion && !loading && !error" class="operacion-detail">
+  <!-- Primer bloque de información -->
+  <div class="operacion-header-card">
+    <div class="header-main-section">
+      <div class="operacion-info">
+        <div class="title-badge-wrapper">
+          <h2 class="operacion-title">Operación #{{ operacion.id }}</h2>
+
+
+        </div>
+        <div class="plan-info">
+          <span>{{ cliente?.nombre }} {{ cliente?.apellido }}</span>
+          <span class="separator">|</span>
+          <span>{{ cliente?.telefono }}</span>
+          <span class="separator">|</span>
+
+          <span>{{ cliente?.email }}</span>
+
+        </div>
+      </div>
+
+    </div>
+    <div style="padding-top:20px">    <span>Fecha: {{ formatDate(operacion.fechaCreacion) }}</span>
+    </div>
+
+  </div>
+
+  <!-- Contenido principal en cards separadas -->
+  <div class="components-grid">
+    <!-- Detalles de la operación -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="bi bi-clipboard-data me-2 text-primary"></i>
+          Detalles de la Operación
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="details-grid">
+          <div class="detail-section">
+            <div class="detail-row">
+              <div class="detail-label">Monto:</div>
+              <div class="detail-value fw-bold">{{ formatMonto(operacion.monto) }}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Plazo:</div>
+              <div class="detail-value">{{ operacion.meses }} meses</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Plan:</div>
+              <div class="detail-value">{{ operacion.planNombre || 'No especificado' }}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Cuota inicial:</div>
+              <div class="detail-value">{{ calcularCuotaMensual() }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Vendor -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="bi bi-person-badge me-2 text-primary"></i>
+          Información del Vendor
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="details-grid">
+          <div class="detail-section">
+            <div class="detail-row">
+              <div class="detail-label">Nombre:</div>
+              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleUsuario(operacion.vendedorId)">
+                {{ operacion.vendedorNombre}}
+              </a>              </div>
+            <div class="detail-row">
+              <div class="detail-label">Email:</div>
+              <div class="detail-value">{{ vendor?.email || 'No especificado' }}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Subcanal:</div>
+              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleSubcanal(operacion.subcanalId)">
+                {{ operacion.subcanalNombre}}
+              </a>            </div>
+            <div class="detail-row">
+              <div class="detail-label">Canal:</div>
+              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleCanal(operacion.canalId)">
+                {{ operacion.canalNombre}}
+              </a>             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>

@@ -13,11 +13,11 @@ export interface Operacion {
   clienteNombre?: string;
   planId: number;
   planNombre?: string;
-  vendedorId?: number;
+  vendedorId: number;
   vendedorNombre?: string;
-  subcanalId?: number;
+  subcanalId: number;
   subcanalNombre?: string;
-  canalId?: number;
+  canalId: number;
   canalNombre?: string;
   fechaCreacion?: Date;
   estado?: string;
