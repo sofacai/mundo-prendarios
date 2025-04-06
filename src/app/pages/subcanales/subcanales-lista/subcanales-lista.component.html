@@ -83,11 +83,8 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('activo')"></i>
                 </th>
-                <th (click)="sortBy('comision')" class="sortable-header">
-                  Comisión
-                  <i class="bi" [ngClass]="getSortIcon('comision')"></i>
-                </th>
-                <th (click)="sortBy('gastos')" class="sortable-header">
+
+                <th *ngIf="isAdmin" (click)="sortBy('gastos')" class="sortable-header">
                   Gastos
                   <i class="bi" [ngClass]="getSortIcon('gastos')"></i>
                 </th>
@@ -123,12 +120,8 @@
                     <span *ngIf="isSubcanalLoading(subcanal.id)" class="spinner-border spinner-border-sm" role="status"></span>
                   </div>
                 </td>
-                <td>
-                  <span class="badge badge-light-primary">
-                    {{ formatComision(subcanal.comision) }}
-                  </span>
-                </td>
-                <td>
+
+                <td *ngIf="isAdmin">
                   <span class="badge badge-light-info">
                     {{ getGastosPorcentaje(subcanal) }}
                   </span>

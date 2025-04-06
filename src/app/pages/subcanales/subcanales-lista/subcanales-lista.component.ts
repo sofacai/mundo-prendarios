@@ -9,6 +9,8 @@ import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
 import { SubcanalFormComponent } from 'src/app/shared/modals/subcanal-form/subcanal-form.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { RolType } from 'src/app/core/models/usuario.model';
 
 interface SortState {
   column: string;
@@ -52,11 +54,14 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   totalSubcanales: number = 0;
   totalPaginas: number = 1;
 
+  isAdmin: boolean = false;
+
   constructor(
     private subcanalService: SubcanalService,
     private router: Router,
     private renderer: Renderer2,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
@@ -72,6 +77,8 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
         }
       }
     );
+
+    this.isAdmin = this.authService.hasRole(RolType.Administrador);
 
     this.loadSubcanales();
   }
