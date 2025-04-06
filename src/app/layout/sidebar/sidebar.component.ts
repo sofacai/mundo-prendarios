@@ -140,6 +140,13 @@ export class SidebarComponent implements OnInit {
     this.router.navigateByUrl(route);
   }
 
+  /**
+   * Logout method
+   */
+  logout(): void {
+    this.authService.logout();
+  }
+
   private getUserRole(): void {
     const user = this.authService.currentUserValue;
     if (user) {

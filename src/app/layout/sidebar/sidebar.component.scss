@@ -95,6 +95,13 @@ $transition-duration: 0.3s;
   }
 }
 
+// User menu section
+.user-menu {
+  margin-top: auto;
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 // Menu list
 .menu-list {
   list-style: none;
@@ -282,20 +289,12 @@ $transition-duration: 0.3s;
   }
 }
 
-// Footer y botón de colapsar/expandir
-.sidebar-footer {
-  padding: 1rem;
-  display: flex;
-  justify-content: center;
-  margin-top: auto;
-  margin-bottom: 1rem;
-}
-
+// Botón de colapsar/expandir
 .toggle-btn {
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background-color: #30313f;
+  background-color: #2d2e3d;
   border: none;
   color: $sidebar-text;
   display: flex;
@@ -303,29 +302,46 @@ $transition-duration: 0.3s;
   justify-content: center;
   cursor: pointer;
   transition: all $transition-duration ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
 
-  // Cuando el sidebar está expandido
-  .sidebar:not(.sidebar-collapsed) & {
-    &:hover {
-      background-color: $sidebar-hover-bg;
-      color: white;
+  .toggle-btn.floating {
+    position: fixed !important; /* Usa fixed en lugar de absolute */
+    bottom: 110px !important;
+    right: -9px !important;
+    z-index: 99999 !important;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.8) !important;
+    border: 3px solid #1a1b23 !important;
+    background-color: #2d2e3d !important;
+    pointer-events: all !important;
+  }
+
+  // Botón flotante
+  &.floating {
+    position: absolute;
+    bottom: 60px;
+    right: -9px;
+    border: 2px solid #1a1b23;
+
+    // Para asegurar que siempre esté visible
+    .sidebar:not(.sidebar-collapsed) & {
+      right: -9px;
+    }
+
+    // Cuando está colapsado
+    .sidebar-collapsed & {
+      right: -9px;
     }
   }
 
-  // Cuando el sidebar está colapsado
-  .sidebar-collapsed & {
-    position: relative;
-    right: 0;
-    &:hover {
-      background-color: $sidebar-accent;
-      color: white;
-    }
+  &:hover {
+    background-color: #3d3e4f;
+    color: white;
   }
 
   i {
-    font-size: 1rem;
+    font-size: 0.8rem;
+    margin-left: -2px; // Para centrar mejor el ícono
   }
 }
 
@@ -392,5 +408,10 @@ $transition-duration: 0.3s;
 .sidebar-toggle {
   display: none;
 }
+.sidebar-content {
+  overflow: visible !important;
+}
 
-
+.sidebar {
+  overflow: visible !important;
+}

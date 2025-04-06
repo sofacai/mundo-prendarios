@@ -32,7 +32,7 @@ export const routes: Routes = [
 
   { path: 'subcanales/:id',
     component: SubcanalDetalleComponent,
-    data: { roles: [RolType.Administrador, RolType.OficialComercial] } },
+    data: { roles: [RolType.Administrador, RolType.OficialComercial, RolType.AdminCanal] } },
 
 
   // Nuevas rutas
@@ -52,7 +52,7 @@ export const routes: Routes = [
     path: 'subcanales',
     loadComponent: () => import('./pages/subcanales/subcanales-lista/subcanales-lista.component').then(m => m.SubcanalesListaComponent),
     canActivate: [AuthGuard],
-    data: { roles: [RolType.Administrador, RolType.OficialComercial] }
+    data: { roles: [RolType.Administrador, RolType.OficialComercial, RolType.AdminCanal] }
   },
   {
     path: 'usuarios',

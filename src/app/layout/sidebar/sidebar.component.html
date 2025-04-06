@@ -24,7 +24,7 @@
 
         <!-- VERSIÓN EXPANDIDA: Canales con submenu -->
         <li class="menu-item has-submenu" [class.active]="isCanalesMenuActive()" [class.expanded]="isCanalesExpanded"
-            *ngIf="!isSidebarCollapsed && userRole === rolType.Administrador">
+            *ngIf="!isSidebarCollapsed && (userRole === rolType.Administrador || userRole === rolType.OficialComercial)">
           <a (click)="toggleCanalesMenu()" class="menu-link">
             <div class="menu-icon">
               <i class="bi bi-grid"></i>
@@ -53,10 +53,12 @@
           </ul>
         </li>
 
+
+
         <!-- VERSIÓN COLAPSADA: Enlaces directos -->
         <!-- Canales (enlace directo en modo colapsado) -->
         <li class="menu-item" [class.active]="isActiveRoute('/canales')"
-            *ngIf="isSidebarCollapsed && userRole === rolType.Administrador">
+            *ngIf="isSidebarCollapsed &&  (userRole === rolType.Administrador || userRole === rolType.OficialComercial)">
           <a (click)="navigateTo('/canales')" class="menu-link">
             <div class="menu-icon">
               <i class="bi bi-grid"></i>
@@ -65,17 +67,19 @@
           <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Canales</div>
         </li>
 
-        <!-- Subcanales (enlace directo en modo colapsado) -->
+
+
+        <!-- Usuarios -->
         <li class="menu-item" [class.active]="isActiveRoute('/subcanales')"
-            *ngIf="isSidebarCollapsed && userRole === rolType.Administrador">
+            *ngIf="isSidebarCollapsed || userRole === rolType.AdminCanal">
           <a (click)="navigateTo('/subcanales')" class="menu-link">
             <div class="menu-icon">
               <i class="bi bi-diagram-3"></i>
             </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Subcanales</span>
           </a>
           <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Subcanales</div>
         </li>
-
         <!-- Usuarios -->
         <li class="menu-item" [class.active]="isActiveRoute('/usuarios')"
             *ngIf="isSidebarCollapsed || userRole === rolType.AdminCanal">
@@ -87,8 +91,6 @@
           </a>
           <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Usuarios</div>
         </li>
-
-
 
         <!-- Operaciones -->
         <li class="menu-item" [class.active]="isActiveRoute('/operaciones')">
@@ -114,13 +116,37 @@
       </ul>
     </div>
 
-    <!-- Botón de toggle al final del sidebar -->
-    <div class="sidebar-footer">
-      <button class="toggle-btn" (click)="toggleSidebar()">
+    <!-- Nueva sección: Profile y Logout -->
+    <div class="user-menu">
+      <ul class="menu-list">
+        <!-- Perfil -->
+        <li class="menu-item" [class.active]="isActiveRoute('/profile')">
+          <a (click)="navigateTo('/profile')" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Perfil</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Perfil</div>
+        </li>
+
+        <!-- Logout -->
+        <li class="menu-item">
+          <a (click)="logout()" class="menu-link">
+            <div class="menu-icon">
+              <i class="bi bi-box-arrow-right"></i>
+            </div>
+            <span class="menu-text" *ngIf="!isSidebarCollapsed">Cerrar Sesión</span>
+          </a>
+          <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Cerrar Sesión</div>
+        </li>
+      </ul>
+
+      <button class="toggle-btn floating" (click)="toggleSidebar()">
         <i class="bi" [ngClass]="isSidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
       </button>
     </div>
-  </div>
+
 </div>
 
 <!-- Overlay for mobile -->
