@@ -12,7 +12,8 @@ import { CotizadorDataService } from 'src/app/core/services/cotizador-data.servi
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { switchMap, catchError, of, finalize } from 'rxjs';
+import { VendorSelectorComponent } from "../vendor-selector/vendor-selector.component";
+import { UsuarioService } from 'src/app/core/services/usuario.service';
 
 interface WizardData {
   paso: number;
@@ -27,7 +28,8 @@ interface WizardData {
   clienteCuil?: string;
   clienteSexo?: string;
   planesDisponibles?: any[];
-  operacionId?: number; // Para trackear la operación activa
+  operacionId?: number;
+  vendorId?: number;
 }
 
 @Component({
@@ -35,7 +37,7 @@ interface WizardData {
   templateUrl: './wizard-container.component.html',
   styleUrls: ['./wizard-container.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, Step1MontoComponent, Step2DatosComponent, SubcanalSelectorComponent, Step3OfertaComponent]
+  imports: [CommonModule, IonicModule, Step1MontoComponent, Step2DatosComponent, SubcanalSelectorComponent, Step3OfertaComponent, VendorSelectorComponent]
 })
 export class WizardContainerComponent implements OnInit {
   wizardData: WizardData = { paso: 1 };
@@ -48,6 +50,11 @@ export class WizardContainerComponent implements OnInit {
   subcanalSeleccionadoInfo: SubcanalInfo | null = null;
   gastosSeleccionados: any[] = [];
 
+  necesitaSeleccionarVendor: boolean = false;
+vendors: any[] = [];
+currentUserRol: RolType = RolType.Vendor;
+vendorSeleccionado: number | null = null;
+
   constructor(
     private authService: AuthService,
     private cotizadorService: CotizadorService,
@@ -55,27 +62,107 @@ export class WizardContainerComponent implements OnInit {
     private clienteVendorService: ClienteVendorService,
     private operacionService: OperacionService,
     private dataService: CotizadorDataService,
+    private usuarioService: UsuarioService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
-    this.verificarAcceso();
+
+ngOnInit() {
+  this.verificarAcceso();
+  if (!this.error && !this.necesitaSeleccionarVendor) {
     this.cargarDatosIniciales();
   }
+}
+
 
   verificarAcceso() {
     const user = this.authService.currentUserValue;
-    if (!user || user.rolId !== RolType.Vendor) {
-      this.error = "Solo usuarios con rol Vendor pueden acceder al cotizador.";
+    if (!user) {
+      this.error = "Usuario no autenticado.";
+      return;
+    }
+
+    // Guardar el rol actual para uso posterior
+    this.currentUserRol = user.rolId;
+
+    // Verificar los roles permitidos
+    const rolesPermitidos = [
+      RolType.Vendor,           // Vendor
+      RolType.Administrador,    // Admin
+      RolType.OficialComercial, // Oficial Comercial
+      RolType.AdminCanal        // Admin Canal
+    ];
+
+    if (!rolesPermitidos.includes(user.rolId)) {
+      this.error = "No tienes permisos para acceder al cotizador.";
+      return;
+    }
+
+    // Si no es vendor, necesitará seleccionar un vendor
+    if (user.rolId !== RolType.Vendor) {
+      this.necesitaSeleccionarVendor = true;
+      this.cargarVendors();
+    } else {
+      // Si es vendor, ya tenemos su ID
+      this.vendorSeleccionado = user.id;
+      this.wizardData.vendorId = user.id;
     }
   }
+
+  cargarVendors() {
+    this.cargando = true;
+
+    this.usuarioService.getUsuarios().subscribe({
+      next: (usuarios) => {
+        // Filtrar solo los usuarios activos con rol de Vendor
+        this.vendors = usuarios.filter(u => u.activo && u.rolId === RolType.Vendor);
+        this.cargando = false;
+
+        if (this.vendors.length === 0) {
+          this.error = "No hay vendedores disponibles para seleccionar.";
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar vendors:', error);
+        this.error = "Error al cargar la lista de vendedores.";
+        this.cargando = false;
+      }
+    });
+  }
+
+  seleccionarVendor(vendorId: number) {
+    this.vendorSeleccionado = vendorId;
+    this.wizardData.vendorId = vendorId;
+    this.necesitaSeleccionarVendor = false;
+
+    // Una vez seleccionado el vendor, cargamos los datos iniciales
+    this.cargarDatosIniciales();
+  }
+
+  volverAlSeleccionVendor() {
+    // Reiniciar selección de vendor
+    this.necesitaSeleccionarVendor = true;
+    this.necesitaSeleccionarSubcanal = false;
+    this.subcanalSeleccionado = null;
+    this.subcanalSeleccionadoInfo = null;
+    this.vendorSeleccionado = null;
+    this.wizardData = { paso: 1 };
+    this.dataService.reiniciarDatos();
+  }
+
+
+
 
   cargarDatosIniciales() {
     this.cargando = true;
 
-    this.cotizadorService.getDatosWizard().subscribe({
+    // Verificar si tenemos un vendorSeleccionado válido
+    const vendorId = this.vendorSeleccionado || undefined;
+
+    // Pasar el ID del vendor seleccionado al servicio (o undefined si no hay)
+    this.cotizadorService.getDatosWizard(vendorId).subscribe({
       next: (datos) => {
-        console.log('Datos recibidos:', datos);
+        console.log('Datos recibidos para vendorId:', this.vendorSeleccionado, datos);
         this.datosWizard = datos;
         this.cargando = false;
 
@@ -85,7 +172,7 @@ export class WizardContainerComponent implements OnInit {
           console.log('Subcanales activos:', subcanalesActivos);
 
           if (subcanalesActivos.length === 0) {
-            this.error = "No tienes subcanales activos asignados. Comunícate con tu administrador.";
+            this.error = "No hay subcanales activos asignados para este vendedor. Comunícate con el administrador.";
             return;
           }
 
@@ -99,7 +186,7 @@ export class WizardContainerComponent implements OnInit {
             this.necesitaSeleccionarSubcanal = false;
           }
         } else {
-          this.error = "No se encontraron subcanales asignados a tu usuario.";
+          this.error = "No se encontraron subcanales asignados para este vendedor.";
         }
       },
       error: (error) => {
@@ -115,7 +202,23 @@ export class WizardContainerComponent implements OnInit {
     this.wizardData.monto = datos.monto;
     this.wizardData.plazo = datos.plazo;
     this.wizardData.paso = 2;
+
+    // Asegurarse de mantener el vendorId
+    if (this.vendorSeleccionado) {
+      this.wizardData.vendorId = this.vendorSeleccionado;
+    }
+
     console.log('Pasando a paso 2', this.wizardData);
+
+    // Guardar en el data service con el vendorId
+    this.dataService.guardarDatosPaso1({
+      monto: datos.monto,
+      plazo: datos.plazo,
+      planTipo: this.dataService.planTipo,
+      valorCuota: this.dataService.valorCuota,
+      planId: this.dataService.planId,
+      vendorId: this.wizardData.vendorId
+    });
 
     // Crear un nuevo objeto para asegurar detección de cambios
     this.wizardData = { ...this.wizardData };
@@ -655,11 +758,20 @@ export class WizardContainerComponent implements OnInit {
     this.subcanalSeleccionado = null;
     this.subcanalSeleccionadoInfo = null;
   }
-
   reiniciarWizard() {
     this.error = null;
-    this.wizardData = { paso: 1 };
-    this.dataService.reiniciarDatos();
-    this.cargarDatosIniciales();
+
+    // Si el usuario actual no es vendor, volver a selección de vendor
+    if (this.currentUserRol !== RolType.Vendor) {
+      this.volverAlSeleccionVendor();
+    } else {
+      // Si es vendor, simplemente reiniciar el wizard
+      this.wizardData = {
+        paso: 1,
+        vendorId: this.authService.currentUserValue?.id // Mantener el ID del vendor actual
+      };
+      this.dataService.reiniciarDatos();
+      this.cargarDatosIniciales();
+    }
   }
 }

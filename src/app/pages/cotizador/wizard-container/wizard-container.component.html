@@ -29,6 +29,15 @@
     (seleccionarSubcanal)="seleccionarSubcanal($event)">
   </app-subcanal-selector>
 
+  <!-- Selector de vendor (nuevo) -->
+<app-vendor-selector
+*ngIf="!error && !cargando && necesitaSeleccionarVendor"
+[vendors]="vendors"
+[currentUserRol]="currentUserRol"
+(seleccionarVendor)="seleccionarVendor($event)">
+</app-vendor-selector>
+
+
   <!-- Paso 1 -->
   <app-step1-monto
     *ngIf="!error && !cargando && subcanalSeleccionado && !necesitaSeleccionarSubcanal && wizardData.paso === 1"

@@ -1,0 +1,59 @@
+<div class="vendor-selector-container">
+  <div class="header">
+    <div class="logo">
+      <img src="assets/logo.webp" alt="Logo" class="logo-image">
+    </div>
+    <div class="curved-edge"></div>
+  </div>
+
+  <div class="content">
+    <h2 class="title">Seleccionar Vendedor</h2>
+
+    <p class="subtitle">
+      Como {{ rolName }}, puedes realizar cotizaciones en nombre de un vendedor.
+      Selecciona el vendedor para el que deseas realizar esta cotización.
+    </p>
+
+    <!-- Buscador -->
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Buscar vendedor..."
+        [(ngModel)]="searchTerm"
+        (input)="filterVendors()"
+        class="search-input">
+    </div>
+
+    <!-- Lista de vendedores -->
+    <div class="vendors-list">
+      <div
+        *ngFor="let vendor of filteredVendors"
+        class="vendor-item"
+        [class.selected]="vendorId === vendor.id"
+        (click)="selectVendor(vendor.id)">
+        <div class="vendor-info">
+          <div class="vendor-name">{{ vendor.nombre }} {{ vendor.apellido }}</div>
+          <div class="vendor-detail" *ngIf="vendor.email">{{ vendor.email }}</div>
+          <div class="vendor-detail" *ngIf="vendor.canalNombre">{{ vendor.canalNombre }}</div>
+        </div>
+        <div class="radio" [class.radio-selected]="vendorId === vendor.id">
+          <div *ngIf="vendorId === vendor.id" class="radio-inner"></div>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay resultados -->
+      <div *ngIf="filteredVendors.length === 0" class="no-results">
+        No se encontraron vendedores que coincidan con la búsqueda.
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button
+        class="btn btn-primary"
+        [disabled]="!vendorId"
+        (click)="onSeleccionarVendor()">
+        Continuar
+      </button>
+    </div>
+  </div>
+</div>

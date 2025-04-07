@@ -39,9 +39,15 @@ export class CotizadorService {
     private authService: AuthService
   ) { }
 
-  getDatosWizard(): Observable<DatosWizard> {
+  getDatosWizard(vendorId?: number): Observable<DatosWizard> {
     const headers = this.getAuthHeaders();
-    return this.http.get<DatosWizard>(`${this.apiUrl}/VendorInfo/wizard-data`, { headers });
+    let url = `${this.apiUrl}/VendorInfo/wizard-data`;
+
+    if (vendorId) {
+      url += `?vendorId=${vendorId}`;
+    }
+
+    return this.http.get<DatosWizard>(url, { headers });
   }
 
   getPlanesParaCotizar(monto: number, plazo: number, subcanalId: number): Observable<any[]> {

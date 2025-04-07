@@ -1,0 +1,183 @@
+.vendor-selector-container {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.header {
+  background: #3378f6;
+  padding: 1.25rem;
+  padding-bottom: 2rem;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.logo-image {
+  height: 2.5rem;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+.curved-edge {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  background-color: white;
+  border-top-left-radius: 100%;
+  border-top-right-radius: 100%;
+}
+
+.content {
+  padding: 0.5rem 1.25rem 1.5rem 1.25rem;
+  position: relative;
+  z-index: 10;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.search-box {
+  margin-bottom: 1.25rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  font-size: 0.875rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3378f6;
+  box-shadow: 0 0 0 2px rgba(51, 120, 246, 0.2);
+}
+
+.vendors-list {
+  max-height: 20rem;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.vendor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.vendor-item:last-child {
+  border-bottom: none;
+}
+
+.vendor-item:hover {
+  background-color: #f9fafb;
+}
+
+.vendor-item.selected {
+  background-color: #f0f7ff;
+}
+
+.vendor-info {
+  flex: 1;
+}
+
+.vendor-name {
+  font-weight: 500;
+  font-size: 0.9375rem;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.vendor-detail {
+  font-size: 0.8125rem;
+  color: #666;
+}
+
+.radio {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #d1d5db;
+  flex-shrink: 0;
+}
+
+.radio-selected {
+  border-color: #3378f6;
+}
+
+.radio-inner {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background-color: #3378f6;
+}
+
+.no-results {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 8rem;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: #3378f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

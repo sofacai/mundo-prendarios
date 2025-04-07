@@ -10,6 +10,8 @@ export class CotizadorDataService {
   planTipo: 'Cuotas Fijas' | 'UVA' = 'UVA';
   valorCuota: number = 0;
   planId: number = 0;
+  vendorId?: number;
+
 
   // Datos del paso 2
   clienteId?: number;
@@ -29,13 +31,17 @@ export class CotizadorDataService {
     plazo: number,
     planTipo: 'Cuotas Fijas' | 'UVA',
     valorCuota: number,
-    planId: number
+    planId: number,
+    vendorId?: number
   }) {
     this.monto = datos.monto;
     this.plazo = datos.plazo;
     this.planTipo = datos.planTipo;
     this.valorCuota = datos.valorCuota;
     this.planId = datos.planId;
+    if (datos.vendorId) {
+      this.vendorId = datos.vendorId;
+    }
   }
 
   // Guardar datos del paso 2
@@ -75,5 +81,7 @@ export class CotizadorDataService {
     this.dni = undefined;
     this.cuil = undefined;
     this.sexo = undefined;
+    this.vendorId = undefined;
+
   }
 }
