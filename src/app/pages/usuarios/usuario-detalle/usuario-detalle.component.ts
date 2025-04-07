@@ -20,7 +20,6 @@ import { RolType } from 'src/app/core/models/usuario.model';
 import { UsuarioHeaderComponent } from '../components/usuario-header/usuario-header.component';
 import { UsuarioTabsNavigationComponent } from '../components/usuario-tabs-navigation/usuario-tabs-navigation.component';
 import { UsuarioOperacionesComponent } from '../components/usuario-operaciones/usuario-operaciones.component';
-import { UsuarioClientesComponent } from '../components/usuario-clientes/usuario-clientes.component';
 import { UsuarioSubcanalesComponent } from '../components/usuario-subcanales/usuario-subcanales.component';
 import { UsuarioCanalesComponent } from '../components/usuario-canales/usuario-canales.component';
 import { UsuarioEstadisticasComponent } from '../components/usuario-estadisticas/usuario-estadisticas.component';
@@ -38,7 +37,6 @@ import { UsuarioUsuariosComponent } from '../components/usuario-usuarios/usuario
     UsuarioHeaderComponent,
     UsuarioTabsNavigationComponent,
     UsuarioOperacionesComponent,
-    UsuarioClientesComponent,
     UsuarioSubcanalesComponent,
     UsuarioCanalesComponent,
     UsuarioEstadisticasComponent,
@@ -77,13 +75,11 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
 
   // Estados de carga
   loadingOperaciones = false;
-  loadingClientes = false;
   loadingSubcanales = false;
   loadingCanales = false;
 
   // Estados de error
   errorOperaciones: string | null = null;
-  errorClientes: string | null = null;
   errorSubcanales: string | null = null;
   errorCanales: string | null = null;
 
@@ -92,7 +88,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
     private router: Router,
     private usuarioService: UsuarioService,
     private operacionService: OperacionService,
-    private clienteService: ClienteService,
     private clienteVendorService: ClienteVendorService,
     private subcanalService: SubcanalService,
     private canalService: CanalService,
@@ -203,7 +198,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
 
         // Cargar operaciones y clientes en paralelo para vendors
         this.loadingOperaciones = true;
-        this.loadingClientes = true;
         this.loadingSubcanales = true;
 
         // Cargar operaciones donde vendedorId sea igual a usuarioId
@@ -223,7 +217,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
         });
 
         // Cargar clientes asignados a este vendor
-        this.loadClientesVendor();
 
         // Obtener subcanales a los que está asignado el vendor
         this.loadSubcanalesVendor();
@@ -235,22 +228,7 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadClientesVendor() {
-    this.loadingClientes = true;
-    this.clienteVendorService.obtenerClientesPorVendor(this.usuarioId).subscribe({
-      next: (clientes) => {
-        this.clientes = clientes;
-        this.loadingClientes = false;
-        this.checkLoadingComplete();
-      },
-      error: (err) => {
-        console.error('Error cargando clientes del vendor:', err);
-        this.errorClientes = 'Error al cargar los clientes del vendor.';
-        this.loadingClientes = false;
-        this.checkLoadingComplete();
-      }
-    });
-  }
+
 
   loadSubcanalesVendor() {
     this.loadingSubcanales = true;
@@ -276,7 +254,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
     this.loadingSubcanales = true;
     this.loadingUsuariosRelacionados = true;
     this.loadingOperaciones = true;
-    this.loadingClientes = true;
 
     // Obtener todos los subcanales que administra
     this.subcanalService.getSubcanales().pipe(
@@ -296,7 +273,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
         return forkJoin({
           operaciones: this.operacionService.getOperaciones(),
           usuarios: this.usuarioService.getUsuariosPorRol(RolType.Vendor),
-          clientes: this.clienteService.getClientes()
         });
       })
     ).subscribe({
@@ -322,10 +298,7 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
 
           // Filtramos clientes relacionados con estos subcanales
           // Esto es aproximado - podría necesitar ajustes según la lógica de negocio
-          this.clientes = results.clientes.filter(cliente =>
-            this.operaciones.some(op => op.clienteId === cliente.id)
-          );
-          this.loadingClientes = false;
+
         } else {
           // Si no hay subcanales, limpiamos los datos relacionados
           this.operaciones = [];
@@ -333,7 +306,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
           this.usuariosRelacionados = [];
           this.loadingUsuariosRelacionados = false;
           this.clientes = [];
-          this.loadingClientes = false;
         }
 
         this.loading = false;
@@ -344,7 +316,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
         this.loadingSubcanales = false;
         this.loadingUsuariosRelacionados = false;
         this.loadingOperaciones = false;
-        this.loadingClientes = false;
         this.loading = false;
       }
     });
@@ -354,7 +325,6 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
     this.loadingCanales = true;
     this.loadingUsuariosRelacionados = true;
     this.loadingOperaciones = true;
-    this.loadingClientes = true;
 
     // Get canals only - don't try to get vendor statistics for OficialComercial role
     this.canalService.getCanales().subscribe({
@@ -403,20 +373,7 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
               }
             });
 
-            // Load related clients
-            this.clienteService.getClientes().subscribe({
-              next: (clientes) => {
-                this.clientes = clientes.filter(cliente =>
-                  canalIds.includes(cliente.canalId || 0));
-                this.loadingClientes = false;
-                this.checkLoadingComplete();
-              },
-              error: (err) => {
-                console.error('Error loading clients:', err);
-                this.loadingClientes = false;
-                this.checkLoadingComplete();
-              }
-            });
+
           },
           error: (err) => {
             console.error('Error loading operations:', err);
@@ -437,17 +394,17 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
   // Verificar si todas las cargas han finalizado
   checkLoadingComplete() {
     if (this.usuario.rolId === RolType.Vendor) {
-      if (!this.loadingOperaciones && !this.loadingClientes && !this.loadingSubcanales) {
+      if (!this.loadingOperaciones  && !this.loadingSubcanales) {
         this.loading = false;
       }
     }
     else if (this.usuario.rolId === RolType.AdminCanal) {
-      if (!this.loadingSubcanales && !this.loadingUsuariosRelacionados && !this.loadingOperaciones && !this.loadingClientes) {
+      if (!this.loadingSubcanales && !this.loadingUsuariosRelacionados && !this.loadingOperaciones ) {
         this.loading = false;
       }
     }
     else if (this.usuario.rolId === RolType.OficialComercial) {
-      if (!this.loadingCanales && !this.loadingUsuariosRelacionados && !this.loadingOperaciones && !this.loadingClientes) {
+      if (!this.loadingCanales && !this.loadingUsuariosRelacionados && !this.loadingOperaciones ) {
         this.loading = false;
       }
     }

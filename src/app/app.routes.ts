@@ -90,7 +90,7 @@ export const routes: Routes = [
   // Redirecciones
   {
     path: '',
-    redirectTo: 'pages/home',
+    redirectTo: 'pages/dashboard',
     pathMatch: 'full'
   },
   {

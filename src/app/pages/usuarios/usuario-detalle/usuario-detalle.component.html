@@ -61,15 +61,7 @@
           ></app-usuario-operaciones>
         </div>
 
-        <!-- Clientes Tab (Para Vendors, AdminCanal y OficialComercial) -->
-        <div class="tab-pane" [class.active]="activeTab === 'clientes'" *ngIf="usuario.rolId === 3 || usuario.rolId === 2 || usuario.rolId === 4">
-          <app-usuario-clientes
-            [clientes]="clientes"
-            [loading]="loadingClientes"
-            [error]="errorClientes"
-            (verDetalle)="verDetalleCliente($event)"
-          ></app-usuario-clientes>
-        </div>
+
 
         <!-- Subcanales Tab (Para Vendors y AdminCanal) -->
         <div class="tab-pane" [class.active]="activeTab === 'subcanales'" *ngIf="usuario.rolId === 2 || usuario.rolId === 3">

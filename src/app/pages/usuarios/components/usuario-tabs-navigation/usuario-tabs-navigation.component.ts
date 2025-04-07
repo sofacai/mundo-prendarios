@@ -32,12 +32,7 @@ export class UsuarioTabsNavigationComponent implements OnChanges {
       icon: 'bi-cash',
       roles: [RolType.Vendor]
     },
-    {
-      id: 'clientes',
-      label: 'Clientes',
-      icon: 'bi-people',
-      roles: [RolType.Vendor, RolType.AdminCanal, RolType.OficialComercial]
-    },
+
     {
       id: 'subcanales',
       label: 'Subcanales',

@@ -1,0 +1,25 @@
+.floating-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #009ef7;
+  color: white;
+  border-radius: 50px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.2s, background-color 0.2s;
+
+  i {
+    font-size: 1.2rem;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    background-color: #0082cc;
+  }
+}

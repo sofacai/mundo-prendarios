@@ -71,7 +71,7 @@
 
         <!-- Usuarios -->
         <li class="menu-item" [class.active]="isActiveRoute('/subcanales')"
-            *ngIf="isSidebarCollapsed || userRole === rolType.AdminCanal">
+            *ngIf="isSidebarCollapsed && userRole === rolType.AdminCanal">
           <a (click)="navigateTo('/subcanales')" class="menu-link">
             <div class="menu-icon">
               <i class="bi bi-diagram-3"></i>
@@ -82,7 +82,7 @@
         </li>
         <!-- Usuarios -->
         <li class="menu-item" [class.active]="isActiveRoute('/usuarios')"
-            *ngIf="isSidebarCollapsed || userRole === rolType.AdminCanal">
+            *ngIf="isSidebarCollapsed && userRole === rolType.AdminCanal">
           <a (click)="navigateTo('/usuarios')" class="menu-link">
             <div class="menu-icon">
               <i class="bi bi-people"></i>

@@ -16,6 +16,7 @@ import { SidebarStateService } from 'src/app/core/services/sidebar-state.service
 export class SidebarComponent implements OnInit {
   userRole: RolType | null = null;
   isSidebarCollapsed: boolean = false;
+  userId: number | null = null;
   isMobile: boolean = false;
 
   // Dropdown menu
@@ -26,6 +27,14 @@ export class SidebarComponent implements OnInit {
 
   // Expose RolType for template usage
   rolType = RolType;
+
+  private getUserInfo(): void {
+    const user = this.authService.currentUserValue;
+    if (user) {
+      this.userRole = user.rolId;
+      this.userId = user.id;
+    }
+  }
 
   constructor(
     private authService: AuthService,
@@ -57,8 +66,10 @@ export class SidebarComponent implements OnInit {
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.userRole = user.rolId;
+        this.userId = user.id;
       } else {
         this.userRole = null;
+        this.userId = null;
       }
     });
 
@@ -113,6 +124,7 @@ export class SidebarComponent implements OnInit {
     this.sidebarStateService.setCollapsed(this.isSidebarCollapsed);
   }
 
+
   /**
    * Toggle Canales menu expansion
    */
@@ -137,8 +149,15 @@ export class SidebarComponent implements OnInit {
       this.isSidebarCollapsed = true;
       this.sidebarStateChanged.emit(this.isSidebarCollapsed);
     }
-    this.router.navigateByUrl(route);
+
+    // Si la ruta es /profile, redirigir a /profile/{userId}
+    if (route === '/profile' && this.userId) {
+      this.router.navigateByUrl(`/profile/${this.userId}`);
+    } else {
+      this.router.navigateByUrl(route);
+    }
   }
+
 
   /**
    * Logout method
@@ -158,9 +177,13 @@ export class SidebarComponent implements OnInit {
    * Check if a route is active
    */
   isActiveRoute(route: string): boolean {
+    // Para profile, verificar si está activo cuando estamos en /profile/{userId}
+    if (route === '/profile' && this.userId) {
+      return this.router.url === `/profile/${this.userId}` ||
+             this.router.url.startsWith(`/profile/${this.userId}/`);
+    }
     return this.router.url === route || this.router.url.startsWith(route + '/');
   }
-
   /**
    * Check if any Canales menu route is active
    */

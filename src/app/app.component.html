@@ -1,2 +1,8 @@
-<app-header></app-header>
 <router-outlet></router-outlet>
+
+<a *ngIf="userRole !== rolType.Administrador && !isInCotizadorPage"
+   class="floating-btn"
+   (click)="navigateToCotizador()">
+  <i class="bi bi-calculator"></i>
+  <span>Cotizar</span>
+</a>
