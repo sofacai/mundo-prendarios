@@ -1,0 +1,165 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.profile-header-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 1.5rem;
+}
+
+.header-main-section {
+  display: flex;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #009ef7;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.user-details h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.user-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.badge-success {
+  background-color: #50cd89;
+  color: white;
+}
+
+.badge-danger {
+  background-color: #f1416c;
+  color: white;
+}
+
+.badge-info {
+  background-color: #7239ea;
+  color: white;
+}
+
+.components-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.card-header {
+  background-color: white;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #181c32;
+  display: flex;
+  align-items: center;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #7e8299;
+  font-size: 0.95rem;
+}
+
+.detail-value {
+  color: #181c32;
+  font-size: 1rem;
+  text-align: right;
+}
+
+/* Estilos para formulario de edición */
+.edit-form {
+  padding: 20px 0;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #3f4254;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  padding: 0.775rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: 1px solid #e4e6ef;
+  border-radius: 0.475rem;
+}
+
+.form-control:disabled {
+  background-color: #f5f8fa;
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .profile-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-main-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

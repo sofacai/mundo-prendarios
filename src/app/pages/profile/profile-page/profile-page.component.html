@@ -1,0 +1,164 @@
+<div class="canales-container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content-area">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title d-flex align-items-center">
+        <h1>Mi Perfil</h1>
+      </div>
+      <div class="page-actions" *ngIf="!editMode">
+        <button class="btn btn-primary" (click)="toggleEditMode()">
+          <i class="bi bi-pencil"></i> Editar Perfil
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading y Error -->
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-2">Cargando información del perfil...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Perfil Content -->
+    <div *ngIf="usuario && !loading && !error" class="profile-detail">
+      <!-- Vista normal -->
+      <div *ngIf="!editMode" class="profile-header-card">
+        <div class="header-main-section">
+          <div class="profile-info">
+            <div class="avatar">{{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}</div>
+            <div class="user-details">
+              <h2>{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+              <div class="user-badges">
+                <span class="badge" [ngClass]="{'badge-success': usuario.activo, 'badge-danger': !usuario.activo}">
+                  {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+                <span class="badge badge-info ms-2">{{ usuario.rolNombre }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="components-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="bi bi-person me-2 text-primary"></i>
+                Datos personales
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="detail-section">
+                <div class="detail-row">
+                  <div class="detail-label">Email:</div>
+                  <div class="detail-value">{{ usuario.email }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Teléfono:</div>
+                  <div class="detail-value">{{ usuario.telefono || 'No especificado' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo edición -->
+      <div *ngIf="editMode" class="profile-header-card">
+        <div class="header-main-section">
+          <div class="profile-info">
+            <div class="avatar">{{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}</div>
+            <div class="user-details">
+              <h2>Editar Perfil</h2>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!editMode" class="profile-header-card">
+          <div class="d-flex align-items-center">
+            <div class="avatar me-3">{{ usuario?.nombre?.charAt(0) || '' }}{{ usuario?.apellido?.charAt(0) || '' }}</div>
+            <div>
+              <h2>{{ usuario?.nombre || '' }} {{ usuario?.apellido || '' }}</h2>
+              <div class="badges">
+                <span class="badge badge-primary">{{ usuario?.rolNombre || '' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <h3 class="section-title">
+            <i class="bi bi-person me-2"></i>
+            Datos personales
+          </h3>
+
+          <div class="row mb-3">
+            <div class="col-sm-3">
+              <div class="detail-label">Email:</div>
+            </div>
+            <div class="col-sm-9">
+              <div class="detail-value">{{ usuario?.email || '' }}</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="detail-label">Teléfono:</div>
+            </div>
+            <div class="col-sm-9">
+              <div class="detail-value">{{ usuario?.telefono || 'No especificado' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modo edición -->
+        <div *ngIf="editMode && usuarioForm" class="profile-header-card">
+          <div class="d-flex align-items-center mb-4">
+            <div class="avatar me-3">{{ usuario?.nombre?.charAt(0) || '' }}{{ usuario?.apellido?.charAt(0) || '' }}</div>
+            <h2>Editar Perfil</h2>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="usuarioForm.nombre">
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-control" [(ngModel)]="usuarioForm.apellido">
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Email (No editable)</label>
+            <input type="email" class="form-control" [value]="usuario?.email || ''" disabled>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="tel" class="form-control" [(ngModel)]="usuarioForm.telefono">
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Nueva Contraseña</label>
+            <input type="password" class="form-control" [(ngModel)]="usuarioForm.password">
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Confirmar Contraseña</label>
+            <input type="password" class="form-control" [(ngModel)]="usuarioForm.confirmarPassword">
+          </div>
+
+          <div class="d-flex justify-content-end mt-4">
+            <button class="btn btn-light me-2" (click)="cancelEdit()">Cancelar</button>
+            <button class="btn btn-primary" (click)="saveProfile()">Guardar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -5,6 +5,7 @@ import { WizardContainerComponent } from './pages/cotizador/wizard-container/wiz
 import { SubcanalDetalleComponent } from './pages/subcanales/subcanal-detalle/subcanal-detalle.component';
 import { UsuarioDetalleComponent } from './pages/usuarios/usuario-detalle/usuario-detalle.component';
 import { OperacionDetalleComponent } from './pages/operaciones/operacion-detalle/operacion-detalle.component';
+import { ProfilePageComponent } from './pages/profile/profile-page/profile-page.component';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -80,6 +81,10 @@ export const routes: Routes = [
   {
     path: 'operaciones/:id',
     component: OperacionDetalleComponent,
+  },
+  {
+    path: 'profile/:id',
+    component: ProfilePageComponent,
   },
 
   // Redirecciones
