@@ -18,6 +18,7 @@ import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.servic
 import { catchError, finalize, tap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { CanalService } from 'src/app/core/services/canal.service';
+import { PlanService } from 'src/app/core/services/plan.service';
 
 interface WizardData {
   paso: number;
@@ -71,6 +72,8 @@ export class WizardContainerComponent implements OnInit {
     private subcanalService: SubcanalService,
     private cdr: ChangeDetectorRef,
     private canalService: CanalService,
+    private planService: PlanService,
+
 
   ) {}
 
@@ -135,7 +138,7 @@ export class WizardContainerComponent implements OnInit {
   }
   seleccionarVendor(vendorId: number) {
     this.vendorSeleccionado = vendorId;
-    this.wizardData.vendorId = vendorId;
+    this.wizardData.vendorId = vendorId; // Añade esto para guardar el ID en el wizardData
     this.necesitaSeleccionarVendor = false;
 
     // Una vez seleccionado el vendor, cargamos sus subcanales
@@ -173,41 +176,34 @@ export class WizardContainerComponent implements OnInit {
     let procesados = 0;
     const total = subcanales.length;
     const subcanalInfos: SubcanalInfo[] = [];
-
     this.cargando = true;
 
-    subcanales.forEach(subcanal => {
-      this.canalService.getCanal(subcanal.canalId).subscribe({
-        next: (canal) => {
-          if (!canal.planesCanal || canal.planesCanal.length === 0) {
-            console.error(`No se encontraron planes para el canal ${subcanal.canalId}`);
-            procesados++;
+    // Para AdminCanal, usamos otro enfoque (getPlanesByCanal)
+    if (this.currentUserRol === RolType.AdminCanal) {
+      // Suponemos que usamos el primer subcanal del vendor
+      const primerSubcanal = subcanales[0];
+      const canalId = primerSubcanal.canalId;
 
-            if (procesados === total) {
-              if (subcanalInfos.length === 0) {
-                this.error = "No se encontraron planes disponibles para los subcanales del vendedor.";
-                this.cargando = false;
-              } else {
-                this.finalizarCargaDeSubcanales(subcanalInfos);
-              }
-            }
+      this.planService.getPlanesByCanal(canalId).subscribe({
+        next: (planes) => {
+          if (!planes || planes.length === 0) {
+            this.error = "No se encontraron planes disponibles para este canal";
+            this.cargando = false;
             return;
           }
 
-          const planesCanal = canal.planesCanal
-            .filter(pc => pc.activo)
-            .map(pc => ({
-              id: pc.planId,
-              nombre: pc.plan.nombre,
-              tasa: pc.plan.tasa,
-              montoMinimo: pc.plan.montoMinimo,
-              montoMaximo: pc.plan.montoMaximo,
-              cuotasAplicables: Array.isArray(pc.plan.cuotasAplicablesList)
-                ? pc.plan.cuotasAplicablesList
-                : this.obtenerCuotasAplicables(pc.plan.cuotasAplicables)
-            }));
+          // Convertir los planes al formato esperado
+          const planesDisponibles = planes.map(plan => ({
+            id: plan.id,
+            nombre: plan.nombre,
+            tasa: plan.tasa,
+            montoMinimo: plan.montoMinimo,
+            montoMaximo: plan.montoMaximo,
+            cuotasAplicables: plan.cuotasAplicablesList || this.obtenerCuotasAplicables(plan.cuotasAplicables)
+          }));
 
-          if (planesCanal.length > 0) {
+          // Crear subcanalInfo para cada subcanal, reutilizando los planes encontrados
+          subcanales.forEach(subcanal => {
             subcanalInfos.push({
               subcanalId: subcanal.id,
               subcanalNombre: subcanal.nombre,
@@ -215,31 +211,25 @@ export class WizardContainerComponent implements OnInit {
               subcanalComision: subcanal.comision,
               canalId: subcanal.canalId,
               gastos: subcanal.gastos,
-              planesDisponibles: planesCanal
+              planesDisponibles: planesDisponibles
             });
-          }
+          });
 
-          procesados++;
-          if (procesados === total) {
-            this.finalizarCargaDeSubcanales(subcanalInfos);
-          }
+          this.finalizarCargaDeSubcanales(subcanalInfos);
         },
         error: (error) => {
-          console.error(`Error al obtener canal ${subcanal.canalId}:`, error);
-          procesados++;
-          if (procesados === total) {
-            if (subcanalInfos.length === 0) {
-              this.error = "Error al obtener información de planes para los subcanales.";
-            } else {
-              this.finalizarCargaDeSubcanales(subcanalInfos);
-            }
-            this.cargando = false;
-          }
+          console.error(`Error al obtener planes para el canal ${canalId}:`, error);
+          this.error = "Error al obtener planes del canal";
+          this.cargando = false;
         }
       });
-    });
+    } else {
+      // Código existente para otros roles
+      subcanales.forEach(subcanal => {
+        // (Mantén tu código actual aquí)
+      });
+    }
   }
-
   finalizarCargaDeSubcanales(subcanalInfos: SubcanalInfo[]) {
     if (subcanalInfos.length === 0) {
       this.error = "No se encontraron subcanales con planes disponibles.";
@@ -487,16 +477,17 @@ export class WizardContainerComponent implements OnInit {
 
     // Crear objeto para actualizar
     const operacion: Operacion = {
-      id: this.wizardData.operacionId,
-      monto: this.wizardData.monto,
-      meses: this.wizardData.plazo,
+      monto: this.wizardData.monto!,
+      meses: this.wizardData.plazo!,
       tasa: tasa,
-      clienteId: clienteId,
+      clienteId: this.wizardData.clienteId ?? 0, // O usa otro valor predeterminado apropiado
       planId: planId,
       subcanalId: this.subcanalSeleccionado!,
       canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-      vendedorId: this.vendorSeleccionado || undefined
+      vendedorId: this.vendorSeleccionado ?? undefined, // Convierte null a undefined
     };
+    console.log('ID del vendor seleccionado:', this.vendorSeleccionado, typeof this.vendorSeleccionado);
+
 
     // Como probablemente no existe un método actualizar, simplemente continuamos
     console.log('Se debería actualizar la operación:', operacion);
@@ -823,7 +814,7 @@ export class WizardContainerComponent implements OnInit {
           planId: planId,
           subcanalId: this.subcanalSeleccionado!,
           canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-          vendedorId: this.vendorSeleccionado!
+          vendedorId: this.vendorSeleccionado ?? undefined, // Convierte null a undefined
         };
         console.log('ID del vendor seleccionado:', this.vendorSeleccionado, typeof this.vendorSeleccionado);
 

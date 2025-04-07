@@ -58,8 +58,8 @@ export class OperacionService {
       clienteId: operacion.clienteId,
       planId: operacion.planId,
       subcanalId: operacion.subcanalId,
-      canalId: operacion.canalId
-      // vendedorId se asigna en el backend
+      canalId: operacion.canalId,
+      vendedorId: operacion.vendedorId
     };
 
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion`, operacionDto, { headers });
