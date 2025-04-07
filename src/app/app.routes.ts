@@ -13,10 +13,7 @@ export const routes: Routes = [
     path: 'auth/login',
     loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent)
   },
-  {
-    path: 'pages/home',
-    loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
-  },
+
 
 
   // Rutas protegidas

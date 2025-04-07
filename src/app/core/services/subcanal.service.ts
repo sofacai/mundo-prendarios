@@ -69,6 +69,12 @@ export class SubcanalService {
     return this.http.get<Subcanal>(`${this.apiUrl}/${id}`, { headers });
   }
 
+  // Obtener subcanales por usuario
+  getSubcanalesPorUsuario(usuarioId: number): Observable<Subcanal[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Subcanal[]>(`${this.apiUrl}/usuario/${usuarioId}`, { headers });
+  }
+
   // Crear un nuevo subcanal
   createSubcanal(subcanal: SubcanalCrearDto): Observable<Subcanal> {
     const headers = this.getAuthHeaders();

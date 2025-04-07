@@ -14,6 +14,10 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { VendorSelectorComponent } from "../vendor-selector/vendor-selector.component";
 import { UsuarioService } from 'src/app/core/services/usuario.service';
+import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
+import { catchError, finalize, tap, map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { CanalService } from 'src/app/core/services/canal.service';
 
 interface WizardData {
   paso: number;
@@ -51,9 +55,10 @@ export class WizardContainerComponent implements OnInit {
   gastosSeleccionados: any[] = [];
 
   necesitaSeleccionarVendor: boolean = false;
-vendors: any[] = [];
-currentUserRol: RolType = RolType.Vendor;
-vendorSeleccionado: number | null = null;
+  vendors: any[] = [];
+  currentUserRol: RolType = RolType.Vendor;
+  vendorSeleccionado: number | null = null;
+  subcanales: Subcanal[] = [];
 
   constructor(
     private authService: AuthService,
@@ -63,17 +68,15 @@ vendorSeleccionado: number | null = null;
     private operacionService: OperacionService,
     private dataService: CotizadorDataService,
     private usuarioService: UsuarioService,
-    private cdr: ChangeDetectorRef
+    private subcanalService: SubcanalService,
+    private cdr: ChangeDetectorRef,
+    private canalService: CanalService,
+
   ) {}
 
-
-ngOnInit() {
-  this.verificarAcceso();
-  if (!this.error && !this.necesitaSeleccionarVendor) {
-    this.cargarDatosIniciales();
+  ngOnInit() {
+    this.verificarAcceso();
   }
-}
-
 
   verificarAcceso() {
     const user = this.authService.currentUserValue;
@@ -106,16 +109,17 @@ ngOnInit() {
       // Si es vendor, ya tenemos su ID
       this.vendorSeleccionado = user.id;
       this.wizardData.vendorId = user.id;
+      this.cargarSubcanalesVendor(user.id);
     }
   }
 
   cargarVendors() {
     this.cargando = true;
 
-    this.usuarioService.getUsuarios().subscribe({
+    this.usuarioService.getUsuariosPorRol(RolType.Vendor).subscribe({
       next: (usuarios) => {
         // Filtrar solo los usuarios activos con rol de Vendor
-        this.vendors = usuarios.filter(u => u.activo && u.rolId === RolType.Vendor);
+        this.vendors = usuarios.filter(u => u.activo);
         this.cargando = false;
 
         if (this.vendors.length === 0) {
@@ -129,14 +133,199 @@ ngOnInit() {
       }
     });
   }
-
   seleccionarVendor(vendorId: number) {
     this.vendorSeleccionado = vendorId;
     this.wizardData.vendorId = vendorId;
     this.necesitaSeleccionarVendor = false;
 
-    // Una vez seleccionado el vendor, cargamos los datos iniciales
-    this.cargarDatosIniciales();
+    // Una vez seleccionado el vendor, cargamos sus subcanales
+    this.cargarSubcanalesVendor(vendorId);
+  }
+
+  cargarSubcanalesVendor(vendorId: number) {
+    this.cargando = true;
+    this.error = null;
+
+    this.subcanalService.getSubcanalesPorUsuario(vendorId)
+      .pipe(
+        tap(subcanales => console.log('Subcanales recibidos:', subcanales)),
+        map(subcanales => subcanales.filter(s => s.activo)),
+        catchError(error => {
+          console.error('Error al cargar subcanales:', error);
+          this.error = "Error al obtener los subcanales del vendedor.";
+          return of([]);
+        }),
+        finalize(() => this.cargando = false)
+      )
+      .subscribe(subcanales => {
+        this.subcanales = subcanales;
+
+        if (subcanales.length === 0) {
+          this.error = "El vendedor no tiene subcanales activos asignados.";
+          return;
+        }
+
+        this.cargarPlanesParaSubcanales(subcanales);
+      });
+  }
+
+  cargarPlanesParaSubcanales(subcanales: Subcanal[]) {
+    let procesados = 0;
+    const total = subcanales.length;
+    const subcanalInfos: SubcanalInfo[] = [];
+
+    this.cargando = true;
+
+    subcanales.forEach(subcanal => {
+      this.canalService.getCanal(subcanal.canalId).subscribe({
+        next: (canal) => {
+          if (!canal.planesCanal || canal.planesCanal.length === 0) {
+            console.error(`No se encontraron planes para el canal ${subcanal.canalId}`);
+            procesados++;
+
+            if (procesados === total) {
+              if (subcanalInfos.length === 0) {
+                this.error = "No se encontraron planes disponibles para los subcanales del vendedor.";
+                this.cargando = false;
+              } else {
+                this.finalizarCargaDeSubcanales(subcanalInfos);
+              }
+            }
+            return;
+          }
+
+          const planesCanal = canal.planesCanal
+            .filter(pc => pc.activo)
+            .map(pc => ({
+              id: pc.planId,
+              nombre: pc.plan.nombre,
+              tasa: pc.plan.tasa,
+              montoMinimo: pc.plan.montoMinimo,
+              montoMaximo: pc.plan.montoMaximo,
+              cuotasAplicables: Array.isArray(pc.plan.cuotasAplicablesList)
+                ? pc.plan.cuotasAplicablesList
+                : this.obtenerCuotasAplicables(pc.plan.cuotasAplicables)
+            }));
+
+          if (planesCanal.length > 0) {
+            subcanalInfos.push({
+              subcanalId: subcanal.id,
+              subcanalNombre: subcanal.nombre,
+              subcanalActivo: subcanal.activo,
+              subcanalComision: subcanal.comision,
+              canalId: subcanal.canalId,
+              gastos: subcanal.gastos,
+              planesDisponibles: planesCanal
+            });
+          }
+
+          procesados++;
+          if (procesados === total) {
+            this.finalizarCargaDeSubcanales(subcanalInfos);
+          }
+        },
+        error: (error) => {
+          console.error(`Error al obtener canal ${subcanal.canalId}:`, error);
+          procesados++;
+          if (procesados === total) {
+            if (subcanalInfos.length === 0) {
+              this.error = "Error al obtener información de planes para los subcanales.";
+            } else {
+              this.finalizarCargaDeSubcanales(subcanalInfos);
+            }
+            this.cargando = false;
+          }
+        }
+      });
+    });
+  }
+
+  finalizarCargaDeSubcanales(subcanalInfos: SubcanalInfo[]) {
+    if (subcanalInfos.length === 0) {
+      this.error = "No se encontraron subcanales con planes disponibles.";
+      this.cargando = false;
+      return;
+    }
+
+    this.datosWizard = { subcanales: subcanalInfos };
+    console.log('Datos wizard generados:', this.datosWizard);
+
+    if (subcanalInfos.length > 1) {
+      this.necesitaSeleccionarSubcanal = true;
+    } else {
+      this.seleccionarSubcanalPorId(subcanalInfos[0].subcanalId);
+      this.necesitaSeleccionarSubcanal = false;
+    }
+
+    this.cargando = false;
+  }
+
+  convertirADatosWizard(subcanales: Subcanal[]) {
+    // Procesar cada subcanal para obtener los planes de su canal
+    const subcanalInfos: SubcanalInfo[] = [];
+
+    let procesados = 0;
+    const total = subcanales.length;
+
+    if (total === 0) {
+      this.datosWizard = { subcanales: [] };
+      return;
+    }
+
+    subcanales.forEach(subcanal => {
+      this.canalService.getCanal(subcanal.canalId).subscribe({
+        next: (canal) => {
+          const planesCanal = canal.planesCanal?.map(pc => ({
+            id: pc.planId,
+            nombre: pc.plan.nombre,
+            tasa: pc.plan.tasa,
+            montoMinimo: pc.plan.montoMinimo,
+            montoMaximo: pc.plan.montoMaximo,
+            cuotasAplicables: Array.isArray(pc.plan.cuotasAplicablesList)
+              ? pc.plan.cuotasAplicablesList
+              : this.obtenerCuotasAplicables(pc.plan.cuotasAplicables)
+          })) || [];
+
+          subcanalInfos.push({
+            subcanalId: subcanal.id,
+            subcanalNombre: subcanal.nombre,
+            subcanalActivo: subcanal.activo,
+            subcanalComision: subcanal.comision,
+            canalId: subcanal.canalId,
+            gastos: subcanal.gastos,
+            planesDisponibles: planesCanal
+          });
+
+          procesados++;
+          if (procesados === total) {
+            this.datosWizard = { subcanales: subcanalInfos };
+            console.log('Datos de wizard generados:', this.datosWizard);
+          }
+        },
+        error: (error) => {
+          console.error(`Error al obtener canal ${subcanal.canalId}:`, error);
+          procesados++;
+          if (procesados === total) {
+            this.datosWizard = { subcanales: subcanalInfos };
+          }
+        }
+      });
+    });
+  }
+
+  obtenerCuotasAplicables(cuotasStr: string): number[] {
+    if (!cuotasStr) return [];
+    try {
+      // Intentamos parsear directamente si ya es un array
+      if (Array.isArray(cuotasStr)) {
+        return cuotasStr;
+      }
+      // Si es string, convertimos a array de números
+      return cuotasStr.split(',').map(c => parseInt(c.trim(), 10));
+    } catch (e) {
+      console.error('Error al procesar cuotas aplicables:', e);
+      return [];
+    }
   }
 
   volverAlSeleccionVendor() {
@@ -151,51 +340,6 @@ ngOnInit() {
   }
 
 
-
-
-  cargarDatosIniciales() {
-    this.cargando = true;
-
-    // Verificar si tenemos un vendorSeleccionado válido
-    const vendorId = this.vendorSeleccionado || undefined;
-
-    // Pasar el ID del vendor seleccionado al servicio (o undefined si no hay)
-    this.cotizadorService.getDatosWizard(vendorId).subscribe({
-      next: (datos) => {
-        console.log('Datos recibidos para vendorId:', this.vendorSeleccionado, datos);
-        this.datosWizard = datos;
-        this.cargando = false;
-
-        if (datos.subcanales && datos.subcanales.length > 0) {
-          // Filtrar solo subcanales activos
-          const subcanalesActivos = datos.subcanales.filter(subcanal => subcanal.subcanalActivo);
-          console.log('Subcanales activos:', subcanalesActivos);
-
-          if (subcanalesActivos.length === 0) {
-            this.error = "No hay subcanales activos asignados para este vendedor. Comunícate con el administrador.";
-            return;
-          }
-
-          // Si hay múltiples subcanales activos, mostrar selector
-          if (subcanalesActivos.length > 1) {
-            this.necesitaSeleccionarSubcanal = true;
-          }
-          // Si solo hay un subcanal activo, seleccionarlo automáticamente
-          else {
-            this.seleccionarSubcanalPorId(subcanalesActivos[0].subcanalId);
-            this.necesitaSeleccionarSubcanal = false;
-          }
-        } else {
-          this.error = "No se encontraron subcanales asignados para este vendedor.";
-        }
-      },
-      error: (error) => {
-        console.error('Error al cargar datos iniciales:', error);
-        this.error = "Error al cargar datos necesarios para la cotización.";
-        this.cargando = false;
-      }
-    });
-  }
 
   continuarPaso1(datos: {monto: number, plazo: number}) {
     console.log('Ejecutando continuarPaso1 con datos:', datos);
@@ -350,7 +494,8 @@ ngOnInit() {
       clienteId: clienteId,
       planId: planId,
       subcanalId: this.subcanalSeleccionado!,
-      canalId: this.subcanalSeleccionadoInfo?.canalId || 0
+      canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+      vendedorId: this.vendorSeleccionado || undefined
     };
 
     // Como probablemente no existe un método actualizar, simplemente continuamos
@@ -456,14 +601,14 @@ ngOnInit() {
 
   // Método para asignar vendor a cliente
   private asignarVendorACliente(clienteId: number) {
-    // Es crucial que clienteId sea un número válido en este punto
     if (typeof clienteId !== 'number' || isNaN(clienteId) || clienteId <= 0) {
       console.error('ID de cliente inválido:', clienteId);
       this.obtenerPlanesYAvanzar();
       return;
     }
 
-    const vendorId = this.authService.currentUserValue?.id;
+    // Usar el vendedor seleccionado en lugar del usuario actual
+    const vendorId = this.vendorSeleccionado;
 
     if (!vendorId) {
       console.error("ID de vendor no disponible");
@@ -471,7 +616,6 @@ ngOnInit() {
       return;
     }
 
-    console.log(`Asignando vendor ${vendorId} al cliente ${clienteId}`);
 
     this.clienteVendorService.asignarVendorACliente(clienteId, vendorId).subscribe({
       next: (resultado) => {
@@ -480,7 +624,6 @@ ngOnInit() {
       },
       error: (error) => {
         console.warn("Error al asignar vendor (continuando de todas formas):", error);
-        // Continuar de todas formas
         this.obtenerPlanesYAvanzar();
       }
     });
@@ -626,7 +769,6 @@ ngOnInit() {
       }
 
       if (!this.wizardData.clienteId) {
-        // Si no tenemos ID de cliente, vamos a crear uno junto con la operación
         // Preparar los datos del cliente
         const clienteData = {
           nombre: this.wizardData.clienteNombre || "",
@@ -641,14 +783,15 @@ ngOnInit() {
           estadoCivil: ""
         };
 
-        // Preparar los datos de la operación
+        // Preparar los datos de la operación, incluyendo el vendorId
         const operacionData = {
           monto: this.wizardData.monto!,
           meses: this.wizardData.plazo!,
           tasa: tasa,
           planId: planId,
           subcanalId: this.subcanalSeleccionado!,
-          canalId: this.subcanalSeleccionadoInfo?.canalId || 0
+          canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+          vendedorId: this.vendorSeleccionado // Usar el ID del vendor seleccionado
         };
 
         console.log('Creando cliente y operación con datos:', {
@@ -660,7 +803,6 @@ ngOnInit() {
         this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
           next: (operacionCreada) => {
             console.log('Operación creada con éxito:', operacionCreada);
-            // Guardamos el ID de la operación para referencia futura
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
             }
@@ -668,14 +810,11 @@ ngOnInit() {
           },
           error: (error) => {
             console.error('Error al crear operación:', error);
-            // A pesar del error, continuamos con la operación en memoria
-            // Esto permite continuar con el flujo sin almacenar en la base de datos
-            console.log('Continuando con operación en memoria a pesar del error');
             resolve({ dummy: true });
           }
         });
       } else {
-        // Si ya tenemos ID de cliente, solo creamos la operación
+        // Solo creamos la operación con el vendorId seleccionado
         const operacion: Operacion = {
           monto: this.wizardData.monto!,
           meses: this.wizardData.plazo!,
@@ -683,15 +822,16 @@ ngOnInit() {
           clienteId: this.wizardData.clienteId,
           planId: planId,
           subcanalId: this.subcanalSeleccionado!,
-          canalId: this.subcanalSeleccionadoInfo?.canalId || 0
+          canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+          vendedorId: this.vendorSeleccionado!
         };
+        console.log('ID del vendor seleccionado:', this.vendorSeleccionado, typeof this.vendorSeleccionado);
 
         console.log('Creando operación con datos:', operacion);
 
         this.operacionService.crearOperacion(operacion).subscribe({
           next: (operacionCreada) => {
             console.log('Operación creada con éxito:', operacionCreada);
-            // Guardamos el ID de la operación para referencia futura
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
             }
@@ -699,8 +839,6 @@ ngOnInit() {
           },
           error: (error) => {
             console.error('Error al crear operación:', error);
-            // A pesar del error, continuamos con la operación en memoria
-            console.log('Continuando con operación en memoria a pesar del error');
             resolve({ dummy: true });
           }
         });
@@ -771,7 +909,6 @@ ngOnInit() {
         vendorId: this.authService.currentUserValue?.id // Mantener el ID del vendor actual
       };
       this.dataService.reiniciarDatos();
-      this.cargarDatosIniciales();
     }
   }
 }
