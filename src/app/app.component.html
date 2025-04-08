@@ -1,11 +1,11 @@
-<!-- Sidebar (ahora contiene header mobile) -->
-<app-sidebar></app-sidebar>
+<!-- Sidebar solo si no estamos en páginas de auth -->
+<app-sidebar *ngIf="!isAuthPage" (sidebarStateChanged)="onSidebarStateChanged($event)"></app-sidebar>
 
 <!-- Contenido principal -->
 <router-outlet></router-outlet>
 
 <!-- Botón flotante de cotizador -->
-<a *ngIf="userRole !== rolType.Administrador && !isInCotizadorPage"
+<a *ngIf="userRole !== rolType.Administrador && !isInCotizadorPage && !isAuthPage"
    class="floating-btn"
    (click)="navigateToCotizador()">
   <i class="bi bi-calculator"></i>

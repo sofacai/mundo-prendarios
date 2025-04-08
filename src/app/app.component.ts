@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, Renderer2 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { RolType } from './core/models/usuario.model';
@@ -18,10 +18,12 @@ export class AppComponent {
   userRole: RolType | null = null;
   rolType = RolType;
   isInCotizadorPage = false;
+  isAuthPage = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private renderer: Renderer2
   ) {
     // Suscribirse a cambios de ruta
     this.router.events.pipe(
@@ -29,12 +31,26 @@ export class AppComponent {
     ).subscribe((event: any) => {
       // Verificar si estamos en una página del cotizador
       this.isInCotizadorPage = event.url.startsWith('/cotizador');
+
+      // Verificar si estamos en una página de autenticación
+      this.isAuthPage = event.url.includes('/auth/');
+
+      // Remover clase sidebar-open en páginas de auth
+      if (this.isAuthPage) {
+        this.renderer.removeClass(document.body, 'sidebar-open');
+      }
     });
   }
 
   ngOnInit() {
     // Verificar la ruta inicial
     this.isInCotizadorPage = this.router.url.startsWith('/cotizador');
+    this.isAuthPage = this.router.url.includes('/auth/');
+
+    // Remover clase sidebar-open en carga inicial si es página auth
+    if (this.isAuthPage) {
+      this.renderer.removeClass(document.body, 'sidebar-open');
+    }
 
     // Suscribirse a los cambios del usuario actual
     this.authService.currentUser.subscribe(user => {
@@ -44,6 +60,17 @@ export class AppComponent {
         this.userRole = null;
       }
     });
+  }
+
+  onSidebarStateChanged(isCollapsed: boolean) {
+    // Solo aplicar cambios de clase si no estamos en páginas de auth
+    if (!this.isAuthPage) {
+      if (isCollapsed) {
+        this.renderer.removeClass(document.body, 'sidebar-open');
+      } else {
+        this.renderer.addClass(document.body, 'sidebar-open');
+      }
+    }
   }
 
   navigateToCotizador() {

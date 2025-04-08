@@ -18,6 +18,7 @@ export class SidebarComponent implements OnInit {
   isSidebarCollapsed: boolean = false;
   userId: number | null = null;
   isMobile: boolean = false;
+  isAuthenticated: boolean = false;
 
   // Dropdown menu
   isCanalesExpanded: boolean = false;
@@ -46,6 +47,9 @@ export class SidebarComponent implements OnInit {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
+      // Check authentication status on route change
+      this.isAuthenticated = this.authService.isAuthenticated();
+
       // Automatically expand Canales menu when route matches
       if (this.isCanalesRelatedRoute(event.url)) {
         this.isCanalesExpanded = true;
@@ -59,11 +63,16 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Check authentication status
+    this.isAuthenticated = this.authService.isAuthenticated();
+
     // Get user role from authentication service
     this.getUserRole();
 
     // Subscribe to changes in current user
     this.authService.currentUser.subscribe(user => {
+      this.isAuthenticated = !!user;
+
       if (user) {
         this.userRole = user.rolId;
         this.userId = user.id;
