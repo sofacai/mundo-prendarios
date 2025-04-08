@@ -415,3 +415,46 @@ $transition-duration: 0.3s;
 .sidebar {
   overflow: visible !important;
 }
+
+// Añade estas modificaciones a tu sidebar.component.scss
+
+// Ajusta el comportamiento móvil
+@media (max-width: 991.98px) {
+  .sidebar {
+    // Ocultar por defecto en móvil
+    transform: translateX(-100%);
+    width: 260px !important; // Ancho completo en móvil
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    z-index: 1001; // Por encima del contenido pero debajo del header
+    top: 60px; // Ajustar a la altura del header móvil
+    height: calc(100vh - 60px); // Ajustar altura
+    transition: transform 0.3s ease;
+  }
+
+  // Cuando no está colapsado (visible en móvil)
+  .sidebar:not(.sidebar-collapsed) {
+    transform: translateX(0);
+  }
+
+  // Añadir overlay cuando el sidebar está abierto
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  // Ajustar el contenido cuando el sidebar está abierto
+  body.sidebar-open {
+    overflow: hidden; // Prevenir scroll
+  }
+}
+
+// Asegurarse que el overlay funcione correctamente
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}

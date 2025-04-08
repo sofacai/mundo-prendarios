@@ -1,0 +1,20 @@
+<header class="mobile-header">
+  <div class="header-container">
+    <button class="menu-toggle" (click)="onToggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <div class="logo">
+      <img src="assets/logo_acoplado.webp" alt="Logo">
+    </div>
+
+    <div class="header-actions">
+      <!-- Acción de cotizar si no es Admin -->
+      <button *ngIf="userRole !== rolType.Administrador"
+              class="action-button"
+              (click)="navigateToCotizador()">
+        <i class="bi bi-calculator"></i>
+      </button>
+    </div>
+  </div>
+</header>

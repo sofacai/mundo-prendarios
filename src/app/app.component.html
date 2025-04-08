@@ -1,5 +1,13 @@
+<!-- Header móvil (solo visible en móvil) -->
+<app-header-mobile *ngIf="isMobile"></app-header-mobile>
+
+<!-- Sidebar -->
+<app-sidebar></app-sidebar>
+
+<!-- Contenido principal -->
 <router-outlet></router-outlet>
 
+<!-- Botón flotante de cotizador -->
 <a *ngIf="userRole !== rolType.Administrador && !isInCotizadorPage"
    class="floating-btn"
    (click)="navigateToCotizador()">
