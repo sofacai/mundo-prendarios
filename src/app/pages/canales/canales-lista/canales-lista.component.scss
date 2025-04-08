@@ -94,12 +94,7 @@
   }
 }
 
-// Make sure content adapts to sidebar
-@media (min-width: 992px) {
-  :host-context(.sidebar-collapsed) ~ .content-area {
-    margin-left: 70px;
-  }
-}
+
 
 // Improve badge styling
 .badge {
@@ -212,12 +207,7 @@
   }
 }
 
-// Make sure content adapts to sidebar
-@media (min-width: 992px) {
-  :host-context(.sidebar-collapsed) ~ .content-area {
-    margin-left: 70px;
-  }
-}
+
 
 // Improve badge styling
 .badge {

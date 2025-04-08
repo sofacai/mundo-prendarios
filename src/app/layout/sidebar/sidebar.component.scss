@@ -7,8 +7,84 @@ $sidebar-active-text: #ffffff;
 $sidebar-hover-bg: #1e2029;
 $sidebar-accent: #0d6efd;
 $transition-duration: 0.3s;
+$header-height: 60px;
 
-// Base styles
+// ===== HEADER MÓVIL =====
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: $header-height;
+  background-color: $sidebar-bg;
+  color: white;
+  z-index: 1002;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+  @media (max-width: 991.98px) {
+    display: block;
+  }
+
+  .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 1rem;
+  }
+
+  .menu-toggle {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+
+    img {
+      height: 32px;
+      max-width: 100%;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+
+    .action-button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 0.5rem;
+
+      &:hover {
+        color: #0d6efd;
+      }
+    }
+  }
+}
+
+// ===== SIDEBAR =====
 .sidebar {
   width: $sidebar-width;
   height: 100vh;
@@ -17,7 +93,7 @@ $transition-duration: 0.3s;
   top: 0;
   background-color: $sidebar-bg;
   z-index: 1000;
-  transition: width $transition-duration ease;
+  transition: width $transition-duration ease, transform $transition-duration ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -25,26 +101,26 @@ $transition-duration: 0.3s;
   &.sidebar-collapsed {
     width: $sidebar-collapsed-width;
   }
-}
 
-.sidebar-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  .sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
 
-  &::-webkit-scrollbar-track {
-    background: $sidebar-bg;
-  }
+    &::-webkit-scrollbar-track {
+      background: $sidebar-bg;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
   }
 }
 
@@ -61,24 +137,24 @@ $transition-duration: 0.3s;
     padding: 0.5rem;
     height: 60px;
   }
-}
 
-.logo {
-  max-width: 42px;
+  .logo {
+    max-width: 42px;
 
-  .full-logo {
-    max-height: 40px;
-    max-width: 160px;
-    margin-left:-50px;
-  }
+    .full-logo {
+      max-height: 40px;
+      max-width: 160px;
+      margin-left: -50px;
+    }
 
-  .small-logo {
-    max-height: 40px;
-    max-width: 40px;
-  }
+    .small-logo {
+      max-height: 40px;
+      max-width: 40px;
+    }
 
-  &.collapsed {
-    text-align: center;
+    &.collapsed {
+      text-align: center;
+    }
   }
 }
 
@@ -89,7 +165,6 @@ $transition-duration: 0.3s;
   flex-direction: column;
   padding: 0.5rem 0;
 
-  // Esto mantiene los iconos alineados vertical y horizontalmente
   .sidebar-collapsed & {
     padding-top: 0;
   }
@@ -289,7 +364,7 @@ $transition-duration: 0.3s;
   }
 }
 
-// Botón de colapsar/expandir
+// Botón toggle (chevron)
 .toggle-btn {
   width: 24px;
   height: 24px;
@@ -304,17 +379,6 @@ $transition-duration: 0.3s;
   transition: all $transition-duration ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   z-index: 9999;
-
-  .toggle-btn.floating {
-    position: fixed !important; /* Usa fixed en lugar de absolute */
-    bottom: 110px !important;
-    right: -9px !important;
-    z-index: 99999 !important;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.8) !important;
-    border: 3px solid #1a1b23 !important;
-    background-color: #2d2e3d !important;
-    pointer-events: all !important;
-  }
 
   // Botón flotante
   &.floating {
@@ -341,9 +405,14 @@ $transition-duration: 0.3s;
 
   i {
     font-size: 0.8rem;
-    margin-left: -2px; // Para centrar mejor el ícono
+    margin-left: -2px;
   }
 }
+.sidebar {
+  z-index: 9999990 !important; /* Menor que el botón pero alto */
+  overflow: visible !important; /* Permite que elementos sobresalgan */
+}
+
 
 // Overlay para móvil
 .sidebar-overlay {
@@ -361,39 +430,46 @@ $transition-duration: 0.3s;
   }
 }
 
-// Media queries
+// ===== MEDIA QUERIES =====
 @media (max-width: 991.98px) {
+  // Sidebar en móvil
   .sidebar {
     transform: translateX(-100%);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    width: $sidebar-width !important; // Force full width on mobile
+    width: $sidebar-width !important;
+    z-index: 1001;
+    top: $header-height;
+    height: calc(100vh - #{$header-height});
 
-    &.sidebar-collapsed {
-      transform: translateX(-100%);
-    }
-
-    &.sidebar-expanded {
+    &:not(.sidebar-collapsed) {
       transform: translateX(0);
     }
   }
 
-  .menu-tooltip, .submenu-tooltip {
-    display: none !important; // Hide tooltips on mobile
+  // Overlay activo cuando el sidebar está abierto
+  body.sidebar-open .sidebar {
+    transform: translateX(0) !important;
   }
 
-  .submenu {
-    display: block;
-    position: static !important;
-    width: auto !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    padding: 0.25rem 0 0.25rem 2.5rem !important;
+  // Ocultar tooltips y botón toggle en móvil
+  .menu-tooltip, .submenu-tooltip {
+    display: none !important;
+  }
+
+  .toggle-btn.floating {
+    display: none !important;
+  }
+
+  // Ajustes para el contenido principal
+  :host-context(.sidebar) ~ .content-area,
+  :host-context(.sidebar-collapsed) ~ .content-area {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding-top: $header-height !important;
   }
 }
 
-// Adjustments for content
+// Ajustes para el contenido en modo normal
 :host-context(.sidebar-collapsed) ~ .content-area {
   margin-left: $sidebar-collapsed-width;
   transition: margin-left $transition-duration ease;
@@ -402,59 +478,4 @@ $transition-duration: 0.3s;
 :host-context(.sidebar) ~ .content-area {
   margin-left: $sidebar-width;
   transition: margin-left $transition-duration ease;
-}
-
-// Quitar el botón toggle original
-.sidebar-toggle {
-  display: none;
-}
-.sidebar-content {
-  overflow: visible !important;
-}
-
-.sidebar {
-  overflow: visible !important;
-}
-
-// Añade estas modificaciones a tu sidebar.component.scss
-
-// Ajusta el comportamiento móvil
-@media (max-width: 991.98px) {
-  .sidebar {
-    // Ocultar por defecto en móvil
-    transform: translateX(-100%);
-    width: 260px !important; // Ancho completo en móvil
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    z-index: 1001; // Por encima del contenido pero debajo del header
-    top: 60px; // Ajustar a la altura del header móvil
-    height: calc(100vh - 60px); // Ajustar altura
-    transition: transform 0.3s ease;
-  }
-
-  // Cuando no está colapsado (visible en móvil)
-  .sidebar:not(.sidebar-collapsed) {
-    transform: translateX(0);
-  }
-
-  // Añadir overlay cuando el sidebar está abierto
-  .sidebar-overlay.active {
-    display: block;
-  }
-
-  // Ajustar el contenido cuando el sidebar está abierto
-  body.sidebar-open {
-    overflow: hidden; // Prevenir scroll
-  }
-}
-
-// Asegurarse que el overlay funcione correctamente
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
 }

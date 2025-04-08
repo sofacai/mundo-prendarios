@@ -84,6 +84,11 @@ export class SidebarComponent implements OnInit {
       this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     }
 
+    // Suscribirse a cambios del servicio
+    this.sidebarStateService.collapsed$.subscribe(collapsed => {
+      this.isSidebarCollapsed = collapsed;
+    });
+
     // Emit initial state
     this.sidebarStateChanged.emit(this.isSidebarCollapsed);
 
@@ -115,15 +120,42 @@ export class SidebarComponent implements OnInit {
   }
 
   /**
-   * Toggle sidebar collapsed state
+   * Toggle sidebar collapsed state - esta es la función que se usa tanto
+   * para el botón hamburguesa como para el chevron
    */
   toggleSidebar(): void {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    console.log('toggleSidebar() llamado, isMobile:', this.isMobile);
 
-    // Notify other components
+    // En mobile, cuando está colapsado, lo mostramos
+    if (this.isMobile) {
+      if (this.isSidebarCollapsed) {
+        // Mostrar sidebar
+        this.isSidebarCollapsed = false;
+        document.body.classList.add('sidebar-open');
+      } else {
+        // Ocultar sidebar
+        this.isSidebarCollapsed = true;
+        document.body.classList.remove('sidebar-open');
+      }
+    } else {
+      // En desktop, toggle normal
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    }
+
+    // Notificar cambios al servicio
     this.sidebarStateService.setCollapsed(this.isSidebarCollapsed);
-  }
 
+    // Emitir evento
+    this.sidebarStateChanged.emit(this.isSidebarCollapsed);
+
+    // En mobile, manipulación directa del DOM
+    if (this.isMobile) {
+      const sidebarElement = document.querySelector('.sidebar') as HTMLElement;
+      if (sidebarElement) {
+        sidebarElement.style.transform = this.isSidebarCollapsed ? 'translateX(-100%)' : 'translateX(0)';
+      }
+    }
+  }
 
   /**
    * Toggle Canales menu expansion
@@ -148,6 +180,13 @@ export class SidebarComponent implements OnInit {
     if (this.isMobile) {
       this.isSidebarCollapsed = true;
       this.sidebarStateChanged.emit(this.isSidebarCollapsed);
+      document.body.classList.remove('sidebar-open');
+
+      // Manipulación directa
+      const sidebarElement = document.querySelector('.sidebar') as HTMLElement;
+      if (sidebarElement) {
+        sidebarElement.style.transform = 'translateX(-100%)';
+      }
     }
 
     // Si la ruta es /profile, redirigir a /profile/{userId}

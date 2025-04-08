@@ -755,3 +755,57 @@ body.modal-open {
     display: flex;
   }
 }
+
+
+/* Estilos específicos para móvil */
+@media (max-width: 991.98px) {
+  /* Cuando el sidebar está abierto */
+  body.sidebar-open .sidebar {
+    transform: translateX(0) !important;
+    transition: transform 0.3s ease;
+  }
+
+  /* Overlay para cuando el sidebar está abierto */
+  body.sidebar-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  /* Asegurarse que el contenido principal se ajuste */
+  router-outlet + * {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 60px !important; /* Espacio para el header móvil */
+  }
+
+  /* Asegurarse que el sidebar esté bien posicionado */
+  .sidebar {
+    transform: translateX(-100%);
+    top: 60px !important;
+    height: calc(100vh - 60px) !important;
+    z-index: 1001 !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  /* Ajustar el botón flotante en móvil */
+  .floating-btn {
+    z-index: 998 !important;
+  }
+}
+
+/* Asegurarse que el botón toggle está visible en escritorio */
+.toggle-btn.floating {
+  display: block !important;
+}
+
+@media (max-width: 991.98px) {
+  .toggle-btn.floating {
+    display: none !important;
+  }
+}

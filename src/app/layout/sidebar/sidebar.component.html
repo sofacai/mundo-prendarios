@@ -1,3 +1,26 @@
+<!-- Header móvil -->
+<header class="mobile-header" *ngIf="isMobile">
+  <div class="header-container">
+    <button class="menu-toggle" (click)="toggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <div class="logo">
+      <img src="assets/logo_acoplado.webp" alt="Logo">
+    </div>
+
+    <div class="header-actions">
+      <!-- Acción de cotizar si no es Admin -->
+      <button *ngIf="userRole !== rolType.Administrador"
+              class="action-button"
+              (click)="navigateTo('/cotizador')">
+        <i class="bi bi-calculator"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar -->
 <div class="sidebar" [class.sidebar-collapsed]="isSidebarCollapsed">
   <div class="sidebar-content">
     <!-- Logo Area - según estado colapsado/expandido -->
@@ -53,8 +76,6 @@
           </ul>
         </li>
 
-
-
         <!-- VERSIÓN COLAPSADA: Enlaces directos -->
         <!-- Canales (enlace directo en modo colapsado) -->
         <li class="menu-item" [class.active]="isActiveRoute('/canales')"
@@ -66,8 +87,6 @@
           </a>
           <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Canales</div>
         </li>
-
-
 
         <!-- Usuarios -->
         <li class="menu-item" [class.active]="isActiveRoute('/subcanales')"
@@ -146,7 +165,7 @@
         <i class="bi" [ngClass]="isSidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
       </button>
     </div>
-
+  </div>
 </div>
 
 <!-- Overlay for mobile -->
