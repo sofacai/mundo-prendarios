@@ -6,536 +6,581 @@
 /* ===============================
    ESTRUCTURA BÁSICA
    =============================== */
-   .canal-detail {
-    margin-top: 1rem;
-  }
-
-  /* ===============================
-     CABECERA DEL CANAL
-     =============================== */
-  .canal-header-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    padding: 24px;
-    margin-bottom: 1.5rem;
-  }
-
-  /* Sección principal con imagen y título */
-  .header-main-section {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #ebedf3;
-  }
-
-  .canal-logo {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .canal-logo .logo-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .canal-logo .logo-placeholder {
-    width: 100%;
-    height: 100%;
-    background-color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .canal-logo .logo-placeholder span {
-    color: white;
-    font-size: 24px;
-    font-weight: 600;
-  }
-
-  .title-container {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .canal-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #181c32;
-    margin: 0;
-  }
-
-  /* Badge de estado */
-  .title-badge-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .status-badge {
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 6px;
-  }
-
-  .status-badge.active {
-    background-color: #e8fff3;
-    color: #50cd89;
-  }
-
-  .status-badge.inactive {
-    background-color: #fff5f8;
-    color: #f1416c;
-  }
-
-  /* Información del dueño */
-  .owner-contact-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px 40px;
-    padding: 15px 0;
-    border-bottom: 1px solid #ebedf3;
-  }
-
-  .contact-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .contact-item i {
-    font-size: 16px;
-    color: #a1a5b7;
-  }
-
-  .contact-item span {
-    font-size: 14px;
-    color: #7e8299;
-  }
-
-  /* Cajas de estadísticas */
-  .stats-section {
-    display: flex;
-    gap: 12px;
-    padding-top: 15px;
-  }
-
-  .stat-box {
-    flex: 1;
-    border: 1px solid #ebedf3;
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    max-width: 200px;
-  }
-
-  .stat-box .stat-number {
-    font-size: 22px;
-    font-weight: 600;
-    color: #181c32;
-  }
-
-  .stat-box .stat-label {
-    font-size: 12px;
-    color: #a1a5b7;
-    margin-top: 4px;
-  }
-
-  /* ===============================
-     TABS Y NAVEGACIÓN
-     =============================== */
-  .tab-navigation {
-    border-bottom: 1px solid #eef0f2;
-    background-color: #fff;
-  }
-
-  .tab-navigation .nav {
-    display: flex;
-    flex-wrap: wrap;
-    padding-left: 0;
-    margin-bottom: 0;
-    list-style: none;
-  }
-
-  .tab-navigation .nav .nav-item {
-    margin-bottom: -1px;
-  }
-
-  .tab-navigation .nav .nav-item .nav-link {
-    display: block;
-    padding: 1rem 1.5rem;
-    color: #5e6278;
-    transition: color 0.2s ease;
-    cursor: pointer;
-  }
-
-  .tab-navigation .nav .nav-item .nav-link.active {
-    color: #009ef7;
-    font-weight: 500;
-    border-bottom: 2px solid #009ef7;
-  }
-
-  .tab-navigation .nav .nav-item .nav-link:hover:not(.active) {
-    color: #009ef7;
-  }
-
-  .tab-navigation .nav .nav-item .nav-link i {
-    margin-right: 0.5rem;
-  }
-
-  .tab-content .tab-pane {
-    display: none;
-  }
-
-  .tab-content .tab-pane.active {
-    display: block;
-  }
-
-  /* ===============================
-     TARJETAS DE DETALLE
-     =============================== */
-  .detail-card {
-    margin-bottom: 1.5rem;
-    height: 100%;
-    position: relative;
-  }
-
-  .card {
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  }
-
-  .card .card-header {
-    background-color: transparent;
-    border-bottom: 1px solid #eef0f2;
-    padding: 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .card-title {
-    margin-bottom: 0;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #181c32;
-    display: flex;
-    align-items: center;
-  }
-
-  .card-title i {
-    color: #009ef7;
-    margin-right: 0.75rem;
-    font-size: 1.25rem;
-  }
-
-  .card-body.p-4 {
-    padding: 1.5rem !important;
-  }
-
-  .detail-row .detail-label {
-    font-size: 0.85rem;
-    color: #a1a5b7;
-    margin-bottom: 0.35rem;
-  }
-
-  .detail-row .detail-value {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #181c32;
-  }
-
-  .detail-row {
-    margin-bottom: 1.25rem;
-  }
-
-  /* ===============================
-     OFICIALES COMERCIALES
-     =============================== */
-  .oficiales-comerciales-container {
-    height: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    padding-right: 5px;
-  }
-
-  .oficiales-comerciales-container::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .oficiales-comerciales-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  .oficiales-comerciales-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-  }
-
-  .oficiales-comerciales-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-
-  /* Información del oficial */
-  .oficial-info {
-    line-height: 1.3;
-  }
-
-  .oficial-info .small {
-    font-size: 11px;
-  }
-
-  /* ===============================
-     TABLAS Y ESTILOS DE DATOS
-     =============================== */
-  /* Ajustes para tablas pequeñas */
-  .table-sm th {
-    padding: 10px 16px;
-    font-size: 13px;
-    text-transform: uppercase;
-    color: #7E8299;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  .table-sm td {
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-
-  /* Badges y estados */
-  .badge {
-    padding: 0.35rem 0.65rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 6px;
-  }
-
-  .badge-success,
-  .badge.active {
-    background-color: #e8fff3;
-    color: #50cd89;
-  }
-
-  .badge-danger,
-  .badge.inactive,
-  .table-sm td .badge[class*="inactive"] {
-    background-color: #fff5f8;
-    color: #f1416c;
-  }
-
-  /* Gráficos */
-  .chart-container {
-    position: relative;
-    width: 100%;
-  }
-
-  .chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  /* Spinner más pequeño */
-  .spinner-border-sm {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-width: 0.2em;
-  }
-
-  /* ===============================
-     CLASES DE COMPATIBILIDAD
-     =============================== */
-  .canal-avatar .symbol {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 0.5rem;
-  }
-
-  .symbol-80px {
-    width: 80px;
-    height: 80px;
-  }
-
-  .canal-header .card-body {
-    padding: 2rem !important;
-  }
-
-  /* Correcciones de espaciado para las cajas */
-  .row.g-4 > .col-12 {
-    margin-bottom: 1.5rem;
-  }
-
-  /* Espaciado entre cajas */
-  .d-flex.flex-column.flex-lg-row.gap-4 {
-    gap: 1.5rem !important;
-  }
-
-  /* ===============================
-     CONTROLES DE EDICIÓN
-     =============================== */
-  .edit-controls {
-    display: flex;
-    align-items: center;
-  }
-
-  .btn-edit {
-    background: none;
-    border: none;
-    color: #a1a5b7;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 4px 8px;
-    border-radius: 4px;
-  }
-
-  .btn-edit:hover {
-    color: #009ef7;
-    background-color: rgba(0, 158, 247, 0.1);
-  }
-
-  .action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .btn-action {
-    background: none;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn-save {
-    color: #50cd89;
-  }
-
-  .btn-save:hover {
-    color: #3aa066;
-    background-color: rgba(80, 205, 137, 0.1);
-  }
-
-  .btn-cancel {
-    color: #f1416c;
-  }
-
-  .btn-cancel:hover {
-    color: #d9214b;
-    background-color: rgba(241, 65, 108, 0.1);
-  }
-
-  /* ===============================
-     CAMPOS DE FORMULARIO
-     =============================== */
-  .form-control {
-    padding: 8px 12px;
-    border: 1px solid #e4e6ef;
-    border-radius: 6px;
-    font-size: 14px;
-    width: 100%;
-  }
-
-  .form-control:focus {
-    border-color: #009ef7;
-    outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.1);
-  }
-
-  .toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .text-primary {
-    color: #009ef7 !important;
-  }
-
-  /* ===============================
-     RESPONSIVE
-     =============================== */
-  @media (max-width: 767px) {
-    .canal-header-card {
-      padding: 16px;
-    }
-
-    .header-main-section {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .title-container {
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .owner-contact-info {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .stats-section {
-      flex-wrap: wrap;
-    }
-
-    .stat-box {
-      min-width: calc(33.33% - 8px);
-      max-width: none;
-      padding: 10px;
-    }
-
-    .stat-box .stat-number {
-      font-size: 18px;
-    }
-
-    .stat-box .stat-label {
-      font-size: 11px;
-    }
-
-    .tab-navigation .nav .nav-item .nav-link {
-      padding: 0.75rem 1rem;
-      font-size: 0.9rem;
-    }
-
-    .tab-navigation .nav .nav-item .nav-link i {
-      margin-right: 0.25rem;
+.canales-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f8fa;
+}
+
+.content-area {
+  flex: 1;
+  padding: 1rem;
+  transition: margin-left 0.3s ease;
+  overflow-y: auto;
+  width: 100%;
+
+  @media (min-width: 992px) {
+    margin-left: 260px;
+
+    &.sidebar-collapsed {
+      margin-left: 70px;
     }
   }
 
   @media (max-width: 991.98px) {
-    .border-start {
-      border-left: none !important;
-      padding-left: 0 !important;
-      margin-top: 1rem;
-    }
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 1rem;
+  }
+}
 
-    .card.detail-card {
-      height: auto !important; /* Anular altura fija en móviles */
-    }
+.canal-detail {
+  margin-top: 1rem;
+}
 
-    .d-flex.flex-column.flex-lg-row {
-      gap: 1rem !important;
-    }
+/* ===============================
+   CABECERA DEL CANAL
+   =============================== */
+.canal-header-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 1.5rem;
+}
+
+/* Sección principal con imagen y título */
+.header-main-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.canal-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.canal-logo .logo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.canal-logo .logo-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canal-logo .logo-placeholder span {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.title-container {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.canal-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #181c32;
+  margin: 0;
+}
+
+/* Badge de estado */
+.title-badge-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.status-badge.active {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.status-badge.inactive {
+  background-color: #fff5f8;
+  color: #f1416c;
+}
+
+/* Información del dueño */
+.owner-contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  padding: 15px 0;
+  border-bottom: 1px solid #ebedf3;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-item i {
+  font-size: 16px;
+  color: #a1a5b7;
+}
+
+.contact-item span {
+  font-size: 14px;
+  color: #7e8299;
+}
+
+/* Cajas de estadísticas */
+.stats-section {
+  display: flex;
+  gap: 12px;
+  padding-top: 15px;
+}
+
+.stat-box {
+  flex: 1;
+  border: 1px solid #ebedf3;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  max-width: 200px;
+}
+
+.stat-box .stat-number {
+  font-size: 22px;
+  font-weight: 600;
+  color: #181c32;
+}
+
+.stat-box .stat-label {
+  font-size: 12px;
+  color: #a1a5b7;
+  margin-top: 4px;
+}
+
+/* ===============================
+   TABS Y NAVEGACIÓN
+   =============================== */
+.tab-navigation {
+  border-bottom: 1px solid #eef0f2;
+  background-color: #fff;
+}
+
+.tab-navigation .nav {
+  display: flex;
+  flex-wrap: wrap;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.tab-navigation .nav .nav-item {
+  margin-bottom: -1px;
+}
+
+.tab-navigation .nav .nav-item .nav-link {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: #5e6278;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.tab-navigation .nav .nav-item .nav-link.active {
+  color: #009ef7;
+  font-weight: 500;
+  border-bottom: 2px solid #009ef7;
+}
+
+.tab-navigation .nav .nav-item .nav-link:hover:not(.active) {
+  color: #009ef7;
+}
+
+.tab-navigation .nav .nav-item .nav-link i {
+  margin-right: 0.5rem;
+}
+
+.tab-content .tab-pane {
+  display: none;
+}
+
+.tab-content .tab-pane.active {
+  display: block;
+}
+
+/* ===============================
+   TARJETAS DE DETALLE
+   =============================== */
+.detail-card {
+  margin-bottom: 1.5rem;
+  height: 100%;
+  position: relative;
+}
+
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.card .card-header {
+  background-color: transparent;
+  border-bottom: 1px solid #eef0f2;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  margin-bottom: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #181c32;
+  display: flex;
+  align-items: center;
+}
+
+.card-title i {
+  color: #009ef7;
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.card-body.p-4 {
+  padding: 1.5rem !important;
+}
+
+.detail-row .detail-label {
+  font-size: 0.85rem;
+  color: #a1a5b7;
+  margin-bottom: 0.35rem;
+}
+
+.detail-row .detail-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.detail-row {
+  margin-bottom: 1.25rem;
+}
+
+/* ===============================
+   OFICIALES COMERCIALES
+   =============================== */
+.oficiales-comerciales-container {
+  height: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.oficiales-comerciales-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.oficiales-comerciales-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.oficiales-comerciales-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.oficiales-comerciales-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Información del oficial */
+.oficial-info {
+  line-height: 1.3;
+}
+
+.oficial-info .small {
+  font-size: 11px;
+}
+
+/* ===============================
+   TABLAS Y ESTILOS DE DATOS
+   =============================== */
+/* Ajustes para tablas pequeñas */
+.table-sm th {
+  padding: 10px 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #7E8299;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.table-sm td {
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+/* Badges y estados */
+.badge {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.badge-success,
+.badge.active {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.badge-danger,
+.badge.inactive,
+.table-sm td .badge[class*="inactive"] {
+  background-color: #fff5f8;
+  color: #f1416c;
+}
+
+/* Gráficos */
+.chart-container {
+  position: relative;
+  width: 100%;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Spinner más pequeño */
+.spinner-border-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-width: 0.2em;
+}
+
+/* ===============================
+   CLASES DE COMPATIBILIDAD
+   =============================== */
+.canal-avatar .symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.symbol-80px {
+  width: 80px;
+  height: 80px;
+}
+
+.canal-header .card-body {
+  padding: 2rem !important;
+}
+
+/* Correcciones de espaciado para las cajas */
+.row.g-4 > .col-12 {
+  margin-bottom: 1.5rem;
+}
+
+/* Espaciado entre cajas */
+.d-flex.flex-column.flex-lg-row.gap-4 {
+  gap: 1.5rem !important;
+}
+
+/* ===============================
+   CONTROLES DE EDICIÓN
+   =============================== */
+.edit-controls {
+  display: flex;
+  align-items: center;
+}
+
+.btn-edit {
+  background: none;
+  border: none;
+  color: #a1a5b7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.btn-edit:hover {
+  color: #009ef7;
+  background-color: rgba(0, 158, 247, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  color: #50cd89;
+}
+
+.btn-save:hover {
+  color: #3aa066;
+  background-color: rgba(80, 205, 137, 0.1);
+}
+
+.btn-cancel {
+  color: #f1416c;
+}
+
+.btn-cancel:hover {
+  color: #d9214b;
+  background-color: rgba(241, 65, 108, 0.1);
+}
+
+/* ===============================
+   CAMPOS DE FORMULARIO
+   =============================== */
+.form-control {
+  padding: 8px 12px;
+  border: 1px solid #e4e6ef;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #009ef7;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.1);
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.text-primary {
+  color: #009ef7 !important;
+}
+
+/* ===============================
+   RESPONSIVE
+   =============================== */
+@media (max-width: 767px) {
+  .canal-header-card {
+    padding: 16px;
   }
 
-  .cursor-pointer {
-    cursor: pointer;
+  .header-main-section {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .status-badge.cursor-pointer:hover {
-    opacity: 0.8;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  .title-container {
+    width: 100%;
+    margin-top: 15px;
   }
+
+  .owner-contact-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stats-section {
+    flex-wrap: wrap;
+  }
+
+  .stat-box {
+    min-width: calc(33.33% - 8px);
+    max-width: none;
+    padding: 10px;
+  }
+
+  .stat-box .stat-number {
+    font-size: 18px;
+  }
+
+  .stat-box .stat-label {
+    font-size: 11px;
+  }
+
+  .tab-navigation .nav .nav-item .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tab-navigation .nav .nav-item .nav-link i {
+    margin-right: 0.25rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .page-title {
+      margin-bottom: 1rem;
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    button {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 991.98px) {
+  .border-start {
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-top: 1rem;
+  }
+
+  .card.detail-card {
+    height: auto !important; /* Anular altura fija en móviles */
+  }
+
+  .d-flex.flex-column.flex-lg-row {
+    gap: 1rem !important;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.status-badge.cursor-pointer:hover {
+  opacity: 0.8;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}

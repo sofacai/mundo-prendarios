@@ -50,6 +50,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
 
+
   searchTerm: string = '';
   searchTimeout: any;
   filterActive: string = 'all';
@@ -87,6 +88,10 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
     this.paginaActual = 1;
     this.itemsPorPagina = 10;
+    window.addEventListener('resize', this.handleResize.bind(this));
+    this.handleResize();
+
+
 
     // Obtener información del usuario actual
     this.authService.currentUser.subscribe(usuario => {
@@ -99,6 +104,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       }
 
       this.loadCanales();
+
     });
   }
 
@@ -106,15 +112,35 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     if (this.sidebarSubscription) {
       this.sidebarSubscription.unsubscribe();
     }
+    window.removeEventListener('resize', this.handleResize.bind(this));
+
+  }
+
+  private handleResize() {
+    this.adjustContentArea();
   }
 
   private adjustContentArea() {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
-      if (this.isSidebarCollapsed) {
-        contentArea.style.marginLeft = '70px';
+      const isMobile = window.innerWidth < 992;
+
+      if (isMobile) {
+        // En móviles, eliminar todos los márgenes
+        contentArea.style.marginLeft = '0';
+        contentArea.classList.remove('sidebar-collapsed');
+        contentArea.classList.remove('sidebar-expanded');
       } else {
-        contentArea.style.marginLeft = '260px';
+        // En desktop, aplicar los márgenes según el estado del sidebar
+        if (this.isSidebarCollapsed) {
+          contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+          contentArea.classList.add('sidebar-collapsed');
+          contentArea.classList.remove('sidebar-expanded');
+        } else {
+          contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+          contentArea.classList.add('sidebar-expanded');
+          contentArea.classList.remove('sidebar-collapsed');
+        }
       }
     }
   }

@@ -123,6 +123,9 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
       }
     });
 
+    window.addEventListener('resize', this.handleResize.bind(this));
+
+  this.handleResize();
     // Subscribe to sidebar state changes
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
@@ -137,15 +140,34 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
     if (this.sidebarSubscription) {
       this.sidebarSubscription.unsubscribe();
     }
+    window.removeEventListener('resize', this.handleResize.bind(this));
+
+  }
+  private handleResize() {
+    this.adjustContentArea();
   }
 
   private adjustContentArea() {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
-      if (this.isSidebarCollapsed) {
-        contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+      const isMobile = window.innerWidth < 992;
+
+      if (isMobile) {
+        // En móviles, eliminar todos los márgenes
+        contentArea.style.marginLeft = '0';
+        contentArea.classList.remove('sidebar-collapsed');
+        contentArea.classList.remove('sidebar-expanded');
       } else {
-        contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+        // En desktop, aplicar los márgenes según el estado del sidebar
+        if (this.isSidebarCollapsed) {
+          contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+          contentArea.classList.add('sidebar-collapsed');
+          contentArea.classList.remove('sidebar-expanded');
+        } else {
+          contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+          contentArea.classList.add('sidebar-expanded');
+          contentArea.classList.remove('sidebar-collapsed');
+        }
       }
     }
   }
