@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -37,17 +37,16 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   loading = false;
   error: string | null = null;
   modalOpen = false;
-  scrollbarWidth: number = 0;
   loadingSubcanales: Map<number, boolean> = new Map();
 
   isSidebarCollapsed = false;
+  isMobile = false;
   private sidebarSubscription: Subscription | null = null;
-  sidebarLayoutLocked = false;
 
   searchTerm: string = '';
   searchTimeout: any;
   filterActive: string = 'all';
-  sortState: SortState = { column: '', direction: 'asc' };
+  sortState: SortState = { column: 'id', direction: 'asc' };
 
   paginaActual: number = 1;
   itemsPorPagina: number = 10;
@@ -65,16 +64,17 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
-    this.sidebarLayoutLocked = true;
-    this.adjustContentArea();
+    // Comprobar si estamos en móvil
+    this.checkScreenSize();
 
+    // Inicializar el estado del sidebar
+    this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
+
+    // Suscribirse a cambios en el sidebar
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
       collapsed => {
-        if (!this.sidebarLayoutLocked) {
-          this.isSidebarCollapsed = collapsed;
-          this.adjustContentArea();
-        }
+        this.isSidebarCollapsed = collapsed;
+        this.adjustContentArea();
       }
     );
 
@@ -89,13 +89,35 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+    this.adjustContentArea();
+  }
+
+  private checkScreenSize(): void {
+    this.isMobile = window.innerWidth < 992;
+  }
+
   private adjustContentArea() {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
-      if (this.isSidebarCollapsed) {
-        contentArea.style.marginLeft = '70px';
+      if (this.isMobile) {
+        // En móviles, eliminar todos los márgenes
+        contentArea.style.marginLeft = '0';
+        contentArea.classList.remove('sidebar-collapsed');
+        contentArea.classList.remove('sidebar-expanded');
       } else {
-        contentArea.style.marginLeft = '260px';
+        // En desktop, aplicar los márgenes según el estado del sidebar
+        if (this.isSidebarCollapsed) {
+          contentArea.style.marginLeft = '70px'; // Ancho del sidebar colapsado
+          contentArea.classList.add('sidebar-collapsed');
+          contentArea.classList.remove('sidebar-expanded');
+        } else {
+          contentArea.style.marginLeft = '260px'; // Ancho del sidebar expandido
+          contentArea.classList.add('sidebar-expanded');
+          contentArea.classList.remove('sidebar-collapsed');
+        }
       }
     }
   }
@@ -103,19 +125,16 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   loadSubcanales() {
     this.loading = true;
     this.error = null;
-    this.sidebarLayoutLocked = true;
 
     this.subcanalService.getSubcanales().subscribe({
       next: (data) => {
         this.subcanales = data;
         this.applyFilters();
         this.loading = false;
-        this.sidebarLayoutLocked = false;
       },
       error: (err) => {
         this.error = 'No se pudieron cargar los subcanales. Por favor, intente nuevamente.';
         this.loading = false;
-        this.sidebarLayoutLocked = false;
       }
     });
   }
@@ -137,7 +156,7 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   applyFilters() {
     let result = [...this.subcanales];
 
-    if (this.searchTerm && this.searchTerm.length >= 3) {
+    if (this.searchTerm && this.searchTerm.length >= 2) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(subcanal =>
         subcanal.nombre?.toLowerCase().includes(term) ||
@@ -282,6 +301,11 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
   }
 
   toggleSubcanalEstado(subcanal: Subcanal): void {
+    // Verificar si el usuario tiene permisos para cambiar el estado
+    if (!this.isAdmin) {
+      return;
+    }
+
     this.loadingSubcanales.set(subcanal.id, true);
 
     const request = subcanal.activo

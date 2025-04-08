@@ -6,9 +6,92 @@
 /* ===============================
    ESTRUCTURA BÁSICA
    =============================== */
+.canales-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f8fa;
+}
+
+.content-area {
+  flex: 1;
+  padding: 1rem;
+  transition: margin-left 0.3s ease;
+  width: 100%;
+
+  @media (min-width: 992px) {
+    margin-left: 260px;
+
+    &.sidebar-collapsed {
+      margin-left: 70px;
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 1rem;
+    padding-top: 60px !important;
+    overflow-y: auto;
+
+  }
+}
 
 .usuario-detail {
   margin-top: 1rem;
+}
+
+/* ===============================
+   HEADER
+   =============================== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 767.98px) {
+    .page-title {
+      flex-direction: column;
+      align-items: flex-start;
+
+      h1 {
+        font-size: 1.4rem;
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+
+  @media (max-width: 767.98px) {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.btn-light {
+  background-color: #f5f8fa;
+  color: #7e8299;
+  border: none;
+
+  &:hover {
+    background-color: #e4e6ef;
+    color: #5e6278;
+  }
 }
 
 /* ===============================
@@ -46,23 +129,38 @@
     width: 100%;
   }
 
-  .page-title h1 {
-    font-size: 1.5rem;
-  }
+  .tab-navigation .nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
 
-  .tab-navigation .nav .nav-item .nav-link {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-  }
+    &::-webkit-scrollbar {
+      height: 3px;
+    }
 
-  .tab-navigation .nav .nav-item .nav-link i {
-    margin-right: 0.25rem;
-  }
-}
+    &::-webkit-scrollbar-track {
+      background: #f5f8fa;
+    }
 
-@media (max-width: 991.98px) {
-  .content-area {
-    padding: 20px;
+    &::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 10px;
+    }
+
+    .nav-item {
+      margin-right: 5px;
+      flex-shrink: 0;
+
+      .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+
+        i {
+          margin-right: 0.25rem;
+        }
+      }
+    }
   }
 
   .border-start {
@@ -80,6 +178,20 @@
   }
 }
 
+@media (max-width: 991.98px) {
+  .content-area {
+    padding: 1rem;
+  }
+
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  .row.g-4 {
+    row-gap: 1rem !important;
+  }
+}
+
 /* ===============================
    UTILIDADES
    =============================== */
@@ -92,10 +204,15 @@
   width: 3rem;
   height: 3rem;
   vertical-align: text-bottom;
-  border: 0.25rem solid currentColor;
+  border: 0.25em solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
   animation: spinner-border 0.75s linear infinite;
+
+  @media (max-width: 767.98px) {
+    width: 2rem;
+    height: 2rem;
+  }
 }
 
 @keyframes spinner-border {
@@ -108,25 +225,8 @@
   color: #009ef7 !important;
 }
 
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 35px;
-  height: 35px;
-  padding: 0;
-  transition: all 0.2s ease;
-}
-
-.btn-light {
-  background-color: #f5f8fa;
-  color: #7e8299;
-  border: none;
-}
-
-.btn-light:hover {
-  background-color: #e4e6ef;
-  color: #5e6278;
+.me-2 {
+  margin-right: 0.5rem !important;
 }
 
 .me-3 {
@@ -139,6 +239,10 @@
 
 .p-5 {
   padding: 3rem !important;
+
+  @media (max-width: 767.98px) {
+    padding: 1.5rem !important;
+  }
 }
 
 .alert-danger {
@@ -161,20 +265,9 @@
   align-items: center !important;
 }
 
-
-/* Estilos para el botón de cambio de contraseña */
-.btn-light-primary {
-  color: #009ef7;
-  background-color: #f1faff;
-  border-color: transparent;
-  box-shadow: none;
-}
-
-.btn-light-primary:hover {
-  color: #ffffff;
-  background-color: #009ef7;
-  border-color: #009ef7;
-}
+/* ===============================
+   PASSWORD MODAL
+   =============================== */
 .password-modal {
   position: fixed;
   top: 0;
@@ -207,6 +300,11 @@
   padding: 0;
   border-radius: 12px;
   overflow: hidden;
+
+  @media (max-width: 767.98px) {
+    max-width: 90%;
+    margin: 0 auto;
+  }
 }
 
 @keyframes modalFadeIn {
@@ -236,6 +334,13 @@
   position: absolute;
   top: 16px;
   right: 16px;
+
+  @media (max-width: 767.98px) {
+    width: 28px;
+    height: 28px;
+    top: 12px;
+    right: 12px;
+  }
 }
 
 .btn-password-change:hover {
@@ -245,4 +350,132 @@
 
 .btn-password-change i {
   font-size: 16px;
+
+  @media (max-width: 767.98px) {
+    font-size: 14px;
+  }
+}
+
+/* Estilos para el botón de cambio de contraseña */
+.btn-light-primary {
+  color: #009ef7;
+  background-color: #f1faff;
+  border-color: transparent;
+  box-shadow: none;
+
+  &:hover {
+    color: #ffffff;
+    background-color: #009ef7;
+    border-color: #009ef7;
+  }
+}
+
+/* ===============================
+   COMPONENTES DE ESTADÍSTICAS
+   =============================== */
+/* Responsive charts and graphs */
+.chart-container {
+  width: 100%;
+  height: 300px;
+
+  @media (max-width: 767.98px) {
+    height: 250px;
+  }
+}
+
+.stats-card {
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 0 20px rgba(76, 87, 125, 0.05);
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 767.98px) {
+    padding: 1rem;
+  }
+
+  .stats-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #181c32;
+    margin-bottom: 1rem;
+
+    @media (max-width: 767.98px) {
+      font-size: 0.95rem;
+    }
+  }
+
+  .stats-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #181c32;
+    margin-bottom: 0.5rem;
+
+    @media (max-width: 767.98px) {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+/* ===============================
+   CARDS Y TABLAS
+   =============================== */
+.card {
+  box-shadow: 0 0 20px rgba(76, 87, 125, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  border: none;
+  margin-bottom: 1.5rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 767.98px) {
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
+    padding: 0 1rem;
+  }
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  @media (max-width: 767.98px) {
+    font-size: 0.875rem;
+  }
+
+  thead th {
+    background-color: #f5f8fa;
+    color: #7e8299;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eef0f2;
+
+    @media (max-width: 767.98px) {
+      padding: 0.5rem;
+      white-space: nowrap;
+    }
+  }
+
+  tbody tr {
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+
+  tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #eef0f2;
+
+    @media (max-width: 767.98px) {
+      padding: 0.5rem;
+    }
+  }
 }

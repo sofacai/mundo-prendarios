@@ -3,7 +3,7 @@
   <app-sidebar></app-sidebar>
 
   <!-- Contenido principal -->
-  <div class="content-area">
+  <div class="content-area" [class.sidebar-collapsed]="isSidebarCollapsed">
     <!-- Page Header -->
     <div class="page-header">
       <div class="page-title">
@@ -11,7 +11,7 @@
       </div>
       <div class="page-actions">
         <button class="btn btn-primary" (click)="abrirModalNuevoSubcanal()">
-          <i class="bi bi-plus"></i> Nuevo Subcanal
+          <i class="bi bi-plus-lg"></i> Nuevo Subcanal
         </button>
       </div>
     </div>
@@ -98,11 +98,11 @@
               <tr *ngFor="let subcanal of paginatedSubcanales">
                 <td>{{ subcanal.id }}</td>
                 <td>
-                  <div style="display: block;">
+                  <div>
                     <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(subcanal.id)">
                       {{ subcanal.nombre }}
                     </a>
-                    <div class="text-muted fs-7" style="display: block; margin-top: 4px;">Canal: {{ subcanal.canalNombre }}</div>
+                    <div class="text-muted fs-7 mt-1">Canal: {{ subcanal.canalNombre }}</div>
                   </div>
                 </td>
                 <td>
@@ -147,48 +147,39 @@
                 No hay subcanales registrados en el sistema
               </p>
               <button class="btn btn-primary mt-3" (click)="abrirModalNuevoSubcanal()">
-                <i class="bi bi-plus"></i> Nuevo Subcanal
+                <i class="bi bi-plus-lg"></i> Nuevo Subcanal
               </button>
             </div>
           </div>
 
           <!-- Paginación y contador de subcanales -->
-          <div class="pagination-container d-flex justify-content-between align-items-center mt-4" *ngIf="filteredSubcanales.length > 0">
+          <div class="pagination-container" *ngIf="filteredSubcanales.length > 0">
             <!-- Contador de subcanales -->
             <div class="canales-count">
               Mostrando {{ paginatedSubcanales.length }} de {{ totalSubcanales }} subcanales
             </div>
 
             <!-- Paginación -->
-            <nav aria-label="Paginación de subcanales" *ngIf="totalPaginas > 1">
-              <ul class="pagination">
-                <!-- Botón de página anterior -->
-                <li class="page-item" [class.disabled]="paginaActual === 1">
-                  <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual - 1)">
-                    <i class="bi bi-chevron-left"></i>
-                  </a>
-                </li>
+            <div class="pagination-buttons d-flex align-items-center justify-content-center" *ngIf="totalPaginas > 1">
+              <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+                <i class="bi bi-chevron-left"></i>
+              </a>
 
-                <!-- Páginas -->
+              <div class="pagination-pages">
                 <ng-container *ngFor="let pagina of obtenerPaginas()">
-                  <li class="page-item" [class.active]="pagina === paginaActual" *ngIf="pagina !== '...'">
-                    <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(pagina)">
-                      {{ pagina }}
-                    </a>
-                  </li>
-                  <li class="page-item disabled" *ngIf="pagina === '...'">
-                    <span class="page-link">...</span>
-                  </li>
+                  <a href="javascript:void(0)"
+                     class="pagination-page"
+                     [class.active]="pagina === paginaActual"
+                     *ngIf="pagina !== '...'"
+                     (click)="cambiarPagina(pagina)">{{ pagina }}</a>
+                  <span class="pagination-dots" *ngIf="pagina === '...'">...</span>
                 </ng-container>
+              </div>
 
-                <!-- Botón de página siguiente -->
-                <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
-                  <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual + 1)">
-                    <i class="bi bi-chevron-right"></i>
-                  </a>
-                </li>
-              </ul>
-            </nav>
+              <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
