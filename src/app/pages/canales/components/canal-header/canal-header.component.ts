@@ -17,6 +17,7 @@ export class CanalHeaderComponent {
   @Input() planesActivos: number = 0;
   @Input() planesInactivos: number = 0;
   @Input() totalOperaciones: number = 0;
+  @Input() operacionesLiquidadas: number = 0;
 
   @Output() toggleEstado = new EventEmitter<void>();
 

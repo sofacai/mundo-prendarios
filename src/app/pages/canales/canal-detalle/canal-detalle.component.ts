@@ -100,6 +100,7 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
   vendedores: any[] = [];
   operaciones: Operacion[] = [];
   clientes: Cliente[] = [];
+  operacionesLiquidadas = 0; // Nueva propiedad
 
   constructor(
     private route: ActivatedRoute,
@@ -185,8 +186,24 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         // Cargar oficiales comerciales
         this.cargarOficialesComerciales(this.canalId);
 
-        // Cargar datos adicionales en paralelo
-        this.loadAdditionalData();
+        // Obtener operaciones liquidadas
+        this.operacionService.getOperaciones().subscribe({
+          next: (operaciones) => {
+            // Filtrar operaciones del canal actual
+            this.operaciones = operaciones.filter(op => op.canalId === this.canalId);
+
+            // Contar operaciones liquidadas
+            this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada').length;
+
+            // Cargar datos adicionales en paralelo
+            this.loadAdditionalData();
+          },
+          error: (err) => {
+            console.error('Error al cargar operaciones:', err);
+            // Seguir con la carga de datos adicionales aunque falle la carga de operaciones
+            this.loadAdditionalData();
+          }
+        });
       },
       error: (err) => {
         this.error = 'Error al cargar los datos del canal.';

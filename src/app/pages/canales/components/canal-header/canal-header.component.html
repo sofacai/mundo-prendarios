@@ -1,4 +1,3 @@
-<!-- Archivo: src/app/pages/canales/components/canal-header/canal-header.component.html -->
 <div class="canal-header-card">
   <div class="header-main-section">
     <!-- Logo canal -->
@@ -46,23 +45,48 @@
     </div>
   </div>
 
-  <!-- Estadísticas -->
-  <div class="stats-section">
-    <div class="stat-box">
-      <div class="stat-number">
-        {{ subcanalesActivos + subcanalesInactivos }}
+  <!-- Estadísticas con el nuevo estilo -->
+  <div class="stats-container">
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-icon bg-light-primary">
+          <i class="bi bi-diagram-3"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ subcanalesActivos + subcanalesInactivos }}</div>
+          <div class="stat-label">Subcanales</div>
+        </div>
       </div>
-      <div class="stat-label">Subcanales</div>
-    </div>
 
-    <div class="stat-box">
-      <div class="stat-number">{{ planesActivos + planesInactivos }}</div>
-      <div class="stat-label">Planes</div>
-    </div>
+      <div class="stat-item">
+        <div class="stat-icon bg-light-warning">
+          <i class="bi bi-list-check"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ planesActivos + planesInactivos }}</div>
+          <div class="stat-label">Planes</div>
+        </div>
+      </div>
 
-    <div class="stat-box">
-      <div class="stat-number">{{ totalOperaciones }}</div>
-      <div class="stat-label">Operaciones</div>
+      <div class="stat-item">
+        <div class="stat-icon bg-light-info">
+          <i class="bi bi-cash"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalOperaciones }}</div>
+          <div class="stat-label">Operaciones Totales</div>
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-icon bg-light-success">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ operacionesLiquidadas }}</div>
+          <div class="stat-label">Op. Liquidadas</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
