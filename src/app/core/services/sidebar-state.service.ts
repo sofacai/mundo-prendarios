@@ -56,4 +56,20 @@ export class SidebarStateService {
       this.setCollapsed(false);
     }
   }
+  toggleCotizadorSidebar(): void {
+    this.setCollapsed(false);
+
+    if (window.innerWidth < 992) {
+      document.body.classList.add('sidebar-open');
+
+      // Manipulación directa del DOM para garantizar consistencia
+      requestAnimationFrame(() => {
+        const sidebar = document.querySelector('.sidebar') as HTMLElement;
+        if (sidebar) {
+          sidebar.style.transform = 'translateX(0)';
+          sidebar.style.zIndex = '10000'; // Asegura que esté por encima
+        }
+      });
+    }
+  }
 }

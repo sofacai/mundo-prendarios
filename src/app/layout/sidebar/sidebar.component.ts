@@ -40,8 +40,11 @@ export class SidebarComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+
   ) {
+
+
     // Subscribe to navigation events to handle menu expansion
     // based on current route
     this.router.events.pipe(
@@ -60,6 +63,10 @@ export class SidebarComponent implements OnInit {
         this.toggleSidebar();
       }
     });
+  }
+
+  get isInCotizador(): boolean {
+    return this.router.url.includes('/cotizador');
   }
 
   ngOnInit(): void {
@@ -81,6 +88,8 @@ export class SidebarComponent implements OnInit {
         this.userId = null;
       }
     });
+
+
 
     // Check if we're on mobile
     this.checkScreenSize();

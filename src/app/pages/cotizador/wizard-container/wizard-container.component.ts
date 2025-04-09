@@ -19,6 +19,8 @@ import { catchError, finalize, tap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { CanalService } from 'src/app/core/services/canal.service';
 import { PlanService } from 'src/app/core/services/plan.service';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+
 
 interface WizardData {
   paso: number;
@@ -73,6 +75,7 @@ export class WizardContainerComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private canalService: CanalService,
     private planService: PlanService,
+    private sidebarStateService: SidebarStateService
 
 
   ) {}
@@ -113,6 +116,24 @@ export class WizardContainerComponent implements OnInit {
       this.vendorSeleccionado = user.id;
       this.wizardData.vendorId = user.id;
       this.cargarSubcanalesVendor(user.id);
+    }
+  }
+
+  
+
+  toggleSidebar(): void {
+    // En móvil, siempre expandimos
+    this.sidebarStateService.setCollapsed(false);
+
+    // Añadir clase al body para móvil
+    if (window.innerWidth < 992) {
+      document.body.classList.add('sidebar-open');
+
+      // Manipulación directa del sidebar para asegurarnos que se muestre
+      const sidebar = document.querySelector('.sidebar') as HTMLElement;
+      if (sidebar) {
+        sidebar.style.transform = 'translateX(0)';
+      }
     }
   }
 

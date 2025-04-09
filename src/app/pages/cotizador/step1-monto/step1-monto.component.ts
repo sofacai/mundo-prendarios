@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 registerLocaleData(localeEs, 'es');
 
 @Component({
@@ -51,7 +52,9 @@ export class Step1MontoComponent implements OnInit {
   constructor(
     private router: Router,
     private cotizadorService: CotizadorService,
-    private dataService: CotizadorDataService
+    private dataService: CotizadorDataService,
+    private sidebarStateService: SidebarStateService
+
 
   ) {}
 
@@ -116,6 +119,10 @@ export class Step1MontoComponent implements OnInit {
     } else {
       this.errorMensaje = "No se encontraron planes disponibles para este subcanal.";
     }
+  }
+
+  toggleSidebar(): void {
+    this.sidebarStateService.toggleCotizadorSidebar();
   }
 
   onVolver() {

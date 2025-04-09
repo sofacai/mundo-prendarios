@@ -1,7 +1,7 @@
 <!-- Only render sidebar if user is authenticated -->
 <ng-container *ngIf="isAuthenticated">
   <!-- Header móvil -->
-  <header class="mobile-header" *ngIf="isMobile">
+  <header class="mobile-header" *ngIf="isMobile && !isInCotizador">
     <div class="header-container">
       <button class="menu-toggle" (click)="toggleSidebar()">
         <i class="bi bi-list"></i>

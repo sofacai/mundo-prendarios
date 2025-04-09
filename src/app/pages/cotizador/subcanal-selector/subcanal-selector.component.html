@@ -1,26 +1,37 @@
-<div class="step-container">
+<div class="subcanal-selector-container">
   <div class="header">
     <div class="logo">
-      <img src="assets/logo-mundo-prendario.png" alt="Mundo Prendario" />
+      <img src="assets/logo.webp" alt="Logo" class="logo-image">
     </div>
+    <div class="curved-edge"></div>
   </div>
 
   <div class="content">
     <h2 class="title">Seleccionar Subcanal</h2>
 
     <p class="subtitle">
-      Estás asignado a múltiples subcanales. Por favor, selecciona el subcanal para el que deseas realizar esta cotización.
+      Estás asignado a múltiples subcanales. Por favor, selecciona el subcanal para
+      el que deseas realizar esta cotización.
     </p>
 
-    <div class="form-group full-width">
-      <div class="cuotas-container">
-        <div
-          *ngFor="let subcanal of subcanalesActivos"
-          class="cuota-option"
-          [class.selected]="subcanalId === subcanal.subcanalId"
-          (click)="subcanalId = subcanal.subcanalId">
-          {{ subcanal.subcanalNombre }}
+    <!-- Lista de subcanales -->
+    <div class="subcanales-list">
+      <div
+        *ngFor="let subcanal of subcanalesActivos"
+        class="subcanal-item"
+        [class.selected]="subcanalId === subcanal.subcanalId"
+        (click)="subcanalId = subcanal.subcanalId">
+        <div class="subcanal-info">
+          <div class="subcanal-name">{{ subcanal.subcanalNombre }}</div>
         </div>
+        <div class="radio" [class.radio-selected]="subcanalId === subcanal.subcanalId">
+          <div *ngIf="subcanalId === subcanal.subcanalId" class="radio-inner"></div>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay resultados -->
+      <div *ngIf="subcanalesActivos.length === 0" class="no-results">
+        No hay subcanales activos disponibles. Contacta a tu administrador.
       </div>
     </div>
 
