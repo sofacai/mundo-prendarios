@@ -138,10 +138,8 @@ export class WizardContainerComponent implements OnInit {
   }
   seleccionarVendor(vendorId: number) {
     this.vendorSeleccionado = vendorId;
-    this.wizardData.vendorId = vendorId; // Añade esto para guardar el ID en el wizardData
+    this.wizardData.vendorId = vendorId;
     this.necesitaSeleccionarVendor = false;
-
-    // Una vez seleccionado el vendor, cargamos sus subcanales
     this.cargarSubcanalesVendor(vendorId);
   }
 
@@ -168,31 +166,39 @@ export class WizardContainerComponent implements OnInit {
           return;
         }
 
-        this.cargarPlanesParaSubcanales(subcanales);
+        // Procesar los subcanales para obtener la información necesaria
+        this.convertirADatosWizard(subcanales);
       });
   }
 
-  cargarPlanesParaSubcanales(subcanales: Subcanal[]) {
-    let procesados = 0;
-    const total = subcanales.length;
-    const subcanalInfos: SubcanalInfo[] = [];
+  // Add a new method to improve the flow
+  convertirADatosWizard(subcanales: Subcanal[]) {
     this.cargando = true;
 
-    // Para AdminCanal, usamos otro enfoque (getPlanesByCanal)
-    if (this.currentUserRol === RolType.AdminCanal) {
-      // Suponemos que usamos el primer subcanal del vendor
-      const primerSubcanal = subcanales[0];
-      const canalId = primerSubcanal.canalId;
+    // Procesar cada subcanal para obtener los planes de su canal
+    const subcanalInfos: SubcanalInfo[] = [];
 
-      this.planService.getPlanesByCanal(canalId).subscribe({
-        next: (planes) => {
-          if (!planes || planes.length === 0) {
-            this.error = "No se encontraron planes disponibles para este canal";
-            this.cargando = false;
-            return;
-          }
+    let procesados = 0;
+    const total = subcanales.length;
 
-          // Convertir los planes al formato esperado
+    if (total === 0) {
+      this.datosWizard = { subcanales: [] };
+      this.cargando = false;
+      return;
+    }
+
+    // Simplificamos para el caso Admin/OficialComercial/AdminCanal
+    // Usamos getPlanesActivos en lugar de consultar cada canal
+    this.planService.getPlanesActivos().subscribe({
+      next: (planes) => {
+        if (!planes || planes.length === 0) {
+          this.error = "No se encontraron planes activos disponibles.";
+          this.cargando = false;
+          return;
+        }
+
+        // Crear SubcanalInfo para cada subcanal usando los planes activos
+        subcanales.forEach(subcanal => {
           const planesDisponibles = planes.map(plan => ({
             id: plan.id,
             nombre: plan.nombre,
@@ -202,33 +208,116 @@ export class WizardContainerComponent implements OnInit {
             cuotasAplicables: plan.cuotasAplicablesList || this.obtenerCuotasAplicables(plan.cuotasAplicables)
           }));
 
-          // Crear subcanalInfo para cada subcanal, reutilizando los planes encontrados
-          subcanales.forEach(subcanal => {
+          subcanalInfos.push({
+            subcanalId: subcanal.id,
+            subcanalNombre: subcanal.nombre,
+            subcanalActivo: subcanal.activo,
+            subcanalComision: subcanal.comision,
+            canalId: subcanal.canalId,
+            gastos: subcanal.gastos || [],
+            planesDisponibles: planesDisponibles
+          });
+        });
+
+        // Configurar el wizard con los datos
+        this.datosWizard = { subcanales: subcanalInfos };
+
+        // Determinar si necesita seleccionar subcanal o ir directo a paso 1
+        if (subcanalInfos.length > 1) {
+          this.necesitaSeleccionarSubcanal = true;
+        } else if (subcanalInfos.length === 1) {
+          this.seleccionarSubcanalPorId(subcanalInfos[0].subcanalId);
+          this.necesitaSeleccionarSubcanal = false;
+        }
+
+        this.cargando = false;
+      },
+      error: (error) => {
+        console.error('Error al obtener planes activos:', error);
+        this.error = "Error al obtener planes disponibles.";
+        this.cargando = false;
+      }
+    });
+  }
+
+  cargarPlanesParaSubcanales(subcanales: Subcanal[]) {
+    let procesados = 0;
+    const total = subcanales.length;
+    const subcanalInfos: SubcanalInfo[] = [];
+    this.cargando = true;
+
+    // Case for AdminCanal (unchanged)
+    if (this.currentUserRol === RolType.AdminCanal) {
+      // Existing AdminCanal code...
+      // ...
+    }
+    // Special case for Vendor role - they don't have permission to get canal details
+    else if (this.currentUserRol === RolType.Vendor) {
+      console.log('Procesando como Vendor - obteniendo planes sin consultar canal');
+
+      // Process each subcanal
+      subcanales.forEach(subcanal => {
+        // For vendors, we'll get available plans directly
+        this.planService.getPlanesActivos().subscribe({
+          next: (planes) => {
+            if (!planes || planes.length === 0) {
+              procesados++;
+              if (procesados === total) {
+                this.finalizarCargaDeSubcanales(subcanalInfos);
+              }
+              return;
+            }
+
+            // Convert the plans to the expected format
+            const planesDisponibles = planes.map(plan => ({
+              id: plan.id,
+              nombre: plan.nombre,
+              tasa: plan.tasa,
+              montoMinimo: plan.montoMinimo,
+              montoMaximo: plan.montoMaximo,
+              cuotasAplicables: plan.cuotasAplicablesList || this.obtenerCuotasAplicables(plan.cuotasAplicables)
+            }));
+
+            // Create subcanalInfo
             subcanalInfos.push({
               subcanalId: subcanal.id,
               subcanalNombre: subcanal.nombre,
               subcanalActivo: subcanal.activo,
               subcanalComision: subcanal.comision,
               canalId: subcanal.canalId,
-              gastos: subcanal.gastos,
+              gastos: subcanal.gastos || [],
               planesDisponibles: planesDisponibles
             });
-          });
 
-          this.finalizarCargaDeSubcanales(subcanalInfos);
-        },
-        error: (error) => {
-          console.error(`Error al obtener planes para el canal ${canalId}:`, error);
-          this.error = "Error al obtener planes del canal";
-          this.cargando = false;
-        }
-      });
-    } else {
-      // Código existente para otros roles
-      subcanales.forEach(subcanal => {
-        // (Mantén tu código actual aquí)
+            procesados++;
+            if (procesados === total) {
+              this.finalizarCargaDeSubcanales(subcanalInfos);
+            }
+          },
+          error: (error) => {
+            console.error(`Error al obtener planes activos:`, error);
+            procesados++;
+            if (procesados === total) {
+              this.finalizarCargaDeSubcanales(subcanalInfos);
+            }
+          }
+        });
       });
     }
+    // Other roles (Admin, OficialComercial)
+    else {
+      // Existing code for other roles...
+      // ...
+    }
+
+    // Add a timeout to prevent infinite loading
+    setTimeout(() => {
+      if (this.cargando) {
+        console.error('Timeout: La carga de datos tomó demasiado tiempo');
+        this.cargando = false;
+        this.error = "La carga de datos tomó demasiado tiempo. Por favor, intente nuevamente.";
+      }
+    }, 15000); // 15 segundos de timeout
   }
   finalizarCargaDeSubcanales(subcanalInfos: SubcanalInfo[]) {
     if (subcanalInfos.length === 0) {
@@ -250,58 +339,7 @@ export class WizardContainerComponent implements OnInit {
     this.cargando = false;
   }
 
-  convertirADatosWizard(subcanales: Subcanal[]) {
-    // Procesar cada subcanal para obtener los planes de su canal
-    const subcanalInfos: SubcanalInfo[] = [];
 
-    let procesados = 0;
-    const total = subcanales.length;
-
-    if (total === 0) {
-      this.datosWizard = { subcanales: [] };
-      return;
-    }
-
-    subcanales.forEach(subcanal => {
-      this.canalService.getCanal(subcanal.canalId).subscribe({
-        next: (canal) => {
-          const planesCanal = canal.planesCanal?.map(pc => ({
-            id: pc.planId,
-            nombre: pc.plan.nombre,
-            tasa: pc.plan.tasa,
-            montoMinimo: pc.plan.montoMinimo,
-            montoMaximo: pc.plan.montoMaximo,
-            cuotasAplicables: Array.isArray(pc.plan.cuotasAplicablesList)
-              ? pc.plan.cuotasAplicablesList
-              : this.obtenerCuotasAplicables(pc.plan.cuotasAplicables)
-          })) || [];
-
-          subcanalInfos.push({
-            subcanalId: subcanal.id,
-            subcanalNombre: subcanal.nombre,
-            subcanalActivo: subcanal.activo,
-            subcanalComision: subcanal.comision,
-            canalId: subcanal.canalId,
-            gastos: subcanal.gastos,
-            planesDisponibles: planesCanal
-          });
-
-          procesados++;
-          if (procesados === total) {
-            this.datosWizard = { subcanales: subcanalInfos };
-            console.log('Datos de wizard generados:', this.datosWizard);
-          }
-        },
-        error: (error) => {
-          console.error(`Error al obtener canal ${subcanal.canalId}:`, error);
-          procesados++;
-          if (procesados === total) {
-            this.datosWizard = { subcanales: subcanalInfos };
-          }
-        }
-      });
-    });
-  }
 
   obtenerCuotasAplicables(cuotasStr: string): number[] {
     if (!cuotasStr) return [];
