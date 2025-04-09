@@ -12,7 +12,7 @@
             <th>Provincia</th>
             <th>Localidad</th>
             <th>Estado</th>
-            <th class="text-center">Comisión</th>
+            <th class="text-center">Op. Liquidadas</th>
           </tr>
         </thead>
         <tbody>
@@ -44,7 +44,11 @@
                 ></span>
               </div>
             </td>
-            <td class="text-center">{{ subcanal.comision }}%</td>
+            <td class="text-center">
+              <span class="badge badge-light-success">
+                {{ getOperacionesLiquidadas(subcanal.id) }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>

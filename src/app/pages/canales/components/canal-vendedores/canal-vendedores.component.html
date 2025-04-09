@@ -13,8 +13,7 @@
             <th>Email</th>
             <th>Teléfono</th>
             <th>Estado</th>
-            <th class="text-center">Operaciones</th>
-            <th class="text-center">Acciones</th>
+            <th class="text-center">Op. Liquidadas</th>
           </tr>
         </thead>
         <tbody>
@@ -44,14 +43,9 @@
               </div>
             </td>
             <td class="text-center">
-              <span class="badge badge-light-info">
-                {{ vendor.cantidadOperaciones || 0 }}
+              <span class="badge badge-light-success">
+                {{ getOperacionesLiquidadas(vendor.id) }}
               </span>
-            </td>
-            <td class="text-center">
-              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(vendor.id)">
-                <i class="bi bi-eye"></i>
-              </button>
             </td>
           </tr>
         </tbody>

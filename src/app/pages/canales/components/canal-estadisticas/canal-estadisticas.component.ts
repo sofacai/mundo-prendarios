@@ -1,5 +1,5 @@
 // Archivo: src/app/pages/canales/components/canal-estadisticas/canal-estadisticas.component.ts
-import { Component, Input, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Operacion } from 'src/app/core/services/operacion.service';
 import { Canal } from 'src/app/core/services/canal.service';
@@ -101,16 +101,27 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     this.operacionesChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: operacionesPorMes.map(item => item.mes),
-        datasets: [{
-          label: 'Operaciones',
-          data: operacionesPorMes.map(item => item.cantidad),
-          backgroundColor: 'rgba(0, 158, 247, 0.2)',
-          borderColor: 'rgba(0, 158, 247, 1)',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }]
+        labels: operacionesPorMes.meses,
+        datasets: [
+          {
+            label: 'Total Operaciones',
+            data: operacionesPorMes.totales,
+            backgroundColor: 'rgba(0, 158, 247, 0.2)',
+            borderColor: 'rgba(0, 158, 247, 1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Operaciones Liquidadas',
+            data: operacionesPorMes.liquidadas,
+            backgroundColor: 'rgba(80, 205, 137, 0.2)',
+            borderColor: 'rgba(80, 205, 137, 1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -162,18 +173,34 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       type: 'doughnut',
       data: {
         labels: distribucionPlanes.map(item => item.nombre),
-        datasets: [{
-          data: distribucionPlanes.map(item => item.operaciones),
-          backgroundColor: [
-            'rgba(80, 205, 137, 0.7)',
-            'rgba(0, 158, 247, 0.7)',
-            'rgba(255, 168, 0, 0.7)',
-            'rgba(241, 65, 108, 0.7)',
-            'rgba(114, 57, 234, 0.7)',
-            'rgba(25, 135, 84, 0.7)'
-          ],
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: 'Total Operaciones',
+            data: distribucionPlanes.map(item => item.operaciones),
+            backgroundColor: [
+              'rgba(0, 158, 247, 0.7)',
+              'rgba(255, 168, 0, 0.7)',
+              'rgba(241, 65, 108, 0.7)',
+              'rgba(114, 57, 234, 0.7)',
+              'rgba(25, 135, 84, 0.7)',
+              'rgba(102, 16, 242, 0.7)'
+            ],
+            borderWidth: 1
+          },
+          {
+            label: 'Operaciones Liquidadas',
+            data: distribucionPlanes.map(item => item.operacionesLiquidadas),
+            backgroundColor: [
+              'rgba(0, 158, 247, 0.9)',
+              'rgba(255, 168, 0, 0.9)',
+              'rgba(241, 65, 108, 0.9)',
+              'rgba(114, 57, 234, 0.9)',
+              'rgba(25, 135, 84, 0.9)',
+              'rgba(102, 16, 242, 0.9)'
+            ],
+            borderWidth: 1
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -213,13 +240,22 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       type: 'bar',
       data: {
         labels: operacionesPorSubcanal.map(item => item.nombre),
-        datasets: [{
-          label: 'Operaciones',
-          data: operacionesPorSubcanal.map(item => item.operaciones),
-          backgroundColor: 'rgba(0, 158, 247, 0.7)',
-          borderColor: 'rgba(0, 158, 247, 1)',
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: 'Total Operaciones',
+            data: operacionesPorSubcanal.map(item => item.operaciones),
+            backgroundColor: 'rgba(0, 158, 247, 0.7)',
+            borderColor: 'rgba(0, 158, 247, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Operaciones Liquidadas',
+            data: operacionesPorSubcanal.map(item => item.operacionesLiquidadas),
+            backgroundColor: 'rgba(80, 205, 137, 0.7)',
+            borderColor: 'rgba(80, 205, 137, 1)',
+            borderWidth: 1
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -262,13 +298,22 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       type: 'bar',
       data: {
         labels: rendimientoVendedores.map(item => item.nombre),
-        datasets: [{
-          label: 'Operaciones',
-          data: rendimientoVendedores.map(item => item.operaciones),
-          backgroundColor: 'rgba(114, 57, 234, 0.7)',
-          borderColor: 'rgba(114, 57, 234, 1)',
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: 'Total Operaciones',
+            data: rendimientoVendedores.map(item => item.operaciones),
+            backgroundColor: 'rgba(114, 57, 234, 0.7)',
+            borderColor: 'rgba(114, 57, 234, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Operaciones Liquidadas',
+            data: rendimientoVendedores.map(item => item.operacionesLiquidadas),
+            backgroundColor: 'rgba(80, 205, 137, 0.7)',
+            borderColor: 'rgba(80, 205, 137, 1)',
+            borderWidth: 1
+          }
+        ]
       },
       options: {
         indexAxis: 'y',
@@ -310,55 +355,63 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   // Helpers para procesamiento de datos para gráficos
-  groupOperacionesPorMes(): {mes: string, cantidad: number}[] {
+  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[]} {
     console.log('Procesando operaciones para agrupar por mes:', this.operaciones);
+
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const operacionesPorMes = new Map();
+    const operacionesLiquidadasPorMes = new Map();
+
+    // Inicializar todos los meses con 0
+    meses.forEach(mes => {
+      operacionesPorMes.set(mes, 0);
+      operacionesLiquidadasPorMes.set(mes, 0);
+    });
 
     // Si no hay operaciones, devolver datos de muestra
     if (!this.operaciones || this.operaciones.length === 0) {
       console.log('No hay operaciones, devolviendo datos de muestra');
-      return [
-        { mes: 'Ene', cantidad: 0 },
-        { mes: 'Feb', cantidad: 0 },
-        { mes: 'Mar', cantidad: 0 },
-        { mes: 'Abr', cantidad: 0 },
-        { mes: 'May', cantidad: 0 },
-        { mes: 'Jun', cantidad: 0 }
-      ];
+      return {
+        meses: meses.slice(0, 6),
+        totales: Array(6).fill(0),
+        liquidadas: Array(6).fill(0)
+      };
     }
-
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const operacionesPorMes = new Map();
-
-    // Inicializar todos los meses con 0
-    meses.forEach(mes => operacionesPorMes.set(mes, 0));
 
     // Agrupar operaciones por mes
     this.operaciones.forEach(op => {
       if (op.fechaCreacion) {
         const fecha = new Date(op.fechaCreacion);
         const mes = meses[fecha.getMonth()];
+
+        // Incrementar total de operaciones
         operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
+
+        // Incrementar operaciones liquidadas si aplica
+        if (op.estado === 'Liquidada') {
+          operacionesLiquidadasPorMes.set(mes, (operacionesLiquidadasPorMes.get(mes) || 0) + 1);
+        }
       }
     });
 
-    // Convertir el mapa a un array de objetos
-    const resultado = Array.from(operacionesPorMes.entries())
-      .map(([mes, cantidad]) => ({ mes, cantidad }))
-      .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
+    // Obtener los últimos 6 meses
+    const mesesRecientes = meses.slice(0, 6);
+    const totales = mesesRecientes.map(mes => operacionesPorMes.get(mes) || 0);
+    const liquidadas = mesesRecientes.map(mes => operacionesLiquidadasPorMes.get(mes) || 0);
 
-    console.log('Operaciones por mes procesadas:', resultado);
-    return resultado;
+    console.log('Operaciones por mes procesadas:', { meses: mesesRecientes, totales, liquidadas });
+    return { meses: mesesRecientes, totales, liquidadas };
   }
 
-  getDistribucionPlanes(): {nombre: string, operaciones: number}[] {
+  getDistribucionPlanes(): {nombre: string, operaciones: number, operacionesLiquidadas: number}[] {
     console.log('Procesando distribución de planes...');
 
     // Si no hay planes, devolver datos de muestra
     if (!this.canal || !this.canal.planesCanal || this.canal.planesCanal.length === 0) {
       console.log('No hay planes, devolviendo datos de muestra');
       return [
-        { nombre: 'Plan A', operaciones: 0 },
-        { nombre: 'Plan B', operaciones: 0 }
+        { nombre: 'Plan A', operaciones: 0, operacionesLiquidadas: 0 },
+        { nombre: 'Plan B', operaciones: 0, operacionesLiquidadas: 0 }
       ];
     }
 
@@ -366,10 +419,14 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     const distribucion = this.canal.planesCanal
       .filter(planCanal => planCanal.activo)
       .map(planCanal => {
-        const operacionesCount = this.operaciones.filter(op => op.planId === planCanal.planId).length;
+        const operacionesDelPlan = this.operaciones.filter(op => op.planId === planCanal.planId);
+        const operacionesCount = operacionesDelPlan.length;
+        const operacionesLiquidadasCount = operacionesDelPlan.filter(op => op.estado === 'Liquidada').length;
+
         return {
           nombre: planCanal.plan?.nombre || `Plan ${planCanal.planId}`,
-          operaciones: operacionesCount
+          operaciones: operacionesCount,
+          operacionesLiquidadas: operacionesLiquidadasCount
         };
       });
 
@@ -377,15 +434,15 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     return distribucion;
   }
 
-  getOperacionesPorSubcanal(): {nombre: string, operaciones: number}[] {
+  getOperacionesPorSubcanal(): {nombre: string, operaciones: number, operacionesLiquidadas: number}[] {
     console.log('Procesando operaciones por subcanal...');
 
     // Si no hay subcanales, devolver datos de muestra
     if (!this.subcanales || this.subcanales.length === 0) {
       console.log('No hay subcanales, devolviendo datos de muestra');
       return [
-        { nombre: 'Subcanal A', operaciones: 0 },
-        { nombre: 'Subcanal B', operaciones: 0 }
+        { nombre: 'Subcanal A', operaciones: 0, operacionesLiquidadas: 0 },
+        { nombre: 'Subcanal B', operaciones: 0, operacionesLiquidadas: 0 }
       ];
     }
 
@@ -393,10 +450,14 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     const operacionesPorSubcanal = this.subcanales
       .filter(subcanal => subcanal.activo)
       .map(subcanal => {
-        const operacionesCount = this.operaciones.filter(op => op.subcanalId === subcanal.id).length;
+        const operacionesDelSubcanal = this.operaciones.filter(op => op.subcanalId === subcanal.id);
+        const operacionesCount = operacionesDelSubcanal.length;
+        const operacionesLiquidadasCount = operacionesDelSubcanal.filter(op => op.estado === 'Liquidada').length;
+
         return {
           nombre: subcanal.nombre,
-          operaciones: operacionesCount
+          operaciones: operacionesCount,
+          operacionesLiquidadas: operacionesLiquidadasCount
         };
       });
 
@@ -404,25 +465,29 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     return operacionesPorSubcanal;
   }
 
-  getRendimientoVendedores(): {nombre: string, operaciones: number}[] {
+  getRendimientoVendedores(): {nombre: string, operaciones: number, operacionesLiquidadas: number}[] {
     console.log('Procesando rendimiento de vendedores...');
 
     // Si no hay vendedores, devolver datos de muestra
     if (!this.vendedores || this.vendedores.length === 0) {
       console.log('No hay vendedores, devolviendo datos de muestra');
       return [
-        { nombre: 'Vendedor A', operaciones: 0 },
-        { nombre: 'Vendedor B', operaciones: 0 }
+        { nombre: 'Vendedor A', operaciones: 0, operacionesLiquidadas: 0 },
+        { nombre: 'Vendedor B', operaciones: 0, operacionesLiquidadas: 0 }
       ];
     }
 
     // Generar datos basados en los vendedores reales
     const rendimientoVendedores = this.vendedores
       .map(vendor => {
-        const operacionesCount = this.operaciones.filter(op => op.vendedorId === vendor.id).length;
+        const operacionesDelVendedor = this.operaciones.filter(op => op.vendedorId === vendor.id);
+        const operacionesCount = operacionesDelVendedor.length;
+        const operacionesLiquidadasCount = operacionesDelVendedor.filter(op => op.estado === 'Liquidada').length;
+
         return {
           nombre: `${vendor.nombre || ''} ${vendor.apellido || ''}`.trim(),
-          operaciones: operacionesCount
+          operaciones: operacionesCount,
+          operacionesLiquidadas: operacionesLiquidadasCount
         };
       })
       .sort((a, b) => b.operaciones - a.operaciones) // Ordenar por cantidad de operaciones

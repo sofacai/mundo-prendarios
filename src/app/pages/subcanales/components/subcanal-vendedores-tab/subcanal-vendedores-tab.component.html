@@ -2,7 +2,7 @@
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3 class="card-title">Vendedores Asignados</h3>
     <div>
-      <button class="btn btn-sm btn-primary" (click)="asignarVendedor.emit()">
+      <button class="btn btn-sm btn-primary" (click)="openModal()">
         <i class="bi bi-plus"></i> Asignar Vendedor
       </button>
     </div>
@@ -78,11 +78,54 @@
           </p>
           <button
             class="btn btn-primary mt-3"
-            (click)="asignarVendedor.emit()"
+            (click)="openModal()"
           >
             <i class="bi bi-plus"></i> Asignar Vendedor
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Asignar Vendedor -->
+<div class="modal-backdrop" [class.show]="showModal" *ngIf="showModal"></div>
+<div class="modal" [class.show]="showModal" *ngIf="showModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Asignar Vendedor</h5>
+        <button type="button" class="close-btn" (click)="closeModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <label for="vendedor" class="form-label">Selecciona un vendedor</label>
+          <select
+            id="vendedor"
+            class="form-select"
+            [(ngModel)]="selectedVendorId"
+            [disabled]="isLoading">
+            <option value="" disabled selected>Seleccionar vendedor...</option>
+            <option *ngFor="let vendor of availableVendors" [value]="vendor.id">
+              {{ vendor.nombre }} {{ vendor.apellido }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!selectedVendorId || isLoading"
+          (click)="confirmarAsignacion()">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          Asignar
+        </button>
       </div>
     </div>
   </div>

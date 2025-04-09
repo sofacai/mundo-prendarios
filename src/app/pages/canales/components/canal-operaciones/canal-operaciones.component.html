@@ -33,7 +33,7 @@
           <tr *ngFor="let op of operacionesFiltradas">
             <td>{{ op.id }}</td>
             <td>
-              <span class="cursor-pointer text-hover-primary" (click)="onVerDetalle(op.id || 0)">
+              <span class="cursor-pointer text-hover-primary fw-bold" (click)="onVerDetalle(op.id || 0)">
                 {{ op.clienteNombre || "N/A" }}
               </span>
             </td>
