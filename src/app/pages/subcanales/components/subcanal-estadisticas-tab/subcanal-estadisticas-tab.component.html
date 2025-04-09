@@ -13,20 +13,29 @@
     </div>
   </div>
 
-  <!-- Gráfico de Distribución por Vendedores -->
   <div class="col-12 col-lg-6">
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">Distribución por Vendedores</h3>
       </div>
-      <div class="card-body p-4">
-        <div class="chart-container" style="height: 300px">
-          <canvas id="vendedoresChart"></canvas>
+      <div class="card-body p-4" >
+        <div class="row graficos">
+          <div class="col-12">
+            <h5 class="text-center mb-2">Operaciones Totales</h5>
+            <div class="chart-container" style="height: 250px">
+              <canvas id="vendedoresChart"></canvas>
+            </div>
+          </div>
+          <div class="col-12">
+            <h5 class="text-center mb-2">Operaciones Liquidadas</h5>
+            <div class="chart-container" style="height: 250px">
+              <canvas id="vendedoresLiquidadasChart"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Gráfico de Montos por Mes -->
   <div class="col-12 col-lg-6">
     <div class="card">
@@ -41,17 +50,5 @@
     </div>
   </div>
 
-  <!-- Gráfico de Adquisición de Clientes -->
-  <div class="col-12 col-lg-6">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Adquisición de Clientes</h3>
-      </div>
-      <div class="card-body p-4">
-        <div class="chart-container" style="height: 300px">
-          <canvas id="clientesChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </div>

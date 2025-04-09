@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subcanal } from 'src/app/core/services/subcanal.service';
+import { Operacion } from 'src/app/core/services/operacion.service';
 
 @Component({
   selector: 'app-subcanal-header',
@@ -17,6 +18,9 @@ export class SubcanalHeaderComponent {
   @Input() vendedoresInactivos = 0;
   @Input() clientesTotal = 0;
   @Input() operacionesTotal = 0;
+  @Input() operaciones: Operacion[] = [];
+  @Input() operacionesLiquidadas = 0;
+  @Input() operacionesRechazadas = 0;
 
   @Output() toggleEstado = new EventEmitter<void>();
 

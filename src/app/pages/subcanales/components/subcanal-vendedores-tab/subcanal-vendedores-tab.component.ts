@@ -22,6 +22,7 @@ export class SubcanalVendedoresTabComponent {
   // Métodos para calcular estadísticas
   @Input() getVendorOperaciones!: (vendorId: number) => number;
   @Input() getVendorClientes!: (vendorId: number) => number;
+  @Input() getVendorOperacionesLiquidadas!: (vendorId: number) => number;
 
   isVendorLoading(vendorId: number): boolean {
     return this.loadingVendedores.get(vendorId) === true;

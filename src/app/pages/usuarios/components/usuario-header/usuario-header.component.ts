@@ -111,4 +111,22 @@ export class UsuarioHeaderComponent {
   onSubcanalClick(subcanalId: number): void {
     this.router.navigate(['/subcanales', subcanalId]);
   }
+
+  // Nuevos métodos para las estadísticas
+  // Obtener cantidad de operaciones liquidadas
+  getOperacionesLiquidadas(): number {
+    return this.operaciones.filter(op => op.estado === 'Liquidada').length;
+  }
+
+  // Obtener cantidad de operaciones rechazadas
+  getOperacionesRechazadas(): number {
+    return this.operaciones.filter(op => op.estado === 'Rechazada').length;
+  }
+
+  // Obtener monto total de operaciones liquidadas
+  getMontoTotalLiquidadas(): number {
+    return this.operaciones
+      .filter(op => op.estado === 'Liquidada')
+      .reduce((total, op) => total + op.monto, 0);
+  }
 }

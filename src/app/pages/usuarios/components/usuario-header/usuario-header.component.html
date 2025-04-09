@@ -77,7 +77,6 @@
     </div>
   </div>
 
-  <!-- Estadísticas (solo para vendors) -->
   <div class="stats-container" *ngIf="usuario.rolId === 3">
     <div class="stats-row">
       <div class="stat-item">
@@ -85,7 +84,7 @@
           <i class="bi bi-cash"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ estadisticas?.cantidadOperaciones || 0 }}</div>
+          <div class="stat-value">{{ operaciones?.length || 0 }}</div>
           <div class="stat-label">Operaciones Totales</div>
         </div>
       </div>
@@ -95,18 +94,18 @@
           <i class="bi bi-check-circle"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ operacionesActivas || 0 }}</div>
-          <div class="stat-label">Operaciones Activas</div>
+          <div class="stat-value">{{ getOperacionesLiquidadas() }}</div>
+          <div class="stat-label">Operaciones Liquidadas</div>
         </div>
       </div>
 
       <div class="stat-item">
-        <div class="stat-icon bg-light-warning">
-          <i class="bi bi-people"></i>
+        <div class="stat-icon bg-light-danger">
+          <i class="bi bi-x-circle"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ clientes?.length || 0 }}</div>
-          <div class="stat-label">Clientes Atendidos</div>
+          <div class="stat-value">{{ getOperacionesRechazadas() }}</div>
+          <div class="stat-label">Operaciones Rechazadas</div>
         </div>
       </div>
 
@@ -115,8 +114,8 @@
           <i class="bi bi-currency-dollar"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ formatMontoSinDecimales(montoTotal) }}</div>
-          <div class="stat-label">Monto Total</div>
+          <div class="stat-value">{{ formatMontoSinDecimales(getMontoTotalLiquidadas()) }}</div>
+          <div class="stat-label">Monto Liquidado Total</div>
         </div>
       </div>
     </div>

@@ -17,8 +17,7 @@
             <th>Email</th>
             <th>Teléfono</th>
             <th>Estado</th>
-            <th class="text-center">Operaciones</th>
-            <th class="text-center">Clientes</th>
+            <th class="text-center">Op. Liquidadas</th>
             <th class="text-center">Acciones</th>
           </tr>
         </thead>
@@ -26,7 +25,7 @@
           <tr *ngFor="let vendor of subcanal.vendors">
             <td>{{ vendor.id }}</td>
             <td>
-              <div class="fw-bold">
+              <div class="fw-bold cursor-pointer" (click)="onVerDetalleVendor(vendor.id)">
                 {{ vendor.nombre }} {{ vendor.apellido }}
               </div>
             </td>
@@ -49,17 +48,11 @@
               </div>
             </td>
             <td class="text-center">
-              <span class="badge badge-light-primary">
-                {{ getVendorOperaciones(vendor.id) }}
+              <span class="badge badge-light-success">
+                {{ getVendorOperacionesLiquidadas(vendor.id) }}
               </span>
             </td>
             <td class="text-center">
-              <span class="badge badge-light-info">
-                {{ getVendorClientes(vendor.id) }}
-              </span>
-            </td>
-            <td class="text-center">
-
               <button
                 class="btn-action btn-remove"
                 title="Desasignar"

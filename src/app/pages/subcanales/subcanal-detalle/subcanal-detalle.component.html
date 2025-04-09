@@ -30,14 +30,17 @@
     <div *ngIf="subcanal && !loading && !error" class="subcanal-detail">
       <!-- Header Component -->
       <app-subcanal-header
-        [subcanal]="subcanal"
-        [loading]="loading"
-        [vendedoresActivos]="vendedoresActivos"
-        [vendedoresInactivos]="vendedoresInactivos"
-        [clientesTotal]="clientesTotal"
-        [operacionesTotal]="operacionesTotal"
-        (toggleEstado)="toggleSubcanalEstado()">
-      </app-subcanal-header>
+      [subcanal]="subcanal"
+      [loading]="loading"
+      [vendedoresActivos]="vendedoresActivos"
+      [vendedoresInactivos]="vendedoresInactivos"
+      [clientesTotal]="clientesTotal"
+      [operacionesTotal]="operacionesTotal"
+      [operacionesLiquidadas]="operacionesLiquidadas"
+      [operacionesRechazadas]="operacionesRechazadas"
+      [operaciones]="operaciones"
+      (toggleEstado)="toggleSubcanalEstado()">
+    </app-subcanal-header>
 
       <!-- Tabs Navigation Component -->
       <app-subcanal-tabs-navigation
@@ -82,15 +85,16 @@
         <!-- Vendedores Tab Component -->
         <div class="tab-pane" [class.active]="activeTab === 'vendedores'">
           <app-subcanal-vendedores-tab
-            [subcanal]="subcanal"
-            [loadingVendedores]="loadingVendedores"
-            [getVendorOperaciones]="getVendorOperaciones.bind(this)"
-            [getVendorClientes]="getVendorClientes.bind(this)"
-            (asignarVendedor)="abrirModalAsignarVendedor()"
-            (toggleVendorEstado)="toggleVendorEstado($event)"
-            (desasignarVendor)="desasignarVendor($event)"
-            (verDetalleVendor)="verDetalleVendor($event)">
-          </app-subcanal-vendedores-tab>
+          [subcanal]="subcanal"
+          [loadingVendedores]="loadingVendedores"
+          [getVendorOperaciones]="getVendorOperaciones.bind(this)"
+          [getVendorClientes]="getVendorClientes.bind(this)"
+          [getVendorOperacionesLiquidadas]="getVendorOperacionesLiquidadas.bind(this)"
+          (asignarVendedor)="abrirModalAsignarVendedor()"
+          (toggleVendorEstado)="toggleVendorEstado($event)"
+          (desasignarVendor)="desasignarVendor($event)"
+          (verDetalleVendor)="verDetalleVendor($event)">
+        </app-subcanal-vendedores-tab>
         </div>
 
 

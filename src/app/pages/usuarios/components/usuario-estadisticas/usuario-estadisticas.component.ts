@@ -165,6 +165,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     this.hasSufficientData = Object.keys(operacionesPorMes).length >= 2;
   }
 
+  // Método para calcular tendencias
   calcularTendencias() {
     console.log('UsuarioEstadisticasComponent - calcularTendencias');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
@@ -280,8 +281,8 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       return;
     }
 
-    const { labels, data } = this.prepareChartData();
-    console.log('Chart data prepared:', { labels, data });
+    const { labels, dataTotales, dataLiquidadas } = this.prepareOperacionesChartData();
+    console.log('Chart data prepared:', { labels, dataTotales, dataLiquidadas });
 
     if (this.operacionesChart) {
       this.operacionesChart.destroy();
@@ -291,13 +292,22 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       type: 'bar',
       data: {
         labels,
-        datasets: [{
-          label: 'Operaciones',
-          data,
-          backgroundColor: 'rgba(0, 158, 247, 0.5)',
-          borderColor: 'rgba(0, 158, 247, 1)',
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: 'Operaciones Totales',
+            data: dataTotales,
+            backgroundColor: 'rgba(0, 158, 247, 0.5)',
+            borderColor: 'rgba(0, 158, 247, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Operaciones Liquidadas',
+            data: dataLiquidadas,
+            backgroundColor: 'rgba(80, 205, 137, 0.5)',
+            borderColor: 'rgba(80, 205, 137, 1)',
+            borderWidth: 1
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -312,7 +322,8 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         },
         plugins: {
           legend: {
-            display: false
+            display: true,
+            position: 'top'
           }
         }
       }
@@ -556,6 +567,34 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     return Math.floor(Math.random() * 30) - 10; // Valor entre -10 y 20
   }
 
+  prepareOperacionesChartData(): { labels: string[], dataTotales: number[], dataLiquidadas: number[] } {
+    console.log('UsuarioEstadisticasComponent - prepareOperacionesChartData');
+    const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
+    const today = new Date();
+    const labels: string[] = [];
+    const dataTotales: number[] = [];
+    const dataLiquidadas: number[] = [];
+
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(today);
+      date.setMonth(today.getMonth() - i);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const key = `${year}-${month}`;
+
+      const monthName = date.toLocaleString('default', { month: 'short' });
+      labels.push(`${monthName} ${year}`);
+
+      const operacionesMes = operacionesPorMes[key] || [];
+      dataTotales.push(operacionesMes.length);
+
+      const operacionesLiquidadas = operacionesMes.filter(op => op.estado === 'Liquidada');
+      dataLiquidadas.push(operacionesLiquidadas.length);
+    }
+
+    return { labels, dataTotales, dataLiquidadas };
+  }
+
   prepareChartData(): { labels: string[], data: number[] } {
     console.log('UsuarioEstadisticasComponent - prepareChartData');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
@@ -578,12 +617,14 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     return { labels, data };
   }
 
+  // Método para actualizar el gráfico
   updateChartData() {
     console.log('UsuarioEstadisticasComponent - updateChartData');
     if (this.operacionesChart) {
-      const { labels, data } = this.prepareChartData();
+      const { labels, dataTotales, dataLiquidadas } = this.prepareOperacionesChartData();
       this.operacionesChart.data.labels = labels;
-      this.operacionesChart.data.datasets[0].data = data;
+      this.operacionesChart.data.datasets[0].data = dataTotales;
+      this.operacionesChart.data.datasets[1].data = dataLiquidadas;
       this.operacionesChart.update('none');
     }
 
@@ -660,5 +701,32 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       default:
         return 'badge-light-info';
     }
+  }
+
+  // Métodos para estadísticas de operaciones liquidadas
+  getOperacionesLiquidadas(): number {
+    return this.operaciones.filter(op => op.estado === 'Liquidada').length;
+  }
+
+  getOperacionesLiquidadasPorcentaje(): number {
+    if (this.operaciones.length === 0) return 0;
+    return Math.round((this.getOperacionesLiquidadas() / this.operaciones.length) * 100);
+  }
+
+  // Método para calcular monto total de operaciones liquidadas
+  getMontoTotalLiquidadas(): number {
+    return this.operaciones
+      .filter(op => op.estado === 'Liquidada')
+      .reduce((total, op) => total + op.monto, 0);
+  }
+
+  // Método para calcular plazo promedio
+  getPlazoPromedio(): number {
+    const operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada');
+
+    if (operacionesLiquidadas.length === 0) return 0;
+
+    const sumaMeses = operacionesLiquidadas.reduce((total, op) => total + op.meses, 0);
+    return Math.round((sumaMeses / operacionesLiquidadas.length) * 10) / 10;
   }
 }

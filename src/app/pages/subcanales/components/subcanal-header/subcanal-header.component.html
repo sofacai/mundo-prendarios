@@ -39,22 +39,47 @@
   </div>
 
   <!-- Estadísticas -->
-  <div class="stats-section">
-    <div class="stat-box">
-      <div class="stat-number">
-        {{ vendedoresActivos + vendedoresInactivos }}
+  <div class="stats-container">
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-icon bg-light-primary">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ vendedoresActivos + vendedoresInactivos }}</div>
+          <div class="stat-label">Vendedores</div>
+        </div>
       </div>
-      <div class="stat-label">Vendedores</div>
-    </div>
 
-    <div class="stat-box">
-      <div class="stat-number">{{ clientesTotal }}</div>
-      <div class="stat-label">Clientes</div>
-    </div>
+      <div class="stat-item">
+        <div class="stat-icon bg-light-info">
+          <i class="bi bi-cash"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ operacionesTotal }}</div>
+          <div class="stat-label">Operaciones Totales</div>
+        </div>
+      </div>
 
-    <div class="stat-box">
-      <div class="stat-number">{{ operacionesTotal }}</div>
-      <div class="stat-label">Operaciones</div>
+      <div class="stat-item">
+        <div class="stat-icon bg-light-success">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ operacionesLiquidadas }}</div>
+          <div class="stat-label">Operaciones Liquidadas</div>
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-icon bg-light-danger">
+          <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ operacionesRechazadas }}</div>
+          <div class="stat-label">Operaciones Rechazadas</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

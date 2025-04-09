@@ -37,10 +37,19 @@
 }
 
 
+.graficos{
+  display: flex;
+  justify-content: space-around;
+}
 
 /* Responsive */
 @media (max-width: 991.98px) {
   .chart-container {
     height: 250px !important;
   }
+
+  .graficos{
+    display: block;
+  }
+
 }

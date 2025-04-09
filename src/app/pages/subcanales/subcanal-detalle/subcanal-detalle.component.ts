@@ -75,7 +75,8 @@ errorAdminCanal: string | null = null;
   vendedoresInactivos = 0;
   clientesTotal = 0;
   operacionesTotal = 0;
-
+  operacionesLiquidadas = 0;
+  operacionesRechazadas = 0;
   // Editar subcanal
   editingSections: { [key: string]: boolean } = {
     general: false,
@@ -172,6 +173,8 @@ errorAdminCanal: string | null = null;
     }
   }
 
+
+
   cargarAdminCanal(adminCanalId: number) {
     if (!adminCanalId) {
       return;
@@ -261,9 +264,11 @@ errorAdminCanal: string | null = null;
   }
 
   updateStatistics() {
-    // Actualizar estadísticas con datos adicionales
     this.clientesTotal = this.clientes.length;
     this.operacionesTotal = this.operaciones.length;
+
+    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada').length;
+    this.operacionesRechazadas = this.operaciones.filter(op => op.estado === 'Rechazada').length;
   }
 
   // Change active tab
@@ -275,6 +280,11 @@ errorAdminCanal: string | null = null;
   goBack() {
     this.router.navigate(['/subcanales']);
   }
+  getVendorOperacionesLiquidadas(vendorId: number): number {
+    return this.operaciones.filter(op => op.vendedorId === vendorId && op.estado === 'Liquidada').length;
+  }
+
+
 
   // Métodos para la edición del subcanal
   toggleEditing(section: string) {
@@ -567,7 +577,7 @@ errorAdminCanal: string | null = null;
   }
 
   verDetalleVendor(vendorId: number) {
-    this.router.navigate(['/usuarios/vendor', vendorId]);
+    this.router.navigate(['/usuarios', vendorId]);
   }
 
   verDetalleCliente(clienteId: number) {
