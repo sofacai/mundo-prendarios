@@ -31,11 +31,9 @@ export class LoginComponent implements OnInit {
   showPassword = false;
 
   constructor() {
-    // Antes de redirigir, limpiamos cualquier token anterior
     if (this.router.url === '/auth/login') {
-      this.authService.logout(); // Esto limpiará el token y el usuario
+      this.authService.logout();
     }
-    // Solo redirigir si está autenticado y NO estamos en la página de login
     else if (this.authService.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
     }
@@ -51,7 +49,6 @@ export class LoginComponent implements OnInit {
   onSubmit(): void {
     this.submitted = true;
 
-    // Detener si el formulario es inválido
     if (this.loginForm.invalid) {
       return;
     }
@@ -68,12 +65,11 @@ export class LoginComponent implements OnInit {
       .pipe(first())
       .subscribe({
         next: () => {
-          // Redirigir según el rol del usuario
           const userData = this.authService.currentUserValue;
           if (userData?.rolId === RolType.Administrador || userData?.rolId === RolType.AdminCanal) {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/operaciones']);
           } else {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/operaciones']);
           }
         },
         error: error => {

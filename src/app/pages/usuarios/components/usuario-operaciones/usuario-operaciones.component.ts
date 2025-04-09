@@ -1,5 +1,5 @@
 // src/app/pages/usuarios/components/usuario-operaciones/usuario-operaciones.component.ts
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Operacion } from 'src/app/core/services/operacion.service';
@@ -19,32 +19,29 @@ export class UsuarioOperacionesComponent implements OnChanges {
   @Output() verDetalle = new EventEmitter<number>();
 
   // Propiedades para filtrado y ordenamiento
-  filteredOperaciones: Operacion[] = [];
-  searchTerm: string = '';
+  operacionesFiltradas: Operacion[] = [];
   sortField: string = 'fechaCreacion';
   sortDirection: 'asc' | 'desc' = 'desc';
+  estadoFiltro: string = 'all';
 
-  ngOnChanges() {
-    this.applyFilters();
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['operaciones']) {
+      this.filtrarPorEstado();
+    }
   }
 
-  applyFilters() {
+  filtrarPorEstado() {
     let resultado = [...this.operaciones];
 
-    // Aplicar búsqueda si hay un término
-    if (this.searchTerm && this.searchTerm.length > 0) {
-      const term = this.searchTerm.toLowerCase();
-      resultado = resultado.filter(op =>
-        (op.clienteNombre && op.clienteNombre.toLowerCase().includes(term)) ||
-        (op.planNombre && op.planNombre.toLowerCase().includes(term)) ||
-        (op.estado && op.estado.toLowerCase().includes(term))
-      );
+    // Filtrar por estado si no es "all"
+    if (this.estadoFiltro !== 'all') {
+      resultado = resultado.filter(op => op.estado === this.estadoFiltro);
     }
 
     // Aplicar ordenamiento
     resultado = this.sortOperaciones(resultado);
 
-    this.filteredOperaciones = resultado;
+    this.operacionesFiltradas = resultado;
   }
 
   sortOperaciones(operaciones: Operacion[]): Operacion[] {
@@ -92,7 +89,7 @@ export class UsuarioOperacionesComponent implements OnChanges {
       this.sortDirection = 'asc';
     }
 
-    this.applyFilters();
+    this.filtrarPorEstado();
   }
 
   getSortClass(field: string): string {
@@ -103,25 +100,16 @@ export class UsuarioOperacionesComponent implements OnChanges {
       : 'bi-sort-up-alt';
   }
 
-  onSearchChange() {
-    this.applyFilters();
-  }
-
-  clearSearch() {
-    this.searchTerm = '';
-    this.applyFilters();
-  }
-
   onVerDetalle(operacionId: number) {
     this.verDetalle.emit(operacionId);
   }
 
-  // Formatear moneda
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS'
-    }).format(amount);
+  // Formatear moneda con separador de miles
+  formatearMonto(monto: number): string {
+    return '$ ' + monto.toLocaleString('es-AR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
   }
 
   // Formatear fecha
@@ -136,17 +124,17 @@ export class UsuarioOperacionesComponent implements OnChanges {
   getEstadoClass(estado: string | undefined): string {
     if (!estado) return 'badge-light-warning';
 
-    switch (estado.toLowerCase()) {
-      case 'aprobado':
-      case 'completado':
+    switch (estado) {
+      case 'Liquidada':
         return 'badge-light-success';
-      case 'rechazado':
-      case 'cancelado':
-        return 'badge-light-danger';
-      case 'pendiente':
-        return 'badge-light-warning';
-      case 'en proceso':
+      case 'Ingresada':
         return 'badge-light-info';
+      case 'Aprobada':
+        return 'badge-light-primary';
+      case 'Rechazada':
+        return 'badge-light-danger';
+      case 'En proceso':
+        return 'badge-light-warning';
       default:
         return 'badge-light-info';
     }

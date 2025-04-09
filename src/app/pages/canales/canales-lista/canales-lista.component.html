@@ -92,16 +92,14 @@
                   Subcanales
                   <i class="bi" [ngClass]="getSortIcon('subcanales')"></i>
                 </th>
-                <th (click)="sortBy('operaciones')" class="sortable-header text-center">
-                  Operaciones
-                  <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
+                <th (click)="sortBy('operacionesLiquidadas')" class="sortable-header text-center" style="min-width: 160px;">
+                  Operaciones Liquidadas
+                  <i class="bi" [ngClass]="getSortIcon('operacionesLiquidadas')"></i>
                 </th>
-
                 <th (click)="sortBy('fechaAlta')" class="sortable-header">
                   Fecha Alta
                   <i class="bi" [ngClass]="getSortIcon('fechaAlta')"></i>
                 </th>
-
               </tr>
             </thead>
             <tbody>
@@ -135,10 +133,11 @@
                     {{ getSubcanalesCantidad(canal) }}
                   </span>
                 </td>
-                <td class="text-center">
-                  <span class="badge badge-light-info">
-                    {{ canal.numeroOperaciones || 0 }}
+                <td class="text-center" style="min-width: 160px;">
+                  <span *ngIf="!isLoadingOperaciones(canal)" class="badge badge-light-info">
+                    {{ canal.operacionesLiquidadas || 0 }}
                   </span>
+                  <span *ngIf="isLoadingOperaciones(canal)" class="spinner-border spinner-border-sm text-info" role="status" aria-hidden="true"></span>
                 </td>
                 <td>{{ canal.fechaAlta | date:'dd/MM/yyyy' }}</td>
               </tr>
@@ -156,39 +155,38 @@
               <p class="text-muted" *ngIf="!searchTerm">
                 No hay canales registrados en el sistema
               </p>
-
             </div>
           </div>
 
-             <!-- Paginación y contador de canales -->
-             <div class="pagination-container" *ngIf="filteredCanales.length > 0">
-              <!-- Contador de canales -->
-              <div class="canales-count mb-3">
-                Mostrando {{ paginatedCanales.length }} de {{ totalCanales }} canales
-              </div>
-
-              <!-- Paginación -->
-              <div class="pagination-buttons d-flex align-items-center justify-content-center" *ngIf="totalPaginas > 1">
-                <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
-                  <i class="bi bi-chevron-left"></i>
-                </a>
-
-                <div class="pagination-pages">
-                  <ng-container *ngFor="let pagina of obtenerPaginas()">
-                    <a href="javascript:void(0)"
-                       class="pagination-page"
-                       [class.active]="pagina === paginaActual"
-                       *ngIf="pagina !== '...'"
-                       (click)="cambiarPagina(pagina)">{{ pagina }}</a>
-                    <span class="pagination-dots" *ngIf="pagina === '...'">...</span>
-                  </ng-container>
-                </div>
-
-                <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
-                  <i class="bi bi-chevron-right"></i>
-                </a>
-              </div>
+          <!-- Paginación y contador de canales -->
+          <div class="pagination-container" *ngIf="filteredCanales.length > 0">
+            <!-- Contador de canales -->
+            <div class="canales-count mb-3">
+              Mostrando {{ paginatedCanales.length }} de {{ totalCanales }} canales
             </div>
+
+            <!-- Paginación -->
+            <div class="pagination-buttons d-flex align-items-center justify-content-center" *ngIf="totalPaginas > 1">
+              <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+
+              <div class="pagination-pages">
+                <ng-container *ngFor="let pagina of obtenerPaginas()">
+                  <a href="javascript:void(0)"
+                     class="pagination-page"
+                     [class.active]="pagina === paginaActual"
+                     *ngIf="pagina !== '...'"
+                     (click)="cambiarPagina(pagina)">{{ pagina }}</a>
+                  <span class="pagination-dots" *ngIf="pagina === '...'">...</span>
+                </ng-container>
+              </div>
+
+              <a href="javascript:void(0)" class="pagination-arrow" [class.disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

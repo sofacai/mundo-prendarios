@@ -5,21 +5,17 @@
       Operaciones
     </h3>
 
-    <!-- Búsqueda -->
-    <div class="search-box">
-      <i class="bi bi-search search-icon"></i>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Buscar operación..."
-        [(ngModel)]="searchTerm"
-        (input)="onSearchChange()">
-      <button
-        *ngIf="searchTerm"
-        class="btn-clear"
-        (click)="clearSearch()">
-        <i class="bi bi-x"></i>
-      </button>
+    <div class="filter-container">
+      <span class="filter-label">Estado:</span>
+      <select class="form-select" [(ngModel)]="estadoFiltro" (change)="filtrarPorEstado()">
+        <option value="all">Todos</option>
+        <option value="Liquidada">Liquidadas</option>
+        <option value="Ingresada">Ingresadas</option>
+
+        <option value="Aprobada">Aprobadas</option>
+        <option value="Rechazada">Rechazadas</option>
+        <option value="En proceso">En proceso</option>
+      </select>
     </div>
   </div>
 
@@ -38,7 +34,7 @@
 
     <!-- Table Content -->
     <div *ngIf="!loading && !error" class="table-responsive">
-      <table class="custom-table" *ngIf="filteredOperaciones.length > 0">
+      <table class="custom-table" *ngIf="operacionesFiltradas.length > 0">
         <thead>
           <tr>
             <th (click)="onSortChange('id')" class="sortable-header" style="width: 70px">
@@ -66,19 +62,18 @@
               <i class="bi" [ngClass]="getSortClass('tasa')"></i>
             </th>
             <th class="text-center">Estado</th>
-
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let op of filteredOperaciones">
+          <tr *ngFor="let op of operacionesFiltradas">
             <td>{{ op.id }}</td>
             <td>{{ formatDate(op.fechaCreacion) }}</td>
             <td>
-              <div class="fw-bold">
+              <div class="fw-bold cursor-pointer text-hover-primary" (click)="onVerDetalle(op.id || 0)">
                 {{ op.clienteNombre || 'Cliente #' + op.clienteId }}
               </div>
             </td>
-            <td>{{ formatCurrency(op.monto) }}</td>
+            <td>{{ formatearMonto(op.monto) }}</td>
             <td>{{ op.meses }} meses</td>
             <td>{{ op.tasa }}%</td>
             <td class="text-center">
@@ -86,18 +81,20 @@
                 {{ op.estado || 'Pendiente' }}
               </div>
             </td>
-
           </tr>
         </tbody>
       </table>
 
       <!-- Empty State -->
-      <div *ngIf="filteredOperaciones.length === 0" class="text-center p-5">
+      <div *ngIf="operacionesFiltradas.length === 0" class="text-center p-5">
         <div class="text-center">
           <i class="bi bi-cash-stack fs-2 text-muted mb-3"></i>
           <h4>No hay operaciones</h4>
-          <p class="text-muted">
-            Este vendor no tiene operaciones registradas.
+          <p class="text-muted" *ngIf="estadoFiltro !== 'all'">
+            No se encontraron operaciones con estado "{{ estadoFiltro }}".
+          </p>
+          <p class="text-muted" *ngIf="estadoFiltro === 'all'">
+            Este usuario no tiene operaciones registradas.
           </p>
         </div>
       </div>

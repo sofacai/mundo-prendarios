@@ -363,3 +363,14 @@
     margin-right: 5px;
   }
 }
+
+.col-operaciones {
+  min-width: 160px;
+  white-space: nowrap;
+}
+
+/* Ajuste para que los spinners no modifiquen el layout */
+.spinner-border-sm {
+
+  display: none;
+}

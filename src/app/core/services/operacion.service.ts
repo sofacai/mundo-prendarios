@@ -100,10 +100,20 @@ export class OperacionService {
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion/cliente`, combinado, { headers });
   }
 
-  // Obtener operaciones de un cliente específico
-  getOperacionesPorCliente(clienteId: number): Observable<Operacion[]> {
+
+  // Obtener operaciones de un canal específico
+  getOperacionesPorCanal(canalId: number): Observable<Operacion[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/cliente/${clienteId}`, { headers });
+    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/canal/${canalId}`, { headers });
+  }
+
+  // Contar operaciones liquidadas de un canal específico
+  getOperacionesLiquidadasPorCanal(canalId: number): Observable<number> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/canal/${canalId}`, { headers })
+      .pipe(
+        map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
+      );
   }
 
   private getAuthHeaders(): HttpHeaders {
@@ -112,5 +122,33 @@ export class OperacionService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
+  }
+
+  getOperacionesPorSubcanal(subcanalId: number): Observable<Operacion[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/subcanal/${subcanalId}`, { headers });
+  }
+
+  // Contar operaciones liquidadas de un subcanal específico
+  getOperacionesLiquidadasPorSubcanal(subcanalId: number): Observable<number> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/subcanal/${subcanalId}`, { headers })
+      .pipe(
+        map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
+      );
+  }
+
+  getOperacionesPorCliente(clienteId: number): Observable<Operacion[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/cliente/${clienteId}`, { headers });
+  }
+
+  // Contar operaciones liquidadas de un cliente específico
+  getOperacionesLiquidadasPorCliente(clienteId: number): Observable<number> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/cliente/${clienteId}`, { headers })
+      .pipe(
+        map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
+      );
   }
 }

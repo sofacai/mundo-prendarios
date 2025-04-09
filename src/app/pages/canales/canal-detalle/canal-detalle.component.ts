@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription, forkJoin } from 'rxjs';
 
+
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';

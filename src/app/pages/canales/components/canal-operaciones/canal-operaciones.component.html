@@ -1,16 +1,23 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3 class="card-title">Operaciones</h3>
-    <div>
-      <button class="btn btn-sm btn-light me-2" (click)="onFiltrar()">
-        <i class="bi bi-filter"></i> Filtrar
-      </button>
+    <div class="filter-container">
+      <span class="filter-label">Estado:</span>
+      <select class="form-select" [(ngModel)]="estadoFiltro" (change)="filtrarPorEstado()">
+        <option value="all">Todos</option>
+        <option value="Liquidada">Liquidadas</option>
+        <option value="Ingresada">Ingresadas</option>
+
+        <option value="Aprobada">Aprobadas</option>
+        <option value="Rechazada">Rechazadas</option>
+        <option value="En proceso">En procesos</option>
+      </select>
     </div>
   </div>
   <div class="card-body p-4">
     <div class="table-responsive">
       <!-- Tabla de operaciones -->
-      <table class="custom-table" *ngIf="operaciones && operaciones.length > 0">
+      <table class="custom-table" *ngIf="operacionesFiltradas && operacionesFiltradas.length > 0">
         <thead>
           <tr>
             <th>ID</th>
@@ -20,40 +27,38 @@
             <th>Tasa</th>
             <th>Fecha</th>
             <th>Estado</th>
-            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let op of operaciones">
+          <tr *ngFor="let op of operacionesFiltradas">
             <td>{{ op.id }}</td>
             <td>
               <span class="cursor-pointer text-hover-primary" (click)="onVerDetalle(op.id || 0)">
                 {{ op.clienteNombre || "N/A" }}
               </span>
-            </td>            <td>{{ op.monto | currency }}</td>
+            </td>
+            <td>{{ formatearMonto(op.monto) }}</td>
             <td>{{ op.meses }}</td>
             <td>{{ op.tasa }}%</td>
             <td>{{ op.fechaCreacion | date : "dd/MM/yyyy" }}</td>
             <td>
-              <div class="badge badge-light-info">
+              <div class="badge" [ngClass]="getBadgeClass(op.estado || '')">
                 {{ op.estado || "Pendiente" }}
               </div>
-            </td>
-            <td class="text-center">
-              <button class="btn-action" title="Ver detalles" (click)="onVerDetalle(op.id || 0)">
-                <i class="bi bi-eye"></i>
-              </button>
             </td>
           </tr>
         </tbody>
       </table>
 
       <!-- Empty State -->
-      <div *ngIf="!operaciones || operaciones.length === 0" class="text-center p-5">
+      <div *ngIf="!operacionesFiltradas || operacionesFiltradas.length === 0" class="text-center p-5">
         <div class="text-center">
           <i class="bi bi-cash-stack fs-2 text-muted"></i>
           <h4>No hay operaciones</h4>
-          <p class="text-muted">
+          <p class="text-muted" *ngIf="estadoFiltro !== 'all'">
+            No se encontraron operaciones con estado "{{ estadoFiltro }}".
+          </p>
+          <p class="text-muted" *ngIf="estadoFiltro === 'all'">
             Este canal no tiene operaciones registradas.
           </p>
         </div>

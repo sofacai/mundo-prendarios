@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
@@ -13,10 +13,16 @@ import { SidebarStateService } from 'src/app/core/services/sidebar-state.service
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { RolType } from 'src/app/core/models/usuario.model';
+import { OperacionService } from 'src/app/core/services/operacion.service';
 
 interface SortState {
   column: string;
   direction: 'asc' | 'desc';
+}
+
+interface CanalExtendido extends Canal {
+  operacionesLiquidadas?: number;
+  loadingOperaciones?: boolean;
 }
 
 @Component({
@@ -35,8 +41,8 @@ interface SortState {
   styleUrls: ['./canales-lista.component.scss']
 })
 export class CanalesListaComponent implements OnInit, OnDestroy {
-  canales: Canal[] = [];
-  filteredCanales: Canal[] = [];
+  canales: CanalExtendido[] = [];
+  filteredCanales: CanalExtendido[] = [];
   loading = true;
   error: string | null = null;
   modalOpen = false;
@@ -61,7 +67,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   totalCanales: number = 0;
   totalPaginas: number = 1;
 
-  paginatedCanales: Canal[] = [];
+  paginatedCanales: CanalExtendido[] = [];
 
   // Variables para manejar permisos
   usuarioActual: any = null;
@@ -71,6 +77,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
   constructor(
     private canalService: CanalService,
+    private operacionService: OperacionService,
     private renderer: Renderer2,
     private sidebarStateService: SidebarStateService,
     private router: Router,
@@ -91,8 +98,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     window.addEventListener('resize', this.handleResize.bind(this));
     this.handleResize();
 
-
-
     // Obtener información del usuario actual
     this.authService.currentUser.subscribe(usuario => {
       this.usuarioActual = usuario;
@@ -104,7 +109,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       }
 
       this.loadCanales();
-
     });
   }
 
@@ -113,7 +117,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       this.sidebarSubscription.unsubscribe();
     }
     window.removeEventListener('resize', this.handleResize.bind(this));
-
   }
 
   private handleResize() {
@@ -152,16 +155,62 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     // El backend se encargará de filtrar según el rol del usuario
     this.canalService.getCanales().subscribe({
       next: (data) => {
-        this.canales = data;
+        this.canales = data.map(canal => ({
+          ...canal,
+          operacionesLiquidadas: 0,
+          loadingOperaciones: true
+        }));
         this.totalCanales = data.length;
         this.applyFilters();
         this.loading = false;
+
+        // Cargamos las operaciones liquidadas para cada canal
+        this.cargarOperacionesLiquidadas();
       },
       error: (err) => {
         this.error = 'No se pudieron cargar los canales. Por favor, intente nuevamente.';
         this.loading = false;
       }
     });
+  }
+
+  cargarOperacionesLiquidadas() {
+    // Obtenemos operaciones liquidadas para cada canal en la página actual
+    this.paginatedCanales.forEach(canal => {
+      if (canal.id) {
+        canal.loadingOperaciones = true;
+        this.operacionService.getOperacionesLiquidadasPorCanal(canal.id).subscribe({
+          next: (cantidad) => {
+            // Actualizamos tanto en canales como en paginatedCanales
+            this.actualizarCantidadOperacionesLiquidadas(canal.id, cantidad);
+            canal.loadingOperaciones = false;
+          },
+          error: () => {
+            canal.loadingOperaciones = false;
+          }
+        });
+      }
+    });
+  }
+
+  actualizarCantidadOperacionesLiquidadas(canalId: number, cantidad: number) {
+    // Actualizar en canales
+    const canalIndex = this.canales.findIndex(c => c.id === canalId);
+    if (canalIndex !== -1) {
+      this.canales[canalIndex].operacionesLiquidadas = cantidad;
+    }
+
+    // Actualizar en filteredCanales
+    const filteredIndex = this.filteredCanales.findIndex(c => c.id === canalId);
+    if (filteredIndex !== -1) {
+      this.filteredCanales[filteredIndex].operacionesLiquidadas = cantidad;
+    }
+
+    // Actualizar en paginatedCanales
+    const paginatedIndex = this.paginatedCanales.findIndex(c => c.id === canalId);
+    if (paginatedIndex !== -1) {
+      this.paginatedCanales[paginatedIndex].operacionesLiquidadas = cantidad;
+    }
   }
 
   onSearchChange() {
@@ -205,6 +254,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     this.totalCanales = this.filteredCanales.length;
     this.calcularTotalPaginas();
     this.paginarCanales();
+
+    // Cargar operaciones liquidadas para la página actual
+    setTimeout(() => {
+      this.cargarOperacionesLiquidadas();
+    }, 100);
   }
 
   calcularTotalPaginas() {
@@ -231,6 +285,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
     this.paginaActual = paginaNum;
     this.paginarCanales();
+
+    // Cargar operaciones liquidadas para la nueva página
+    setTimeout(() => {
+      this.cargarOperacionesLiquidadas();
+    }, 100);
   }
 
   obtenerPaginas(): (number | string)[] {
@@ -264,7 +323,7 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     return paginas;
   }
 
-  sortData(data: Canal[]): Canal[] {
+  sortData(data: CanalExtendido[]): CanalExtendido[] {
     const { column, direction } = this.sortState;
     const factor = direction === 'asc' ? 1 : -1;
 
@@ -298,6 +357,11 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
       else if (column === 'operaciones') {
         const countA = a.numeroOperaciones || 0;
         const countB = b.numeroOperaciones || 0;
+        return (countA - countB) * factor;
+      }
+      else if (column === 'operacionesLiquidadas') {
+        const countA = a.operacionesLiquidadas || 0;
+        const countB = b.operacionesLiquidadas || 0;
         return (countA - countB) * factor;
       }
       else if (column === 'gasto') {
@@ -486,5 +550,9 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
         this.renderer.removeStyle(document.body, 'overflow-y');
       }
     }
+  }
+
+  isLoadingOperaciones(canal: CanalExtendido): boolean {
+    return canal.loadingOperaciones === true;
   }
 }
