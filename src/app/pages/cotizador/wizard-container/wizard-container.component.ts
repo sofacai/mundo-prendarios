@@ -790,15 +790,18 @@ export class WizardContainerComponent implements OnInit {
   // Método para crear operación (devuelve una promesa)
   private crearOperacion(planId: number, tasa: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      // Si ya existe una operación, actualizar en vez de crear
+      // If already exists an operation, update instead of create
       if (this.wizardData.operacionId) {
         console.log(`Reutilizando operación existente ID ${this.wizardData.operacionId}`);
         resolve({ id: this.wizardData.operacionId });
         return;
       }
 
+      // Get current logged in user's ID
+      const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
+
       if (!this.wizardData.clienteId) {
-        // Preparar los datos del cliente
+        // Prepare client data
         const clienteData = {
           nombre: this.wizardData.clienteNombre || "",
           apellido: this.wizardData.clienteApellido || "",
@@ -812,7 +815,7 @@ export class WizardContainerComponent implements OnInit {
           estadoCivil: ""
         };
 
-        // Preparar los datos de la operación, incluyendo el vendorId
+        // Prepare operation data with new fields
         const operacionData = {
           monto: this.wizardData.monto!,
           meses: this.wizardData.plazo!,
@@ -820,30 +823,32 @@ export class WizardContainerComponent implements OnInit {
           planId: planId,
           subcanalId: this.subcanalSeleccionado!,
           canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-          vendedorId: this.vendorSeleccionado // Usar el ID del vendor seleccionado
+          vendedorId: this.vendorSeleccionado,
+          usuarioCreadorId: usuarioCreadorId, // Add creator ID
+          estado: "Ingresada" // Default state
         };
 
-        console.log('Creando cliente y operación con datos:', {
+        console.log('Creating client and operation with data:', {
           cliente: clienteData,
           operacion: operacionData
         });
 
-        // Crear cliente y operación en una sola llamada
+        // Create client and operation in one call
         this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
           next: (operacionCreada) => {
-            console.log('Operación creada con éxito:', operacionCreada);
+            console.log('Operation created successfully:', operacionCreada);
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
             }
             resolve(operacionCreada);
           },
           error: (error) => {
-            console.error('Error al crear operación:', error);
+            console.error('Error creating operation:', error);
             resolve({ dummy: true });
           }
         });
       } else {
-        // Solo creamos la operación con el vendorId seleccionado
+        // Only create operation with selected vendorId
         const operacion: Operacion = {
           monto: this.wizardData.monto!,
           meses: this.wizardData.plazo!,
@@ -852,22 +857,23 @@ export class WizardContainerComponent implements OnInit {
           planId: planId,
           subcanalId: this.subcanalSeleccionado!,
           canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-          vendedorId: this.vendorSeleccionado ?? undefined, // Convierte null a undefined
+          vendedorId: this.vendorSeleccionado ?? undefined,
+          usuarioCreadorId: usuarioCreadorId, // Add creator ID
+          estado: "Ingresada" // Default state
         };
-        console.log('ID del vendor seleccionado:', this.vendorSeleccionado, typeof this.vendorSeleccionado);
 
-        console.log('Creando operación con datos:', operacion);
+        console.log('Creating operation with data:', operacion);
 
         this.operacionService.crearOperacion(operacion).subscribe({
           next: (operacionCreada) => {
-            console.log('Operación creada con éxito:', operacionCreada);
+            console.log('Operation created successfully:', operacionCreada);
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
             }
             resolve(operacionCreada);
           },
           error: (error) => {
-            console.error('Error al crear operación:', error);
+            console.error('Error creating operation:', error);
             resolve({ dummy: true });
           }
         });

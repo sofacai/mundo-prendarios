@@ -21,6 +21,7 @@ export interface Operacion {
   canalNombre?: string;
   fechaCreacion?: Date;
   estado?: string;
+  usuarioCreadorId?: number;
 }
 
 @Injectable({
@@ -50,7 +51,7 @@ export class OperacionService {
   crearOperacion(operacion: Operacion): Observable<Operacion> {
     const headers = this.getAuthHeaders();
 
-    // Adaptamos al formato esperado por la API
+    // Adapt to the expected API format
     const operacionDto = {
       monto: operacion.monto,
       meses: operacion.meses,
@@ -59,7 +60,9 @@ export class OperacionService {
       planId: operacion.planId,
       subcanalId: operacion.subcanalId,
       canalId: operacion.canalId,
-      vendedorId: operacion.vendedorId
+      vendedorId: operacion.vendedorId,
+      usuarioCreadorId: operacion.usuarioCreadorId,
+      estado: operacion.estado || "Ingresada"
     };
 
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion`, operacionDto, { headers });
@@ -87,7 +90,10 @@ export class OperacionService {
         tasa: operacionData.tasa,
         planId: operacionData.planId,
         subcanalId: operacionData.subcanalId,
-        canalId: operacionData.canalId
+        canalId: operacionData.canalId,
+        vendedorId: operacionData.vendedorId,
+        usuarioCreadorId: operacionData.usuarioCreadorId,
+        estado: operacionData.estado || "Ingresada"
       }
     };
 
