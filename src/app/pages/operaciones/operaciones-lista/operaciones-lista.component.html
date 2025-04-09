@@ -39,6 +39,8 @@
             <span class="filter-label">Estado:</span>
             <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
               <option value="all">Todos los estados</option>
+              <option value="liquidada">Liquidada</option>
+              <option value="ingresada">Ingresada</option>
               <option value="active">Activo</option>
               <option value="pending">Pendiente</option>
               <option value="completed">Completado</option>
@@ -95,9 +97,9 @@
                   Fecha
                   <i class="bi" [ngClass]="getSortIcon('fechaCreacion')"></i>
                 </th>
-                <th (click)="sortBy('canal')" class="sortable-header">
+                <th (click)="sortBy('canalNombre')" class="sortable-header">
                   Canal
-                  <i class="bi" [ngClass]="getSortIcon('canal')"></i>
+                  <i class="bi" [ngClass]="getSortIcon('canalNombre')"></i>
                 </th>
                 <th (click)="sortBy('estado')" class="sortable-header">
                   Estado

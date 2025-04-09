@@ -102,65 +102,67 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadOperaciones() {
-    this.loading = true;
-    this.error = null;
+ // Update the loadOperaciones method in operaciones-lista.component.ts
+loadOperaciones() {
+  this.loading = true;
+  this.error = null;
 
-    this.operacionService.getOperaciones()
-      .pipe(
-        catchError(error => {
-          this.error = 'No se pudieron cargar las operaciones. Por favor, intente nuevamente.';
-          return of([]);
-        }),
-        finalize(() => {
-          this.loading = false;
-        })
-      )
-      .subscribe(operaciones => {
-        this.operaciones = operaciones.map((op: any) => {
-          let nombre = '';
-          let apellido = '';
+  this.operacionService.getOperaciones()
+    .pipe(
+      catchError(error => {
+        this.error = 'No se pudieron cargar las operaciones. Por favor, intente nuevamente.';
+        return of([]);
+      }),
+      finalize(() => {
+        this.loading = false;
+      })
+    )
+    .subscribe(operaciones => {
+      this.operaciones = operaciones.map((op: any) => {
+        let nombre = '';
+        let apellido = '';
 
-          if (op.clienteNombre) {
-            const partes = op.clienteNombre.trim().split(' ');
-            nombre = partes[0] || '';
-            apellido = partes.slice(1).join(' ') || '';
+        if (op.clienteNombre) {
+          const partes = op.clienteNombre.trim().split(' ');
+          nombre = partes[0] || '';
+          apellido = partes.slice(1).join(' ') || '';
+        }
+
+        // Use the estado from the API or default to "Ingresada" if null
+        let estado = op.estado || 'Ingresada';
+
+        let fechaCreacion = '';
+        if (op.fechaCreacion) {
+          try {
+            const fecha = new Date(op.fechaCreacion);
+            fechaCreacion = fecha.toLocaleDateString('es-AR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } catch (e) {
+            fechaCreacion = 'Fecha inválida';
           }
+        }
 
-          let estado = 'Activo';
-
-          let fechaCreacion = '';
-          if (op.fechaCreacion) {
-            try {
-              const fecha = new Date(op.fechaCreacion);
-              fechaCreacion = fecha.toLocaleDateString('es-AR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-              });
-            } catch (e) {
-              fechaCreacion = 'Fecha inválida';
-            }
-          }
-
-          return {
-            id: op.id || 0,
-            nombreCliente: nombre,
-            apellidoCliente: apellido,
-            plan: op.planNombre || '',
-            meses: op.meses || 0,
-            gasto: op.tasa || 0,
-            monto: op.monto || 0,
-            estado: estado,
-            fechaCreacion: fechaCreacion,
-            canalNombre: op.canalNombre || 'Sin canal',
-            canalId : op.canalId,
-          };
-        });
-
-        this.applyFilters();
+        return {
+          id: op.id || 0,
+          nombreCliente: op.clienteNombre || nombre,
+          apellidoCliente: op.clienteApellido || apellido,
+          plan: op.planNombre || '',
+          meses: op.meses || 0,
+          gasto: op.tasa || 0,
+          monto: op.monto || 0,
+          estado: estado,
+          fechaCreacion: fechaCreacion,
+          canalNombre: op.canalNombre || 'Sin canal',
+          canalId: op.canalId,
+        };
       });
-  }
+
+      this.applyFilters();
+    });
+}
 
   onSearchChange() {
     clearTimeout(this.searchTimeout);
@@ -176,33 +178,53 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  applyFilters() {
-    let result = [...this.operaciones];
+ // Update the applyFilters method to handle estado filtering correctly
+applyFilters() {
+  let result = [...this.operaciones];
 
-    if (this.searchTerm && this.searchTerm.length >= 3) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(operacion =>
-        (operacion.nombreCliente?.toLowerCase() || '').includes(term) ||
-        (operacion.apellidoCliente?.toLowerCase() || '').includes(term) ||
-        (operacion.plan?.toLowerCase() || '').includes(term) ||
-        (operacion.canalNombre?.toLowerCase() || '').includes(term)
-      );
-    }
-
-    if (this.filterActive !== 'all') {
-      const estadoFiltro = this.filterActive.charAt(0).toUpperCase() + this.filterActive.slice(1);
-      result = result.filter(operacion => operacion.estado === estadoFiltro);
-    }
-
-    if (this.sortState.column) {
-      result = this.sortData(result);
-    }
-
-    this.filteredOperaciones = result;
-    this.totalOperaciones = this.filteredOperaciones.length;
-    this.calcularTotalPaginas();
-    this.paginarOperaciones();
+  if (this.searchTerm && this.searchTerm.length >= 3) {
+    const term = this.searchTerm.toLowerCase();
+    result = result.filter(operacion =>
+      (operacion.nombreCliente?.toLowerCase() || '').includes(term) ||
+      (operacion.apellidoCliente?.toLowerCase() || '').includes(term) ||
+      (operacion.plan?.toLowerCase() || '').includes(term) ||
+      (operacion.canalNombre?.toLowerCase() || '').includes(term)
+    );
   }
+
+  if (this.filterActive !== 'all') {
+    // Convert filter value to proper case for comparison
+    const estadoMap: { [key: string]: string } = {
+      'liquidada': 'Liquidada',
+      'ingresada': 'Ingresada',
+      'active': 'Activo',
+      'pending': 'Pendiente',
+      'completed': 'Completado',
+      'cancelled': 'Cancelado'
+    };
+
+    const estadoFiltro = estadoMap[this.filterActive] || this.filterActive;
+    console.log('Filtering by estado:', estadoFiltro);
+
+    result = result.filter(operacion => {
+      const matches = operacion.estado === estadoFiltro;
+      // For debugging
+      if (!matches && operacion.estado.toLowerCase() === estadoFiltro.toLowerCase()) {
+        console.log('Case mismatch:', operacion.estado, estadoFiltro);
+      }
+      return matches;
+    });
+  }
+
+  if (this.sortState.column) {
+    result = this.sortData(result);
+  }
+
+  this.filteredOperaciones = result;
+  this.totalOperaciones = this.filteredOperaciones.length;
+  this.calcularTotalPaginas();
+  this.paginarOperaciones();
+}
 
   calcularTotalPaginas() {
     this.totalPaginas = Math.ceil(this.filteredOperaciones.length / this.itemsPorPagina);
@@ -263,41 +285,25 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
 
   sortData(data: OperacionDto[]): OperacionDto[] {
     const { column, direction } = this.sortState;
+    console.log('Sorting data by:', column, direction);
+
+    if (!column) {
+      return data; // No sorting needed
+    }
+
     const factor = direction === 'asc' ? 1 : -1;
 
     return [...data].sort((a: any, b: any) => {
-      if (column === 'id') {
-        return (a.id - b.id) * factor;
-      }
-      else if (column === 'nombreCompleto') {
-        const nombreA = `${a.nombreCliente || ''} ${a.apellidoCliente || ''}`.toLowerCase();
-        const nombreB = `${b.nombreCliente || ''} ${b.apellidoCliente || ''}`.toLowerCase();
-        return nombreA.localeCompare(nombreB) * factor;
-      }
-      else if (column === 'plan') {
-        return (a.plan || '').toLowerCase().localeCompare((b.plan || '').toLowerCase()) * factor;
-      }
-      else if (column === 'meses') {
-        return (a.meses - b.meses) * factor;
-      }
-      else if (column === 'gasto') {
-        return (a.gasto - b.gasto) * factor;
-      }
-      else if (column === 'monto') {
-        return (a.monto - b.monto) * factor;
-      }
-      else if (column === 'fechaCreacion') {
-        return (a.fechaCreacion || '').localeCompare((b.fechaCreacion || '')) * factor;
-      }
-      else if (column === 'canal') {
-        return (a.canal || '').toLowerCase().localeCompare((b.canal || '').toLowerCase()) * factor;
-      }
-      else if (column === 'estado') {
+      // ...existing sort cases...
+
+      if (column === 'estado') {
         const estadoOrden: {[key: string]: number} = {
-          'Activo': 1,
-          'Pendiente': 2,
-          'Completado': 3,
-          'Cancelado': 4
+          'Liquidada': 0, // First in order
+          'Ingresada': 1,
+          'Activo': 2,
+          'Pendiente': 3,
+          'Completado': 4,
+          'Cancelado': 5
         };
         const ordenA = estadoOrden[a.estado] || 99;
         const ordenB = estadoOrden[b.estado] || 99;
@@ -309,11 +315,14 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   }
 
   sortBy(column: string) {
+
     if (this.sortState.column === column) {
       this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortState = { column, direction: 'asc' };
     }
+
+    console.log('New sort state:', this.sortState);
 
     this.paginaActual = 1;
     this.applyFilters();
@@ -353,6 +362,10 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
         return 'badge-info';
       case 'cancelado':
         return 'badge-danger';
+      case 'ingresada':
+        return 'badge-info';
+      case 'liquidada':
+        return 'badge-success'; // Green for liquidated operations
       default:
         return 'badge-light';
     }
