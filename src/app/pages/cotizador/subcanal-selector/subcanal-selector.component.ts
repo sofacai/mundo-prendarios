@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { SubcanalInfo } from 'src/app/core/services/cotizador.service';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 @Component({
   selector: 'app-subcanal-selector',
@@ -19,6 +20,11 @@ export class SubcanalSelectorComponent implements OnInit {
   subcanalesActivos: SubcanalInfo[] = [];
   errorMessage: string | null = null;
 
+  constructor(
+    // Mantén los constructores existentes y añade:
+    private sidebarStateService: SidebarStateService
+  ) {}
+
   ngOnInit() {
     // Filtrar solo subcanales activos
     this.subcanalesActivos = this.subcanales.filter(subcanal => subcanal.subcanalActivo);
@@ -29,6 +35,9 @@ export class SubcanalSelectorComponent implements OnInit {
       // Si solo hay un subcanal activo, preseleccionarlo
       this.subcanalId = this.subcanalesActivos[0].subcanalId;
     }
+  }
+  toggleSidebar(): void {
+    this.sidebarStateService.toggleCotizadorSidebar();
   }
 
   onSeleccionarSubcanal() {

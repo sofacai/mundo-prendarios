@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 @Component({
   selector: 'app-step2-datos',
@@ -23,7 +24,9 @@ export class Step2DatosComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    public dataService: CotizadorDataService
+    public dataService: CotizadorDataService,
+    private sidebarStateService: SidebarStateService
+
   ) {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
@@ -46,6 +49,10 @@ export class Step2DatosComponent implements OnInit {
         whatsappControl.setValue(this.prefix);
       }
     });
+  }
+
+  toggleSidebar(): void {
+    this.sidebarStateService.toggleCotizadorSidebar();
   }
 
   cargarDatosGuardados() {

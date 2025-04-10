@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 @Component({
   selector: 'app-step3-oferta',
@@ -25,7 +26,8 @@ export class Step3OfertaComponent implements OnInit {
   valorCuota: number = 0;
   planSeleccionado: any = {};
 
-  constructor(private dataService: CotizadorDataService) {}
+  constructor(private dataService: CotizadorDataService,   private sidebarStateService: SidebarStateService
+  ) {}
 
   ngOnInit() {
     // Usar el primer plan disponible o el plan seleccionado en los pasos anteriores
@@ -50,7 +52,9 @@ export class Step3OfertaComponent implements OnInit {
     }
   }
 
-
+  toggleSidebar(): void {
+    this.sidebarStateService.toggleCotizadorSidebar();
+  }
 
   togglePaymentDetail() {
     this.showPaymentDetail = !this.showPaymentDetail;

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RolType } from 'src/app/core/models/usuario.model';
+import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
 @Component({
   selector: 'app-vendor-selector',
@@ -25,8 +26,16 @@ export class VendorSelectorComponent implements OnInit {
     [RolType.AdminCanal]: 'Administrador de Canal'
   };
 
+  constructor(
+    // Mantén los constructores existentes y añade:
+    private sidebarStateService: SidebarStateService
+  ) {}
+
   ngOnInit() {
     this.filteredVendors = [...this.vendors];
+  }
+  toggleSidebar(): void {
+    this.sidebarStateService.toggleCotizadorSidebar();
   }
 
   get rolName(): string {

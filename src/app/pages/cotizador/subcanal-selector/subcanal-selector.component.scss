@@ -8,19 +8,27 @@
   overflow: hidden;
 }
 
-.header {
-  background: #3378f6;
-  padding: 1.25rem;
-  padding-bottom: 2rem;
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
+
 
 .logo-image {
   height: 2.5rem;
   max-width: 150px;
   object-fit: contain;
+}
+
+.header {
+  background: #3378f6;
+  padding: 1.25rem;
+  padding-bottom: 2rem;
+  position: relative;
+}
+
+/* Nuevos estilos para el header */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .curved-edge {
