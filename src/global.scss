@@ -898,9 +898,7 @@ body.sidebar-open {
     transform: translateX(0);
   }
 
-  body:not(.sidebar-collapsed) .main-content {
-    margin-left: 250px;
-  }
+
 
   body.sidebar-collapsed .sidebar {
     transform: translateX(-100%);

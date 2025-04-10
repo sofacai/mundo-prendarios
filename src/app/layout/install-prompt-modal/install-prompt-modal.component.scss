@@ -1,0 +1,96 @@
+:host {
+  display: block;
+  background: transparent !important; // ⬅️ clave
+}
+::ng-deep .ion-page {
+  background: transparent !important;
+  --ion-background-color: transparent !important;
+}
+
+.usuario-form-modal {
+  --width: 90%;
+  --max-width: 400px;
+  --height: auto;
+  --border-radius: 12px;
+  --backdrop-opacity: 0.5;
+}
+
+.modal-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin: 0 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 10;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  ion-button {
+    --color: var(--ion-color-medium);
+  }
+}
+
+.modal-body {
+  margin-top: 16px;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+
+  &.btn-primary {
+    background-color: var(--ion-color-primary);
+    color: white;
+  }
+
+  &.btn-light {
+    background-color: #f1f3f5;
+    color: #333;
+  }
+}
+::ng-deep .modal-wrapper {
+  border-radius: 16px;
+  top: 50%;
+  transform: translateY(-50%) !important;
+  max-width: 400px;
+  margin: 0 auto;
+}
+::ng-deep ion-modal.install-modal-custom::part(content) {
+  contain: none;
+  height: auto;
+  max-height: 80vh;
+}
+::ng-deep ion-modal.editar-canal-modal::part(content) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+::ng-deep ion-modal.editar-canal-modal {
+  --background: transparent !important;
+  --ion-background-color: transparent !important;
+  --ion-color-step-50: transparent !important;
+}
+
+::ng-deep ion-modal.editar-canal-modal::part(content) {
+  background: transparent !important;
+  box-shadow: none !important;
+}

@@ -87,11 +87,11 @@ export const routes: Routes = [
   // Redirecciones
   {
     path: '',
-    redirectTo: 'pages/dashboard',
+    redirectTo: 'pages/operaciones',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'dashboard'
+    redirectTo: 'operaciones'
   }
 ];

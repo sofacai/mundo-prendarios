@@ -473,11 +473,9 @@ export class WizardContainerComponent implements OnInit {
       canalId: this.subcanalSeleccionadoInfo?.canalId
     };
 
-    console.log(`Actualizando cliente ID ${datos.clienteId}:`, clienteData);
 
     this.clienteService.actualizarCliente(datos.clienteId, clienteData).subscribe({
       next: (cliente) => {
-        console.log("Cliente actualizado con éxito:", cliente);
         // Mantener el mismo cliente ID
         this.wizardData.clienteId = datos.clienteId;
         this.dataService.clienteId = datos.clienteId;
@@ -551,7 +549,6 @@ export class WizardContainerComponent implements OnInit {
   private buscarClientePorCUIL(datos: any) {
     this.clienteService.getClientePorCuil(datos.cuil).subscribe({
       next: (cliente: Cliente) => {
-        console.log("Cliente encontrado por CUIL:", cliente);
         // Asegurarnos que el ID no es undefined
         if (cliente && typeof cliente.id === 'number') {
           this.wizardData.clienteId = cliente.id;
@@ -563,7 +560,6 @@ export class WizardContainerComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.log("No se encontró cliente por CUIL, error:", err);
         // No se encontró, crear nuevo cliente
         this.crearCliente(datos);
       }
@@ -574,7 +570,6 @@ export class WizardContainerComponent implements OnInit {
   private buscarClientePorDNI(datos: any) {
     this.clienteService.getClientePorDni(datos.dni).subscribe({
       next: (cliente: Cliente) => {
-        console.log("Cliente encontrado por DNI:", cliente);
         // Asegurarnos que el ID no es undefined
         if (cliente && typeof cliente.id === 'number') {
           this.wizardData.clienteId = cliente.id;
@@ -586,7 +581,6 @@ export class WizardContainerComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.log("No se encontró cliente por DNI, creando nuevo cliente:", err);
         // En lugar de intentar con CUIL, vamos directo a crear cliente nuevo
         this.crearCliente(datos);
       }
@@ -607,11 +601,9 @@ export class WizardContainerComponent implements OnInit {
       autoasignarVendor: true // Permitir autoasignación del vendor actual
     };
 
-    console.log("Creando nuevo cliente:", clienteData);
 
     this.clienteService.crearCliente(clienteData).subscribe({
       next: (cliente: Cliente) => {
-        console.log("Cliente creado con éxito:", cliente);
         if (cliente && typeof cliente.id === 'number') {
           this.wizardData.clienteId = cliente.id;
           this.dataService.clienteId = cliente.id;
@@ -623,10 +615,8 @@ export class WizardContainerComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error("Error al crear cliente:", error);
 
         // En caso de error, intentamos avanzar de todas formas
-        console.log("Intentando avanzar a pesar del error de creación de cliente");
         this.obtenerPlanesYAvanzar();
 
         /* Comentamos este código para evitar mostrar errores al usuario
@@ -663,7 +653,6 @@ export class WizardContainerComponent implements OnInit {
 
     this.clienteVendorService.asignarVendorACliente(clienteId, vendorId).subscribe({
       next: (resultado) => {
-        console.log("Vendor asignado exitosamente al cliente:", resultado);
         this.obtenerPlanesYAvanzar();
       },
       error: (error) => {
@@ -680,11 +669,7 @@ export class WizardContainerComponent implements OnInit {
       return;
     }
 
-    console.log('Obteniendo planes para:', {
-      monto: this.wizardData.monto,
-      plazo: this.wizardData.plazo,
-      subcanal: this.subcanalSeleccionado
-    });
+
 
     // Si tenemos información del subcanal, filtramos los planes directamente
     if (this.subcanalSeleccionadoInfo && this.subcanalSeleccionadoInfo.planesDisponibles) {
@@ -695,7 +680,6 @@ export class WizardContainerComponent implements OnInit {
         plan.cuotasAplicables.includes(this.wizardData.plazo!)
       );
 
-      console.log('Planes aplicables encontrados:', planesAplicables.length);
 
       if (planesAplicables.length === 0) {
         this.error = "No hay planes disponibles para el monto y plazo seleccionados.";
@@ -719,7 +703,6 @@ export class WizardContainerComponent implements OnInit {
         // Aplicar comisión del subcanal si existe
         if (comisionSubcanal > 0) {
           cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
-          console.log(`Aplicando comisión de subcanal ${comisionSubcanal}%: cuota final=${cuota}`);
         }
 
         return {
@@ -728,7 +711,6 @@ export class WizardContainerComponent implements OnInit {
         };
       });
 
-      console.log('Planes con cuotas calculadas:', planesConCuotas);
 
       // Guardar planes en el wizard
       this.wizardData.planesDisponibles = planesConCuotas;
@@ -772,8 +754,7 @@ export class WizardContainerComponent implements OnInit {
       this.subcanalSeleccionado = subcanalId;
       this.subcanalSeleccionadoInfo = subcanalInfo;
       this.gastosSeleccionados = subcanalInfo.gastos || [];
-      console.log('Subcanal seleccionado:', subcanalInfo);
-      console.log('Gastos seleccionados:', this.gastosSeleccionados);
+
     } else {
       console.error('No se encontró información para el subcanal ID:', subcanalId);
     }
@@ -807,7 +788,6 @@ export class WizardContainerComponent implements OnInit {
     return new Promise((resolve, reject) => {
       // If already exists an operation, update instead of create
       if (this.wizardData.operacionId) {
-        console.log(`Reutilizando operación existente ID ${this.wizardData.operacionId}`);
         resolve({ id: this.wizardData.operacionId });
         return;
       }
@@ -843,15 +823,11 @@ export class WizardContainerComponent implements OnInit {
           estado: "Ingresada" // Default state
         };
 
-        console.log('Creating client and operation with data:', {
-          cliente: clienteData,
-          operacion: operacionData
-        });
+
 
         // Create client and operation in one call
         this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
           next: (operacionCreada) => {
-            console.log('Operation created successfully:', operacionCreada);
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
             }
@@ -877,11 +853,9 @@ export class WizardContainerComponent implements OnInit {
           estado: "Ingresada" // Default state
         };
 
-        console.log('Creating operation with data:', operacion);
 
         this.operacionService.crearOperacion(operacion).subscribe({
           next: (operacionCreada) => {
-            console.log('Operation created successfully:', operacionCreada);
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
             }

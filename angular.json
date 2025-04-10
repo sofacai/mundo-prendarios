@@ -28,13 +28,23 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
-              }
-            ],
+        "assets": [
+  {
+    "glob": "**/*",
+    "input": "src/assets",
+    "output": "assets"
+  },
+  {
+    "glob": "manifest.json",
+    "input": "src/",
+    "output": "."
+  },
+  {
+    "glob": "**/*",
+    "input": "src/icons",
+    "output": "icons"
+  }
+],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
             "scripts": [],
             "browser": "src/main.ts"
@@ -102,13 +112,23 @@
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
-              }
-            ],
+         "assets": [
+  {
+    "glob": "**/*",
+    "input": "src/assets",
+    "output": "assets"
+  },
+  {
+    "glob": "manifest.json",
+    "input": "src/",
+    "output": "."
+  },
+  {
+    "glob": "**/*",
+    "input": "src/icons",
+    "output": "icons"
+  }
+],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
             "scripts": []
           },
