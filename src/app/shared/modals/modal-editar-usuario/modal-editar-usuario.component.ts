@@ -50,7 +50,8 @@ export class ModalEditarUsuarioComponent implements OnChanges, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', Validators.required],
       password: [''], // Opcional para edición
-      rolId: ['', Validators.required]
+      rolId: ['', Validators.required],
+      creadorId: ['']
     });
   }
 
@@ -157,7 +158,9 @@ export class ModalEditarUsuarioComponent implements OnChanges, OnDestroy {
       email: formValues.email,
       telefono: formValues.telefono,
       password: formValues.password || undefined, // Solo enviar si hay un nuevo valor
-      rolId: parseInt(formValues.rolId, 10)
+      rolId: parseInt(formValues.rolId, 10),
+      creadorId: formValues.creadorId
+
     };
 
     // Si la contraseña está vacía, la eliminamos del objeto para no enviarla

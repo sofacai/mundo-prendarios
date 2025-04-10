@@ -131,7 +131,8 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       email: this.usuario.email,
       telefono: this.usuarioForm.telefono,
       password: this.usuarioForm.password || '',
-      rolId: this.usuario.rolId
+      rolId: this.usuario.rolId,
+      creadorId: this.usuario.creadorId || this.currentUser?.id || 0
     };
 
     this.usuarioService.updateUsuario(this.usuario.id, updateData).subscribe({

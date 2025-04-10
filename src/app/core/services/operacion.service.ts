@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { environment } from 'src/environments/environment';
 
 export interface Operacion {
   id?: number;
@@ -28,8 +29,7 @@ export interface Operacion {
   providedIn: 'root'
 })
 export class OperacionService {
-  private apiUrl = 'https://localhost:7136/api';
-
+  private apiUrl = environment.apiUrl;
   constructor(
     private http: HttpClient,
     private authService: AuthService

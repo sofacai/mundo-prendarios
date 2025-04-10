@@ -22,6 +22,8 @@ export class SubcanalHeaderComponent {
   @Input() operacionesLiquidadas = 0;
   @Input() operacionesRechazadas = 0;
 
+
+
   @Output() toggleEstado = new EventEmitter<void>();
 
   getGastosPorcentaje(): number {
@@ -29,5 +31,13 @@ export class SubcanalHeaderComponent {
       return 0;
     }
     return this.subcanal.gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
+  }
+
+  calcularEstadisticas() {
+    // Calcular operaciones liquidadas
+    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada').length;
+
+    // Calcular operaciones rechazadas
+    this.operacionesRechazadas = this.operaciones.filter(op => op.estado === 'Rechazada').length;
   }
 }

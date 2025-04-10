@@ -35,7 +35,7 @@ export interface PlanCrearDto {
   providedIn: 'root'
 })
 export class PlanService {
-  private apiUrl = `https://localhost:7136/api/Plan`;
+  private apiUrl = `${environment.apiUrl}/Plan`;
 
   constructor(
     private http: HttpClient,

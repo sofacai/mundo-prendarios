@@ -17,6 +17,7 @@ export interface UsuarioDto {
   fechaAlta?: Date;
   fechaUltimaOperacion?: Date;
   cantidadOperaciones: number;
+  creadorId?: number;
 }
 
 export interface UsuarioCrearDto {
@@ -26,8 +27,9 @@ export interface UsuarioCrearDto {
   telefono: string;
   password: string;
   rolId: number;
-  // New field
+  // New fields
   fechaAlta?: Date;
+  creadorId: number;
 }
 
 export interface PasswordUpdateDto {
@@ -65,6 +67,11 @@ export class UsuarioService {
   getUsuario(id: number): Observable<UsuarioDto> {
     const headers = this.getAuthHeaders();
     return this.http.get<UsuarioDto>(`${this.apiUrl}/${id}`, { headers });
+  }
+
+  getUsuariosPorCreador(creadorId: number): Observable<UsuarioDto[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/creados-por/${creadorId}`, { headers });
   }
 
   // Obtener usuarios por rol (usaremos este para obtener los AdminCanal con rolId=2)
@@ -125,5 +132,11 @@ export class UsuarioService {
       { password },
       { headers }
     );
+  }
+
+  // Obtener ID del usuario logueado
+  getLoggedInUserId(): number {
+    const usuario = this.authService.currentUserValue;
+    return usuario ? usuario.id : 0;
   }
 }

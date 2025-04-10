@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { Usuario, RolType } from '../models/usuario.model';
+import { environment } from 'src/environments/environment';
 
 interface LoginRequest {
   email: string;
@@ -27,7 +28,7 @@ interface LoginResponse {
 export class AuthService {
   private currentUserSubject: BehaviorSubject<Usuario | null>;
   public currentUser: Observable<Usuario | null>;
-  private apiUrl = 'https://localhost:7136/api';
+  private apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
   private router = inject(Router);
 
@@ -99,6 +100,10 @@ export class AuthService {
           return throwError(() => new Error('Credenciales incorrectas. Por favor, inténtelo de nuevo.'));
         })
       );
+  }
+  getUsuarioId(): number {
+    const usuario = this.currentUserValue;
+    return usuario ? usuario.id : 0;
   }
 
   logout(): void {

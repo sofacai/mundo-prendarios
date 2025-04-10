@@ -24,6 +24,7 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
   usuarioForm: FormGroup;
   loading = false;
   error: string | null = null;
+  creadorId: number; // Variable para almacenar el ID del usuario logueado
 
   private readonly phonePrefix = '+54 9 ';
 
@@ -39,6 +40,9 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
     private usuarioService: UsuarioService,
     private renderer: Renderer2
   ) {
+    // Obtener el ID del usuario logueado
+    this.creadorId = this.usuarioService.getLoggedInUserId();
+
     this.usuarioForm = this.fb.group({
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
@@ -164,7 +168,8 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
       email: formValues.email,
       telefono: formValues.telefono,
       password: formValues.password,
-      rolId: parseInt(formValues.rolId, 10)
+      rolId: parseInt(formValues.rolId, 10),
+      creadorId: this.creadorId // Añadir el ID del creador
     };
 
     this.usuarioService.createUsuario(usuarioDto).subscribe({

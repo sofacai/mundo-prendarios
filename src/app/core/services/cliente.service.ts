@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from 'src/environments/environment';
 
 export interface Cliente {
   id: number;
@@ -42,8 +43,7 @@ export interface ClienteCrearDto {
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'https://localhost:7136/api';
-
+  private apiUrl = environment.apiUrl;
   constructor(
     private http: HttpClient,
     private authService: AuthService

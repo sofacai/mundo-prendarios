@@ -25,6 +25,7 @@ import { SubcanalOperacionesTabComponent } from '../components/subcanal-operacio
 import { SubcanalEstadisticasTabComponent } from '../components/subcanal-estadisticas-tab/subcanal-estadisticas-tab.component';
 import { GastoFormModalComponent } from '../components/gasto-form-modal/gasto-form-modal.component';
 import { SubcanalAdminCanalComponent } from '../components/subcanal-admin-canal/subcanal-admin-canal.component';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 // Registrar los componentes de Chart.js
 Chart.register(...registerables);
@@ -116,7 +117,8 @@ errorAdminCanal: string | null = null;
     private operacionService: OperacionService,
     private clienteService: ClienteService,
     private sidebarStateService: SidebarStateService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService,
   ) {
     this.gastoForm = this.createGastoForm();
   }
@@ -468,15 +470,32 @@ errorAdminCanal: string | null = null;
     this.loadingVendores = true;
     this.modalVendorOpen = true;
 
-    // Cargar todos los vendedores para poder filtrar los que no están asignados
-    this.usuarioService.getUsuariosPorRol(3).subscribe({ // 3 = Rol de vendedor
+    // Obtener ID del usuario actual
+    const currentUserId = this.authService.currentUserValue?.id;
+
+    if (!currentUserId) {
+      this.errorVendor = 'No se pudo identificar al usuario actual';
+      this.loadingVendores = false;
+      return;
+    }
+
+    // Usar el nuevo endpoint para obtener los vendedores creados por el usuario actual
+    this.usuarioService.getUsuariosPorCreador(currentUserId).subscribe({
       next: (vendores) => {
-        // Filtrar para excluir los que ya están asignados al subcanal
+        console.log('Vendores recibidos:', vendores);
+        // Filtrado...
+        console.log('Vendores disponibles después de filtrar:', this.vendoresDisponibles);
+      },
+        // Filtrar para mostrar solo vendedores (RolId = 3) que no estén ya asignados y estén activos
         if (this.subcanal && this.subcanal.vendors) {
           const vendedoresAsignados = new Set(this.subcanal.vendors.map(v => v.id));
-          this.vendoresDisponibles = vendores.filter(v => !vendedoresAsignados.has(v.id) && v.activo);
+          this.vendoresDisponibles = vendores.filter(v =>
+            v.rolId === 3 &&
+            !vendedoresAsignados.has(v.id) &&
+            v.activo
+          );
         } else {
-          this.vendoresDisponibles = vendores.filter(v => v.activo);
+          this.vendoresDisponibles = vendores.filter(v => v.rolId === 3 && v.activo);
         }
         this.loadingVendores = false;
       },

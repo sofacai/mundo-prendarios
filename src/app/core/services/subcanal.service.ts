@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Gasto, GastoCreate, GastoUpdate } from '../models/gasto.model';
+import { environment } from 'src/environments/environment';
 
 export interface Vendor {
   id: number;
@@ -49,7 +50,7 @@ export interface ComisionActualizarDto {
   providedIn: 'root'
 })
 export class SubcanalService {
-  private apiUrl = `https://localhost:7136/api/Subcanal`;
+  private apiUrl = `${environment.apiUrl}/Subcanal`;
   subcanalService: any;
 
   constructor(

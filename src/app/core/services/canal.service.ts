@@ -112,7 +112,7 @@ export interface CanalOficialComercialCrearDto {
   providedIn: 'root'
 })
 export class CanalService {
-  private apiUrl = `https://localhost:7136/api/Canal`;
+  private apiUrl = `${environment.apiUrl}/Canal`;
 
   constructor(
     private http: HttpClient,

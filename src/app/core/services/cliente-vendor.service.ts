@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Cliente } from './cliente.service';
+import { environment } from 'src/environments/environment';
 
 export interface ClienteVendorDto {
   id: number;
@@ -23,8 +24,7 @@ export interface ClienteVendorCrearDto {
   providedIn: 'root'
 })
 export class ClienteVendorService {
-  private apiUrl = 'https://localhost:7136/api';
-
+  private apiUrl = environment.apiUrl;
   constructor(
     private http: HttpClient,
     private authService: AuthService
