@@ -23,6 +23,11 @@ export interface Cliente {
   usuarioCreadorNombre?: string;
   vendoresAsignados?: any[];
   numeroOperaciones: number;
+
+  ingresos?: number;
+  auto?: string;
+  codigoPostal?: number;
+  fechaNacimiento?: string; // o Date si lo convertís después
 }
 
 export interface ClienteCrearDto {
@@ -37,7 +42,13 @@ export interface ClienteCrearDto {
   estadoCivil?: string;
   canalId?: number;
   autoasignarVendor?: boolean;
+
+  ingresos?: number;
+  auto?: string;
+  codigoPostal?: number;
+  fechaNacimiento?: string;
 }
+
 
 @Injectable({
   providedIn: 'root'
