@@ -355,3 +355,35 @@
   color: white;
 }
 
+
+@media (max-width: 991px) {
+  :host {
+    display: block;
+    position: relative;
+    z-index: 1; /* Menor que el sidebar pero visible */
+  }
+
+  .loan-form {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+  }
+
+  /* Evitar que el componente se "caiga" cuando el sidebar está abierto */
+  body.sidebar-open :host .loan-form {
+    transform: none;
+  }
+
+  /* Asegurar que la card tiene un fondo sólido */
+  .card {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+    z-index: 2; /* Asegurar que está sobre el overlay */
+  }
+}

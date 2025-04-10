@@ -810,3 +810,103 @@ body.modal-open {
   }
 }
 
+/* Estilos globales para manejar la interacción entre sidebar y contenido principal */
+
+/* Comportamiento normal del body y contenido */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Cuando el sidebar está abierto en mobile */
+body.sidebar-open {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Contenedor principal de la aplicación */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 1000;
+  background-color: #1e2732;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+/* Contenido principal */
+.main-content {
+  flex: 1;
+  margin-left: 0;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Overlay que aparece al abrir el sidebar en mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+/* En dispositivos móviles cuando el sidebar está abierto */
+@media (max-width: 991px) {
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+
+  body.sidebar-open .sidebar-overlay {
+    display: block;
+    opacity: 1;
+  }
+
+  body.sidebar-open .main-content {
+    position: fixed;
+    width: 100%;
+  }
+
+  /* Ajuste para los componentes del cotizador */
+  body.sidebar-open .loan-form {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* En dispositivos desktop cuando el sidebar está expandido */
+@media (min-width: 992px) {
+  body:not(.sidebar-collapsed) .sidebar {
+    transform: translateX(0);
+  }
+
+  body:not(.sidebar-collapsed) .main-content {
+    margin-left: 250px;
+  }
+
+  body.sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+  }
+
+  body.sidebar-collapsed .main-content {
+    margin-left: 0;
+  }
+}
