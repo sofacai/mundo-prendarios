@@ -1,8 +1,11 @@
+// En subcanal-vendedores-tab.component.ts
+// Asegúrate de importar
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subcanal } from 'src/app/core/services/subcanal.service';
-import { UsuarioDto } from 'src/app/core/services/usuario.service';
+import { UsuarioDto, UsuarioService } from 'src/app/core/services/usuario.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
   selector: 'app-subcanal-vendedores-tab',
@@ -26,6 +29,12 @@ export class SubcanalVendedoresTabComponent {
   showModal = false;
   selectedVendorId: string | number = '';
   isLoading = false;
+
+  // Constructor para inyectar servicios
+  constructor(
+    private usuarioService: UsuarioService,
+    private authService: AuthService
+  ) {}
 
   // Métodos para calcular estadísticas
   @Input() getVendorOperaciones!: (vendorId: number) => number;
@@ -56,6 +65,11 @@ export class SubcanalVendedoresTabComponent {
   openModal(): void {
     this.showModal = true;
     this.selectedVendorId = '';
+
+    // Cargar vendedores disponibles
+    // Solo disparamos el evento para que el componente padre los cargue
+    this.asignarVendedor.emit();
+
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
   }
