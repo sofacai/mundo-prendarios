@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
+import { RolType } from '../models/usuario.model';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
 
 export interface UsuarioDto {
   id: number;
@@ -50,7 +53,7 @@ export interface VendorEstadisticasDto {
   providedIn: 'root'
 })
 export class UsuarioService {
-  private apiUrl = `https://localhost:7136/api/Usuarios`;
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
@@ -139,4 +142,33 @@ export class UsuarioService {
     const usuario = this.authService.currentUserValue;
     return usuario ? usuario.id : 0;
   }
+
+
+  getUsuariosUnificados(): Observable<UsuarioDto[]> {
+    const currentUser = this.authService.currentUserValue;
+
+    if (!currentUser) {
+      return of([]);
+    }
+
+    if (currentUser.rolId === RolType.Administrador) {
+      return this.getUsuarios();
+    }
+
+    return forkJoin({
+      asignados: this.getUsuarios().pipe(catchError(() => of([]))),
+      creados: this.getUsuariosPorCreador(currentUser.id).pipe(catchError(() => of([])))
+    }).pipe(
+      map(result => {
+        const { asignados, creados } = result;
+        const todosUsuarios = [...asignados, ...creados];
+
+        return todosUsuarios.filter((usuario, index, self) =>
+          index === self.findIndex((u) => u.id === usuario.id)
+        );
+      }),
+      catchError(() => of([]))
+    );
+  }
+
 }

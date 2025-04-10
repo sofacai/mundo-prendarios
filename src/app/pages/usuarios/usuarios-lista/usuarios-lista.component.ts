@@ -105,14 +105,14 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     this.error = null;
     this.sidebarLayoutLocked = true;
 
-    this.usuarioService.getUsuarios().subscribe({
+    this.usuarioService.getUsuariosUnificados().subscribe({
       next: (data) => {
         this.usuarios = data;
         this.applyFilters();
         this.loading = false;
         this.sidebarLayoutLocked = false;
       },
-      error: (err) => {
+      error: () => {
         this.error = 'No se pudieron cargar los usuarios. Por favor, intente nuevamente.';
         this.loading = false;
         this.sidebarLayoutLocked = false;

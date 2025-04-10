@@ -173,7 +173,6 @@ export class WizardContainerComponent implements OnInit {
         tap(subcanales => console.log('Subcanales recibidos')),
         map(subcanales => subcanales.filter(s => s.activo)),
         catchError(error => {
-          console.error('Error al cargar subcanales:', error);
           this.error = "Error al obtener los subcanales del vendedor.";
           return of([]);
         }),
