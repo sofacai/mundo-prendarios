@@ -15,6 +15,7 @@ import { SidebarStateService } from 'src/app/core/services/sidebar-state.service
 export class SubcanalSelectorComponent implements OnInit {
   @Input() subcanales: SubcanalInfo[] = [];
   @Output() seleccionarSubcanal = new EventEmitter<number>();
+  @Output() volver = new EventEmitter<void>(); // Nuevo EventEmitter para volver
 
   subcanalId: number | null = null;
   subcanalesActivos: SubcanalInfo[] = [];
@@ -36,6 +37,7 @@ export class SubcanalSelectorComponent implements OnInit {
       this.subcanalId = this.subcanalesActivos[0].subcanalId;
     }
   }
+
   toggleSidebar(): void {
     this.sidebarStateService.toggleCotizadorSidebar();
   }
@@ -46,5 +48,9 @@ export class SubcanalSelectorComponent implements OnInit {
     } else {
       this.errorMessage = "Debes seleccionar un subcanal para continuar.";
     }
+  }
+
+  onVolver() {
+    window.location.href = '/cotizador';
   }
 }

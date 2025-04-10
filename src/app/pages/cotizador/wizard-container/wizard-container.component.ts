@@ -260,6 +260,8 @@ export class WizardContainerComponent implements OnInit {
     });
   }
 
+
+
   cargarPlanesParaSubcanales(subcanales: Subcanal[]) {
     let procesados = 0;
     const total = subcanales.length;
@@ -375,7 +377,6 @@ export class WizardContainerComponent implements OnInit {
   }
 
   volverAlSeleccionVendor() {
-    // Reiniciar selección de vendor
     this.necesitaSeleccionarVendor = true;
     this.necesitaSeleccionarSubcanal = false;
     this.subcanalSeleccionado = null;
@@ -947,17 +948,6 @@ export class WizardContainerComponent implements OnInit {
   }
   reiniciarWizard() {
     this.error = null;
-
-    // Si el usuario actual no es vendor, volver a selección de vendor
-    if (this.currentUserRol !== RolType.Vendor) {
-      this.volverAlSeleccionVendor();
-    } else {
-      // Si es vendor, simplemente reiniciar el wizard
-      this.wizardData = {
-        paso: 1,
-        vendorId: this.authService.currentUserValue?.id // Mantener el ID del vendor actual
-      };
-      this.dataService.reiniciarDatos();
-    }
+    window.location.href = '/home'; // Redirigir a home
   }
 }

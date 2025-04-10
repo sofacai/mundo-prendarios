@@ -16,6 +16,7 @@ export class VendorSelectorComponent implements OnInit {
   @Input() vendors: any[] = [];
   @Input() currentUserRol: RolType = RolType.Vendor; // Usar un valor del enum en lugar de 0
   @Output() seleccionarVendor = new EventEmitter<number>();
+  @Output() volver = new EventEmitter<void>(); // Nuevo EventEmitter para volver
 
   vendorId: number | null = null;
   searchTerm: string = '';
@@ -34,6 +35,7 @@ export class VendorSelectorComponent implements OnInit {
   ngOnInit() {
     this.filteredVendors = [...this.vendors];
   }
+
   toggleSidebar(): void {
     this.sidebarStateService.toggleCotizadorSidebar();
   }
@@ -63,5 +65,9 @@ export class VendorSelectorComponent implements OnInit {
 
   selectVendor(vendorId: number) {
     this.vendorId = vendorId;
+  }
+
+  onVolver() {
+    window.location.href = '/home';
   }
 }
