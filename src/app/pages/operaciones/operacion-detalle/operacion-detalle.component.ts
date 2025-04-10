@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -18,13 +18,12 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     IonicModule,
-    SidebarComponent,
     SidebarComponent
   ],
   templateUrl: './operacion-detalle.component.html',
   styleUrls: ['./operacion-detalle.component.scss']
 })
-export class OperacionDetalleComponent implements OnInit {
+export class OperacionDetalleComponent implements OnInit, OnDestroy {
   operacionId!: number;
   operacion!: Operacion;
   cliente: Cliente | null = null;
@@ -32,8 +31,8 @@ export class OperacionDetalleComponent implements OnInit {
   canal: Canal | null = null;
   subcanal: Subcanal | null = null;
 
-    isSidebarCollapsed = false;
-    private sidebarSubscription: Subscription | null = null;
+  isSidebarCollapsed = false;
+  private sidebarSubscription: Subscription | null = null;
 
   loading = true;
   error: string | null = null;
@@ -207,7 +206,7 @@ export class OperacionDetalleComponent implements OnInit {
   }
 
   getEstadoClass(estado: string): string {
-    switch (estado?.toLowerCase()) {
+    switch (estado.toLowerCase()) {
       case 'activo':
         return 'badge-success';
       case 'pendiente':
@@ -216,11 +215,14 @@ export class OperacionDetalleComponent implements OnInit {
         return 'badge-info';
       case 'cancelado':
         return 'badge-danger';
+      case 'Ingresada':
+        return 'badge-info';
+      case 'liquidada':
+        return 'badge-success'; // Green for liquidated operations
       default:
         return 'badge-light';
     }
   }
-
   calcularCuotaMensual(): string {
     if (!this.operacion) return '-';
     const { monto, tasa, meses } = this.operacion;

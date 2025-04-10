@@ -1,115 +1,144 @@
 <div class="canales-container">
-<app-sidebar></app-sidebar>
-<!-- Loading Indicator -->
-<div class="content-area">
-<div *ngIf="loading" class="text-center p-5">
-  <div class="spinner-border text-primary"></div>
-  <p class="mt-2">Cargando información de la operación...</p>
-</div>
-
-<!-- Error Message -->
-<div *ngIf="error && !loading" class="alert alert-danger">
-  <i class="bi bi-exclamation-triangle me-2"></i>
-  {{ error }}
-</div>
-
-<!-- Operación Content -->
-<div *ngIf="operacion && !loading && !error" class="operacion-detail">
-  <!-- Primer bloque de información -->
-  <div class="operacion-header-card">
-    <div class="header-main-section">
-      <div class="operacion-info">
-        <div class="title-badge-wrapper">
-          <h2 class="operacion-title">Operación #{{ operacion.id }}</h2>
-
-
-        </div>
-        <div class="plan-info">
-          <span>{{ cliente?.nombre }} {{ cliente?.apellido }}</span>
-          <span class="separator">|</span>
-          <span>{{ cliente?.telefono }}</span>
-          <span class="separator">|</span>
-
-          <span>{{ cliente?.email }}</span>
-
-        </div>
-      </div>
-
-    </div>
-    <div style="padding-top:20px">    <span>Fecha: {{ formatDate(operacion.fechaCreacion) }}</span>
-    </div>
-
+  <app-sidebar></app-sidebar>
+  <!-- Loading Indicator -->
+  <div class="content-area">
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Cargando información de la operación...</p>
   </div>
 
-  <!-- Contenido principal en cards separadas -->
-  <div class="components-grid">
-    <!-- Detalles de la operación -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">
-          <i class="bi bi-clipboard-data me-2 text-primary"></i>
-          Detalles de la Operación
+  <!-- Error Message -->
+  <div *ngIf="error && !loading" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ error }}
+  </div>
+
+  <!-- Operación Content -->
+  <div *ngIf="operacion && !loading && !error" class="operacion-detail">
+    <!-- Primer bloque de información -->
+    <div class="operacion-header-card">
+      <div class="header-main-section">
+        <div class="operacion-info">
+          <div class="title-badge-wrapper">
+            <button class="btn btn-icon btn-light me-3" (click)="goBack()">
+              <i class="bi bi-arrow-left"></i>
+            </button>
+            <h2 class="operacion-title">Operación #{{ operacion.id }}</h2>
+            <div class="badge" [ngClass]="getEstadoClass(operacion.estado || '')">
+              {{ operacion.estado || 'Ingresada' }}
+            </div>
+          </div>
+          <div class="plan-info">
+            <span>{{ cliente?.nombre }} {{ cliente?.apellido }}</span>
+            <span class="separator">|</span>
+            <span>{{ cliente?.telefono }}</span>
+            <span class="separator">|</span>
+            <span>{{ cliente?.email }}</span>
+          </div>
         </div>
       </div>
-      <div class="card-body">
-        <div class="details-grid">
-          <div class="detail-section">
-            <div class="detail-row">
-              <div class="detail-label">Monto:</div>
-              <div class="detail-value fw-bold">{{ formatMonto(operacion.monto) }}</div>
+      <div class="additional-info">
+        <div class="info-item">
+          <i class="bi bi-calendar3"></i>
+          <span>Fecha: {{ formatDate(operacion.fechaCreacion) }}</span>
+        </div>
+        <div class="info-item">
+          <i class="bi bi-shop"></i>
+          <span>Canal: <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleCanal(operacion.canalId)">{{ operacion.canalNombre }}</a></span>
+        </div>
+        <div class="info-item">
+          <i class="bi bi-diagram-3"></i>
+          <span>Subcanal: <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleSubcanal(operacion.subcanalId)">{{ operacion.subcanalNombre }}</a></span>
+        </div>
+        <div class="info-item">
+          <i class="bi bi-person"></i>
+          <span>Vendor: <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleUsuario(operacion.vendedorId || 0)">{{ operacion.vendedorNombre }}</a></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido principal en cards separadas -->
+    <div class="components-grid">
+      <!-- Detalles de la operación -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-clipboard-data me-2 text-primary"></i>
+            Detalles de la Operación
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="details-grid">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">Monto:</div>
+                <div class="detail-value fw-bold">{{ formatMonto(operacion.monto) }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Plazo:</div>
+                <div class="detail-value">{{ operacion.meses }} meses</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Plan:</div>
+                <div class="detail-value">{{ operacion.planNombre || 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Cuota inicial:</div>
+                <div class="detail-value">{{ calcularCuotaMensual() }}</div>
+              </div>
             </div>
-            <div class="detail-row">
-              <div class="detail-label">Plazo:</div>
-              <div class="detail-value">{{ operacion.meses }} meses</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Plan:</div>
-              <div class="detail-value">{{ operacion.planNombre || 'No especificado' }}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Cuota inicial:</div>
-              <div class="detail-value">{{ calcularCuotaMensual() }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del Cliente -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-person-vcard me-2 text-primary"></i>
+            Información del Cliente
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="details-grid">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">Nombre completo:</div>
+                <div class="detail-value fw-bold">{{ cliente?.nombre }} {{ cliente?.apellido }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Teléfono:</div>
+                <div class="detail-value">{{ cliente?.telefono || 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Email:</div>
+                <div class="detail-value">{{ cliente?.email || 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">DNI:</div>
+                <div class="detail-value">{{ cliente?.dni || 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Ingresos:</div>
+                <div class="detail-value">{{ (cliente && cliente.ingresos != null) ? formatMonto(cliente.ingresos) : 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Auto:</div>
+                <div class="detail-value">{{ cliente?.auto || 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Código Postal:</div>
+                <div class="detail-value">{{ cliente?.codigoPostal || 'No especificado' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Estado Civil:</div>
+                <div class="detail-value">{{ cliente?.estadoCivil || 'No especificado' }}</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Información del Vendor -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">
-          <i class="bi bi-person-badge me-2 text-primary"></i>
-          Información del Vendor
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="details-grid">
-          <div class="detail-section">
-            <div class="detail-row">
-              <div class="detail-label">Nombre:</div>
-              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleUsuario(operacion.vendedorId || 0)">
-                {{ operacion.vendedorNombre}}
-              </a>              </div>
-            <div class="detail-row">
-              <div class="detail-label">Email:</div>
-              <div class="detail-value">{{ vendor?.email || 'No especificado' }}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Subcanal:</div>
-              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleSubcanal(operacion.subcanalId)">
-                {{ operacion.subcanalNombre}}
-              </a>            </div>
-            <div class="detail-row">
-              <div class="detail-label">Canal:</div>
-              <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleCanal(operacion.canalId)">
-                {{ operacion.canalNombre}}
-              </a>             </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
-</div>
-</div>
-</div>
+  </div>
+  </div>
