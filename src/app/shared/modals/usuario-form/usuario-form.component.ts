@@ -1,8 +1,10 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { UsuarioService, UsuarioCrearDto } from 'src/app/core/services/usuario.service';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { RolType } from 'src/app/core/models/usuario.model';
 
 interface Rol {
   id: number;
@@ -16,7 +18,7 @@ interface Rol {
   templateUrl: './usuario-form.component.html',
   styleUrls: ['./usuario-form.component.scss']
 })
-export class UsuarioFormComponent implements OnChanges, OnDestroy {
+export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() usuarioCreado = new EventEmitter<any>();
@@ -24,23 +26,25 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
   usuarioForm: FormGroup;
   loading = false;
   error: string | null = null;
-  creadorId: number; // Variable para almacenar el ID del usuario logueado
+  creadorId: number;
 
   private readonly phonePrefix = '+54 9 ';
 
-  roles: Rol[] = [
+  allRoles: Rol[] = [
     { id: 1, nombre: 'Admin' },
     { id: 4, nombre: 'Oficial Comercial' },
     { id: 2, nombre: 'AdminCanal' },
     { id: 3, nombre: 'Vendor' }
   ];
 
+  roles: Rol[] = [];
+
   constructor(
     private fb: FormBuilder,
     private usuarioService: UsuarioService,
+    private authService: AuthService,
     private renderer: Renderer2
   ) {
-    // Obtener el ID del usuario logueado
     this.creadorId = this.usuarioService.getLoggedInUserId();
 
     this.usuarioForm = this.fb.group({
@@ -51,6 +55,10 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
       password: ['', Validators.required],
       rolId: ['', Validators.required]
     });
+  }
+
+  ngOnInit(): void {
+    this.filterRolesByUserPermission();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -70,6 +78,40 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
+  }
+
+  filterRolesByUserPermission(): void {
+    const currentUser = this.authService.currentUserValue;
+
+    if (!currentUser) {
+      this.roles = [];
+      return;
+    }
+
+    switch(currentUser.rolId) {
+      case RolType.Administrador:
+        // Administrador puede crear cualquier rol
+        this.roles = [...this.allRoles];
+        break;
+
+      case RolType.OficialComercial:
+        // Oficial Comercial puede crear AdminCanal y Vendor
+        this.roles = this.allRoles.filter(rol =>
+          rol.id === RolType.AdminCanal || rol.id === RolType.Vendor
+        );
+        break;
+
+      case RolType.AdminCanal:
+        // AdminCanal solo puede crear Vendor
+        this.roles = this.allRoles.filter(rol =>
+          rol.id === RolType.Vendor
+        );
+        break;
+
+      default:
+        // Por defecto, sin roles disponibles
+        this.roles = [];
+    }
   }
 
   cerrarModal() {
@@ -169,7 +211,7 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
       telefono: formValues.telefono,
       password: formValues.password,
       rolId: parseInt(formValues.rolId, 10),
-      creadorId: this.creadorId // Añadir el ID del creador
+      creadorId: this.creadorId
     };
 
     this.usuarioService.createUsuario(usuarioDto).subscribe({
@@ -180,7 +222,7 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Error al crear el usuario. Intente nuevamente.';
+        this.error = err?.error?.message || 'Error al crear el usuario. Intente nuevamente.';
       }
     });
   }

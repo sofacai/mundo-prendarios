@@ -1,10 +1,12 @@
-// Actualizar subcanal-vendedores-tab.component.ts
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subcanal } from 'src/app/core/services/subcanal.service';
 import { UsuarioDto, UsuarioService } from 'src/app/core/services/usuario.service';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { RolType } from 'src/app/core/models/usuario.model';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-subcanal-vendedores-tab',
@@ -13,7 +15,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
   templateUrl: './subcanal-vendedores-tab.component.html',
   styleUrls: ['./subcanal-vendedores-tab.component.scss']
 })
-export class SubcanalVendedoresTabComponent {
+export class SubcanalVendedoresTabComponent implements OnInit {
   @Input() subcanal!: Subcanal;
   @Input() loadingVendedores: Map<number, boolean> = new Map();
   @Input() availableVendors: UsuarioDto[] = [];
@@ -31,13 +33,17 @@ export class SubcanalVendedoresTabComponent {
   errorMessage: string | null = null;
   assigning = false;
 
-  // Constructor para inyectar servicios
   constructor(
     private usuarioService: UsuarioService,
     private authService: AuthService
   ) {}
 
-  // Métodos para calcular estadísticas
+  ngOnInit() {
+    if (!this.subcanal.vendors) {
+      this.subcanal.vendors = [];
+    }
+  }
+
   @Input() getVendorOperaciones!: (vendorId: number) => number;
   @Input() getVendorClientes!: (vendorId: number) => number;
   @Input() getVendorOperacionesLiquidadas!: (vendorId: number) => number;
@@ -62,18 +68,15 @@ export class SubcanalVendedoresTabComponent {
     return activo ? 'badge-success' : 'badge-danger';
   }
 
-  // Modal methods
   openModal(): void {
     this.showModal = true;
     this.selectedVendorId = '';
     this.errorMessage = null;
     this.isLoading = true;
 
-    // Cargar vendedores disponibles
     this.asignarVendedor.emit();
   }
 
-  // Agregar un método para actualizar el estado de carga
   updateLoadingState(loading: boolean): void {
     this.isLoading = loading;
   }
@@ -89,20 +92,57 @@ export class SubcanalVendedoresTabComponent {
     this.isLoading = false;
   }
 
+  loadDisponibleVendors(): void {
+    this.isLoading = true;
+
+    const currentUser = this.authService.currentUserValue;
+    if (!currentUser) {
+      this.isLoading = false;
+      return;
+    }
+
+    // Combinar vendedores asignados + creados por el usuario actual
+    forkJoin({
+      asignados: this.usuarioService.getUsuariosPorRol(RolType.Vendor).pipe(catchError(() => of([]))),
+      creados: this.usuarioService.getUsuariosPorCreador(currentUser.id).pipe(
+        map(usuarios => usuarios.filter(u => u.rolId === RolType.Vendor)),
+        catchError(() => of([]))
+      )
+    }).pipe(
+      map(result => {
+        const { asignados, creados } = result;
+
+        // Combinar ambas listas y eliminar duplicados
+        const todosVendores = [...asignados, ...creados];
+        const vendoresUnicos = todosVendores.filter((vendor, index, self) =>
+          index === self.findIndex((v) => v.id === vendor.id)
+        );
+
+        // Filtrar los que ya están asignados al subcanal
+        return vendoresUnicos.filter(vendor =>
+          !this.subcanal.vendors?.some(v => v.id === vendor.id)
+        );
+      })
+    ).subscribe({
+      next: (vendors) => {
+        this.availableVendors = vendors;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+        this.errorMessage = "Error al cargar los vendedores disponibles";
+      }
+    });
+  }
+
   confirmarAsignacion(): void {
     if (this.selectedVendorId && !this.assigning) {
       this.assigning = true;
       this.errorMessage = null;
-
-      // Emit event with selected vendor id
       this.asignarVendedorConfirmado.emit(Number(this.selectedVendorId));
-
-      // El componente padre debe encargarse de cerrar el modal después de completar la operación
-      // Para esto, necesitamos exponer un método público que el padre pueda llamar
     }
   }
 
-  // Método público para que el padre pueda cerrar el modal y limpiar el estado
   finalizarAsignacion(exito: boolean, mensaje?: string): void {
     this.assigning = false;
 

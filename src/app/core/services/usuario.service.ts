@@ -6,7 +6,6 @@ import { RolType } from '../models/usuario.model';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-
 export interface UsuarioDto {
   id: number;
   nombre: string;
@@ -16,7 +15,6 @@ export interface UsuarioDto {
   rolId: number;
   rolNombre: string;
   activo: boolean;
-  // New fields
   fechaAlta?: Date;
   fechaUltimaOperacion?: Date;
   cantidadOperaciones: number;
@@ -30,7 +28,6 @@ export interface UsuarioCrearDto {
   telefono: string;
   password: string;
   rolId: number;
-  // New fields
   fechaAlta?: Date;
   creadorId: number;
 }
@@ -60,66 +57,72 @@ export class UsuarioService {
     private authService: AuthService
   ) { }
 
-  // Obtener todos los usuarios
   getUsuarios(): Observable<UsuarioDto[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<UsuarioDto[]>(this.apiUrl, { headers });
+    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/usuarios`, { headers })
+      .pipe(
+        catchError(err => {
+          return of([]);
+        })
+      );
   }
 
-  // Obtener un usuario específico por ID
   getUsuario(id: number): Observable<UsuarioDto> {
     const headers = this.getAuthHeaders();
-    return this.http.get<UsuarioDto>(`${this.apiUrl}/${id}`, { headers });
+    return this.http.get<UsuarioDto>(`${this.apiUrl}/usuarios/${id}`, { headers });
   }
 
   getUsuariosPorCreador(creadorId: number): Observable<UsuarioDto[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/creados-por/${creadorId}`, { headers });
+    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/usuarios/creados-por/${creadorId}`, { headers })
+      .pipe(
+        catchError(err => {
+          return of([]);
+        })
+      );
   }
 
-  // Obtener usuarios por rol (usaremos este para obtener los AdminCanal con rolId=2)
   getUsuariosPorRol(rolId: number): Observable<UsuarioDto[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/rol/${rolId}`, { headers });
+    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/usuarios/rol/${rolId}`, { headers });
   }
 
-  // Obtener vendedores por subcanal
   getVendorsPorSubcanal(subcanalId: number): Observable<UsuarioDto[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/vendors/subcanal/${subcanalId}`, { headers });
+    return this.http.get<UsuarioDto[]>(`${this.apiUrl}/usuarios/vendors/subcanal/${subcanalId}`, { headers });
   }
 
-  // Crear un nuevo usuario
   createUsuario(usuario: UsuarioCrearDto): Observable<UsuarioDto> {
     const headers = this.getAuthHeaders();
-    return this.http.post<UsuarioDto>(this.apiUrl, usuario, { headers });
+
+    // Asegurar que el creadorId esté configurado
+    if (!usuario.creadorId) {
+      usuario.creadorId = this.getLoggedInUserId();
+    }
+
+    return this.http.post<UsuarioDto>(`${this.apiUrl}/usuarios`, usuario, { headers });
   }
 
-  // Actualizar un usuario existente
   updateUsuario(id: number, usuario: UsuarioCrearDto): Observable<UsuarioDto> {
     const headers = this.getAuthHeaders();
-    return this.http.put<UsuarioDto>(`${this.apiUrl}/${id}`, usuario, { headers });
+    return this.http.put<UsuarioDto>(`${this.apiUrl}/usuarios/${id}`, usuario, { headers });
   }
 
-  // Activar un usuario
   activarUsuario(id: number): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.patch<any>(`${this.apiUrl}/${id}/activar`, {}, { headers });
+    return this.http.patch<any>(`${this.apiUrl}/usuarios/${id}/activar`, {}, { headers });
   }
 
-  // Desactivar un usuario
   desactivarUsuario(id: number): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.patch<any>(`${this.apiUrl}/${id}/desactivar`, {}, { headers });
+    return this.http.patch<any>(`${this.apiUrl}/usuarios/${id}/desactivar`, {}, { headers });
   }
 
-  // New method to get vendor statistics
   getVendorEstadisticas(id: number): Observable<VendorEstadisticasDto> {
     const headers = this.getAuthHeaders();
-    return this.http.get<VendorEstadisticasDto>(`${this.apiUrl}/vendor/estadisticas/${id}`, { headers });
+    return this.http.get<VendorEstadisticasDto>(`${this.apiUrl}/usuarios/vendor/estadisticas/${id}`, { headers });
   }
 
-  // Configurar los headers con el token de autenticación
   private getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
     return new HttpHeaders({
@@ -131,18 +134,16 @@ export class UsuarioService {
   updatePassword(usuarioId: number, password: string): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.put<any>(
-      `${this.apiUrl}/${usuarioId}`,
+      `${this.apiUrl}/usuarios/${usuarioId}`,
       { password },
       { headers }
     );
   }
 
-  // Obtener ID del usuario logueado
   getLoggedInUserId(): number {
     const usuario = this.authService.currentUserValue;
     return usuario ? usuario.id : 0;
   }
-
 
   getUsuariosUnificados(): Observable<UsuarioDto[]> {
     const currentUser = this.authService.currentUserValue;
@@ -161,14 +162,18 @@ export class UsuarioService {
     }).pipe(
       map(result => {
         const { asignados, creados } = result;
+
+        // Combinar ambas listas
         const todosUsuarios = [...asignados, ...creados];
 
+        // Eliminar duplicados basándose en ID
         return todosUsuarios.filter((usuario, index, self) =>
           index === self.findIndex((u) => u.id === usuario.id)
         );
       }),
-      catchError(() => of([]))
+      catchError(() => {
+        return of([]);
+      })
     );
   }
-
 }

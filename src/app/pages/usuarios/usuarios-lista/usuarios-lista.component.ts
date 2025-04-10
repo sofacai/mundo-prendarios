@@ -112,7 +112,7 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.sidebarLayoutLocked = false;
       },
-      error: () => {
+      error: (err) => {
         this.error = 'No se pudieron cargar los usuarios. Por favor, intente nuevamente.';
         this.loading = false;
         this.sidebarLayoutLocked = false;
@@ -137,13 +137,10 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   applyFilters() {
     let result = [...this.usuarios];
 
-    // Modificar la búsqueda para permitir términos más cortos y búsquedas parciales
     if (this.searchTerm && this.searchTerm.length >= 1) {
       const term = this.searchTerm.toLowerCase().trim();
       result = result.filter(usuario =>
-        // Buscar en el nombre completo (nombre + apellido)
         `${usuario.nombre || ''} ${usuario.apellido || ''}`.toLowerCase().includes(term) ||
-        // También buscar en campos individuales
         (usuario.nombre && usuario.nombre.toLowerCase().includes(term)) ||
         (usuario.apellido && usuario.apellido.toLowerCase().includes(term)) ||
         (usuario.email && usuario.email.toLowerCase().includes(term))
@@ -218,7 +215,9 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   }
 
   verDetalle(id: number): void {
-    this.router.navigate(['/usuarios', id]);
+    this.usuarioIdVer = id;
+    this.modalVerOpen = true;
+    this.manejarAperturaModal();
   }
 
   toggleUsuarioEstado(usuario: UsuarioDto): void {
@@ -229,7 +228,7 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
       : this.usuarioService.activarUsuario(usuario.id);
 
     request.subscribe({
-      next: (usuarioActualizado) => {
+      next: () => {
         this.usuarios = this.usuarios.map(u => {
           if (u.id === usuario.id) {
             return {...u, activo: !usuario.activo};
@@ -247,7 +246,7 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
         this.paginarUsuarios();
         this.loadingUsuarios.set(usuario.id, false);
       },
-      error: (err) => {
+      error: () => {
         this.loadingUsuarios.set(usuario.id, false);
       }
     });
