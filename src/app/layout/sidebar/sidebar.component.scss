@@ -437,21 +437,20 @@ $header-height: 60px;
     transform: translateX(-100%);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     width: $sidebar-width !important;
-    z-index: 1001;
-    top: $header-height;
-    height: calc(100vh - #{$header-height});
+    z-index: 1003; // Aseguramos que esté por encima del header
+    top: 0!important; // Cambiamos para que comience desde arriba (no debajo del header)
+    height: 100vh!important; // Toda la altura del viewport
 
     &:not(.sidebar-collapsed) {
       transform: translateX(0);
     }
   }
 
-  // Overlay activo cuando el sidebar está abierto
+  // El resto del código se mantiene igual
   body.sidebar-open .sidebar {
     transform: translateX(0) !important;
   }
 
-  // Ocultar tooltips y botón toggle en móvil
   .menu-tooltip, .submenu-tooltip {
     display: none !important;
   }
