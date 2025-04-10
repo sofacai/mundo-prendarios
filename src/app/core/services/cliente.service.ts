@@ -23,11 +23,10 @@ export interface Cliente {
   usuarioCreadorNombre?: string;
   vendoresAsignados?: any[];
   numeroOperaciones: number;
-
   ingresos?: number;
   auto?: string;
   codigoPostal?: number;
-  fechaNacimiento?: string; // o Date si lo convertís después
+  fechaNacimiento?: string;
 }
 
 export interface ClienteCrearDto {

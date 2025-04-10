@@ -23,6 +23,11 @@ export class CotizadorDataService {
   cuil?: string;
   sexo?: string;
 
+  ingresos?: number;
+  auto?: string;
+  codigoPostal?: number;
+  estadoCivil?: string;
+
   constructor() { }
 
   // Guardar datos del paso 1
@@ -53,7 +58,11 @@ export class CotizadorDataService {
     dni?: string,
     cuil?: string,
     sexo?: string,
-    clienteId?: number
+    clienteId?: number,
+    ingresos?: number;
+    auto?: string;
+    codigoPostal?: number;
+    estadoCivil?: string;
   }) {
     this.nombre = datos.nombre;
     this.apellido = datos.apellido;
@@ -63,6 +72,10 @@ export class CotizadorDataService {
     this.cuil = datos.cuil;
     this.sexo = datos.sexo;
     this.clienteId = datos.clienteId;
+    this.ingresos = datos.ingresos;
+    this.auto = datos.auto;
+    this.codigoPostal = datos.codigoPostal;
+    this.estadoCivil = datos.estadoCivil;
   }
 
   // Reiniciar todos los datos

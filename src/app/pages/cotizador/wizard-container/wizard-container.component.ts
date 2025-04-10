@@ -34,6 +34,11 @@ interface WizardData {
   clienteDni?: string;
   clienteCuil?: string;
   clienteSexo?: string;
+  // Nuevos campos
+  ingresos?: number;
+  auto?: string;
+  codigoPostal?: number;
+  estadoCivil?: string;
   planesDisponibles?: any[];
   operacionId?: number;
   vendorId?: number;
@@ -423,14 +428,19 @@ export class WizardContainerComponent implements OnInit {
     // Guardar datos del cliente en el wizard
     this.wizardData = {
       ...this.wizardData,
-      clienteId: datos.clienteId, // Mantener clienteId si existe
+      clienteId: datos.clienteId,
       clienteNombre: datos.nombre,
       clienteApellido: datos.apellido,
       clienteWhatsapp: datos.whatsapp,
       clienteEmail: datos.email,
       clienteDni: datos.dni || "",
       clienteCuil: datos.cuil || "",
-      clienteSexo: datos.sexo || ""
+      clienteSexo: datos.sexo || "",
+      // Nuevos campos
+      ingresos: datos.ingresos,
+      auto: datos.auto || "",
+      codigoPostal: datos.codigoPostal,
+      estadoCivil: datos.estadoCivil || ""
     };
 
     // Guardar los datos en el servicio compartido para acceder desde Step3
@@ -442,8 +452,14 @@ export class WizardContainerComponent implements OnInit {
       dni: datos.dni || undefined,
       cuil: datos.cuil || undefined,
       sexo: datos.sexo || undefined,
-      clienteId: datos.clienteId
+      clienteId: datos.clienteId,
+      // Nuevos campos
+      ingresos: datos.ingresos,
+      auto: datos.auto,
+      codigoPostal: datos.codigoPostal,
+      estadoCivil: datos.estadoCivil
     });
+
 
     // Si ya tenemos un clienteId, actualizar en lugar de buscar/crear
     if (datos.clienteId) {
@@ -470,7 +486,12 @@ export class WizardContainerComponent implements OnInit {
       dni: datos.dni || undefined,
       cuil: datos.cuil || undefined,
       sexo: datos.sexo || undefined,
-      canalId: this.subcanalSeleccionadoInfo?.canalId
+      canalId: this.subcanalSeleccionadoInfo?.canalId,
+      // Nuevos campos
+      ingresos: datos.ingresos,
+      auto: datos.auto,
+      codigoPostal: datos.codigoPostal,
+      estadoCivil: datos.estadoCivil
     };
 
 
@@ -597,8 +618,13 @@ export class WizardContainerComponent implements OnInit {
       cuil: datos.cuil || undefined,
       sexo: datos.sexo || undefined,
       canalId: this.subcanalSeleccionadoInfo?.canalId,
-      // Para crear clientes en el canal correcto
-      autoasignarVendor: true // Permitir autoasignación del vendor actual
+      // Nuevos campos
+      ingresos: datos.ingresos,
+      auto: datos.auto,
+      codigoPostal: datos.codigoPostal,
+      estadoCivil: datos.estadoCivil,
+      // Autoasignación
+      autoasignarVendor: true
     };
 
 

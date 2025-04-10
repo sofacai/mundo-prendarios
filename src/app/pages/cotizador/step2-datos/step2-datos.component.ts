@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 
+
 @Component({
   selector: 'app-step2-datos',
   templateUrl: './step2-datos.component.html',
@@ -26,13 +27,16 @@ export class Step2DatosComponent implements OnInit {
     private fb: FormBuilder,
     public dataService: CotizadorDataService,
     private sidebarStateService: SidebarStateService
-
   ) {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellido: ['', [Validators.required, Validators.minLength(2)]],
       whatsapp: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
+      ingresos: [''],
+      auto: [''],
+      codigoPostal: [''],
+      estadoCivil: [''],
       dni: [''],
       cuil: [''],
       sexo: ['']
@@ -49,10 +53,6 @@ export class Step2DatosComponent implements OnInit {
         whatsappControl.setValue(this.prefix);
       }
     });
-  }
-
-  toggleSidebar(): void {
-    this.sidebarStateService.toggleCotizadorSidebar();
   }
 
   cargarDatosGuardados() {
@@ -86,12 +86,22 @@ export class Step2DatosComponent implements OnInit {
     if (whatsapp && !whatsapp.startsWith(this.prefix)) {
       whatsapp = this.formatPhoneNumber(whatsapp);
     }
+    let ingresos = data.ingresos;
+    if (ingresos) {
+      ingresos = this.formatearNumero(ingresos);
+    }
 
     this.clienteForm.patchValue({
       nombre: data.nombre || '',
       apellido: data.apellido || '',
       whatsapp: whatsapp || this.prefix,
       email: data.email || '',
+      // Nuevos campos
+      ingresos: ingresos || '',
+      auto: data.auto || '',
+      codigoPostal: data.codigoPostal || '',
+      estadoCivil: data.estadoCivil || '',
+      // Campos existentes
       dni: data.dni || '',
       cuil: data.cuil || '',
       sexo: data.sexo || ''
@@ -135,6 +145,42 @@ export class Step2DatosComponent implements OnInit {
     this.clienteForm.get('dni')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('cuil')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('sexo')?.updateValueAndValidity({ emitEvent: false });
+    this.clienteForm.get('codigoPostal')?.setValidators([
+      this.validarCodigoPostal.bind(this)
+    ]);
+    this.clienteForm.get('codigoPostal')?.updateValueAndValidity({ emitEvent: false });
+
+  }
+
+  validarCodigoPostal(control: any) {
+    if (!control.value) return null; // No validar si está vacío
+    const limpio = (control.value || '').replace(/\D/g, '');
+    return limpio.length === 4 ? null : { codigoPostalInvalido: true };
+  }
+
+  onIngresosInput(event: any) {
+    let value = event.target.value.replace(/\D/g, '');
+
+    if (value) {
+      value = this.formatearNumero(parseInt(value, 10));
+    }
+
+    event.target.value = value;
+    this.clienteForm.get('ingresos')?.setValue(value, { emitEvent: false });
+  }
+
+  onCodigoPostalInput(event: any) {
+    let value = event.target.value.replace(/\D/g, '').slice(0, 4);
+    event.target.value = value;
+    this.clienteForm.get('codigoPostal')?.setValue(value, { emitEvent: false });
+  }
+
+  formatearNumero(numero: number | string): string {
+    // Convertir a número si es string
+    const num = typeof numero === 'string' ? parseInt(numero.replace(/\D/g, ''), 10) : numero;
+
+    // Formatear con separadores de miles
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
   validarDNI(control: any) {
@@ -295,6 +341,12 @@ export class Step2DatosComponent implements OnInit {
       if (this.dataService.clienteId) {
         formData.clienteId = this.dataService.clienteId;
       }
+      if (formData.ingresos) {
+        formData.ingresos = parseInt(this.limpiarFormato(formData.ingresos), 10);
+      }
+      if (formData.codigoPostal) {
+        formData.codigoPostal = parseInt(formData.codigoPostal, 10);
+      }
 
       this.continuar.emit(formData);
     } else {
@@ -302,6 +354,8 @@ export class Step2DatosComponent implements OnInit {
       this.clienteForm.get('apellido')?.markAsTouched();
       this.clienteForm.get('whatsapp')?.markAsTouched();
       this.clienteForm.get('email')?.markAsTouched();
+      this.clienteForm.get('codigoPostal')?.markAsTouched();
+
 
       if (this.tipoDocumento === 'DNI') {
         this.clienteForm.get('dni')?.markAsTouched();
@@ -310,6 +364,15 @@ export class Step2DatosComponent implements OnInit {
         this.clienteForm.get('cuil')?.markAsTouched();
       }
     }
+  }
+
+  toggleSidebar(): void {
+    this.sidebarStateService.toggleCotizadorSidebar();
+  }
+
+  get codigoPostalInvalido(): boolean {
+    const control = this.clienteForm.get('codigoPostal');
+    return !!(control?.touched && control.errors?.['codigoPostalInvalido']);
   }
 
   onVolver() {
