@@ -131,30 +131,25 @@ export class PlanesListaComponent implements OnInit, OnDestroy {
     // Debounce para evitar muchas búsquedas mientras el usuario escribe
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
-      console.log(`Searching for: "${this.searchTerm}"`);
       this.applyFilters();
     }, 300);
   }
 
   clearSearch() {
-    console.log('Clearing search');
     this.searchTerm = '';
     this.applyFilters();
   }
 
   // Aplicar filtros y ordenamiento a la lista
   applyFilters() {
-    console.log('Applying filters. Search term:', this.searchTerm);
     let result = [...this.planes];
 
     // Aplicar búsqueda si hay término
     if (this.searchTerm && this.searchTerm.length >= 3) {
       const term = this.searchTerm.toLowerCase();
-      console.log(`Filtering by term: "${term}"`);
       result = result.filter(plan =>
         (plan.nombre?.toLowerCase() || '').includes(term)
       );
-      console.log(`After filtering: ${result.length} results`);
     }
 
     // Aplicar filtro por estado
@@ -170,7 +165,6 @@ export class PlanesListaComponent implements OnInit, OnDestroy {
     }
 
     this.filteredPlanes = result;
-    console.log(`Final filtered results: ${this.filteredPlanes.length}`);
   }
 
   // Ordenar los datos según la columna seleccionada

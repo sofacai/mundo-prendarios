@@ -119,7 +119,7 @@ export class WizardContainerComponent implements OnInit {
     }
   }
 
-  
+
 
   toggleSidebar(): void {
     // En móvil, siempre expandimos
@@ -170,7 +170,7 @@ export class WizardContainerComponent implements OnInit {
 
     this.subcanalService.getSubcanalesPorUsuario(vendorId)
       .pipe(
-        tap(subcanales => console.log('Subcanales recibidos:', subcanales)),
+        tap(subcanales => console.log('Subcanales recibidos')),
         map(subcanales => subcanales.filter(s => s.activo)),
         catchError(error => {
           console.error('Error al cargar subcanales:', error);
@@ -274,7 +274,6 @@ export class WizardContainerComponent implements OnInit {
     }
     // Special case for Vendor role - they don't have permission to get canal details
     else if (this.currentUserRol === RolType.Vendor) {
-      console.log('Procesando como Vendor - obteniendo planes sin consultar canal');
 
       // Process each subcanal
       subcanales.forEach(subcanal => {
@@ -348,7 +347,6 @@ export class WizardContainerComponent implements OnInit {
     }
 
     this.datosWizard = { subcanales: subcanalInfos };
-    console.log('Datos wizard generados:', this.datosWizard);
 
     if (subcanalInfos.length > 1) {
       this.necesitaSeleccionarSubcanal = true;
@@ -391,7 +389,6 @@ export class WizardContainerComponent implements OnInit {
 
 
   continuarPaso1(datos: {monto: number, plazo: number}) {
-    console.log('Ejecutando continuarPaso1 con datos:', datos);
     this.wizardData.monto = datos.monto;
     this.wizardData.plazo = datos.plazo;
     this.wizardData.paso = 2;
@@ -401,7 +398,6 @@ export class WizardContainerComponent implements OnInit {
       this.wizardData.vendorId = this.vendorSeleccionado;
     }
 
-    console.log('Pasando a paso 2', this.wizardData);
 
     // Guardar en el data service con el vendorId
     this.dataService.guardarDatosPaso1({
@@ -545,11 +541,9 @@ export class WizardContainerComponent implements OnInit {
       canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
       vendedorId: this.vendorSeleccionado ?? undefined, // Convierte null a undefined
     };
-    console.log('ID del vendor seleccionado:', this.vendorSeleccionado, typeof this.vendorSeleccionado);
 
 
     // Como probablemente no existe un método actualizar, simplemente continuamos
-    console.log('Se debería actualizar la operación:', operacion);
     this.obtenerPlanesYAvanzar();
   }
 

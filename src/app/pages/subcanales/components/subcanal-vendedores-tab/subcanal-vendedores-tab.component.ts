@@ -1,5 +1,4 @@
-// En subcanal-vendedores-tab.component.ts
-// Asegúrate de importar
+// Actualizar subcanal-vendedores-tab.component.ts
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +28,8 @@ export class SubcanalVendedoresTabComponent {
   showModal = false;
   selectedVendorId: string | number = '';
   isLoading = false;
+  errorMessage: string | null = null;
+  assigning = false;
 
   // Constructor para inyectar servicios
   constructor(
@@ -65,34 +66,50 @@ export class SubcanalVendedoresTabComponent {
   openModal(): void {
     this.showModal = true;
     this.selectedVendorId = '';
+    this.errorMessage = null;
+    this.isLoading = true;
 
     // Cargar vendedores disponibles
-    // Solo disparamos el evento para que el componente padre los cargue
     this.asignarVendedor.emit();
+  }
 
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
+  // Agregar un método para actualizar el estado de carga
+  updateLoadingState(loading: boolean): void {
+    this.isLoading = loading;
   }
 
   closeModal(): void {
     this.showModal = false;
-    // Restore body scroll
-    document.body.style.overflow = '';
+    this.selectedVendorId = '';
+    this.errorMessage = null;
+  }
+
+  updateAvailableVendors(vendors: UsuarioDto[]): void {
+    this.availableVendors = vendors;
+    this.isLoading = false;
   }
 
   confirmarAsignacion(): void {
-    if (this.selectedVendorId && !this.isLoading) {
-      this.isLoading = true;
+    if (this.selectedVendorId && !this.assigning) {
+      this.assigning = true;
+      this.errorMessage = null;
 
       // Emit event with selected vendor id
       this.asignarVendedorConfirmado.emit(Number(this.selectedVendorId));
 
-      // In a real implementation, you would close the modal after the operation completes
-      // For now, we'll simulate a delay and close it
-      setTimeout(() => {
-        this.isLoading = false;
-        this.closeModal();
-      }, 1000);
+      // El componente padre debe encargarse de cerrar el modal después de completar la operación
+      // Para esto, necesitamos exponer un método público que el padre pueda llamar
+    }
+  }
+
+  // Método público para que el padre pueda cerrar el modal y limpiar el estado
+  finalizarAsignacion(exito: boolean, mensaje?: string): void {
+    this.assigning = false;
+
+    if (!exito && mensaje) {
+      this.errorMessage = mensaje;
+    } else {
+      this.closeModal();
     }
   }
 }

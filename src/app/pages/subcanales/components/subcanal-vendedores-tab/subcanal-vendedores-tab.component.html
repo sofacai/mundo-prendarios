@@ -88,3 +88,61 @@
   </div>
 </div>
 
+<!-- Actualizar subcanal-vendedores-tab.component.html para eliminar los vendedores duplicados -->
+
+<div class="simple-modal" *ngIf="showModal">
+  <div class="simple-modal-backdrop" (click)="closeModal()"></div>
+  <div class="simple-modal-content">
+    <div class="simple-modal-header">
+      <h3>Asignar Vendedor</h3>
+      <button class="simple-modal-close" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="simple-modal-body">
+      <!-- Estado de carga -->
+      <div *ngIf="isLoading" class="text-center p-4">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Cargando vendedores disponibles...</p>
+      </div>
+
+      <!-- Un solo mensaje de "No hay vendedores" -->
+      <div *ngIf="!isLoading && (!availableVendors || availableVendors.length === 0)" class="text-center p-4">
+        <i class="bi bi-people fs-2 text-muted"></i>
+        <h4>No hay vendedores disponibles</h4>
+        <p class="text-muted">No hay vendedores disponibles para asignar a este subcanal.</p>
+      </div>
+
+      <!-- Lista de vendedores disponibles -->
+      <div *ngIf="!isLoading && availableVendors && availableVendors.length > 0">
+        <div class="form-group">
+          <label class="form-label">Seleccionar vendedor:</label>
+          <select class="form-select" [(ngModel)]="selectedVendorId">
+            <option value="">-- Seleccione un vendedor --</option>
+            <option *ngFor="let vendor of availableVendors" [value]="vendor.id">
+              {{ vendor.nombre }} {{ vendor.apellido }} ({{ vendor.email }})
+            </option>
+          </select>
+        </div>
+
+        <div class="text-muted mt-2">
+          <small>{{ availableVendors.length }} vendedores disponibles</small>
+        </div>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
+    </div>
+
+    <div class="simple-modal-footer">
+      <button class="btn btn-light" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary"
+              [disabled]="!selectedVendorId || assigning"
+              (click)="confirmarAsignacion()">
+        <span *ngIf="!assigning">Asignar</span>
+        <span *ngIf="assigning" class="spinner-border spinner-border-sm" role="status"></span>
+      </button>
+    </div>
+  </div>
+</div>

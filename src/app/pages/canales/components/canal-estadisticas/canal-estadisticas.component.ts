@@ -29,36 +29,26 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
   private vendedoresChart: Chart | null = null;
 
   constructor() {
-    console.log('CanalEstadisticasComponent constructor');
   }
 
   ngOnInit(): void {
-    console.log('CanalEstadisticasComponent ngOnInit');
-    console.log('Canal:', this.canal);
-    console.log('Operaciones:', this.operaciones?.length || 0);
-    console.log('Subcanales:', this.subcanales?.length || 0);
-    console.log('Vendedores:', this.vendedores?.length || 0);
   }
 
   ngAfterViewInit(): void {
-    console.log('CanalEstadisticasComponent ngAfterViewInit');
 
     // Usar setTimeout para asegurar que el DOM está listo
     setTimeout(() => {
-      console.log('Inicializando gráficos...');
       this.initCharts();
     }, 500);
   }
 
   ngOnDestroy(): void {
-    console.log('CanalEstadisticasComponent ngOnDestroy');
     // Destruir gráficos al salir del componente
     this.destroyCharts();
   }
 
   // Inicializar gráficos
   initCharts(): void {
-    console.log('Llamando a initCharts');
 
     // Verificar que los datos estén disponibles
     if (!this.canal) {
@@ -71,15 +61,12 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       this.initPlanesChart();
       this.initSubcanalesChart();
       this.initVendedoresChart();
-      console.log('Gráficos inicializados correctamente');
     } catch (error) {
-      console.error('Error al inicializar gráficos:', error);
     }
   }
 
   // Gráfico de operaciones por mes
   initOperacionesChart(): void {
-    console.log('Inicializando gráfico de operaciones...');
     const canvas = document.getElementById('operacionesChart');
     if (!canvas) {
       console.error('Canvas operacionesChart no encontrado');
@@ -87,11 +74,9 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     }
 
     const ctx = canvas as HTMLCanvasElement;
-    console.log('Canvas encontrado:', ctx);
 
     // Agrupar operaciones por mes
     const operacionesPorMes = this.groupOperacionesPorMes();
-    console.log('Datos para gráfico de operaciones:', operacionesPorMes);
 
     // Destruir el gráfico anterior si existe
     if (this.operacionesChart) {
@@ -146,12 +131,10 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       }
     });
 
-    console.log('Gráfico de operaciones creado:', this.operacionesChart);
   }
 
   // Gráfico de distribución por planes
   initPlanesChart(): void {
-    console.log('Inicializando gráfico de planes...');
     const canvas = document.getElementById('planesChart');
     if (!canvas) {
       console.error('Canvas planesChart no encontrado');
@@ -162,7 +145,6 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
 
     // Obtener distribución de planes
     const distribucionPlanes = this.getDistribucionPlanes();
-    console.log('Datos para gráfico de planes:', distribucionPlanes);
 
     // Destruir el gráfico anterior si existe
     if (this.planesChart) {
@@ -213,12 +195,10 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       }
     });
 
-    console.log('Gráfico de planes creado:', this.planesChart);
   }
 
   // Gráfico de operaciones por subcanal
   initSubcanalesChart(): void {
-    console.log('Inicializando gráfico de subcanales...');
     const canvas = document.getElementById('subcanalesChart');
     if (!canvas) {
       console.error('Canvas subcanalesChart no encontrado');
@@ -229,9 +209,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
 
     // Obtener operaciones por subcanal
     const operacionesPorSubcanal = this.getOperacionesPorSubcanal();
-    console.log('Datos para gráfico de subcanales:', operacionesPorSubcanal);
 
-    // Destruir el gráfico anterior si existe
     if (this.subcanalesChart) {
       this.subcanalesChart.destroy();
     }
@@ -271,12 +249,10 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       }
     });
 
-    console.log('Gráfico de subcanales creado:', this.subcanalesChart);
   }
 
   // Gráfico de rendimiento de vendedores
   initVendedoresChart(): void {
-    console.log('Inicializando gráfico de vendedores...');
     const canvas = document.getElementById('vendedoresChart');
     if (!canvas) {
       console.error('Canvas vendedoresChart no encontrado');
@@ -287,7 +263,6 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
 
     // Obtener rendimiento de vendedores
     const rendimientoVendedores = this.getRendimientoVendedores();
-    console.log('Datos para gráfico de vendedores:', rendimientoVendedores);
 
     // Destruir el gráfico anterior si existe
     if (this.vendedoresChart) {
@@ -330,12 +305,10 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       }
     });
 
-    console.log('Gráfico de vendedores creado:', this.vendedoresChart);
   }
 
   // Destruir todos los gráficos
   destroyCharts(): void {
-    console.log('Destruyendo gráficos...');
     if (this.operacionesChart) {
       this.operacionesChart.destroy();
       this.operacionesChart = null;
@@ -356,7 +329,6 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
 
   // Helpers para procesamiento de datos para gráficos
   groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[]} {
-    console.log('Procesando operaciones para agrupar por mes:', this.operaciones);
 
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const operacionesPorMes = new Map();
@@ -370,7 +342,6 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
 
     // Si no hay operaciones, devolver datos de muestra
     if (!this.operaciones || this.operaciones.length === 0) {
-      console.log('No hay operaciones, devolviendo datos de muestra');
       return {
         meses: meses.slice(0, 6),
         totales: Array(6).fill(0),
@@ -399,16 +370,13 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
     const totales = mesesRecientes.map(mes => operacionesPorMes.get(mes) || 0);
     const liquidadas = mesesRecientes.map(mes => operacionesLiquidadasPorMes.get(mes) || 0);
 
-    console.log('Operaciones por mes procesadas:', { meses: mesesRecientes, totales, liquidadas });
     return { meses: mesesRecientes, totales, liquidadas };
   }
 
   getDistribucionPlanes(): {nombre: string, operaciones: number, operacionesLiquidadas: number}[] {
-    console.log('Procesando distribución de planes...');
 
     // Si no hay planes, devolver datos de muestra
     if (!this.canal || !this.canal.planesCanal || this.canal.planesCanal.length === 0) {
-      console.log('No hay planes, devolviendo datos de muestra');
       return [
         { nombre: 'Plan A', operaciones: 0, operacionesLiquidadas: 0 },
         { nombre: 'Plan B', operaciones: 0, operacionesLiquidadas: 0 }
@@ -430,16 +398,13 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
         };
       });
 
-    console.log('Distribución de planes procesada:', distribucion);
     return distribucion;
   }
 
   getOperacionesPorSubcanal(): {nombre: string, operaciones: number, operacionesLiquidadas: number}[] {
-    console.log('Procesando operaciones por subcanal...');
 
     // Si no hay subcanales, devolver datos de muestra
     if (!this.subcanales || this.subcanales.length === 0) {
-      console.log('No hay subcanales, devolviendo datos de muestra');
       return [
         { nombre: 'Subcanal A', operaciones: 0, operacionesLiquidadas: 0 },
         { nombre: 'Subcanal B', operaciones: 0, operacionesLiquidadas: 0 }
@@ -461,16 +426,13 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
         };
       });
 
-    console.log('Operaciones por subcanal procesadas:', operacionesPorSubcanal);
     return operacionesPorSubcanal;
   }
 
   getRendimientoVendedores(): {nombre: string, operaciones: number, operacionesLiquidadas: number}[] {
-    console.log('Procesando rendimiento de vendedores...');
 
     // Si no hay vendedores, devolver datos de muestra
     if (!this.vendedores || this.vendedores.length === 0) {
-      console.log('No hay vendedores, devolviendo datos de muestra');
       return [
         { nombre: 'Vendedor A', operaciones: 0, operacionesLiquidadas: 0 },
         { nombre: 'Vendedor B', operaciones: 0, operacionesLiquidadas: 0 }
@@ -493,7 +455,6 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       .sort((a, b) => b.operaciones - a.operaciones) // Ordenar por cantidad de operaciones
       .slice(0, 5); // Mostrar solo los 5 mejores
 
-    console.log('Rendimiento de vendedores procesado:', rendimientoVendedores);
     return rendimientoVendedores;
   }
 }

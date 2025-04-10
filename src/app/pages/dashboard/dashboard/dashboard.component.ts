@@ -35,14 +35,12 @@ export class DashboardComponent implements OnInit {
     const user = this.authService.currentUserValue;
     if (user) {
       this.userRole = user.rolId;
-      console.log('Dashboard - Rol del usuario:', this.userRole);
     }
 
     // Suscribirse a cambios en el usuario actual
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.userRole = user.rolId;
-        console.log('Dashboard - Actualización del rol:', this.userRole);
       } else {
         this.userRole = null;
       }

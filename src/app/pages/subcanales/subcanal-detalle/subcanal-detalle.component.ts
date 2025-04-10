@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -65,6 +65,8 @@ export class SubcanalDetalleComponent implements OnInit, OnDestroy, AfterViewIni
   adminCanal: UsuarioDto | null = null;
 loadingAdminCanal = false;
 errorAdminCanal: string | null = null;
+
+@ViewChild(SubcanalVendedoresTabComponent) vendedoresTab!: SubcanalVendedoresTabComponent;
 
   // Datos cargados
   vendedores: UsuarioDto[] = [];
@@ -463,16 +465,10 @@ errorAdminCanal: string | null = null;
   }
 
   cargarVendoresDisponibles() {
-    this.vendorSearchTerm = '';
-    this.vendoresDisponibles = [];
     this.errorVendor = null;
-    this.loadingVendores = true;
-
-    console.log('Iniciando carga de vendedores...');
 
     // Obtener ID del usuario actual
     const currentUserId = this.authService.getUsuarioId();
-    console.log('ID del usuario actual:', currentUserId);
 
     if (!currentUserId) {
       this.errorVendor = 'No se pudo identificar al usuario actual';
@@ -483,12 +479,10 @@ errorAdminCanal: string | null = null;
     // Cargar vendedores por rol (3 = Vendor)
     this.usuarioService.getUsuariosPorRol(3).subscribe({
       next: (vendoresGenerales) => {
-        console.log('Vendedores por rol (3):', vendoresGenerales);
 
         // Cargar vendedores creados por el usuario actual
         this.usuarioService.getUsuariosPorCreador(currentUserId).subscribe({
           next: (vendoresCreados) => {
-            console.log('Vendedores creados por el usuario:', vendoresCreados);
 
             // Combinar ambas listas y eliminar duplicados por ID
             const todosVendores = [...vendoresGenerales, ...vendoresCreados]
@@ -496,12 +490,10 @@ errorAdminCanal: string | null = null;
                 index === self.findIndex(u => u.id === v.id) // Eliminar duplicados
               );
 
-            console.log('Vendedores combinados (sin duplicados):', todosVendores);
 
             // Filtrar para mostrar solo los que no estén asignados al subcanal y estén activos
             if (this.subcanal && this.subcanal.vendors) {
               const vendedoresAsignados = new Set(this.subcanal.vendors.map(v => v.id));
-              console.log('IDs de vendedores ya asignados:', [...vendedoresAsignados]);
 
               this.vendoresDisponibles = todosVendores.filter(v =>
                 !vendedoresAsignados.has(v.id) && v.activo
@@ -510,8 +502,14 @@ errorAdminCanal: string | null = null;
               this.vendoresDisponibles = todosVendores.filter(v => v.activo);
             }
 
-            console.log('Vendedores disponibles después de filtrar:', this.vendoresDisponibles);
+
+            // Actualizar el estado de carga
             this.loadingVendores = false;
+
+            // Actualizar directamente en el componente hijo
+            if (this.vendedoresTab) {
+              this.vendedoresTab.updateAvailableVendors(this.vendoresDisponibles);
+            }
           },
           error: (err) => {
             console.error('Error cargando vendedores creados:', err);
@@ -524,50 +522,51 @@ errorAdminCanal: string | null = null;
             } else {
               this.vendoresDisponibles = vendoresGenerales.filter(v => v.activo);
             }
+
             this.loadingVendores = false;
+
+            // Actualizar directamente en el componente hijo
+            if (this.vendedoresTab) {
+              this.vendedoresTab.updateAvailableVendors(this.vendoresDisponibles);
+            }
           }
         });
       },
       error: (err) => {
         console.error('Error cargando vendedores por rol:', err);
+        this.errorVendor = 'Error al cargar los vendedores. Intente nuevamente.';
 
-        // Si falla la primera carga, intentamos con los creados por el usuario
-        this.usuarioService.getUsuariosPorCreador(currentUserId).subscribe({
-          next: (vendoresCreados) => {
-            console.log('Vendedores creados (backup):', vendoresCreados);
-            if (this.subcanal && this.subcanal.vendors) {
-              const vendedoresAsignados = new Set(this.subcanal.vendors.map(v => v.id));
-              this.vendoresDisponibles = vendoresCreados.filter(v =>
-                v.rolId === 3 && !vendedoresAsignados.has(v.id) && v.activo
-              );
-            } else {
-              this.vendoresDisponibles = vendoresCreados.filter(v => v.rolId === 3 && v.activo);
-            }
-            this.loadingVendores = false;
-          },
-          error: (err2) => {
-            console.error('Error en carga de backup:', err2);
-            this.errorVendor = 'Error al cargar los vendedores. Intente nuevamente.';
-            this.loadingVendores = false;
-          }
-        });
+        this.loadingVendores = false;
+
+        // Notificar al componente hijo que hubo un error
+        if (this.vendedoresTab) {
+          this.vendedoresTab.updateAvailableVendors([]);
+          this.vendedoresTab.finalizarAsignacion(false, 'Error al cargar vendedores');
+        }
       }
     });
   }
 
-  // Nuevo método que responde al evento del componente hijo
   abrirModalAsignarVendedor() {
-    // Primero cargamos los datos
-    this.cargarVendoresDisponibles();
-    // Luego abrimos el modal de ion-modal
-    this.modalVendorOpen = true;
-  }
+    this.loadingVendores = true;
+    // También establecer isLoading en el componente hijo
+    if (this.vendedoresTab) {
+      this.vendedoresTab.updateLoadingState(true);
+    }
 
+    // Limpiar y recargar los vendedores disponibles
+    this.vendoresDisponibles = [];
+    this.cargarVendoresDisponibles();
+  }
 
   cerrarModalVendor() {
     this.modalVendorOpen = false;
     this.errorVendor = null;
     this.vendoresDisponibles = [];
+
+    // Asegurarse de que la tabla de vendedores se mantenga actualizada
+    // al cerrar el modal sin asignar ningún vendedor
+    this.loadSubcanalData();
   }
 
   filtrarVendoresDisponibles() {
@@ -616,48 +615,23 @@ errorAdminCanal: string | null = null;
   });
 }
 asignarVendor(vendorId: number) {
-  this.vendoresAsignando.add(vendorId);
-
   this.subcanalService.asignarVendorASubcanal(this.subcanalId, vendorId).subscribe({
     next: () => {
-      this.vendoresAsignando.delete(vendorId);
+      // Recargar los datos del subcanal para actualizar la lista de vendedores
+      this.loadSubcanalData();
 
-      // Actualizar inmediatamente la lista de vendedores (sin recargar toda la página)
-      if (this.vendoresDisponibles && this.subcanal) {
-        // Encontrar el vendor que acabamos de asignar
-        const vendorAsignado = this.vendoresDisponibles.find(v => v.id === vendorId);
-
-        if (vendorAsignado) {
-          // Si el subcanal no tiene vendors, inicializar el array
-          if (!this.subcanal.vendors) {
-            this.subcanal.vendors = [];
-          }
-
-          // Añadir el vendor a la lista de asignados
-          this.subcanal.vendors.push(vendorAsignado);
-
-          // Actualizar estadísticas
-          if (vendorAsignado.activo) {
-            this.vendedoresActivos++;
-          } else {
-            this.vendedoresInactivos++;
-          }
-
-          // Eliminar el vendor de la lista de disponibles
-          this.vendoresDisponibles = this.vendoresDisponibles.filter(v => v.id !== vendorId);
-        }
+      // Notificar al componente hijo que la asignación se completó con éxito
+      if (this.vendedoresTab) {
+        this.vendedoresTab.finalizarAsignacion(true);
       }
-
-      // Cerrar el modal
-      this.cerrarModalVendor();
-
-      // Opcional: recargar todos los datos para asegurar consistencia
-      // this.loadSubcanalData();
     },
     error: (err) => {
-      this.errorVendor = 'Error al asignar el vendedor. Intente nuevamente.';
       console.error('Error asignando vendedor:', err);
-      this.vendoresAsignando.delete(vendorId);
+
+      // Notificar al componente hijo que la asignación falló
+      if (this.vendedoresTab) {
+        this.vendedoresTab.finalizarAsignacion(false, 'Error al asignar el vendedor. Intente nuevamente.');
+      }
     }
   });
 }
@@ -756,7 +730,6 @@ asignarVendor(vendorId: number) {
             this.loadingSubcanal = false;
 
             // Mostrar mensaje de éxito (opcional)
-            console.log(`Subcanal ${this.subcanal.activo ? 'activado' : 'desactivado'} correctamente`);
           },
           error: (err) => {
             // Error al recargar datos

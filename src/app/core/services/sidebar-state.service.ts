@@ -16,7 +16,6 @@ export class SidebarStateService {
   setCollapsed(isCollapsed: boolean): void {
     // Ejecutar dentro de NgZone para asegurar detección de cambios
     this.ngZone.run(() => {
-      console.log(`SidebarStateService: setCollapsed(${isCollapsed})`);
       this.collapsedSubject.next(isCollapsed);
 
       // Guardamos la preferencia en localStorage

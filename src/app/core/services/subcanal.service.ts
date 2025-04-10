@@ -118,7 +118,6 @@ export class SubcanalService {
       ...gasto,
       subcanalId: subcanalId
     };
-    console.log('Enviando gasto a la API:', gastoData, 'a la URL:', `${this.apiUrl}/gasto`);
     return this.http.post<Gasto>(`${this.apiUrl}/gasto`, gastoData, { headers });
   }
 

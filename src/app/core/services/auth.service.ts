@@ -37,7 +37,6 @@ export class AuthService {
       this.getUserFromStorage()
     );
     this.currentUser = this.currentUserSubject.asObservable();
-    console.log('AuthService - Usuario inicial:', this.currentUserSubject.value);
   }
 
   public get currentUserValue(): Usuario | null {
@@ -46,7 +45,6 @@ export class AuthService {
 
   // Función para mapear el nombre del rol al enum RolType
   private mapRolToRolId(rolName: string): RolType {
-    console.log('Mapeando rol:', rolName);
 
     switch (rolName) {
       case 'Admin':
@@ -67,11 +65,9 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/Auth/login`, credentials)
       .pipe(
         map(response => {
-          console.log('Respuesta original del login:', response);
 
           // Crear un objeto Usuario a partir de la respuesta, mapeando el rol a rolId
           const rolId = this.mapRolToRolId(response.rol);
-          console.log(`Rol "${response.rol}" mapeado a rolId: ${rolId}`);
 
           const usuario: Usuario = {
             id: response.id,
@@ -85,7 +81,6 @@ export class AuthService {
             activo: response.activo ?? true
           };
 
-          console.log('Usuario procesado:', usuario);
           return usuario;
         }),
         tap(usuario => {
@@ -132,12 +127,10 @@ export class AuthService {
 
     try {
       const user = JSON.parse(userString);
-      console.log('Usuario recuperado del storage:', user);
 
       // Si el usuario tiene un rol pero no rolId, mapearlo
       if (user && user.rol && (typeof user.rolId === 'undefined' || isNaN(user.rolId))) {
         user.rolId = this.mapRolToRolId(user.rol);
-        console.log(`Rol "${user.rol}" mapeado a rolId: ${user.rolId} (desde storage)`);
       }
 
       return user;

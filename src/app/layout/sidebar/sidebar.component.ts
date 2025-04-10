@@ -142,7 +142,6 @@ export class SidebarComponent implements OnInit {
    * para el botón hamburguesa como para el chevron
    */
   toggleSidebar(): void {
-    console.log('toggleSidebar() llamado, isMobile:', this.isMobile);
 
     // En mobile, cuando está colapsado, lo mostramos
     if (this.isMobile) {

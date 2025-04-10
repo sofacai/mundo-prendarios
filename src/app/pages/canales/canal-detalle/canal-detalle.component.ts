@@ -219,7 +219,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
 
     this.canalService.getOficialesComercialCanal(canalId).subscribe({
       next: (data) => {
-        console.log('Oficiales comerciales data:', data); // Add this logging
         this.oficialesComerciales = data;
         this.loadingOficiales = false;
       },
@@ -553,9 +552,7 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
 
   // Método para filtrar operaciones
   filtrarOperaciones(): void {
-    // Implementar lógica de filtrado de operaciones
-    console.log('Filtrar operaciones');
-    // Aquí iría la lógica para mostrar un modal/drawer de filtros
+
   }
 
   // Método para ver detalle de un vendedor

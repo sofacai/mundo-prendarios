@@ -34,7 +34,6 @@ export class HeaderMobileComponent implements OnInit {
 
   // Esta es la función que llamará el botón hamburguesa
   onToggleSidebar(): void {
-    console.log('Hamburger button clicked');
 
     // Manipulación directa del DOM para solucionar el problema inmediato
     const sidebarElement = document.querySelector('.sidebar') as HTMLElement;

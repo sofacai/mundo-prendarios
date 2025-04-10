@@ -204,13 +204,11 @@ applyFilters() {
     };
 
     const estadoFiltro = estadoMap[this.filterActive] || this.filterActive;
-    console.log('Filtering by estado:', estadoFiltro);
 
     result = result.filter(operacion => {
       const matches = operacion.estado === estadoFiltro;
       // For debugging
       if (!matches && operacion.estado.toLowerCase() === estadoFiltro.toLowerCase()) {
-        console.log('Case mismatch:', operacion.estado, estadoFiltro);
       }
       return matches;
     });
@@ -285,7 +283,6 @@ applyFilters() {
 
   sortData(data: OperacionDto[]): OperacionDto[] {
     const { column, direction } = this.sortState;
-    console.log('Sorting data by:', column, direction);
 
     if (!column) {
       return data; // No sorting needed
@@ -322,7 +319,6 @@ applyFilters() {
       this.sortState = { column, direction: 'asc' };
     }
 
-    console.log('New sort state:', this.sortState);
 
     this.paginaActual = 1;
     this.applyFilters();

@@ -110,12 +110,6 @@ export class Step1MontoComponent implements OnInit {
         this.subcanalComision = this.subcanalInfo.subcanalComision;
       }
 
-      console.log('Subcanal Info:', this.subcanalInfo);
-      console.log('Planes disponibles:', planes);
-      console.log('Plan Cuotas Fijas:', this.planCuotasFijas);
-      console.log('Plan UVA:', this.planUva);
-      console.log('Gastos del canal:', this.canalGastos);
-      console.log('Comisión del subcanal:', this.subcanalComision);
     } else {
       this.errorMensaje = "No se encontraron planes disponibles para este subcanal.";
     }
@@ -161,7 +155,6 @@ export class Step1MontoComponent implements OnInit {
   }
 
   seleccionarPlan(plan: 'Cuotas Fijas' | 'UVA') {
-    console.log(`Cambiando plan de ${this.planSeleccionado} a ${plan}`);
     this.planSeleccionado = plan;
   }
 
@@ -174,7 +167,6 @@ export class Step1MontoComponent implements OnInit {
       return 0;
     }
 
-    console.log(`Calculando cuota para plan "${this.planSeleccionado}" con tasa ${planActivo.tasa}%`);
 
     try {
       // 1. Obtener cuota básica según la tasa del plan seleccionado
@@ -192,7 +184,6 @@ export class Step1MontoComponent implements OnInit {
       let cuotaFinal = cuotaBasica;
       if (this.subcanalComision > 0) {
         cuotaFinal = Math.round(cuotaFinal * (1 + this.subcanalComision / 100));
-        console.log(`Aplicando comisión de subcanal ${this.subcanalComision}%: ${cuotaBasica} → ${cuotaFinal}`);
       }
 
       return cuotaFinal;

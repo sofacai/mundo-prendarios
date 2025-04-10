@@ -61,19 +61,12 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   constructor() { }
 
   ngOnInit() {
-    console.log('UsuarioEstadisticasComponent - ngOnInit');
-    console.log('Usuario:', this.usuario);
-    console.log('Operaciones:', this.operaciones.length);
-    console.log('Clientes:', this.clientes.length);
-    console.log('Canales:', this.canales.length);
-    console.log('Subcanales:', this.subcanales.length);
-    console.log('Vendors:', this.vendors.length);
+
 
     this.calcularEstadisticas();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('UsuarioEstadisticasComponent - ngOnChanges');
     if (changes['operaciones'] || changes['clientes'] || changes['canales'] || changes['subcanales'] || changes['vendors']) {
       this.calcularEstadisticas();
       if (this.chartInitialized) {
@@ -83,7 +76,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   ngAfterViewInit() {
-    console.log('UsuarioEstadisticasComponent - ngAfterViewInit');
     // Usar setTimeout para asegurar que los elementos del DOM estén listos
     setTimeout(() => {
       this.initializeCharts();
@@ -91,7 +83,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   initializeCharts() {
-    console.log('UsuarioEstadisticasComponent - initializeCharts');
     this.inicializarGraficoOperaciones();
 
     // Inicializar gráficos según el rol del usuario
@@ -110,7 +101,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularEstadisticas() {
-    console.log('UsuarioEstadisticasComponent - calcularEstadisticas');
     // Estadísticas generales
     this.calcularOperacionesActivas();
     this.calcularMontoTotal();
@@ -167,7 +157,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Método para calcular tendencias
   calcularTendencias() {
-    console.log('UsuarioEstadisticasComponent - calcularTendencias');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     this.trendMensual = this.calcularTendenciaMensual(operacionesPorMes);
     this.trendMonto = this.calcularTendenciaMonto();
@@ -198,7 +187,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Estadísticas por tipo de usuario
   calcularEstadisticasSubcanales() {
-    console.log('UsuarioEstadisticasComponent - calcularEstadisticasSubcanales');
     if (!this.subcanales || this.subcanales.length === 0) return;
 
     // Calcular operaciones por subcanal
@@ -219,7 +207,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularEstadisticasCanales() {
-    console.log('UsuarioEstadisticasComponent - calcularEstadisticasCanales');
     if (!this.canales || this.canales.length === 0) return;
 
     // Calcular operaciones por canal
@@ -240,7 +227,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   calcularEstadisticasVendors() {
-    console.log('UsuarioEstadisticasComponent - calcularEstadisticasVendors');
     if (!this.vendors || this.vendors.length === 0) return;
 
     // Calcular operaciones por vendor
@@ -263,7 +249,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Inicialización de gráficos
   inicializarGraficoOperaciones() {
-    console.log('UsuarioEstadisticasComponent - inicializarGraficoOperaciones');
     if (!this.operacionesPorMesChartRef) {
       console.warn('Chart reference not found: operacionesPorMesChartRef');
       return;
@@ -282,7 +267,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     }
 
     const { labels, dataTotales, dataLiquidadas } = this.prepareOperacionesChartData();
-    console.log('Chart data prepared:', { labels, dataTotales, dataLiquidadas });
 
     if (this.operacionesChart) {
       this.operacionesChart.destroy();
@@ -329,11 +313,9 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       }
     });
 
-    console.log('Operaciones chart initialized');
   }
 
   inicializarGraficoCanales() {
-    console.log('UsuarioEstadisticasComponent - inicializarGraficoCanales');
     if (!this.canalesOperacionesChartRef) {
       console.warn('Chart reference not found: canalesOperacionesChartRef');
       return;
@@ -386,11 +368,9 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       }
     });
 
-    console.log('Canales chart initialized');
   }
 
   inicializarGraficoSubcanales() {
-    console.log('UsuarioEstadisticasComponent - inicializarGraficoSubcanales');
     if (!this.canalesOperacionesChartRef) {
       console.warn('Chart reference not found for subcanal chart: canalesOperacionesChartRef');
       return;
@@ -443,11 +423,9 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       }
     });
 
-    console.log('Subcanales chart initialized');
   }
 
   inicializarGraficoVendors() {
-    console.log('UsuarioEstadisticasComponent - inicializarGraficoVendors');
     if (!this.vendorsOperacionesChartRef) {
       console.warn('Chart reference not found: vendorsOperacionesChartRef');
       return;
@@ -504,7 +482,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       }
     });
 
-    console.log('Vendors chart initialized');
   }
 
   // Métodos auxiliares
@@ -568,7 +545,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   prepareOperacionesChartData(): { labels: string[], dataTotales: number[], dataLiquidadas: number[] } {
-    console.log('UsuarioEstadisticasComponent - prepareOperacionesChartData');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     const today = new Date();
     const labels: string[] = [];
@@ -596,7 +572,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   }
 
   prepareChartData(): { labels: string[], data: number[] } {
-    console.log('UsuarioEstadisticasComponent - prepareChartData');
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     const today = new Date();
     const labels: string[] = [];
@@ -619,7 +594,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Método para actualizar el gráfico
   updateChartData() {
-    console.log('UsuarioEstadisticasComponent - updateChartData');
     if (this.operacionesChart) {
       const { labels, dataTotales, dataLiquidadas } = this.prepareOperacionesChartData();
       this.operacionesChart.data.labels = labels;

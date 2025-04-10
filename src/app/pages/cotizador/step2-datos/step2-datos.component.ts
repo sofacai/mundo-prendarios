@@ -289,7 +289,6 @@ export class Step2DatosComponent implements OnInit {
         formData.clienteId = this.dataService.clienteId;
       }
 
-      console.log('Formulario válido:', formData);
       this.continuar.emit(formData);
     } else {
       this.clienteForm.get('nombre')?.markAsTouched();

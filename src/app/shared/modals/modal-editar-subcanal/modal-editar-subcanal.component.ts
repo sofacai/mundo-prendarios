@@ -124,14 +124,12 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
 
     // Establece un padding-right al body para compensar la barra de desplazamiento
     this.renderer.setStyle(document.body, 'padding-right', `${scrollWidth}px`);
-    console.log('Modal de edición del subcanal abierto');
   }
 
   handleModalClose() {
     // Remover clase y estilos cuando se cierra el modal
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
-    console.log('Modal de edición del subcanal cerrado');
   }
 
   ngOnDestroy(): void {
@@ -143,11 +141,9 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
   cargarSubcanal(id: number) {
     if (!id) return;
 
-    console.log(`Cargando subcanal con ID: ${id}`);
     this.loading = true;
     this.subcanalService.getSubcanal(id).subscribe({
       next: (subcanal) => {
-        console.log('Subcanal cargado:', subcanal);
         this.subcanal = subcanal;
 
         // Limpiar el FormArray de gastos
@@ -240,13 +236,11 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
 
     // Guardar el ID del subcanal antes de la operación
     const subcanalIdActual = this.subcanal.id;
-    console.log('ID del subcanal que se actualizará:', subcanalIdActual);
 
     // Actualizar primero el subcanal
     this.subcanalService.updateSubcanal(subcanalIdActual, subcanalDto).subscribe({
       next: (subcanal) => {
         // Usar el ID guardado, no el de la respuesta
-        console.log('Subcanal actualizado:', subcanal);
         // Manejar los gastos después de que se actualice el subcanal
         this.procesarGastos(subcanalIdActual).then(() => {
           this.loading = false;
@@ -274,7 +268,6 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
       throw new Error('ID de subcanal inválido');
     }
 
-    console.log('Procesando gastos para el subcanal ID:', subcanalId);
 
     const gastosForm = this.gastosFormArray.value;
 
@@ -282,7 +275,6 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
     for (const gastoForm of gastosForm) {
       // Si el gasto no tiene ID o tiene ID=0, es un nuevo gasto
       if (!gastoForm.id || gastoForm.id === 0) {
-        console.log('Agregando nuevo gasto:', gastoForm);
         await new Promise<void>((resolve, reject) => {
           // Usar el endpoint POST /api/Subcanal/gasto
           const nuevoGasto: GastoCreate = {
@@ -291,11 +283,9 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
             subcanalId: subcanalId // Usar el ID pasado como parámetro
           };
 
-          console.log('Datos del nuevo gasto a enviar:', nuevoGasto);
 
           this.subcanalService.agregarGasto(subcanalId, nuevoGasto).subscribe({
             next: (gastoCreado) => {
-              console.log('Gasto creado correctamente:', gastoCreado);
               resolve();
             },
             error: (err) => {
@@ -307,7 +297,6 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
       }
       // Si tiene ID, es un gasto existente que debe ser actualizado
       else {
-        console.log('Actualizando gasto existente:', gastoForm);
         await new Promise<void>((resolve, reject) => {
           // Usar el endpoint PUT /api/Subcanal/gasto/{gastoId}
           const gastoActualizado: GastoUpdate = {
@@ -317,7 +306,6 @@ export class ModalEditarSubcanalComponent implements OnChanges, OnDestroy {
 
           this.subcanalService.updateGasto(gastoForm.id, gastoActualizado).subscribe({
             next: (gastoActualizado) => {
-              console.log('Gasto actualizado correctamente:', gastoActualizado);
               resolve();
             },
             error: (err) => {

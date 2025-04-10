@@ -61,14 +61,12 @@ export class ModalVerCanalComponent implements OnChanges, OnDestroy {
 
     // Establece un padding-right al body para compensar la barra de desplazamiento
     this.renderer.setStyle(document.body, 'padding-right', `${scrollWidth}px`);
-    console.log('Modal de visualización del canal abierto');
   }
 
   handleModalClose() {
     // Remover clase y estilos cuando se cierra el modal
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
-    console.log('Modal de visualización del canal cerrado');
   }
 
   ngOnDestroy(): void {
@@ -120,7 +118,6 @@ export class ModalVerCanalComponent implements OnChanges, OnDestroy {
   verDetalleSubcanal(subcanalId: number) {
     this.subcanalIdVer = subcanalId;
     this.modalVerSubcanalOpen = true;
-    console.log('Abriendo modal de subcanal:', subcanalId);
   }
 
   cerrarModalVerSubcanal() {
@@ -129,7 +126,6 @@ export class ModalVerCanalComponent implements OnChanges, OnDestroy {
   }
 
   onEditarSubcanalSolicitado(subcanalId: number) {
-    console.log('Solicitud para editar subcanal:', subcanalId);
     // Cerrar el modal de ver subcanal
     this.cerrarModalVerSubcanal();
 
@@ -146,7 +142,6 @@ export class ModalVerCanalComponent implements OnChanges, OnDestroy {
   }
 
   onSubcanalActualizado(subcanal: any) {
-    console.log('Subcanal actualizado:', subcanal);
     // Recargar el canal para ver los cambios actualizados
     if (this.canalId) {
       this.cargarCanal(this.canalId);

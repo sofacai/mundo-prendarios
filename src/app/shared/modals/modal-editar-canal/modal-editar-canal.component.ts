@@ -109,14 +109,12 @@ export class ModalEditarCanalComponent implements OnChanges, OnDestroy, OnInit {
 
     // Establece un padding-right al body para compensar la barra de desplazamiento
     this.renderer.setStyle(document.body, 'padding-right', `${scrollWidth}px`);
-    console.log('Modal de edición del canal abierto');
   }
 
   handleModalClose() {
     // Remover clase y estilos cuando se cierra el modal
     this.renderer.removeClass(document.body, 'modal-open');
     this.renderer.removeStyle(document.body, 'padding-right');
-    console.log('Modal de edición del canal cerrado');
   }
 
   ngOnDestroy(): void {
