@@ -3,20 +3,15 @@
   <!-- Header móvil -->
   <header class="mobile-header" *ngIf="isMobile && !isInCotizador">
     <div class="header-container">
-      <button class="menu-toggle" (click)="toggleSidebar()">
-        <i class="bi bi-list"></i>
-      </button>
+
 
       <div class="logo">
-        <img src="assets/logo_acoplado.webp" alt="Logo">
+        <img src="assets/logo.webp" alt="Logo">
       </div>
 
       <div class="header-actions">
-        <!-- Acción de cotizar si no es Admin -->
-        <button *ngIf="userRole !== rolType.Administrador"
-                class="action-button"
-                (click)="navigateTo('/cotizador')">
-          <i class="bi bi-calculator"></i>
+        <button class="menu-toggle" (click)="toggleSidebar()">
+          <i class="bi bi-list"></i>
         </button>
       </div>
     </div>

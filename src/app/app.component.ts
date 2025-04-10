@@ -60,6 +60,15 @@ export class AppComponent {
         this.userRole = null;
       }
     });
+
+    this.authService.logoutEvent.subscribe(() => {
+      // Cuando se hace logout, establecer isAuthPage a true inmediatamente
+      this.isAuthPage = true;
+      // Asegurarse de que se remueve la clase
+      this.renderer.removeClass(document.body, 'sidebar-open');
+      // Resetear el rol de usuario
+      this.userRole = null;
+    });
   }
 
   onSidebarStateChanged(isCollapsed: boolean) {

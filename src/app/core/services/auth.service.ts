@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { EventEmitter, Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -31,6 +31,10 @@ export class AuthService {
   private apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
   private router = inject(Router);
+
+  public logoutEvent = new EventEmitter<void>();
+
+
 
   constructor() {
     this.currentUserSubject = new BehaviorSubject<Usuario | null>(
@@ -101,12 +105,6 @@ export class AuthService {
     return usuario ? usuario.id : 0;
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/auth/login']);
-  }
 
   isAuthenticated(): boolean {
     return !!this.getToken();
@@ -138,5 +136,14 @@ export class AuthService {
       console.error('Error al parsear el usuario del storage:', e);
       return null;
     }
+
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+    this.logoutEvent.emit(); // Añadido aquí
+    this.router.navigate(['/auth/login']);
   }
 }

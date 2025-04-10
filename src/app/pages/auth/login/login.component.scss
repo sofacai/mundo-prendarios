@@ -32,6 +32,17 @@
   padding: 2rem;
 }
 
+/* Estilos para el logo */
+.logo-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.logo {
+  max-width: 180px;
+  height: auto;
+}
+
 h1 {
   font-size: 2rem;
   font-weight: 600;
@@ -191,22 +202,36 @@ h1 {
     flex-direction: column;
   }
 
-  .login-form-section,
-  .login-image-section {
-    width: 100%;
-  }
-
   .login-form-section {
-    order: 1;
-    padding: 2rem 1rem;
+    width: 100%;
+    min-height: 100vh;
   }
 
   .login-image-section {
-    order: 2;
-    padding: 2rem;
+    display: none; /* Ocultar la sección de imagen en móvil */
   }
 
   .form-container {
-    padding: 0;
+    padding: 2rem 1.5rem;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 991px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-form-section {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .login-image-section {
+    display: none; /* Ocultar la sección de imagen en móvil */
+  }
+
+  .form-group .form-control {
+    width: 90%; /* Cambiamos el ancho a 90% en móvil */
   }
 }

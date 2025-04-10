@@ -215,10 +215,19 @@ export class SidebarComponent implements OnInit {
   }
 
 
-  /**
-   * Logout method
-   */
   logout(): void {
+    // Primero ocultamos el sidebar en móvil
+    if (this.isMobile && !this.isSidebarCollapsed) {
+      this.isSidebarCollapsed = true;
+      // Manipulación directa del DOM para ocultar inmediatamente
+      const sidebarElement = document.querySelector('.sidebar') as HTMLElement;
+      if (sidebarElement) {
+        sidebarElement.style.transform = 'translateX(-100%)';
+      }
+      document.body.classList.remove('sidebar-open');
+    }
+
+    // Luego hacemos logout
     this.authService.logout();
   }
 
