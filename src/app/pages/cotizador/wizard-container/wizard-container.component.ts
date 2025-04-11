@@ -15,8 +15,8 @@ import { IonicModule } from '@ionic/angular';
 import { VendorSelectorComponent } from "../vendor-selector/vendor-selector.component";
 import { UsuarioService } from 'src/app/core/services/usuario.service';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
-import { catchError, finalize, tap, map } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { catchError, finalize, tap, map, switchMap } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
 import { CanalService } from 'src/app/core/services/canal.service';
 import { PlanService } from 'src/app/core/services/plan.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
@@ -147,21 +147,91 @@ export class WizardContainerComponent implements OnInit {
 
     this.usuarioService.getUsuariosPorRol(RolType.Vendor).subscribe({
       next: (usuarios) => {
-        // Filtrar solo los usuarios activos con rol de Vendor
         this.vendors = usuarios.filter(u => u.activo);
         this.cargando = false;
 
         if (this.vendors.length === 0) {
-          this.error = "No hay vendedores disponibles para seleccionar.";
+          this.error = "No hay vendedores activos disponibles.";
         }
       },
       error: (error) => {
-        console.error('Error al cargar vendors:', error);
         this.error = "Error al cargar la lista de vendedores.";
         this.cargando = false;
       }
     });
   }
+
+  verificarEstadoCanales(subcanales: Subcanal[]) {
+    if (subcanales.length === 0) {
+      this.error = "No hay subcanales disponibles.";
+      return;
+    }
+
+    // Obtener IDs únicos de canales
+    const canalIds = [...new Set(subcanales.map(s => s.canalId))];
+
+    // Crear un array de observables para consultar cada canal
+    const canalesObservables = canalIds.map(canalId =>
+      this.canalService.getCanal(canalId).pipe(
+        catchError(err => of(null))
+      )
+    );
+
+    // Ejecutar todas las consultas en paralelo
+    forkJoin(canalesObservables).subscribe({
+      next: (canales) => {
+        const canalesActivos = canales.filter(canal => canal && canal.activo);
+
+        if (canalesActivos.length === 0) {
+          this.error = "No hay canales activos disponibles. No se pueden realizar operaciones.";
+          return;
+        }
+
+        // Si hay canales activos, procesamos los subcanales para el cotizador
+        if (subcanales.length === 1) {
+          const subcanalUnico = subcanales[0];
+          const canalDelSubcanal = canales.find(c => c && c.id === subcanalUnico.canalId);
+
+          if (!canalDelSubcanal || !canalDelSubcanal.activo) {
+            this.error = "El canal asociado a su subcanal no está activo. No se pueden realizar operaciones.";
+            return;
+          }
+
+          // Si está todo ok, seleccionamos automáticamente este subcanal
+          this.subcanalSeleccionado = subcanalUnico.id;
+          this.necesitaSeleccionarSubcanal = false;
+        } else {
+          // Si hay múltiples subcanales, filtramos solo los que tienen canal activo
+          const subcanalesConCanalActivo = subcanales.filter(subcanal => {
+            const canalActivo = canales.find(c => c && c.id === subcanal.canalId && c.activo);
+            return !!canalActivo;
+          });
+
+          if (subcanalesConCanalActivo.length === 0) {
+            this.error = "No hay subcanales con canales activos disponibles.";
+            return;
+          }
+
+          if (subcanalesConCanalActivo.length === 1) {
+            // Si queda un solo subcanal con canal activo, lo seleccionamos automáticamente
+            this.subcanalSeleccionado = subcanalesConCanalActivo[0].id;
+            this.necesitaSeleccionarSubcanal = false;
+          } else {
+            // Si hay múltiples, el usuario debe seleccionar
+            this.necesitaSeleccionarSubcanal = true;
+          }
+        }
+
+        // Convertir a datos del wizard
+        this.convertirADatosWizard(this.necesitaSeleccionarSubcanal ? subcanales : [subcanales.find(s => s.id === this.subcanalSeleccionado)!]);
+      },
+      error: (error) => {
+        console.error('Error al verificar el estado de los canales:', error);
+        this.error = "Error al verificar el estado de los canales.";
+      }
+    });
+  }
+
   seleccionarVendor(vendorId: number) {
     this.vendorSeleccionado = vendorId;
     this.wizardData.vendorId = vendorId;
@@ -173,27 +243,43 @@ export class WizardContainerComponent implements OnInit {
     this.cargando = true;
     this.error = null;
 
-    this.subcanalService.getSubcanalesPorUsuario(vendorId)
-      .pipe(
-        tap(subcanales => console.log('Subcanales recibidos')),
-        map(subcanales => subcanales.filter(s => s.activo)),
-        catchError(error => {
-          this.error = "Error al obtener los subcanales del vendedor.";
-          return of([]);
-        }),
-        finalize(() => this.cargando = false)
-      )
-      .subscribe(subcanales => {
-        this.subcanales = subcanales;
-
-        if (subcanales.length === 0) {
-          this.error = "El vendedor no tiene subcanales activos asignados.";
-          return;
+    // Primero verificamos si el vendor está activo (aunque debería estarlo)
+    this.usuarioService.getUsuario(vendorId).pipe(
+      switchMap(usuario => {
+        if (!usuario.activo) {
+          return of({ error: "El vendedor no está activo." });
         }
 
-        // Procesar los subcanales para obtener la información necesaria
-        this.convertirADatosWizard(subcanales);
-      });
+        // Si el vendor está activo, cargamos sus subcanales
+        return this.subcanalService.getSubcanalesPorUsuario(vendorId).pipe(
+          map(subcanales => ({ subcanales }))
+        );
+      }),
+      catchError(error => {
+        return of({ error: "Error al cargar información del vendedor." });
+      }),
+      finalize(() => this.cargando = false)
+    ).subscribe(result => {
+      if ('error' in result) {
+        this.error = result.error as string;
+        return;
+      }
+
+      const subcanales = result.subcanales as Subcanal[];
+
+      // Filtramos solo los subcanales activos
+      const subcanalesActivos = subcanales.filter(s => s.activo);
+
+      if (subcanalesActivos.length === 0) {
+        this.error = "El vendedor no tiene subcanales activos asignados.";
+        return;
+      }
+
+      this.subcanales = subcanalesActivos;
+
+      // Verificar el estado de los canales correspondientes
+      this.verificarEstadoCanales(subcanalesActivos);
+    });
   }
 
   // Add a new method to improve the flow
@@ -762,10 +848,22 @@ export class WizardContainerComponent implements OnInit {
   }
 
   seleccionarSubcanal(subcanalId: number) {
+    // Verificar que el subcanal esté activo
+    const subcanalInfo = this.datosWizard?.subcanales?.find(s => s.subcanalId === subcanalId);
+
+    if (!subcanalInfo) {
+      this.error = "No se encontró información del subcanal seleccionado.";
+      return;
+    }
+
+    if (!subcanalInfo.subcanalActivo) {
+      this.error = "El subcanal seleccionado no está activo.";
+      return;
+    }
+
     this.seleccionarSubcanalPorId(subcanalId);
     this.necesitaSeleccionarSubcanal = false;
   }
-
   seleccionarSubcanalPorId(subcanalId: number) {
     if (!this.datosWizard || !this.datosWizard.subcanales) {
       return;
