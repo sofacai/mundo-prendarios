@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { switchMap, map, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { Gasto, GastoCreate, GastoUpdate } from '../models/gasto.model';
 import { environment } from 'src/environments/environment';
@@ -51,12 +52,13 @@ export interface ComisionActualizarDto {
 })
 export class SubcanalService {
   private apiUrl = `${environment.apiUrl}/Subcanal`;
+  private canalApiUrl = `${environment.apiUrl}/Canal`;
   subcanalService: any;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {  }
+  ) { }
 
   // Obtener todos los subcanales
   getSubcanales(): Observable<Subcanal[]> {
@@ -88,10 +90,33 @@ export class SubcanalService {
     return this.http.put<Subcanal>(`${this.apiUrl}/${id}`, subcanal, { headers });
   }
 
+  // Verificar si el canal del subcanal está activo
+  private verificarCanalActivo(subcanalId: number): Observable<boolean> {
+    const headers = this.getAuthHeaders();
+    return this.getSubcanal(subcanalId).pipe(
+      switchMap(subcanal => {
+        return this.http.get<any>(`${this.canalApiUrl}/${subcanal.canalId}`, { headers }).pipe(
+          map(canal => canal.activo)
+        );
+      })
+    );
+  }
+
   // Activar un subcanal
   activarSubcanal(id: number): Observable<Subcanal> {
     const headers = this.getAuthHeaders();
-    return this.http.patch<Subcanal>(`${this.apiUrl}/${id}/activar`, {}, { headers });
+
+    // Verificar primero si el canal padre está activo
+    return this.verificarCanalActivo(id).pipe(
+      switchMap(canalActivo => {
+        if (!canalActivo) {
+          return throwError(() => new Error('No se puede activar un subcanal cuando su canal padre está inactivo'));
+        }
+
+        // Si el canal está activo, procedemos a activar el subcanal
+        return this.http.patch<Subcanal>(`${this.apiUrl}/${id}/activar`, {}, { headers });
+      })
+    );
   }
 
   asignarVendorASubcanal(subcanalId: number, vendorId: number): Observable<any> {

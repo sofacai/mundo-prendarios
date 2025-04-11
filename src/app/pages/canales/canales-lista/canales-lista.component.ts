@@ -417,30 +417,38 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
 
     request.subscribe({
       next: (canalActualizado) => {
-        this.canales = this.canales.map(c => {
-          if (c.id === canal.id) {
-            return {...c, activo: !canal.activo};
-          }
-          return c;
-        });
+        // Actualizar el canal en todas las listas
+        const updateCanalInList = (list: Canal[]) => {
+          return list.map(c => {
+            if (c.id === canal.id) {
+              // Preservar la estructura original del objeto pero actualizar el estado
+              const updatedCanal = {
+                ...c,
+                activo: !canal.activo
+              };
 
-        this.filteredCanales = this.filteredCanales.map(c => {
-          if (c.id === canal.id) {
-            return {...c, activo: !canal.activo};
-          }
-          return c;
-        });
+              // Si estamos desactivando el canal, también marcar sus subcanales como inactivos en la UI
+              if (!updatedCanal.activo && updatedCanal.subcanales) {
+                updatedCanal.subcanales = updatedCanal.subcanales.map(subcanal => ({
+                  ...subcanal,
+                  activo: false
+                }));
+              }
 
-        this.paginatedCanales = this.paginatedCanales.map(c => {
-          if (c.id === canal.id) {
-            return {...c, activo: !canal.activo};
-          }
-          return c;
-        });
+              return updatedCanal;
+            }
+            return c;
+          });
+        };
+
+        this.canales = updateCanalInList(this.canales);
+        this.filteredCanales = updateCanalInList(this.filteredCanales);
+        this.paginatedCanales = updateCanalInList(this.paginatedCanales);
 
         this.loadingCanales.set(canal.id, false);
       },
       error: (err) => {
+        console.error('Error al cambiar estado del canal:', err);
         this.loadingCanales.set(canal.id, false);
       }
     });

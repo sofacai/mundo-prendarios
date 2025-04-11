@@ -338,6 +338,11 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
         this.loadingSubcanales.set(subcanal.id, false);
       },
       error: (err) => {
+        // Mostrar mensaje de error específico para activación rechazada
+        if (!subcanal.activo && err?.message?.includes('canal padre está inactivo')) {
+          alert('No se puede activar un subcanal cuando su canal está inactivo.');
+        }
+
         this.loadingSubcanales.set(subcanal.id, false);
       }
     });

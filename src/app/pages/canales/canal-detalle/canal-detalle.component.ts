@@ -421,6 +421,22 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
     request.subscribe({
       next: (canalActualizado) => {
         this.canal = canalActualizado;
+
+        // Si estamos desactivando el canal, reflejar el cambio en subcanales a nivel de UI
+        // sin tener que recargar la página completa
+        if (!canalActualizado.activo && this.subcanales && this.subcanales.length > 0) {
+          // Actualizar el estado de los subcanales en la UI para reflejar que
+          // fueron desactivados por el backend
+          this.subcanales = this.subcanales.map(subcanal => ({
+            ...subcanal,
+            activo: false
+          }));
+
+          // Recalcular estadísticas
+          this.subcanalesActivos = 0;
+          this.subcanalesInactivos = this.subcanales.length;
+        }
+
         this.loading = false;
       },
       error: (err) => {

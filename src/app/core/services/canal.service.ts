@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
+import { SubcanalService } from './subcanal.service';
 
 export interface Gasto {
   id: number;
@@ -116,7 +118,8 @@ export class CanalService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private subcanalService: SubcanalService
   ) { }
 
   // Obtener todos los canales
@@ -158,7 +161,48 @@ export class CanalService {
   // Desactivar un canal
   desactivarCanal(id: number): Observable<Canal> {
     const headers = this.getAuthHeaders();
-    return this.http.patch<Canal>(`${this.apiUrl}/${id}/desactivar`, {}, { headers });
+
+    // Primero desactivamos el canal
+    return this.http.patch<Canal>(`${this.apiUrl}/${id}/desactivar`, {}, { headers }).pipe(
+      switchMap(canalDesactivado => {
+        // Obtenemos todos los subcanales del canal
+        return this.getCanalDetalles(id).pipe(
+          switchMap(canalDetalle => {
+            if (!canalDetalle.subcanales || canalDetalle.subcanales.length === 0) {
+              // Si no hay subcanales, simplemente devolvemos el canal desactivado
+              return of(canalDesactivado);
+            }
+
+            // Filtramos para desactivar solo los subcanales activos
+            const subcanalesToDesactivar = canalDetalle.subcanales
+              .filter(subcanal => subcanal.activo)
+              .map(subcanal => subcanal.id);
+
+            if (subcanalesToDesactivar.length === 0) {
+              // Si no hay subcanales activos, devolvemos el canal desactivado
+              return of(canalDesactivado);
+            }
+
+            // Creamos un array de observables para desactivar cada subcanal
+            const desactivacionObservables = subcanalesToDesactivar.map(subcanalId =>
+              this.subcanalService.desactivarSubcanal(subcanalId).pipe(
+                catchError(error => {
+                  console.error(`Error al desactivar subcanal ${subcanalId}:`, error);
+                  // Devolvemos un observable que no falla para continuar con el proceso
+                  return of(null);
+                })
+              )
+            );
+
+            // Ejecutamos todas las desactivaciones en paralelo
+            return forkJoin(desactivacionObservables).pipe(
+              // Devolvemos el canal original desactivado
+              map(() => canalDesactivado)
+            );
+          })
+        );
+      })
+    );
   }
 
   // Asignar un plan a un canal
@@ -219,11 +263,11 @@ export class CanalService {
   }
 
   // Añadir al final de CanalService antes del cierre de la clase
-uploadCanalImage(formData: FormData): Observable<{imageUrl: string}> {
-  const token = this.authService.getToken();
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`
-  });
-  return this.http.post<{imageUrl: string}>(`${this.apiUrl}/upload-image`, formData, { headers });
-}
+  uploadCanalImage(formData: FormData): Observable<{imageUrl: string}> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.post<{imageUrl: string}>(`${this.apiUrl}/upload-image`, formData, { headers });
+  }
 }
