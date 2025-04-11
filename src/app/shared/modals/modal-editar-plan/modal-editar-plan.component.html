@@ -71,8 +71,15 @@
             <div class="form-group">
               <label>Estado</label>
               <div class="toggle-container">
-                <ion-toggle formControlName="activo"></ion-toggle>
-                <span>{{ planForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+                <ion-toggle
+                  formControlName="activo"
+                  (ionChange)="onToggleEstado($event)"
+                  [disabled]="statusUpdating">
+                </ion-toggle>
+                <span *ngIf="!statusUpdating">{{ planForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}</span>
+                <span *ngIf="statusUpdating" class="updating-status">
+                  <ion-spinner name="dots" class="spinner-sm"></ion-spinner>
+                </span>
               </div>
             </div>
 

@@ -1,3 +1,4 @@
+// Importar ToastService si decide usarlo para notificaciones
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
@@ -20,6 +21,7 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
   plan: Plan | null = null;
   planForm: FormGroup;
   loading = false;
+  statusUpdating = false; // Nuevo estado para actualización del estado
   error: string | null = null;
   cuotasDisponibles = [12, 24, 36, 48, 60];
 
@@ -165,6 +167,41 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
 
     // Notificar al componente padre
     this.closeModal.emit(true);
+  }
+
+  // Nuevo método para manejar el cambio de estado desde el toggle
+  onToggleEstado(event: any) {
+    if (!this.plan || this.statusUpdating) return;
+
+    const nuevoEstado = event.detail.checked;
+
+    // Verificar si el estado ha cambiado realmente
+    if (nuevoEstado === this.plan.activo) return;
+
+    this.statusUpdating = true;
+
+    // Llamar al servicio correspondiente
+    const accion = nuevoEstado
+      ? this.planService.activarPlan(this.plan.id)
+      : this.planService.desactivarPlan(this.plan.id);
+
+    accion.subscribe({
+      next: () => {
+        // Actualizar el estado del plan y del formulario
+        if (this.plan) {
+          this.plan.activo = nuevoEstado;
+        }
+        this.planForm.get('activo')?.setValue(nuevoEstado, { emitEvent: false });
+        this.statusUpdating = false;
+      },
+      error: (err) => {
+        // Revertir el cambio en el formulario
+        this.planForm.get('activo')?.setValue(!nuevoEstado, { emitEvent: false });
+        this.error = `No se pudo ${nuevoEstado ? 'activar' : 'desactivar'} el plan. Intente nuevamente.`;
+        console.error(`Error al ${nuevoEstado ? 'activar' : 'desactivar'} el plan:`, err);
+        this.statusUpdating = false;
+      }
+    });
   }
 
   actualizarPlan() {

@@ -5,6 +5,9 @@
     <!-- Page Header -->
     <div class="page-header">
       <div class="page-title d-flex align-items-center">
+        <button class="btn btn-icon btn-light me-3" (click)="goBack()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
         <h1>Mi Perfil</h1>
       </div>
       <div class="page-actions" *ngIf="!editMode">

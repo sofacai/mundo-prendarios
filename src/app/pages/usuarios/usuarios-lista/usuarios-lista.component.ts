@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -27,6 +27,7 @@ interface SortState {
     IonicModule,
     UsuarioFormComponent,
     ModalEditarUsuarioComponent,
+    RouterModule,
     ModalVerUsuarioComponent
   ],
   templateUrl: './usuarios-lista.component.html',

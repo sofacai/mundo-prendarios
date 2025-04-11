@@ -155,6 +155,10 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     });
   }
 
+  goBack() {
+    this.router.navigate(['/subcanales']);
+  }
+
   cancelEdit() {
     this.editMode = false;
     if (this.usuario) {

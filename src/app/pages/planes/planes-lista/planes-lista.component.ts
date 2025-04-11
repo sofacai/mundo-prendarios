@@ -342,4 +342,36 @@ export class PlanesListaComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+  toggleEstadoPlan(plan: Plan): void {
+    const planId = plan.id;
+    const nuevoEstado = !plan.activo;
+
+    // Mostrar estado de carga en la UI (opcional)
+    this.loading = true;
+
+    // Llamar al método correspondiente en el servicio
+    const accion = nuevoEstado
+      ? this.planService.activarPlan(planId)
+      : this.planService.desactivarPlan(planId);
+
+    accion.subscribe({
+      next: () => {
+        // Actualizar el estado local
+        plan.activo = nuevoEstado;
+        this.loading = false;
+
+        // Opcional: Mostrar mensaje de éxito
+        // this.toastService.showSuccess(`Plan ${nuevoEstado ? 'activado' : 'desactivado'} correctamente`);
+      },
+      error: (err) => {
+        console.error(`Error al ${nuevoEstado ? 'activar' : 'desactivar'} el plan:`, err);
+        this.error = `No se pudo ${nuevoEstado ? 'activar' : 'desactivar'} el plan. Por favor, intente nuevamente.`;
+        this.loading = false;
+
+        // Opcional: Mostrar mensaje de error
+        // this.toastService.showError(`No se pudo ${nuevoEstado ? 'activar' : 'desactivar'} el plan`);
+      }
+    });
+  }
 }

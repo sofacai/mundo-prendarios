@@ -119,7 +119,10 @@
                   <div class="text-muted fs-7">{{ plan.fechaFinStr }}</div>
                 </td>
                 <td>
-                  <div class="badge" [ngClass]="getEstadoClass(plan.activo)">
+                  <div class="badge cursor-pointer"
+                       [ngClass]="getEstadoClass(plan.activo)"
+                       (click)="toggleEstadoPlan(plan); $event.stopPropagation()"
+                       title="{{ plan.activo ? 'Desactivar plan' : 'Activar plan' }}">
                     {{ plan.activo ? 'Activo' : 'Inactivo' }}
                   </div>
                 </td>

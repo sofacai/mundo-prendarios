@@ -75,6 +75,30 @@
   max-height: calc(90vh - 130px);
 }
 
+.updating-status {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ion-color-primary);
+  font-size: 14px;
+
+  .spinner-sm {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+  }
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  span {
+    font-size: 14px;
+    color: var(--ion-color-dark);
+  }
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

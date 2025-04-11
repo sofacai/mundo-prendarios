@@ -97,7 +97,7 @@
                 <td>{{ usuario.id }}</td>
                 <td>
                   <div style="display: block;">
-                    <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalle(usuario.id)">
+                    <a class="text-dark fw-bold  cursor-pointer" [routerLink]="['/usuarios', usuario.id]">
                       {{ usuario.nombre }} {{ usuario.apellido }}
                     </a>
                   </div>
