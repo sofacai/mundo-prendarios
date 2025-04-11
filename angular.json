@@ -45,7 +45,13 @@
     "output": "icons"
   }
 ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [  "node_modules/@ionic/angular/css/core.css",
+            "node_modules/@ionic/angular/css/normalize.css",
+            "node_modules/@ionic/angular/css/structure.css",
+            "node_modules/@ionic/angular/css/typography.css",
+            "node_modules/@ionic/angular/css/display.css",
+            "src/global.scss",
+            "src/theme/variables.scss"],
             "scripts": [],
             "browser": "src/main.ts"
           },
@@ -59,8 +65,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kb",
-                  "maximumError": "12kb"
+                  "maximumWarning": "20kb",
+                  "maximumError": "20kb"
                 }
               ],
               "fileReplacements": [
@@ -129,7 +135,13 @@
     "output": "icons"
   }
 ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [  "node_modules/@ionic/angular/css/core.css",
+            "node_modules/@ionic/angular/css/normalize.css",
+            "node_modules/@ionic/angular/css/structure.css",
+            "node_modules/@ionic/angular/css/typography.css",
+            "node_modules/@ionic/angular/css/display.css",
+            "src/global.scss",
+            "src/theme/variables.scss"],
             "scripts": []
           },
           "configurations": {

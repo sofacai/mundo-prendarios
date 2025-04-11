@@ -94,9 +94,9 @@ export class LoginComponent implements OnInit {
         next: () => {
           const userData = this.authService.currentUserValue;
           if (userData?.rolId === RolType.Administrador || userData?.rolId === RolType.AdminCanal) {
-            this.router.navigate(['/operaciones']);
+            this.router.navigate(['/dashboard']);
           } else {
-            this.router.navigate(['/operaciones']);
+            this.router.navigate(['/dashboard']);
           }
         },
         error: error => {
