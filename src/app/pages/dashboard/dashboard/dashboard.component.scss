@@ -1,65 +1,382 @@
-.dashboard-container {
+.dashboard-welcome-container {
+  padding: 1.5rem;
   display: flex;
   height: 100vh;
   background-color: #f5f8fa;
-}
+  // Estilos para encabezado de bienvenida
+  .welcome-header {
+    margin-bottom: 2rem;
 
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  margin-left: 280px; // Ancho del sidebar
-  transition: margin-left 0.3s ease;
-  overflow-y: auto;
+    .welcome-title {
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #181C32;
+      }
 
-  @media (max-width: 991.98px) {
-    margin-left: 0;
+      .welcome-subtitle {
+        font-size: 1rem;
+        color: #7E8299;
+        margin: 0;
+      }
+    }
+  }
+
+
+
+  .content-area {
+    flex: 1;
+    padding: 1rem;
+    transition: margin-left 0.3s ease;
     width: 100%;
-  }
 
-  &.content-expanded {
-    margin-left: 0;
-  }
-}
+    @media (min-width: 992px) {
+      margin-left: 260px;
 
-.content-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #181C32;
-  }
-}
-
-.dashboard-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  .card {
-    border-radius: 0.5rem;
-    box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.08);
-    border: none;
-
-    .card-body {
-      padding: 1.5rem;
+      &.sidebar-collapsed {
+        margin-left: 70px;
+      }
     }
 
-    .card-title {
+    @media (max-width: 991.98px) {
+      margin-left: 0 !important;
+      width: 100% !important;
+      padding: 1rem;
+      padding-top: 60px !important;
+      overflow-y: auto;
+
+    }
+  }
+
+  // Loading spinner
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 0.25rem solid #EEF0F2;
+      border-radius: 50%;
+      border-top: 0.25rem solid #009EF7;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    p {
       font-size: 1rem;
-      font-weight: 500;
-      color: #5E6278;
-      margin-bottom: 0.75rem;
+      color: #7E8299;
+    }
+  }
+
+  // No data message
+  .no-data-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+
+    .no-data-box {
+      text-align: center;
+      max-width: 500px;
+      padding: 3rem 2rem;
+      background-color: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.08);
+
+      i {
+        font-size: 3rem;
+        color: #009EF7;
+        margin-bottom: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #181C32;
+      }
+
+      p {
+        font-size: 1rem;
+        color: #7E8299;
+        margin-bottom: 1.5rem;
+      }
+
+      .btn {
+        padding: 0.65rem 1.5rem;
+        border-radius: 0.475rem;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background-color: #009EF7;
+        border-color: #009EF7;
+
+        &:hover {
+          background-color: #0095e8;
+          border-color: #0095e8;
+        }
+      }
+    }
+  }
+
+  // Dashboard content
+  .dashboard-content {
+    // Stats summary cards
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+
+      .stat-card {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.08);
+
+        .stat-icon-box {
+          width: 48px;
+          height: 48px;
+          border-radius: 0.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 1rem;
+
+          i {
+            font-size: 1.5rem;
+          }
+        }
+
+        .primary-light {
+          background-color: #F1FAFF;
+          color: #009EF7;
+        }
+
+        .success-light {
+          background-color: #E8FFF3;
+          color: #50CD89;
+        }
+
+        .warning-light {
+          background-color: #FFF8DD;
+          color: #FFC700;
+        }
+
+        .info-light {
+          background-color: #F8F5FF;
+          color: #7239EA;
+        }
+
+        .stat-content {
+          .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem;
+            color: #181C32;
+          }
+
+          .stat-label {
+            font-size: 0.9rem;
+            color: #7E8299;
+            margin: 0;
+          }
+        }
+      }
     }
 
-    .card-value {
-      font-size: 2rem;
-      font-weight: 600;
-      color: #181C32;
-      margin: 0;
+    // Charts row
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+
+      @media (min-width: 992px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .chart-card {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+
+        &.full-width {
+          grid-column: 1 / -1;
+        }
+
+        .card-header {
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid #EEF0F2;
+
+          h3, h4 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0;
+            color: #181C32;
+          }
+        }
+
+        .card-body {
+          padding: 1.5rem;
+
+          .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+          }
+        }
+      }
+    }
+
+    // Top performers section
+    .top-performers-section {
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1.25rem;
+        color: #181C32;
+      }
+
+      .top-lists {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+
+        @media (min-width: 768px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .top-list-card {
+          background-color: #fff;
+          border-radius: 0.5rem;
+          box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+
+          &.full-width {
+            grid-column: 1 / -1;
+          }
+
+          .card-body {
+            padding: 0;
+
+            .top-list {
+              list-style: none;
+              margin: 0;
+              padding: 0;
+
+              .top-list-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid #EEF0F2;
+
+                &:last-child {
+                  border-bottom: none;
+                }
+
+                .item-name {
+                  font-weight: 500;
+                  color: #181C32;
+                }
+
+                .item-stats {
+                  display: flex;
+                  align-items: center;
+
+                  .item-total {
+                    font-weight: 600;
+                    color: #181C32;
+                  }
+
+                  .item-detail {
+                    font-size: 0.85rem;
+                    color: #7E8299;
+                    margin-left: 0.5rem;
+                  }
+                }
+              }
+
+              .empty-list-item {
+                padding: 1.5rem;
+                text-align: center;
+                color: #7E8299;
+              }
+
+              &.operation-list {
+                .top-list-item {
+                  .item-name {
+                    display: flex;
+                    flex-direction: column;
+
+                    .operation-date {
+                      font-size: 0.85rem;
+                      color: #7E8299;
+                      margin-bottom: 0.25rem;
+                    }
+
+                    .operation-client {
+                      font-weight: 500;
+                    }
+                  }
+
+                  .item-stats {
+                    flex-direction: column;
+                    align-items: flex-end;
+
+                    .operation-amount {
+                      font-weight: 600;
+                      color: #181C32;
+                    }
+
+                    .operation-status {
+                      font-size: 0.75rem;
+                      padding: 0.25rem 0.5rem;
+                      border-radius: 0.25rem;
+                      margin-top: 0.25rem;
+
+                      &.status-liquidada {
+                        background-color: #E8FFF3;
+                        color: #50CD89;
+                      }
+
+                      &.status-pendiente {
+                        background-color: #FFF8DD;
+                        color: #FFC700;
+                      }
+
+                      &.status-rechazada, &.status-cancelada {
+                        background-color: #FFF5F8;
+                        color: #F1416C;
+                      }
+
+                      &.status-enproceso {
+                        background-color: #F1FAFF;
+                        color: #009EF7;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

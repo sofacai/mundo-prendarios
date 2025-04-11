@@ -9,6 +9,7 @@
 
 body {
   background-color: var(--background-color);
+  overflow-y: auto;
 }
 
 /* Layout Structure */
@@ -85,6 +86,7 @@ body {
 }
 
 .card-body {
+  overflow-x: auto;
   padding: 10px;
 }
 
@@ -389,6 +391,7 @@ body {
   font-weight: 600;
   transition: color 0.2s ease;
 }
+
 
 .sortable-header:hover {
   color: #009ef7;
@@ -816,14 +819,12 @@ body.modal-open {
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
   transition: all 0.3s ease;
 }
 
 /* Cuando el sidebar está abierto en mobile */
 body.sidebar-open {
   position: relative;
-  overflow: hidden;
 }
 
 /* Contenedor principal de la aplicación */

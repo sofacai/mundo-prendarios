@@ -19,7 +19,7 @@ export const routes: Routes = [
   // Rutas protegidas
   {
     path: 'dashboard',
-    loadComponent: () => import('./pages/dashboard/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    loadComponent: () => import('./pages/dashboard/dashboard/dashboard.component').then(m => m.DashboardWelcomeComponent),
     canActivate: [AuthGuard]
   },
 
