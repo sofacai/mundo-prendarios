@@ -1,110 +1,105 @@
-<ion-modal [isOpen]="isOpen" (didDismiss)="cerrarModal()" class="plan-form-modal">
-  <ng-template>
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2>{{ title }}</h2>
-        <ion-button fill="clear" (click)="cerrarModal()">
-          <ion-icon name="close-outline"></ion-icon>
-        </ion-button>
-      </div>
-
-      <div class="modal-body">
-        <form [formGroup]="planForm" (ngSubmit)="guardarPlan()">
-          <div class="form-grid">
-            <!-- Nombre del plan -->
-            <div class="form-group full-width">
-              <label>Nombre del Plan <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="nombre">
-              <small class="text-danger" *ngIf="planForm.get('nombre')?.invalid && planForm.get('nombre')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <!-- Fecha inicio y fin -->
-            <div class="form-group">
-              <label>Fecha Inicio <span class="required">*</span></label>
-              <input type="date" class="form-control" formControlName="fechaInicio" placeholder="03/03/2025">
-              <small class="text-danger" *ngIf="planForm.get('fechaInicio')?.invalid && planForm.get('fechaInicio')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Fecha Fin <span class="required">*</span></label>
-              <input type="date" class="form-control" formControlName="fechaFin" placeholder="03/03/2026">
-              <small class="text-danger" *ngIf="planForm.get('fechaFin')?.invalid && planForm.get('fechaFin')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <!-- Montos mínimo y máximo -->
-            <div class="form-group">
-              <label>Monto Mínimo <span class="required">*</span></label>
-              <div class="input-group">
-                <span class="input-prefix">$</span>
-                <input type="text" class="form-control" formControlName="montoMinimo"
-                       (input)="formatMonto($event, 'montoMinimo')"
-                       placeholder="0">
-              </div>
-              <small class="text-danger" *ngIf="planForm.get('montoMinimo')?.invalid && planForm.get('montoMinimo')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Monto Máximo <span class="required">*</span></label>
-              <div class="input-group">
-                <span class="input-prefix">$</span>
-                <input type="text" class="form-control" formControlName="montoMaximo"
-                       (input)="formatMonto($event, 'montoMaximo')"
-                       placeholder="0">
-              </div>
-              <small class="text-danger" *ngIf="planForm.get('montoMaximo')?.invalid && planForm.get('montoMaximo')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <!-- Cuotas aplicables -->
-            <div class="form-group full-width">
-              <label>Cuotas Aplicables <span class="required">*</span></label>
-              <div class="cuotas-container">
-                <div *ngFor="let cuota of cuotasDisponibles" class="cuota-option"
-                     [class.selected]="cuota.seleccionado"
-                     (click)="toggleCuota(cuota)">
-                  {{ cuota.valor }} meses
-                </div>
-              </div>
-              <small class="text-danger" *ngIf="getCuotasSeleccionadas().length === 0 && (planForm.touched || error)">
-                Seleccione al menos una opción de cuotas
-              </small>
-            </div>
-
-            <!-- Tasa y monto fijo -->
-            <div class="form-group">
-              <label>Tasa (%) <span class="required">*</span></label>
-              <input type="number" class="form-control" formControlName="tasa" min="0" max="100" step="0.01">
-              <small class="text-danger" *ngIf="planForm.get('tasa')?.invalid && planForm.get('tasa')?.touched">
-                Introduzca una tasa válida (0-100)
-              </small>
-            </div>
-
-          </div>
-
-          <!-- Mensaje de error -->
-          <div class="form-error" *ngIf="error">
-            <div class="alert alert-danger">{{ error }}</div>
-          </div>
-
-          <!-- Botones de acción -->
-          <div class="form-footer">
-            <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="loading || planForm.invalid">
-              <span *ngIf="!loading">Guardar</span>
-              <ion-spinner *ngIf="loading" name="dots" class="spinner-sm"></ion-spinner>
-            </button>
-          </div>
-        </form>
-      </div>
+<!-- Modal personalizado -->
+<div *ngIf="isOpen" class="custom-modal-backdrop">
+  <div class="custom-modal-content modal-container">
+    <div class="modal-header">
+      <h2>{{ title }}</h2>
+      <button class="btn btn-close" (click)="cerrarModal()">×</button>
     </div>
-  </ng-template>
-</ion-modal>
+
+    <div class="modal-body">
+      <form [formGroup]="planForm" (ngSubmit)="guardarPlan()">
+        <div class="form-grid">
+
+          <!-- Nombre -->
+          <div class="form-group full-width">
+            <label>Nombre del Plan <span class="required">*</span></label>
+            <input type="text" class="form-control" formControlName="nombre">
+            <small class="text-danger" *ngIf="planForm.get('nombre')?.invalid && planForm.get('nombre')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <!-- Fechas -->
+          <div class="form-group">
+            <label>Fecha Inicio <span class="required">*</span></label>
+            <input type="date" class="form-control" formControlName="fechaInicio">
+            <small class="text-danger" *ngIf="planForm.get('fechaInicio')?.invalid && planForm.get('fechaInicio')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha Fin <span class="required">*</span></label>
+            <input type="date" class="form-control" formControlName="fechaFin">
+            <small class="text-danger" *ngIf="planForm.get('fechaFin')?.invalid && planForm.get('fechaFin')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <!-- Montos -->
+          <div class="form-group">
+            <label>Monto Mínimo <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-prefix">$</span>
+              <input type="text" class="form-control" formControlName="montoMinimo"
+                     (input)="formatMonto($event, 'montoMinimo')" placeholder="0">
+            </div>
+            <small class="text-danger" *ngIf="planForm.get('montoMinimo')?.invalid && planForm.get('montoMinimo')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Monto Máximo <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-prefix">$</span>
+              <input type="text" class="form-control" formControlName="montoMaximo"
+                     (input)="formatMonto($event, 'montoMaximo')" placeholder="0">
+            </div>
+            <small class="text-danger" *ngIf="planForm.get('montoMaximo')?.invalid && planForm.get('montoMaximo')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <!-- Cuotas -->
+          <div class="form-group full-width">
+            <label>Cuotas Aplicables <span class="required">*</span></label>
+            <div class="cuotas-container">
+              <div *ngFor="let cuota of cuotasDisponibles" class="cuota-option"
+                   [class.selected]="cuota.seleccionado" (click)="toggleCuota(cuota)">
+                {{ cuota.valor }} meses
+              </div>
+            </div>
+            <small class="text-danger" *ngIf="getCuotasSeleccionadas().length === 0 && (planForm.touched || error)">
+              Seleccione al menos una opción de cuotas
+            </small>
+          </div>
+
+          <!-- Tasa -->
+          <div class="form-group">
+            <label>Tasa (%) <span class="required">*</span></label>
+            <input type="number" class="form-control" formControlName="tasa" min="0" max="100" step="0.01">
+            <small class="text-danger" *ngIf="planForm.get('tasa')?.invalid && planForm.get('tasa')?.touched">
+              Introduzca una tasa válida (0-100)
+            </small>
+          </div>
+
+        </div>
+
+        <!-- Error general -->
+        <div class="form-error" *ngIf="error">
+          <div class="alert alert-danger">{{ error }}</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="form-footer">
+          <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading || planForm.invalid">
+            <span *ngIf="!loading">Guardar</span>
+            <div *ngIf="loading" class="spinner-border spinner-sm" role="status"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

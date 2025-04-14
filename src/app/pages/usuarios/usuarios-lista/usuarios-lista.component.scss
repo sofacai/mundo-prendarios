@@ -9,6 +9,8 @@
   padding: 1rem;
   transition: margin-left 0.3s ease;
   width: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
 
   @media (min-width: 992px) {
     margin-left: 260px;
@@ -34,7 +36,6 @@ a.text-dark.fw-bold.cursor-pointer {
 
 // Page header
 .page-header {
-  background-color: red;
   display: flex;
   justify-content: space-between;
   align-items: center;

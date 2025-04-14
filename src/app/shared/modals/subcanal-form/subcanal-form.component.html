@@ -1,112 +1,104 @@
-<ion-modal [isOpen]="isOpen" (didDismiss)="cerrarModal()" class="canal-form-modal">
-  <ng-template>
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2>Nuevo Subcanal</h2>
-        <ion-button fill="clear" (click)="cerrarModal()">
-          <ion-icon name="close-outline"></ion-icon>
-        </ion-button>
-      </div>
+<!-- Modal wrapper con backdrop -->
+<div *ngIf="isOpen" class="custom-modal-backdrop">
+  <div class="custom-modal-content modal-container">
 
-      <div class="modal-body">
-        <form [formGroup]="subcanalForm" (ngSubmit)="guardarSubcanal()">
-          <div class="form-grid">
-            <!-- Nombre ocupa ambas columnas -->
-            <div class="form-group full-width">
-              <label>Nombre <span class="required">*</span></label>
-              <input type="text" class="form-control" formControlName="nombre">
-              <small class="text-danger" *ngIf="subcanalForm.get('nombre')?.invalid && subcanalForm.get('nombre')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <!-- Provincia y localidad en columnas separadas -->
-            <div class="form-group">
-              <label>Provincia <span class="required">*</span></label>
-              <select class="form-control" formControlName="provincia" (change)="onProvinciaChange($event)">
-                <option value="">Seleccione una provincia</option>
-                <option *ngFor="let provincia of provincias" [value]="provincia.id">
-                  {{ provincia.nombre }}
-                </option>
-              </select>
-              <small class="text-danger" *ngIf="subcanalForm.get('provincia')?.invalid && subcanalForm.get('provincia')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label>Localidad <span class="required">*</span></label>
-              <select class="form-control" formControlName="localidad" [disabled]="!provinciaSeleccionada">
-                <option value="">Seleccione una localidad</option>
-                <option *ngFor="let localidad of localidades" [value]="localidad.id">
-                  {{ localidad.nombre }}
-                </option>
-              </select>
-              <small class="text-danger" *ngIf="subcanalForm.get('localidad')?.invalid && subcanalForm.get('localidad')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <!-- Sección de gastos -->
-            <div class="form-group section-title full-width">
-              <h4>Gastos Iniciales</h4>
-            </div>
-
-            <div class="form-group full-width">
-              <label>Porcentaje de gasto (0 si no desea aplicar)</label>
-              <input type="number" class="form-control" formControlName="gastoValor" min="0" max="100" step="0.01">
-              <small class="text-muted">Se aplicará un gasto general con este porcentaje</small>
-            </div>
-
-            <!-- Títulos de secciones -->
-            <div class="form-group section-title full-width">
-              <h4>Selección de Canal</h4>
-            </div>
-
-            <!-- Selección de canal -->
-            <div class="form-group full-width">
-              <label>Canal <span class="required">*</span></label>
-              <select class="form-control" formControlName="canalId">
-                <option value="">Seleccione un canal</option>
-                <option *ngFor="let canal of canales" [value]="canal.id">
-                  {{ canal.nombreFantasia }}
-                </option>
-              </select>
-              <small class="text-danger" *ngIf="subcanalForm.get('canalId')?.invalid && subcanalForm.get('canalId')?.touched">
-                Campo requerido
-              </small>
-            </div>
-
-            <!-- Título de sección de administrador -->
-            <div class="form-group section-title full-width">
-              <h4>Asignación de Administrador</h4>
-            </div>
-
-            <!-- Selección de administrador -->
-            <div class="form-group full-width">
-              <label>Administrador</label>
-              <select class="form-control" formControlName="adminCanalId">
-                <option value="">Seleccione un administrador</option>
-                <option *ngFor="let admin of administradores" [value]="admin.id">
-                  {{ admin.nombre }} {{ admin.apellido }} ({{ admin.email }})
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-error" *ngIf="error">
-            <div class="alert alert-danger">{{ error }}</div>
-          </div>
-
-          <div class="form-footer">
-            <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="loading || subcanalForm.invalid">
-              <span *ngIf="!loading">Guardar</span>
-              <ion-spinner *ngIf="loading" name="dots" class="spinner-sm"></ion-spinner>
-            </button>
-          </div>
-        </form>
-      </div>
+    <div class="modal-header">
+      <h2>Nuevo Subcanal</h2>
+      <button class="btn btn-close" (click)="cerrarModal()">×</button>
     </div>
-  </ng-template>
-</ion-modal>
+
+    <div class="modal-body">
+      <form [formGroup]="subcanalForm" (ngSubmit)="guardarSubcanal()">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nombre <span class="required">*</span></label>
+            <input type="text" class="form-control" formControlName="nombre">
+            <small class="text-danger" *ngIf="subcanalForm.get('nombre')?.invalid && subcanalForm.get('nombre')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Provincia <span class="required">*</span></label>
+            <select class="form-control" formControlName="provincia" (change)="onProvinciaChange($event)">
+              <option value="">Seleccione una provincia</option>
+              <option *ngFor="let provincia of provincias" [value]="provincia.id">
+                {{ provincia.nombre }}
+              </option>
+            </select>
+            <small class="text-danger" *ngIf="subcanalForm.get('provincia')?.invalid && subcanalForm.get('provincia')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Localidad <span class="required">*</span></label>
+            <select class="form-control" formControlName="localidad" [disabled]="!provinciaSeleccionada">
+              <option value="">Seleccione una localidad</option>
+              <option *ngFor="let localidad of localidades" [value]="localidad.id">
+                {{ localidad.nombre }}
+              </option>
+            </select>
+            <small class="text-danger" *ngIf="subcanalForm.get('localidad')?.invalid && subcanalForm.get('localidad')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <div class="form-group section-title full-width">
+            <h4>Gastos Iniciales</h4>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Porcentaje de gasto (0 si no desea aplicar)</label>
+            <input type="number" class="form-control" formControlName="gastoValor" min="0" max="100" step="0.01">
+            <small class="text-muted">Se aplicará un gasto general con este porcentaje</small>
+          </div>
+
+          <div class="form-group section-title full-width">
+            <h4>Selección de Canal</h4>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Canal <span class="required">*</span></label>
+            <select class="form-control" formControlName="canalId">
+              <option value="">Seleccione un canal</option>
+              <option *ngFor="let canal of canales" [value]="canal.id">
+                {{ canal.nombreFantasia }}
+              </option>
+            </select>
+            <small class="text-danger" *ngIf="subcanalForm.get('canalId')?.invalid && subcanalForm.get('canalId')?.touched">
+              Campo requerido
+            </small>
+          </div>
+
+          <div class="form-group section-title full-width">
+            <h4>Asignación de Administrador</h4>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Administrador</label>
+            <select class="form-control" formControlName="adminCanalId">
+              <option value="">Seleccione un administrador</option>
+              <option *ngFor="let admin of administradores" [value]="admin.id">
+                {{ admin.nombre }} {{ admin.apellido }} ({{ admin.email }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-error" *ngIf="error">
+          <div class="alert alert-danger">{{ error }}</div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading || subcanalForm.invalid">
+            <span *ngIf="!loading">Guardar</span>
+            <div *ngIf="loading" class="spinner-border spinner-border-sm" role="status"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

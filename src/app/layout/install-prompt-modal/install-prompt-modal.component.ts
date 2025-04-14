@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,17 +6,17 @@ import { CommonModule } from '@angular/common';
   templateUrl: './install-prompt-modal.component.html',
   styleUrls: ['./install-prompt-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule] // 👈 necesario para los <ion-*>
+  imports: [CommonModule]
 })
 export class InstallPromptModalComponent {
-
-  constructor(private modalCtrl: ModalController) {}
+  @Input() isOpen: boolean = false;
+  @Output() close = new EventEmitter<boolean>();
 
   instalar() {
-    this.modalCtrl.dismiss({ instalar: true });
+    this.close.emit(true);
   }
 
   rechazar() {
-    this.modalCtrl.dismiss({ instalar: false });
+    this.close.emit(false);
   }
 }

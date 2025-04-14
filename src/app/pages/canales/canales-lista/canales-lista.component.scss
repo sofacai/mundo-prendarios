@@ -9,6 +9,8 @@
   padding: 1rem;
   transition: margin-left 0.3s ease;
   width: 100%;
+  overflow-y: auto;
+
 
   @media (min-width: 992px) {
     margin-left: 260px;
@@ -77,7 +79,6 @@
 .card {
   box-shadow: var(--card-box-shadow, 0 0 20px rgba(76, 87, 125, 0.05));
   border-radius: var(--border-radius-md, 0.75rem);
-  overflow: hidden;
 
   .card-header {
     background-color: transparent;
@@ -274,7 +275,7 @@
   /* Contenedor para limitar contenido largo y mostrar ellipsis */
   .cell-content {
     max-width: 100%;
-    overflow: hidden;
+    overflow: auto;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

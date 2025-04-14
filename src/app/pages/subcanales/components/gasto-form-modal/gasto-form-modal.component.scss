@@ -154,3 +154,25 @@
 .mt-3 {
   margin-top: 1rem;
 }
+
+.custom-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.custom-modal-content {
+  background: #fff;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 95%;
+  max-height: 95vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+}

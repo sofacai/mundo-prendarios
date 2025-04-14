@@ -9,6 +9,9 @@
   padding: 1rem;
   transition: margin-left 0.3s ease;
   width: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+
 
   @media (min-width: 992px) {
     margin-left: 260px;
@@ -23,7 +26,6 @@
     width: 100% !important;
     padding: 1rem;
     padding-top: 60px !important;
-    overflow-y: auto;
 
   }
 }

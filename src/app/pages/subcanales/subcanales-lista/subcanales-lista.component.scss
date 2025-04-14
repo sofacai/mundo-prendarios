@@ -8,6 +8,7 @@
   flex: 1;
   padding: 1rem;
   transition: margin-left 0.3s ease;
+  overflow-y: auto;
 
   width: 100%;
 
@@ -24,7 +25,6 @@
     width: 100% !important;
     padding: 1rem;
     padding-top: 60px !important; // Para dejar espacio para el header móvil
-    overflow-y: auto;
   }
 }
 

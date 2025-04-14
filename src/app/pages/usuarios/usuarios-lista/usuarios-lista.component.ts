@@ -382,10 +382,10 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
       this.renderer.addClass(contentArea, 'content-area-with-modal');
-      this.renderer.setStyle(document.body, 'position', 'fixed');
-      this.renderer.setStyle(document.body, 'width', '100%');
-      this.renderer.setStyle(document.body, 'overflow-y', 'scroll');
     }
+
+    // Solo desactiva scroll del body, sin fijarlo
+    this.renderer.setStyle(document.body, 'overflow', 'hidden');
   }
 
   private manejarCierreModal() {

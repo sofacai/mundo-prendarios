@@ -1,27 +1,22 @@
-:host {
-  display: block;
-  background: transparent !important; // ⬅️ clave
-}
-::ng-deep .ion-page {
-  background: transparent !important;
-  --ion-background-color: transparent !important;
-}
-
-.usuario-form-modal {
-  --width: 90%;
-  --max-width: 400px;
-  --height: auto;
-  --border-radius: 12px;
-  --backdrop-opacity: 0.5;
+.custom-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
 }
 
-.modal-container {
+.custom-install-modal {
   background: #fff;
   border-radius: 16px;
   padding: 24px 20px;
-  margin: 0 12px;
+  max-width: 400px;
+  width: 90%;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  position: relative;
   z-index: 10;
 }
 
@@ -33,15 +28,16 @@
   h2 {
     margin: 0;
     font-size: 20px;
-  }
-
-  ion-button {
-    --color: var(--ion-color-medium);
+    font-weight: 600;
   }
 }
 
 .modal-body {
   margin-top: 16px;
+  p {
+    font-size: 14px;
+    color: #333;
+  }
 }
 
 .form-footer {
@@ -67,30 +63,13 @@
     background-color: #f1f3f5;
     color: #333;
   }
-}
-::ng-deep .modal-wrapper {
-  border-radius: 16px;
-  top: 50%;
-  transform: translateY(-50%) !important;
-  max-width: 400px;
-  margin: 0 auto;
-}
-::ng-deep ion-modal.install-modal-custom::part(content) {
-  contain: none;
-  height: auto;
-  max-height: 80vh;
-}
-::ng-deep ion-modal.editar-canal-modal::part(content) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-::ng-deep ion-modal.editar-canal-modal {
-  --background: transparent !important;
-  --ion-background-color: transparent !important;
-  --ion-color-step-50: transparent !important;
-}
 
-::ng-deep ion-modal.editar-canal-modal::part(content) {
-  background: transparent !important;
-  box-shadow: none !important;
+  &.btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--ion-color-medium);
+    padding: 0;
+    line-height: 1;
+  }
 }
