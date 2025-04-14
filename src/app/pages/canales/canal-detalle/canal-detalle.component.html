@@ -131,11 +131,13 @@
         <!-- Subcanales Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'subcanales'">
           <app-canal-subcanales
-            [subcanales]="subcanales"
-            [loadingSubcanales]="loadingSubcanales"
-            (toggleEstado)="toggleSubcanalEstado($event.subcanalId, $event.estadoActual)"
-            (verDetalle)="verDetalleSubcanal($event)"
-          ></app-canal-subcanales>
+          [subcanales]="subcanales"
+          [loadingSubcanales]="loadingSubcanales"
+          [canalId]="canalId"
+          (toggleEstado)="toggleSubcanalEstado($event.subcanalId, $event.estadoActual)"
+          (verDetalle)="verDetalleSubcanal($event)"
+          (subcanalCreado)="onSubcanalCreado($event)"
+        ></app-canal-subcanales>
         </div>
 
         <!-- Planes Tab -->

@@ -60,7 +60,8 @@
 
           <div class="form-group full-width">
             <label>Canal <span class="required">*</span></label>
-            <select class="form-control" formControlName="canalId">
+            <select class="form-control" formControlName="canalId" [disabled]="canalPreseleccionado">
+
               <option value="">Seleccione un canal</option>
               <option *ngFor="let canal of canales" [value]="canal.id">
                 {{ canal.nombreFantasia }}

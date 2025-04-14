@@ -174,6 +174,16 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
     }
   }
 
+  onSubcanalCreado(subcanal: Subcanal): void {
+    this.subcanales = [...this.subcanales, subcanal];
+
+    if (subcanal.activo) {
+      this.subcanalesActivos++;
+    } else {
+      this.subcanalesInactivos++;
+    }
+  }
+
   loadCanalData() {
     this.loading = true;
 

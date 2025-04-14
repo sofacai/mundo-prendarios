@@ -3,11 +3,13 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subcanal } from 'src/app/core/services/subcanal.service';
 import { OperacionService } from 'src/app/core/services/operacion.service';
+import { SubcanalFormComponent } from 'src/app/shared/modals/subcanal-form/subcanal-form.component';
+
 
 @Component({
   selector: 'app-canal-subcanales',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SubcanalFormComponent],
   templateUrl: './canal-subcanales.component.html',
   styleUrls: ['./canal-subcanales.component.scss']
 })
@@ -15,6 +17,10 @@ export class CanalSubcanalesComponent implements OnInit {
   @Input() subcanales: Subcanal[] = [];
   @Input() loading: boolean = false;
   @Input() loadingSubcanales: Map<number, boolean> = new Map();
+
+  @Input() canalId: number | null = null;
+@Output() subcanalCreado = new EventEmitter<Subcanal>();
+modalFormOpen = false;
 
   @Output() toggleEstado = new EventEmitter<{subcanalId: number, estadoActual: boolean}>();
   @Output() verDetalle = new EventEmitter<number>();
@@ -44,6 +50,18 @@ export class CanalSubcanalesComponent implements OnInit {
           });
       });
     }
+  }
+
+  onAgregarSubcanal(): void {
+    this.modalFormOpen = true;
+  }
+
+  onCloseModal(): void {
+    this.modalFormOpen = false;
+  }
+
+  onSubcanalCreado(subcanal: Subcanal): void {
+    this.subcanalCreado.emit(subcanal);
   }
 
   // Método para obtener el total de operaciones liquidadas para un subcanal

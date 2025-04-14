@@ -19,6 +19,8 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() subcanalCreado = new EventEmitter<any>();
+  @Input() canalId: number | null = null;
+@Input() canalPreseleccionado = false;
 
   subcanalForm: FormGroup;
   loading = false;
@@ -136,6 +138,12 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
         this.renderer.removeClass(document.body, 'modal-open');
         this.renderer.removeStyle(document.body, 'padding-right');
       }
+    }
+
+    if (this.canalPreseleccionado && this.canalId) {
+      this.subcanalForm.patchValue({
+        canalId: this.canalId.toString()
+      });
     }
   }
 

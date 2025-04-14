@@ -1,6 +1,9 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3 class="card-title">Subcanales</h3>
+    <button class="btn btn-primary" (click)="onAgregarSubcanal()">
+      <i class="bi bi-plus-circle me-1"></i> Agregar subcanal
+    </button>
   </div>
   <div class="card-body p-4">
     <div class="table-responsive">
@@ -69,3 +72,11 @@
     </div>
   </div>
 </div>
+
+<app-subcanal-form
+  [isOpen]="modalFormOpen"
+  [canalId]="canalId"
+  [canalPreseleccionado]="true"
+  (closeModal)="onCloseModal()"
+  (subcanalCreado)="onSubcanalCreado($event)">
+</app-subcanal-form>

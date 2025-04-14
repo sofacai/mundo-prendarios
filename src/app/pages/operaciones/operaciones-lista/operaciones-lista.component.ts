@@ -102,67 +102,68 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     }
   }
 
- // Update the loadOperaciones method in operaciones-lista.component.ts
-loadOperaciones() {
-  this.loading = true;
-  this.error = null;
+  loadOperaciones() {
+    this.loading = true;
+    this.error = null;
 
-  this.operacionService.getOperaciones()
-    .pipe(
-      catchError(error => {
-        this.error = 'No se pudieron cargar las operaciones. Por favor, intente nuevamente.';
-        return of([]);
-      }),
-      finalize(() => {
-        this.loading = false;
-      })
-    )
-    .subscribe(operaciones => {
-      this.operaciones = operaciones.map((op: any) => {
-        let nombre = '';
-        let apellido = '';
+    this.operacionService.getOperaciones()
+      .pipe(
+        catchError(error => {
+          this.error = 'No se pudieron cargar las operaciones. Por favor, intente nuevamente.';
+          return of([]);
+        }),
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe(operaciones => {
+        this.operaciones = operaciones.map((op: any) => {
+          let nombre = '';
+          let apellido = '';
 
-        if (op.clienteNombre) {
-          const partes = op.clienteNombre.trim().split(' ');
-          nombre = partes[0] || '';
-          apellido = partes.slice(1).join(' ') || '';
-        }
-
-        // Use the estado from the API or default to "Ingresada" if null
-        let estado = op.estado || 'Ingresada';
-
-        let fechaCreacion = '';
-        if (op.fechaCreacion) {
-          try {
-            const fecha = new Date(op.fechaCreacion);
-            fechaCreacion = fecha.toLocaleDateString('es-AR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            });
-          } catch (e) {
-            fechaCreacion = 'Fecha inválida';
+          if (op.clienteNombre) {
+            const partes = op.clienteNombre.trim().split(' ');
+            nombre = partes[0] || '';
+            apellido = partes.slice(1).join(' ') || '';
           }
-        }
 
-        return {
-          id: op.id || 0,
-          nombreCliente: op.clienteNombre || nombre,
-          apellidoCliente: op.clienteApellido || apellido,
-          plan: op.planNombre || '',
-          meses: op.meses || 0,
-          gasto: op.tasa || 0,
-          monto: op.monto || 0,
-          estado: estado,
-          fechaCreacion: fechaCreacion,
-          canalNombre: op.canalNombre || 'Sin canal',
-          canalId: op.canalId,
-        };
+          let estado = op.estado || 'Ingresada';
+
+          let fechaCreacion = '';
+          if (op.fechaCreacion) {
+            try {
+              const fecha = new Date(op.fechaCreacion);
+              fechaCreacion = fecha.toLocaleDateString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              });
+            } catch (e) {
+              fechaCreacion = 'Fecha inválida';
+            }
+          }
+
+          return {
+            id: op.id || 0,
+            nombreCliente: op.clienteNombre || nombre,
+            apellidoCliente: op.clienteApellido || apellido,
+            plan: op.planNombre || '',
+            meses: op.meses || 0,
+            gasto: op.tasa || 0,
+            monto: op.monto || 0,
+            estado: estado,
+            fechaCreacion: fechaCreacion,
+            canalNombre: op.canalNombre || 'Sin canal',
+            canalId: op.canalId,
+          };
+        });
+
+        // Set default sort to show operations with highest ID first
+        this.sortState = { column: 'id', direction: 'desc' };
+
+        this.applyFilters();
       });
-
-      this.applyFilters();
-    });
-}
+  }
 
   onSearchChange() {
     clearTimeout(this.searchTimeout);
@@ -285,17 +286,51 @@ applyFilters() {
     const { column, direction } = this.sortState;
 
     if (!column) {
-      return data; // No sorting needed
+      return data;
     }
 
     const factor = direction === 'asc' ? 1 : -1;
 
     return [...data].sort((a: any, b: any) => {
-      // ...existing sort cases...
+      if (column === 'id') {
+        return (a.id - b.id) * factor;
+      }
+
+      if (column === 'nombreCompleto') {
+        const nombreA = `${a.nombreCliente} ${a.apellidoCliente}`.toLowerCase();
+        const nombreB = `${b.nombreCliente} ${b.apellidoCliente}`.toLowerCase();
+        return nombreA.localeCompare(nombreB) * factor;
+      }
+
+      if (column === 'plan') {
+        return (a.plan || '').localeCompare(b.plan || '') * factor;
+      }
+
+      if (column === 'meses') {
+        return (a.meses - b.meses) * factor;
+      }
+
+      if (column === 'gasto') {
+        return (a.gasto - b.gasto) * factor;
+      }
+
+      if (column === 'monto') {
+        return (a.monto - b.monto) * factor;
+      }
+
+      if (column === 'fechaCreacion') {
+        const dateA = a.fechaCreacion ? new Date(a.fechaCreacion.split('/').reverse().join('-')) : new Date(0);
+        const dateB = b.fechaCreacion ? new Date(b.fechaCreacion.split('/').reverse().join('-')) : new Date(0);
+        return (dateA.getTime() - dateB.getTime()) * factor;
+      }
+
+      if (column === 'canalNombre') {
+        return (a.canalNombre || '').localeCompare(b.canalNombre || '') * factor;
+      }
 
       if (column === 'estado') {
         const estadoOrden: {[key: string]: number} = {
-          'Liquidada': 0, // First in order
+          'Liquidada': 0,
           'Ingresada': 1,
           'Activo': 2,
           'Pendiente': 3,
