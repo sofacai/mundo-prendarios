@@ -167,17 +167,32 @@ export class WizardContainerComponent implements OnInit {
       return;
     }
 
-    // Obtener IDs únicos de canales
-    const canalIds = [...new Set(subcanales.map(s => s.canalId))];
+    if (this.currentUserRol === RolType.Vendor || this.currentUserRol === RolType.AdminCanal) {
+      const subcanalesActivos = subcanales.filter(s => s.activo);
 
-    // Crear un array de observables para consultar cada canal
+      if (subcanalesActivos.length === 0) {
+        this.error = "No hay subcanales activos disponibles.";
+        return;
+      }
+
+      if (subcanalesActivos.length === 1) {
+        this.subcanalSeleccionado = subcanalesActivos[0].id;
+        this.necesitaSeleccionarSubcanal = false;
+      } else {
+        this.necesitaSeleccionarSubcanal = true;
+      }
+
+      this.convertirADatosWizard(subcanalesActivos);
+      return;
+    }
+
+    const canalIds = [...new Set(subcanales.map(s => s.canalId))];
     const canalesObservables = canalIds.map(canalId =>
       this.canalService.getCanal(canalId).pipe(
         catchError(err => of(null))
       )
     );
 
-    // Ejecutar todas las consultas en paralelo
     forkJoin(canalesObservables).subscribe({
       next: (canales) => {
         const canalesActivos = canales.filter(canal => canal && canal.activo);
@@ -187,7 +202,6 @@ export class WizardContainerComponent implements OnInit {
           return;
         }
 
-        // Si hay canales activos, procesamos los subcanales para el cotizador
         if (subcanales.length === 1) {
           const subcanalUnico = subcanales[0];
           const canalDelSubcanal = canales.find(c => c && c.id === subcanalUnico.canalId);
@@ -197,11 +211,9 @@ export class WizardContainerComponent implements OnInit {
             return;
           }
 
-          // Si está todo ok, seleccionamos automáticamente este subcanal
           this.subcanalSeleccionado = subcanalUnico.id;
           this.necesitaSeleccionarSubcanal = false;
         } else {
-          // Si hay múltiples subcanales, filtramos solo los que tienen canal activo
           const subcanalesConCanalActivo = subcanales.filter(subcanal => {
             const canalActivo = canales.find(c => c && c.id === subcanal.canalId && c.activo);
             return !!canalActivo;
@@ -213,20 +225,16 @@ export class WizardContainerComponent implements OnInit {
           }
 
           if (subcanalesConCanalActivo.length === 1) {
-            // Si queda un solo subcanal con canal activo, lo seleccionamos automáticamente
             this.subcanalSeleccionado = subcanalesConCanalActivo[0].id;
             this.necesitaSeleccionarSubcanal = false;
           } else {
-            // Si hay múltiples, el usuario debe seleccionar
             this.necesitaSeleccionarSubcanal = true;
           }
         }
 
-        // Convertir a datos del wizard
         this.convertirADatosWizard(this.necesitaSeleccionarSubcanal ? subcanales : [subcanales.find(s => s.id === this.subcanalSeleccionado)!]);
       },
       error: (error) => {
-        console.error('Error al verificar el estado de los canales:', error);
         this.error = "Error al verificar el estado de los canales.";
       }
     });
