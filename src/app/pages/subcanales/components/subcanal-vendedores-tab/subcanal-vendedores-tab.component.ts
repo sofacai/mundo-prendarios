@@ -7,11 +7,12 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { RolType } from 'src/app/core/models/usuario.model';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { UsuarioFormComponent } from 'src/app/shared/modals/usuario-form/usuario-form.component';
 
 @Component({
   selector: 'app-subcanal-vendedores-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, UsuarioFormComponent],
   templateUrl: './subcanal-vendedores-tab.component.html',
   styleUrls: ['./subcanal-vendedores-tab.component.scss']
 })
@@ -25,6 +26,7 @@ export class SubcanalVendedoresTabComponent implements OnInit {
   @Output() toggleVendorEstado = new EventEmitter<{ vendorId: number, estadoActual: boolean }>();
   @Output() desasignarVendor = new EventEmitter<number>();
   @Output() verDetalleVendor = new EventEmitter<number>();
+  @Output() crearVendedor = new EventEmitter<void>();
 
   // Modal state
   showModal = false;
@@ -32,6 +34,9 @@ export class SubcanalVendedoresTabComponent implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
   assigning = false;
+
+  // Modal de creación de vendedor
+  showCrearVendedorModal = false;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -151,5 +156,23 @@ export class SubcanalVendedoresTabComponent implements OnInit {
     } else {
       this.closeModal();
     }
+  }
+
+  // Nuevos métodos para la creación de vendedores
+  crearNuevoVendedor(): void {
+    this.showCrearVendedorModal = true;
+    this.crearVendedor.emit();
+  }
+
+  onVendedorCreado(vendedor: UsuarioDto): void {
+    this.showCrearVendedorModal = false;
+    // Si el vendedor se creó exitosamente, lo asignamos automáticamente al subcanal
+    if (vendedor && vendedor.id) {
+      this.asignarVendedorConfirmado.emit(Number(vendedor.id));
+    }
+  }
+
+  closeCrearVendedorModal(): void {
+    this.showCrearVendedorModal = false;
   }
 }

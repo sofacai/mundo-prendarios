@@ -134,6 +134,9 @@ errorAdminCanal: string | null = null;
     });
   }
 
+  abrirModalCrearVendedor(): void {
+  };
+
   ngOnInit() {
     // Get subcanal ID from route params
     this.route.params.subscribe(params => {
