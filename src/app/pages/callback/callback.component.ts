@@ -25,52 +25,7 @@ import { KommoService } from 'src/app/core/services/kommo.service';
       </div>
     </div>
   `,
-  styles: [`
-    .callback-container {
-      max-width: 600px;
-      margin: 100px auto;
-      padding: 2rem;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .spinner-border {
-      display: inline-block;
-      width: 3rem;
-      height: 3rem;
-      vertical-align: text-bottom;
-      border: 0.25em solid currentColor;
-      border-right-color: transparent;
-      border-radius: 50%;
-      animation: spinner-border 0.75s linear infinite;
-      color: #009ef7;
-    }
-
-    @keyframes spinner-border {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .alert {
-      padding: 1rem;
-      border-radius: 0.475rem;
-      margin-top: 1rem;
-    }
-
-    .alert-danger {
-      color: #f1416c;
-      background-color: #fff5f8;
-      border-color: #f1416c;
-    }
-
-    .alert-success {
-      color: #50cd89;
-      background-color: #e8fff3;
-      border-color: #50cd89;
-    }
-  `]
+  styleUrls: ['./callback.component.scss']
 })
 export class CallbackComponent implements OnInit {
   loading = true;
@@ -87,35 +42,27 @@ export class CallbackComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
       const error = params['error'];
+      const referer = params['referer']; // Add this line to capture the referer
 
       if (code) {
         // Enviar mensaje a la ventana principal
         if (window.opener) {
           window.opener.postMessage({
             source: 'kommo_callback',
-            code: code
+            code: code,
+            accountDomain: referer // Add this line to pass the referer
           }, window.location.origin);
-
-          this.success = true;
-          this.loading = false;
-
-          // Cerrar esta ventana después de enviar el código
-          setTimeout(() => window.close(), 2000);
+          // ...
         } else {
-          this.processCode(code);
+          this.processCode(code, referer); // Pass referer here
         }
-      } else if (error) {
-        this.error = `Error de autorización: ${error}`;
-        this.loading = false;
-      } else {
-        this.error = 'No se recibió código de autorización';
-        this.loading = false;
       }
+      // ...
     });
   }
 
-  private processCode(code: string) {
-    this.kommoService.exchangeCodeForToken(code).subscribe({
+  private processCode(code: string, accountDomain: string) {
+    this.kommoService.exchangeCodeForToken(code, accountDomain).subscribe({
       next: (data) => {
         this.kommoService.saveAuthData(data);
         this.success = true;
@@ -128,8 +75,6 @@ export class CallbackComponent implements OnInit {
       },
       error: (err) => {
         this.error = `Error al procesar la autorización: ${err.error?.error || err.status || 'Error desconocido'}`;
-
-
         this.loading = false;
       }
     });

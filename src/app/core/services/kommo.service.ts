@@ -19,8 +19,11 @@ export class KommoService {
 
   constructor(private http: HttpClient) { }
 
-  exchangeCodeForToken(code: string): Observable<KommoAuthResponse> {
-    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/auth`, { Code: code });
+  exchangeCodeForToken(code: string, accountDomain?: string): Observable<KommoAuthResponse> {
+    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/auth`, {
+      Code: code,
+      AccountDomain: accountDomain
+    });
   }
 
   refreshToken(refreshToken: string): Observable<KommoAuthResponse> {
@@ -37,7 +40,7 @@ export class KommoService {
       'Authorization': `Bearer ${auth.accessToken}`
     });
 
-    return this.http.get(`${this.apiUrl}/api/kommo/leads`, { headers });
+    return this.http.get(`${this.apiUrl}/kommo/leads`, { headers });
   }
 
   saveAuthData(data: KommoAuthResponse): void {
