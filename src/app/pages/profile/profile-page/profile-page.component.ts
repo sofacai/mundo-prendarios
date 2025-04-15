@@ -45,7 +45,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   editMode = false;
   kommoConnected = false;
 
-  private readonly KOMMO_CLIENT_ID = 'a279e4b2-6bf6-4596-a574-ff524ac1f895';
+  private readonly KOMMO_CLIENT_ID = 'c472bc29-e83d-4fe5-9550-29c7c844b060';
   private readonly KOMMO_REDIRECT_URI = 'http://localhost:8100/callback';
 
 
@@ -209,7 +209,10 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
       redirectUri: this.KOMMO_REDIRECT_URI,
       title: 'Conectar con Kommo',
       container: document.getElementById('kommo-button-container'),
+      popupWidth: 800,
+      popupHeight: 600,
       onAuth: (code: string) => {
+        console.log("Auth code received:", code);
         this.handleKommoAuth(code);
       }
     });
@@ -239,10 +242,37 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
       this.loadKommoButtonScript();
     }, 100);
   }
-  connectKommo() {
-    const authUrl = `https://api-c.kommo.com/oauth/authorize?client_id=${this.KOMMO_CLIENT_ID}&redirect_uri=${encodeURIComponent(this.KOMMO_REDIRECT_URI)}&response_type=code&state=${this.generateRandomState()}`;
 
-    window.open(authUrl, '_blank', 'width=800,height=600');
+  connectKommo() {
+    // Usar directamente la URL de autenticación
+    const state = this.generateRandomState();
+    const authUrl = `https://www.kommo.com/oauth?client_id=${this.KOMMO_CLIENT_ID}` +
+      `&state=${state}` +
+      `&mode=popup` +
+      `&redirect_uri=${encodeURIComponent(this.KOMMO_REDIRECT_URI)}`;
+
+    // Abrir en una ventana popup con configuración específica
+    const width = 800;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    window.open(
+      authUrl,
+      'kommo_auth',
+      `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes,status=yes`
+    );
+
+    // Escuchar mensajes del callback
+    window.addEventListener('message', (event) => {
+      // Verificar origen para seguridad
+      if (event.origin === window.location.origin && event.data?.source === 'kommo_callback') {
+        const code = event.data.code;
+        if (code) {
+          this.handleKommoAuth(code);
+        }
+      }
+    });
   }
 
   private generateRandomState(): string {

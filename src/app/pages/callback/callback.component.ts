@@ -88,19 +88,29 @@ export class CallbackComponent implements OnInit {
       const code = params['code'];
       const error = params['error'];
 
-      if (error) {
+      if (code) {
+        // Enviar mensaje a la ventana principal
+        if (window.opener) {
+          window.opener.postMessage({
+            source: 'kommo_callback',
+            code: code
+          }, window.location.origin);
+
+          this.success = true;
+          this.loading = false;
+
+          // Cerrar esta ventana después de enviar el código
+          setTimeout(() => window.close(), 2000);
+        } else {
+          this.processCode(code);
+        }
+      } else if (error) {
         this.error = `Error de autorización: ${error}`;
         this.loading = false;
-        return;
-      }
-
-      if (!code) {
+      } else {
         this.error = 'No se recibió código de autorización';
         this.loading = false;
-        return;
       }
-
-      this.processCode(code);
     });
   }
 
