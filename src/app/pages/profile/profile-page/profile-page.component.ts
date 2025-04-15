@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,6 +9,13 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { UsuarioService, UsuarioDto, UsuarioCrearDto } from 'src/app/core/services/usuario.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { Usuario } from 'src/app/core/models/usuario.model';
+import { KommoService } from 'src/app/core/services/kommo.service';
+
+declare global {
+  interface Window {
+    KommoButton: any;
+  }
+}
 
 @Component({
   selector: 'app-profile-page',
@@ -21,8 +28,8 @@ import { Usuario } from 'src/app/core/models/usuario.model';
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.scss']
 })
-export class ProfilePageComponent implements OnInit, OnDestroy {
-  currentUser: Usuario | null = null;  // Tipo del AuthService
+export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
+  currentUser: Usuario | null = null;
   usuario: UsuarioDto | null = null;
   usuarioForm: {
     nombre: string;
@@ -36,6 +43,10 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
   editMode = false;
+  kommoConnected = false;
+
+  private readonly KOMMO_CLIENT_ID = 'a279e4b2-6bf6-4596-a574-ff524ac1f895';
+  private readonly KOMMO_REDIRECT_URI = 'http://localhost:8100/callback';
 
 
   isSidebarCollapsed = false;
@@ -45,7 +56,8 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private usuarioService: UsuarioService,
     private router: Router,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private kommoService: KommoService
   ) { }
 
   ngOnInit() {
@@ -58,7 +70,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       this.loading = false;
     }
 
-
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
       collapsed => {
@@ -66,6 +77,14 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
         this.adjustContentArea();
       }
     );
+
+    this.kommoConnected = this.kommoService.isAuthenticated();
+  }
+
+  ngAfterViewInit() {
+    if (!this.kommoConnected) {
+      this.loadKommoButtonScript();
+    }
   }
 
   ngOnDestroy() {
@@ -111,7 +130,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     }
   }
 
-
   saveProfile() {
     if (!this.usuario || !this.usuarioForm) return;
 
@@ -137,7 +155,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
 
     this.usuarioService.updateUsuario(this.usuario.id, updateData).subscribe({
       next: (data) => {
-        // Actualizar manualmente los datos que sabemos que cambiaron
         if (this.usuario) {
           this.usuario.nombre = updateData.nombre;
           this.usuario.apellido = updateData.apellido;
@@ -148,7 +165,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error al guardar:', err);
         this.error = 'Error al guardar los cambios';
         this.loading = false;
       }
@@ -164,5 +180,74 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     if (this.usuario) {
       this.loadUserDetails(this.usuario.id);
     }
+  }
+
+  // Métodos para integración con Kommo
+  private loadKommoButtonScript() {
+    if (document.getElementById('kommo-button-script')) {
+      this.initKommoButton();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'kommo-button-script';
+    script.src = 'https://cdn.kommo.com/widgets/button/v2/button.js';
+    script.async = true;
+    script.onload = () => {
+      this.initKommoButton();
+    };
+    document.body.appendChild(script);
+  }
+
+  private initKommoButton() {
+    if (!window.KommoButton || !document.getElementById('kommo-button-container')) {
+      return;
+    }
+
+    const kommoButton = new window.KommoButton({
+      clientId: this.KOMMO_CLIENT_ID,
+      redirectUri: this.KOMMO_REDIRECT_URI,
+      title: 'Conectar con Kommo',
+      container: document.getElementById('kommo-button-container'),
+      onAuth: (code: string) => {
+        this.handleKommoAuth(code);
+      }
+    });
+  }
+
+  private handleKommoAuth(code: string) {
+    this.loading = true;
+    this.kommoService.exchangeCodeForToken(code).subscribe({
+      next: (data) => {
+        this.kommoService.saveAuthData(data);
+        this.kommoConnected = true;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Error al conectar con Kommo: ' + (err.error?.error || 'Error desconocido');
+        this.loading = false;
+      }
+    });
+  }
+
+  disconnectKommo() {
+    this.kommoService.clearAuthData();
+    this.kommoConnected = false;
+
+    // Recargar el botón de Kommo
+    setTimeout(() => {
+      this.loadKommoButtonScript();
+    }, 100);
+  }
+  connectKommo() {
+    const authUrl = `https://api-c.kommo.com/oauth/authorize?client_id=${this.KOMMO_CLIENT_ID}&redirect_uri=${encodeURIComponent(this.KOMMO_REDIRECT_URI)}&response_type=code&state=${this.generateRandomState()}`;
+
+    window.open(authUrl, '_blank', 'width=800,height=600');
+  }
+
+  private generateRandomState(): string {
+    const state = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('kommo_state', state);
+    return state;
   }
 }

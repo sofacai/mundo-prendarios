@@ -68,6 +68,45 @@
               </div>
             </div>
           </div>
+
+          <!-- Integración con Kommo -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="bi bi-link-45deg me-2 text-primary"></i>
+                Integraciones
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="detail-section">
+                <div class="detail-row">
+                  <div class="detail-label">Kommo CRM:</div>
+                  <div class="detail-value">
+                    <div *ngIf="!kommoConnected" id="kommo-button-container"></div>
+                    <div *ngIf="kommoConnected" class="d-flex align-items-center">
+                      <span class="badge badge-success me-2">Conectado</span>
+                      <button class="btn btn-sm btn-light" (click)="disconnectKommo()">
+                        <i class="bi bi-x-circle"></i> Desconectar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="detail-value">
+                  <div *ngIf="!kommoConnected">
+                    <button class="btn btn-primary" (click)="connectKommo()">
+                      <i class="bi bi-link-45deg me-2"></i>Conectar con Kommo
+                    </button>
+                  </div>
+                  <div *ngIf="kommoConnected" class="d-flex align-items-center">
+                    <span class="badge badge-success me-2">Conectado</span>
+                    <button class="btn btn-sm btn-light" (click)="disconnectKommo()">
+                      <i class="bi bi-x-circle"></i> Desconectar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -78,43 +117,6 @@
             <div class="avatar">{{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}</div>
             <div class="user-details">
               <h2>Editar Perfil</h2>
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="!editMode" class="profile-header-card">
-          <div class="d-flex align-items-center">
-            <div class="avatar me-3">{{ usuario?.nombre?.charAt(0) || '' }}{{ usuario?.apellido?.charAt(0) || '' }}</div>
-            <div>
-              <h2>{{ usuario?.nombre || '' }} {{ usuario?.apellido || '' }}</h2>
-              <div class="badges">
-                <span class="badge badge-primary">{{ usuario?.rolNombre || '' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <hr class="my-4">
-
-          <h3 class="section-title">
-            <i class="bi bi-person me-2"></i>
-            Datos personales
-          </h3>
-
-          <div class="row mb-3">
-            <div class="col-sm-3">
-              <div class="detail-label">Email:</div>
-            </div>
-            <div class="col-sm-9">
-              <div class="detail-value">{{ usuario?.email || '' }}</div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-sm-3">
-              <div class="detail-label">Teléfono:</div>
-            </div>
-            <div class="col-sm-9">
-              <div class="detail-value">{{ usuario?.telefono || 'No especificado' }}</div>
             </div>
           </div>
         </div>

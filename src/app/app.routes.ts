@@ -83,6 +83,10 @@ export const routes: Routes = [
     path: 'profile/:id',
     component: ProfilePageComponent,
   },
+  {
+    path: 'callback',
+    loadComponent: () => import('./pages/callback/callback.component').then(m => m.CallbackComponent)
+  },
 
   // Redirecciones
   {
