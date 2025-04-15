@@ -127,7 +127,9 @@ export class CallbackComponent implements OnInit {
         }, 3000);
       },
       error: (err) => {
-        this.error = 'Error al procesar la autorización: ' + (err.error?.error || 'Error desconocido');
+        this.error = `Error al procesar la autorización: ${err.error?.error || err.status || 'Error desconocido'}`;
+
+
         this.loading = false;
       }
     });

@@ -20,11 +20,11 @@ export class KommoService {
   constructor(private http: HttpClient) { }
 
   exchangeCodeForToken(code: string): Observable<KommoAuthResponse> {
-    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/api/kommo/auth`, { code });
+    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/auth`, { Code: code });
   }
 
   refreshToken(refreshToken: string): Observable<KommoAuthResponse> {
-    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/api/kommo/refresh`, { refreshToken });
+    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/refresh`, { refreshToken });
   }
 
   getLeads(): Observable<any> {
