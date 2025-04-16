@@ -40,28 +40,41 @@ export class CallbackComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
+      console.log('Callback params:', params); // Depuración
+
       const code = params['code'];
       const error = params['error'];
-      const referer = params['referer']; // Add this line to capture the referer
+      const referer = params['referer']; // Este es el nombre completo, ej: subdomain.kommo.com
+      const clientId = params['client_id'];
+      const state = params['state'];
+
+      // Mostrar todos los parámetros recibidos para depuración
+      console.log(`Code: ${code}, Referer: ${referer}, ClientId: ${clientId}, State: ${state}`);
 
       if (code) {
-        // Enviar mensaje a la ventana principal
+        // Enviar el referer completo sin modificar
         if (window.opener) {
           window.opener.postMessage({
             source: 'kommo_callback',
             code: code,
-            accountDomain: referer // Add this line to pass the referer
+            accountDomain: referer, // Pasar el referer completo
+            clientId: clientId,
+            state: state
           }, window.location.origin);
-          // ...
+          window.close(); // Cerrar la ventana popup
         } else {
-          this.processCode(code, referer); // Pass referer here
+          this.processCode(code, referer);
         }
+      } else if (error) {
+        this.error = `Error de autorización: ${error}`;
+        this.loading = false;
       }
-      // ...
     });
   }
 
   private processCode(code: string, accountDomain: string) {
+    console.log(`Procesando código: ${code}, Domain: ${accountDomain}`);
+
     this.kommoService.exchangeCodeForToken(code, accountDomain).subscribe({
       next: (data) => {
         this.kommoService.saveAuthData(data);
@@ -74,6 +87,7 @@ export class CallbackComponent implements OnInit {
         }, 3000);
       },
       error: (err) => {
+        console.error('Error en exchangeCodeForToken:', err);
         this.error = `Error al procesar la autorización: ${err.error?.error || err.status || 'Error desconocido'}`;
         this.loading = false;
       }

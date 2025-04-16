@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, tap, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface KommoAuthResponse {
@@ -20,12 +20,21 @@ export class KommoService {
   constructor(private http: HttpClient) { }
 
   exchangeCodeForToken(code: string, accountDomain?: string): Observable<KommoAuthResponse> {
+    // Registrar los valores para depuración
+    console.log(`Enviando: Code=${code}, AccountDomain=${accountDomain}`);
+
+    // Asegurarse de que los nombres de propiedades coincidan exactamente con lo que espera el backend
     return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/auth`, {
       Code: code,
       AccountDomain: accountDomain
-    });
+    }).pipe(
+      tap(response => console.log('Respuesta del token:', response)),
+      catchError(error => {
+        console.error('Error en intercambio de token:', error);
+        return throwError(() => error);
+      })
+    );
   }
-
   refreshToken(refreshToken: string): Observable<KommoAuthResponse> {
     return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/refresh`, { refreshToken });
   }

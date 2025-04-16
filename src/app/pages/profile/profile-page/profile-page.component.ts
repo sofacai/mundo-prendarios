@@ -218,16 +218,21 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  private handleKommoAuth(code: string) {
+  private handleKommoAuth(code: string, accountDomain?: string) {
+    console.log(`Autenticando con Kommo: Code=${code}, AccountDomain=${accountDomain}`);
+
     this.loading = true;
-    this.kommoService.exchangeCodeForToken(code).subscribe({
+    this.kommoService.exchangeCodeForToken(code, accountDomain).subscribe({
       next: (data) => {
+        console.log('Autenticación exitosa:', data);
         this.kommoService.saveAuthData(data);
         this.kommoConnected = true;
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Error al conectar con Kommo: ' + (err.error?.error || 'Error desconocido');
+        console.error('Error en autenticación:', err);
+        this.error = 'Error al conectar con Kommo: ' +
+          (err.error?.error || err.error?.detail || err.message || 'Error desconocido');
         this.loading = false;
       }
     });
@@ -257,22 +262,30 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
 
-    window.open(
+    const popup = window.open(
       authUrl,
       'kommo_auth',
       `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes,status=yes`
     );
 
     // Escuchar mensajes del callback
-    window.addEventListener('message', (event) => {
+    const messageHandler = (event: MessageEvent) => {
       // Verificar origen para seguridad
       if (event.origin === window.location.origin && event.data?.source === 'kommo_callback') {
+        console.log('Recibido mensaje del callback:', event.data);
+
         const code = event.data.code;
+        const accountDomain = event.data.accountDomain;
+
         if (code) {
-          this.handleKommoAuth(code);
+          this.handleKommoAuth(code, accountDomain);
+          // Eliminar el listener después de procesar
+          window.removeEventListener('message', messageHandler);
         }
       }
-    });
+    };
+
+    window.addEventListener('message', messageHandler);
   }
 
   private generateRandomState(): string {
