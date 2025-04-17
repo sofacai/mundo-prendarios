@@ -219,20 +219,25 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private handleKommoAuth(code: string, accountDomain?: string) {
-    console.log(`Autenticando con Kommo: Code=${code}, AccountDomain=${accountDomain}`);
+    console.log(`Autenticando con Kommo: Code=${code}, Domain=${accountDomain || 'no especificado'}`);
 
     this.loading = true;
     this.kommoService.exchangeCodeForToken(code, accountDomain).subscribe({
       next: (data) => {
-        console.log('Autenticación exitosa:', data);
+        console.log('Autenticación exitosa, datos recibidos:', data);
         this.kommoService.saveAuthData(data);
-        this.kommoConnected = true;
+
+        // Verificar que se guardaron los datos correctamente
+        const savedData = this.kommoService.getAuthData();
+        console.log('Datos guardados en localStorage:', savedData);
+
+        this.kommoConnected = this.kommoService.isAuthenticated();
+        console.log('¿Conexión establecida?', this.kommoConnected);
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error en autenticación:', err);
-        this.error = 'Error al conectar con Kommo: ' +
-          (err.error?.error || err.error?.detail || err.message || 'Error desconocido');
+        console.error('Error completo:', err);
+        this.error = 'Error al conectar con Kommo';
         this.loading = false;
       }
     });

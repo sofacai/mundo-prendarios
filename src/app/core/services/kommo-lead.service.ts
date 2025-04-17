@@ -54,10 +54,14 @@ export class KommoLeadService {
       return throwError(() => new Error('No hay token de autenticación disponible'));
     }
 
+    // Crear los headers PRIMERO
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${auth.accessToken}`
     });
 
+    // DESPUÉS puedes usar headers para los logs
+    console.log('Headers enviados:', headers.get('Authorization'));
+    console.log('Token completo:', auth?.accessToken);
 
     // Construir el lead para Kommo según su API
     const lead: KommoLead = {

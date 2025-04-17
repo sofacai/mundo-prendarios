@@ -1019,8 +1019,9 @@ export class WizardContainerComponent implements OnInit {
 
   // 4. Agregar un nuevo método para crear el lead en Kommo
   private crearLeadEnKommo(operacion: any, cliente: any): void {
-    console.log('Token de Kommo disponible:', this.KommoService.getAuthData()?.accessToken);
-
+    const authData = this.KommoService.getAuthData();
+    console.log('¿Tenemos token?', !!authData?.accessToken);
+    console.log('Datos de auth completos:', authData);
 
     this.kommoLeadService.crearLeadDesdeOperacion(operacion, cliente).subscribe({
       next: (response) => {

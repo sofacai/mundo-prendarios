@@ -23,6 +23,8 @@ export class KommoService {
   }
 
   exchangeCodeForToken(code: string, accountDomain?: string): Observable<KommoAuthResponse> {
+    console.log(`Intercambiando código por token: ${code}, dominio: ${accountDomain}`);
+
     return this.http.post<any>(`${this.apiUrl}/kommo/auth`, {
       Code: code,
       AccountDomain: accountDomain
@@ -84,7 +86,13 @@ export class KommoService {
   }
 
   saveAuthData(data: KommoAuthResponse): void {
-    console.log('Guardando datos de autenticación de Kommo');
+    console.log('Guardando datos de autenticación de Kommo', data);
+
+    // Validar que tenemos todos los datos necesarios
+    if (!data.accessToken) {
+      console.error('Error: No hay accessToken en los datos recibidos');
+      return;
+    }
 
     // Corrige el cálculo de la fecha de expiración
     const now = new Date().getTime();
@@ -103,6 +111,7 @@ export class KommoService {
       // Para depurar
       const expiresDate = new Date(expiresAt);
       console.log(`Token expirará: ${expiresDate.toLocaleString()}`);
+      console.log('Datos a guardar:', authData);
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(authData));
       console.log('Datos de autenticación guardados con éxito');
@@ -119,12 +128,20 @@ export class KommoService {
 
       const parsed = JSON.parse(data);
       console.log('Token parseado:', parsed.accessToken);
+
+      // Validación adicional
+      if (!parsed.accessToken) {
+        console.warn('Token inválido en localStorage (sin accessToken)');
+        return null;
+      }
+
       return parsed;
     } catch (error) {
       console.error('Error al recuperar datos de autenticación:', error);
       return null;
     }
   }
+
   isAuthenticated(): boolean {
     const auth = this.getAuthData();
     if (!auth) {
@@ -133,10 +150,11 @@ export class KommoService {
     }
 
     const now = new Date().getTime();
-    const isValid = now < auth.expires_at;
+    const isValid = now < auth.expires_at && !!auth.accessToken;
 
     console.log('Estado de autenticación Kommo:', isValid ? 'Válido' : 'Expirado',
-                'Expira en:', new Date(auth.expires_at).toLocaleString());
+                'Expira en:', new Date(auth.expires_at).toLocaleString(),
+                'Token presente:', !!auth.accessToken);
 
     return isValid;
   }
@@ -148,7 +166,7 @@ export class KommoService {
   // Método para verificar y refrescar el token si está por expirar
   private checkAndRefreshTokenIfNeeded(): void {
     const auth = this.getAuthData();
-    if (!auth) return;
+    if (!auth || !auth.refreshToken) return;
 
     const now = new Date().getTime();
     const expiresAt = auth.expires_at;
