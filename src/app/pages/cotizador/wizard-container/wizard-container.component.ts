@@ -20,6 +20,8 @@ import { forkJoin, of } from 'rxjs';
 import { CanalService } from 'src/app/core/services/canal.service';
 import { PlanService } from 'src/app/core/services/plan.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { KommoLeadService } from 'src/app/core/services/kommo-lead.service';
+
 
 
 interface WizardData {
@@ -80,7 +82,8 @@ export class WizardContainerComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private canalService: CanalService,
     private planService: PlanService,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private kommoLeadService: KommoLeadService
 
 
   ) {}
@@ -915,20 +918,19 @@ export class WizardContainerComponent implements OnInit {
     this.cargando = false;
   }
 
-  // Método para crear operación (devuelve una promesa)
   private crearOperacion(planId: number, tasa: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      // If already exists an operation, update instead of create
+      // Si ya existe una operación, actualizar en vez de crear
       if (this.wizardData.operacionId) {
         resolve({ id: this.wizardData.operacionId });
         return;
       }
 
-      // Get current logged in user's ID
+      // Obtener el ID del usuario creador
       const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
 
       if (!this.wizardData.clienteId) {
-        // Prepare client data
+        // Preparar datos del cliente
         const clienteData = {
           nombre: this.wizardData.clienteNombre || "",
           apellido: this.wizardData.clienteApellido || "",
@@ -942,7 +944,7 @@ export class WizardContainerComponent implements OnInit {
           estadoCivil: ""
         };
 
-        // Prepare operation data with new fields
+        // Preparar datos de la operación
         const operacionData = {
           monto: this.wizardData.monto!,
           meses: this.wizardData.plazo!,
@@ -951,53 +953,77 @@ export class WizardContainerComponent implements OnInit {
           subcanalId: this.subcanalSeleccionado!,
           canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
           vendedorId: this.vendorSeleccionado,
-          usuarioCreadorId: usuarioCreadorId, // Add creator ID
-          estado: "Ingresada" // Default state
+          usuarioCreadorId: usuarioCreadorId,
+          estado: "Ingresada"
         };
 
-
-
-        // Create client and operation in one call
         this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
           next: (operacionCreada) => {
             if (operacionCreada && operacionCreada.id) {
               this.wizardData.operacionId = operacionCreada.id;
+
+              // Intentar crear un lead en Kommo con datos del cliente
+              this.crearLeadEnKommo(operacionCreada, clienteData);
             }
             resolve(operacionCreada);
           },
-          error: (error) => {
-            console.error('Error creating operation:', error);
+          error: (error: any) => {
+            console.error('Error al crear operación:', error);
             resolve({ dummy: true });
           }
         });
       } else {
-        // Only create operation with selected vendorId
-        const operacion: Operacion = {
-          monto: this.wizardData.monto!,
-          meses: this.wizardData.plazo!,
-          tasa: tasa,
-          clienteId: this.wizardData.clienteId,
-          planId: planId,
-          subcanalId: this.subcanalSeleccionado!,
-          canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-          vendedorId: this.vendorSeleccionado ?? undefined,
-          usuarioCreadorId: usuarioCreadorId, // Add creator ID
-          estado: "Ingresada" // Default state
-        };
+        // Obtener datos del cliente - CORREGIDO: usar getClienteById en lugar de getCliente
+        this.clienteService.getClienteById(this.wizardData.clienteId).subscribe({
+          next: (cliente) => {
+            // Crear solo la operación
+            const operacion: Operacion = {
+              monto: this.wizardData.monto!,
+              meses: this.wizardData.plazo!,
+              tasa: tasa,
+              clienteId: this.wizardData.clienteId!, // Usar ! para asegurar que es number
+              planId: planId,
+              subcanalId: this.subcanalSeleccionado!,
+              canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+              vendedorId: this.vendorSeleccionado || 0, // Proporcionar un valor por defecto
+              usuarioCreadorId: usuarioCreadorId,
+              estado: "Ingresada"
+            };
 
+            this.operacionService.crearOperacion(operacion).subscribe({
+              next: (operacionCreada) => {
+                if (operacionCreada && operacionCreada.id) {
+                  this.wizardData.operacionId = operacionCreada.id;
 
-        this.operacionService.crearOperacion(operacion).subscribe({
-          next: (operacionCreada) => {
-            if (operacionCreada && operacionCreada.id) {
-              this.wizardData.operacionId = operacionCreada.id;
-            }
-            resolve(operacionCreada);
+                  // Intentar crear un lead en Kommo con datos del cliente
+                  this.crearLeadEnKommo(operacionCreada, cliente);
+                }
+                resolve(operacionCreada);
+              },
+              error: (error: any) => {
+                console.error('Error al crear operación:', error);
+                resolve({ dummy: true });
+              }
+            });
           },
-          error: (error) => {
-            console.error('Error creating operation:', error);
+          error: (error: any) => {
+            console.error('Error al obtener cliente:', error);
             resolve({ dummy: true });
           }
         });
+      }
+    });
+  }
+
+  // 4. Agregar un nuevo método para crear el lead en Kommo
+  private crearLeadEnKommo(operacion: any, cliente: any): void {
+    this.kommoLeadService.crearLeadDesdeOperacion(operacion, cliente).subscribe({
+      next: (response) => {
+        console.log('Lead creado exitosamente en Kommo', response);
+      },
+      error: (error) => {
+        // No mostrar error al usuario, solo registrar en consola
+        console.error('No se pudo crear el lead en Kommo:', error);
       }
     });
   }
