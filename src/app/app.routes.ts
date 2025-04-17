@@ -6,6 +6,7 @@ import { SubcanalDetalleComponent } from './pages/subcanales/subcanal-detalle/su
 import { UsuarioDetalleComponent } from './pages/usuarios/usuario-detalle/usuario-detalle.component';
 import { OperacionDetalleComponent } from './pages/operaciones/operacion-detalle/operacion-detalle.component';
 import { ProfilePageComponent } from './pages/profile/profile-page/profile-page.component';
+import { KommoTestComponent } from './pages/kommo-test/kommo-test.component';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -86,6 +87,10 @@ export const routes: Routes = [
   {
     path: 'callback',
     loadComponent: () => import('./pages/callback/callback.component').then(m => m.CallbackComponent)
+  },
+  {
+    path: 'test',
+    loadComponent: () => import('./pages/kommo-test/kommo-test.component').then(m => m.KommoTestComponent)
   },
 
   // Redirecciones

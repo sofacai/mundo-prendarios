@@ -16,7 +16,7 @@ import { VendorSelectorComponent } from "../vendor-selector/vendor-selector.comp
 import { UsuarioService } from 'src/app/core/services/usuario.service';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
 import { catchError, finalize, tap, map, switchMap } from 'rxjs/operators';
-import { forkJoin, of } from 'rxjs';
+import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { CanalService } from 'src/app/core/services/canal.service';
 import { PlanService } from 'src/app/core/services/plan.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
@@ -1017,41 +1017,104 @@ export class WizardContainerComponent implements OnInit {
     });
   }
 
-  private crearLeadEnKommo(operacion: any, cliente: any): void {
+  private crearLeadEnKommo(operacionCreada: any, cliente: any): void {
     // Verificar si el servicio Kommo está autenticado
     if (!this.KommoService.isAuthenticated()) {
       console.log('No hay autenticación con Kommo disponible');
-      return; // Salir silenciosamente si no hay autenticación
+      return;
     }
 
     // Verificar que tenemos los datos mínimos necesarios
-    if (!operacion || !cliente || !cliente.nombre || !cliente.apellido) {
+    if (!operacionCreada || !cliente || !cliente.nombre || !cliente.apellido) {
       console.error('Datos insuficientes para crear lead en Kommo');
       return;
     }
 
-    console.log('Intentando crear lead en Kommo con datos:', {
-      operacion: operacion,
-      cliente: cliente
-    });
+    // Enriquecer los datos de la operación con la información adicional
+    this.obtenerDatosComplementarios(operacionCreada)
+      .then(operacionCompleta => {
+        console.log('Intentando crear lead en Kommo con datos:', {
+          operacion: operacionCompleta,
+          cliente: cliente
+        });
 
-    // Intentar crear el lead
-    this.kommoLeadService.crearLeadDesdeOperacion(operacion, cliente).subscribe({
-      next: (response) => {
-        console.log('Lead creado exitosamente en Kommo:', response);
-      },
-      error: (error) => {
-        // No mostrar error al usuario, solo registrar en consola
-        console.error('Error al crear lead en Kommo:', error);
-
-        // Si hay un problema de autenticación, intentar reconectar
-        if (error.status === 401 && this.currentUserRol === RolType.Administrador) {
-          console.log('Problema de autenticación con Kommo. Es posible que necesites reconectar tu cuenta.');
-        }
-      }
-    });
+        // Intentar crear el lead
+        this.kommoLeadService.crearLeadDesdeOperacion(operacionCompleta, cliente).subscribe({
+          next: (response) => {
+            console.log('Lead creado exitosamente en Kommo:', response);
+          },
+          error: (error) => {
+            console.error('Error al crear lead en Kommo:', error);
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error al preparar datos para Kommo:', error);
+      });
   }
 
+  // Método para obtener datos complementarios para Kommo
+private async obtenerDatosComplementarios(operacion: any): Promise<any> {
+  // Crear copia de la operación para no modificar el original
+  const operacionCompleta = { ...operacion };
+
+  try {
+    // 1. Si la operación ya tiene planNombre, usarlo; de lo contrario, intentar obtenerlo
+    if (!operacionCompleta.planNombre && operacionCompleta.planId) {
+      try {
+        const plan = await firstValueFrom(this.planService.getPlan(operacionCompleta.planId));
+        if (plan) {
+          operacionCompleta.planNombre = plan.nombre;
+        }
+      } catch (err) {
+        console.error('Error al obtener plan:', err);
+      }
+    }
+
+    // 2. Igual para subcanalNombre
+    if (!operacionCompleta.subcanalNombre && operacionCompleta.subcanalId) {
+      try {
+        const subcanal = await firstValueFrom(this.subcanalService.getSubcanal(operacionCompleta.subcanalId));
+        if (subcanal) {
+          operacionCompleta.subcanalNombre = subcanal.nombre;
+
+          // 3. Y para canalNombre usando el canalId del subcanal
+          if (!operacionCompleta.canalNombre && subcanal.canalId) {
+            try {
+              const canal = await firstValueFrom(this.canalService.getCanal(subcanal.canalId));
+              if (canal) {
+                operacionCompleta.canalNombre = canal.nombreFantasia;
+              }
+            } catch (err) {
+              console.error('Error al obtener canal:', err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error al obtener subcanal:', err);
+      }
+    }
+
+    // 4. Y para vendedorNombre
+    if (!operacionCompleta.vendedorNombre && operacionCompleta.vendedorId) {
+      try {
+        const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
+        if (vendedor) {
+          operacionCompleta.vendedorNombre = `${vendedor.nombre} ${vendedor.apellido}`;
+          operacionCompleta.vendedorTelefono = vendedor.telefono || '';
+          operacionCompleta.vendedorEmail = vendedor.email || '';
+        }
+      } catch (err) {
+        console.error('Error al obtener vendedor:', err);
+      }
+    }
+
+    return operacionCompleta;
+  } catch (error) {
+    console.error('Error al obtener datos complementarios:', error);
+    return operacion; // Devolver la operación original en caso de error
+  }
+}
   enviarOfertaPorWhatsApp(plan: any) {
     if (!this.wizardData.clienteWhatsapp) {
       console.error('No hay número de WhatsApp para enviar la oferta');
