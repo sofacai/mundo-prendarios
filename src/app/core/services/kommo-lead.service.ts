@@ -46,16 +46,18 @@ export class KommoLeadService {
    * Crea un lead en Kommo basado en una operación de Mundo Prendario
    */
   crearLeadDesdeOperacion(operacion: any, cliente: any): Observable<any> {
-    // Verificar si existe token de autenticación
-    if (!this.kommoService.isAuthenticated()) {
-      console.warn('No hay conexión activa con Kommo');
-      return throwError(() => new Error('No hay token de autenticación disponible para Kommo'));
+    const auth = this.kommoService.getAuthData();
+    console.log('Token actual:', auth?.accessToken);
+
+    if (!auth?.accessToken) {
+      console.warn('No hay token de autenticación disponible para Kommo');
+      return throwError(() => new Error('No hay token de autenticación disponible'));
     }
 
-    const auth = this.kommoService.getAuthData();
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${auth?.accessToken}`
+      'Authorization': `Bearer ${auth.accessToken}`
     });
+
 
     // Construir el lead para Kommo según su API
     const lead: KommoLead = {

@@ -21,6 +21,7 @@ import { CanalService } from 'src/app/core/services/canal.service';
 import { PlanService } from 'src/app/core/services/plan.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { KommoLeadService } from 'src/app/core/services/kommo-lead.service';
+import { KommoService } from '../../../core/services/kommo.service';
 
 
 
@@ -83,7 +84,8 @@ export class WizardContainerComponent implements OnInit {
     private canalService: CanalService,
     private planService: PlanService,
     private sidebarStateService: SidebarStateService,
-    private kommoLeadService: KommoLeadService
+    private kommoLeadService: KommoLeadService,
+    private KommoService: KommoService,
 
 
   ) {}
@@ -1017,6 +1019,9 @@ export class WizardContainerComponent implements OnInit {
 
   // 4. Agregar un nuevo método para crear el lead en Kommo
   private crearLeadEnKommo(operacion: any, cliente: any): void {
+    console.log('Token de Kommo disponible:', this.KommoService.getAuthData()?.accessToken);
+
+
     this.kommoLeadService.crearLeadDesdeOperacion(operacion, cliente).subscribe({
       next: (response) => {
         console.log('Lead creado exitosamente en Kommo', response);

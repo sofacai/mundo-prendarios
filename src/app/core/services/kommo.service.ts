@@ -23,15 +23,23 @@ export class KommoService {
   }
 
   exchangeCodeForToken(code: string, accountDomain?: string): Observable<KommoAuthResponse> {
-    console.log(`Enviando: Code=${code}, AccountDomain=${accountDomain}`);
-
-    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/auth`, {
+    return this.http.post<any>(`${this.apiUrl}/kommo/auth`, {
       Code: code,
       AccountDomain: accountDomain
     }).pipe(
       tap(response => {
-        console.log('Respuesta del token:', response);
-        this.saveAuthData(response);
+        console.log('Respuesta original:', response);
+
+        // Crear un objeto con el formato correcto
+        const formattedResponse: KommoAuthResponse = {
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token,
+          expiresIn: response.expires_in,
+          tokenType: response.token_type
+        };
+
+        console.log('Datos formateados:', formattedResponse);
+        this.saveAuthData(formattedResponse);
       }),
       catchError(error => {
         console.error('Error en intercambio de token:', error);
@@ -41,10 +49,18 @@ export class KommoService {
   }
 
   refreshToken(refreshToken: string): Observable<KommoAuthResponse> {
-    return this.http.post<KommoAuthResponse>(`${this.apiUrl}/kommo/refresh`, { refreshToken }).pipe(
+    return this.http.post<any>(`${this.apiUrl}/kommo/refresh`, { refreshToken }).pipe(
       tap(response => {
+        // Mapea los campos de snake_case a camelCase
+        const formattedResponse: KommoAuthResponse = {
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token,
+          expiresIn: response.expires_in,
+          tokenType: response.token_type
+        };
+
         console.log('Token refrescado exitosamente');
-        this.saveAuthData(response);
+        this.saveAuthData(formattedResponse);
       }),
       catchError(error => {
         console.error('Error al refrescar token:', error);
@@ -98,16 +114,17 @@ export class KommoService {
   getAuthData(): (KommoAuthResponse & { expires_at: number }) | null {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
+      console.log('Datos en localStorage:', data);
       if (!data) return null;
 
       const parsed = JSON.parse(data);
+      console.log('Token parseado:', parsed.accessToken);
       return parsed;
     } catch (error) {
       console.error('Error al recuperar datos de autenticación:', error);
       return null;
     }
   }
-
   isAuthenticated(): boolean {
     const auth = this.getAuthData();
     if (!auth) {
