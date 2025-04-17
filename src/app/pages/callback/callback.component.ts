@@ -35,7 +35,7 @@ export class CallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private kommoService: KommoService
+    private KommoService: KommoService
   ) { }
 
   ngOnInit() {
@@ -75,9 +75,9 @@ export class CallbackComponent implements OnInit {
   private processCode(code: string, accountDomain: string) {
     console.log(`Procesando código: ${code}, Domain: ${accountDomain}`);
 
-    this.kommoService.exchangeCodeForToken(code, accountDomain).subscribe({
+    this.KommoService.exchangeCodeForToken(code, accountDomain).subscribe({
       next: (data) => {
-        this.kommoService.saveAuthData(data);
+        this.KommoService.saveAuthData(data);
         this.success = true;
         this.loading = false;
 

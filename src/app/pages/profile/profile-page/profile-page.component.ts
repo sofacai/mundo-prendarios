@@ -57,7 +57,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     private usuarioService: UsuarioService,
     private router: Router,
     private sidebarStateService: SidebarStateService,
-    private kommoService: KommoService
+    private KommoService : KommoService
   ) { }
 
   ngOnInit() {
@@ -78,7 +78,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     );
 
-    this.kommoConnected = this.kommoService.isAuthenticated();
+    this.kommoConnected = this.KommoService.isAuthenticated();
   }
 
   ngAfterViewInit() {
@@ -222,16 +222,16 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log(`Autenticando con Kommo: Code=${code}, Domain=${accountDomain || 'no especificado'}`);
 
     this.loading = true;
-    this.kommoService.exchangeCodeForToken(code, accountDomain).subscribe({
+    this.KommoService.exchangeCodeForToken(code, accountDomain).subscribe({
       next: (data) => {
         console.log('Autenticación exitosa, datos recibidos:', data);
-        this.kommoService.saveAuthData(data);
+        this.KommoService.saveAuthData(data);
 
         // Verificar que se guardaron los datos correctamente
-        const savedData = this.kommoService.getAuthData();
+        const savedData = this.KommoService.getAuthData();
         console.log('Datos guardados en localStorage:', savedData);
 
-        this.kommoConnected = this.kommoService.isAuthenticated();
+        this.kommoConnected = this.KommoService.isAuthenticated();
         console.log('¿Conexión establecida?', this.kommoConnected);
         this.loading = false;
       },
@@ -244,7 +244,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   disconnectKommo() {
-    this.kommoService.clearAuthData();
+    this.KommoService.clearAuthData();
     this.kommoConnected = false;
 
     // Recargar el botón de Kommo

@@ -47,39 +47,34 @@ export class KommoLeadService {
    */
   crearLeadDesdeOperacion(operacion: any, cliente: any): Observable<any> {
     const auth = this.kommoService.getAuthData();
-    console.log('Token actual:', auth?.accessToken);
 
     if (!auth?.accessToken) {
       console.warn('No hay token de autenticación disponible para Kommo');
       return throwError(() => new Error('No hay token de autenticación disponible'));
     }
 
-    // Crear los headers PRIMERO
+    // Crear los headers
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${auth.accessToken}`
     });
 
-    // DESPUÉS puedes usar headers para los logs
-    console.log('Headers enviados:', headers.get('Authorization'));
-    console.log('Token completo:', auth?.accessToken);
-
-    // Construir el lead para Kommo según su API
-    const lead: KommoLead = {
+    // Construir el lead para Kommo según API - IMPORTANTE: debe ser un array
+    const lead = [{
       name: `Préstamo prendario - ${cliente.nombre} ${cliente.apellido}`,
       price: operacion.monto,
-      status_id: 37724990, // ID del estado "Nueva operación" (ajustar según tu configuración)
-      pipeline_id: 5481486, // ID del pipeline principal (ajustar según tu configuración)
+      status_id: 37724990,
+      pipeline_id: 5481486,
       custom_fields_values: [
         {
-          field_id: 949669, // Campo personalizado "Monto" (ajustar según tu configuración)
+          field_id: 949669,
           values: [{ value: operacion.monto }]
         },
         {
-          field_id: 949671, // Campo personalizado "Plazo" (ajustar según tu configuración)
+          field_id: 949671,
           values: [{ value: operacion.meses }]
         },
         {
-          field_id: 949673, // Campo personalizado "Tasa" (ajustar según tu configuración)
+          field_id: 949673,
           values: [{ value: operacion.tasa }]
         }
       ],
@@ -90,24 +85,23 @@ export class KommoLeadService {
             last_name: cliente.apellido,
             custom_fields_values: [
               {
-                field_id: 728317, // Campo personalizado "Email" (ajustar según tu configuración)
+                field_id: 728317,
                 values: [{ value: cliente.email || '' }]
               },
               {
-                field_id: 728319, // Campo personalizado "Teléfono" (ajustar según tu configuración)
+                field_id: 728319,
                 values: [{ value: cliente.telefono || '' }]
               },
               {
-                field_id: 728321, // Campo personalizado "DNI" (ajustar según tu configuración)
+                field_id: 728321,
                 values: [{ value: cliente.dni || '' }]
               }
             ]
           }
         ]
       }
-    };
+    }];
 
-    // Enviar al backend para que realice la llamada a Kommo
     return this.http.post(`${this.apiUrl}/kommo/leads`, lead, { headers }).pipe(
       tap(response => console.log('Lead creado en Kommo:', response)),
       catchError(error => {

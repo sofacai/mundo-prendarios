@@ -1017,19 +1017,37 @@ export class WizardContainerComponent implements OnInit {
     });
   }
 
-  // 4. Agregar un nuevo método para crear el lead en Kommo
   private crearLeadEnKommo(operacion: any, cliente: any): void {
-    const authData = this.KommoService.getAuthData();
-    console.log('¿Tenemos token?', !!authData?.accessToken);
-    console.log('Datos de auth completos:', authData);
+    // Verificar si el servicio Kommo está autenticado
+    if (!this.KommoService.isAuthenticated()) {
+      console.log('No hay autenticación con Kommo disponible');
+      return; // Salir silenciosamente si no hay autenticación
+    }
 
+    // Verificar que tenemos los datos mínimos necesarios
+    if (!operacion || !cliente || !cliente.nombre || !cliente.apellido) {
+      console.error('Datos insuficientes para crear lead en Kommo');
+      return;
+    }
+
+    console.log('Intentando crear lead en Kommo con datos:', {
+      operacion: operacion,
+      cliente: cliente
+    });
+
+    // Intentar crear el lead
     this.kommoLeadService.crearLeadDesdeOperacion(operacion, cliente).subscribe({
       next: (response) => {
-        console.log('Lead creado exitosamente en Kommo', response);
+        console.log('Lead creado exitosamente en Kommo:', response);
       },
       error: (error) => {
         // No mostrar error al usuario, solo registrar en consola
-        console.error('No se pudo crear el lead en Kommo:', error);
+        console.error('Error al crear lead en Kommo:', error);
+
+        // Si hay un problema de autenticación, intentar reconectar
+        if (error.status === 401 && this.currentUserRol === RolType.Administrador) {
+          console.log('Problema de autenticación con Kommo. Es posible que necesites reconectar tu cuenta.');
+        }
       }
     });
   }

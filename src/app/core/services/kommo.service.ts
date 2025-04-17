@@ -51,18 +51,30 @@ export class KommoService {
   }
 
   refreshToken(refreshToken: string): Observable<KommoAuthResponse> {
-    return this.http.post<any>(`${this.apiUrl}/kommo/refresh`, { refreshToken }).pipe(
+    console.log(`Intentando refrescar token con: ${refreshToken.substring(0, 10)}...`);
+
+    const refreshData = { refreshToken: refreshToken };
+
+    return this.http.post<any>(`${this.apiUrl}/kommo/refresh`, refreshData).pipe(
       tap(response => {
-        // Mapea los campos de snake_case a camelCase
+        console.log('Respuesta de refresh:', response);
+
+        // Asegurarnos de que tenemos los datos esperados
+        if (!response.access_token && !response.accessToken) {
+          throw new Error('Formato de respuesta inválido');
+        }
+
+        // Mapear la respuesta al formato esperado
         const formattedResponse: KommoAuthResponse = {
-          accessToken: response.access_token,
-          refreshToken: response.refresh_token,
-          expiresIn: response.expires_in,
-          tokenType: response.token_type
+          accessToken: response.access_token || response.accessToken,
+          refreshToken: response.refresh_token || response.refreshToken,
+          expiresIn: response.expires_in || response.expiresIn,
+          tokenType: response.token_type || response.tokenType
         };
 
         console.log('Token refrescado exitosamente');
         this.saveAuthData(formattedResponse);
+        return formattedResponse;
       }),
       catchError(error => {
         console.error('Error al refrescar token:', error);
@@ -120,28 +132,34 @@ export class KommoService {
     }
   }
 
-  getAuthData(): (KommoAuthResponse & { expires_at: number }) | null {
-    try {
-      const data = localStorage.getItem(this.STORAGE_KEY);
-      console.log('Datos en localStorage:', data);
-      if (!data) return null;
+// En el servicio Kommo
+getAuthData(): (KommoAuthResponse & { expires_at: number }) | null {
+  try {
+    const data = localStorage.getItem(this.STORAGE_KEY);
+    console.log('Raw localStorage data:', data);
 
-      const parsed = JSON.parse(data);
-      console.log('Token parseado:', parsed.accessToken);
+    if (!data) return null;
 
-      // Validación adicional
-      if (!parsed.accessToken) {
-        console.warn('Token inválido en localStorage (sin accessToken)');
-        return null;
-      }
+    const parsed = JSON.parse(data);
 
-      return parsed;
-    } catch (error) {
-      console.error('Error al recuperar datos de autenticación:', error);
+    // Validar estructura
+    if (!parsed.accessToken || !parsed.refreshToken) {
+      console.error('Token inválido en localStorage:', parsed);
       return null;
     }
-  }
 
+    console.log('Token válido encontrado:', {
+      accessToken: `${parsed.accessToken.substring(0, 10)}...`,
+      refreshToken: `${parsed.refreshToken.substring(0, 10)}...`,
+      expires_at: new Date(parsed.expires_at).toISOString()
+    });
+
+    return parsed;
+  } catch (error) {
+    console.error('Error al recuperar datos de autenticación:', error);
+    return null;
+  }
+}
   isAuthenticated(): boolean {
     const auth = this.getAuthData();
     if (!auth) {
