@@ -17,6 +17,7 @@ export class KommoLeadService {
 
   /**
    * Crea un lead en Kommo basado en una operación de Mundo Prendario
+   * Versión simplificada para la API estándar
    */
   crearLeadDesdeOperacion(operacion: any, cliente: any): Observable<any> {
     const auth = this.kommoService.getAuthData();
@@ -32,77 +33,46 @@ export class KommoLeadService {
       'Content-Type': 'application/json'
     });
 
-    // Versión simplificada que solo incluye los datos mínimos requeridos
-    const lead = [{
+    // Estructura muy básica del lead para la API estándar de Kommo
+    const leadData = [{
       name: `#${operacion.id || 'Nuevo'} - ${cliente.nombre} ${cliente.apellido}`,
 
-      // Campos personalizados de operación - solo los incluimos si tenemos los IDs
+      // Campos personalizados básicos de operación
       custom_fields_values: [
+        // ID Operación
         {
-          field_id: 500886, // ID Operación
+          field_id: 500886,
           values: [{ value: operacion.id?.toString() || '' }]
         },
+        // Monto
         {
-          field_id: 500892, // Monto
+          field_id: 500892,
           values: [{ value: operacion.monto?.toString() || '0' }]
         },
+        // Meses
         {
-          field_id: 500994, // Meses
+          field_id: 500994,
           values: [{ value: operacion.meses?.toString() || '0' }]
         },
+        // Tasa
         {
-          field_id: 500996, // Tasa
+          field_id: 500996,
           values: [{ value: operacion.tasa?.toString() || '0' }]
         }
       ]
     }];
 
-    // Si tenemos más información, la agregamos
+    // Añadir plan si existe
     if (operacion.planNombre) {
-      lead[0].custom_fields_values.push({
+      leadData[0].custom_fields_values.push({
         field_id: 962344, // Plan Nombre
         values: [{ value: operacion.planNombre || '' }]
       });
     }
 
-    if (operacion.vendedorNombre) {
-      lead[0].custom_fields_values.push({
-        field_id: 501072, // Vendedor Nombre
-        values: [{ value: operacion.vendedorNombre || '' }]
-      });
-    }
+    console.log('Datos básicos del lead a enviar:', JSON.stringify(leadData, null, 2));
 
-    if (operacion.subcanalNombre) {
-      lead[0].custom_fields_values.push({
-        field_id: 962340, // Subcanal Nombre
-        values: [{ value: operacion.subcanalNombre || '' }]
-      });
-    }
-
-    if (operacion.canalNombre) {
-      lead[0].custom_fields_values.push({
-        field_id: 962342, // Canal Nombre
-        values: [{ value: operacion.canalNombre || '' }]
-      });
-    }
-
-    if (operacion.vendedorTelefono) {
-      lead[0].custom_fields_values.push({
-        field_id: 501074, // Teléfono del vendedor
-        values: [{ value: operacion.vendedorTelefono || '' }]
-      });
-    }
-
-    if (operacion.vendedorEmail) {
-      lead[0].custom_fields_values.push({
-        field_id: 501076, // Email del vendedor
-        values: [{ value: operacion.vendedorEmail || '' }]
-      });
-    }
-
-    console.log('Datos del lead a enviar:', JSON.stringify(lead, null, 2));
-
-    return this.http.post(`${this.apiUrl}/kommo/leads`, lead, { headers }).pipe(
+    return this.http.post(`${this.apiUrl}/kommo/leads`, leadData, { headers }).pipe(
       tap(response => console.log('Lead creado en Kommo:', response)),
       catchError(error => {
         console.error('Error al crear lead en Kommo:', error);

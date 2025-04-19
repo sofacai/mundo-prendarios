@@ -1038,7 +1038,7 @@ export class WizardContainerComponent implements OnInit {
           cliente: cliente
         });
 
-        // Intentar crear el lead
+        // Intentar crear el lead con la estructura completa
         this.kommoLeadService.crearLeadDesdeOperacion(operacionCompleta, cliente).subscribe({
           next: (response) => {
             console.log('Lead creado exitosamente en Kommo:', response);
