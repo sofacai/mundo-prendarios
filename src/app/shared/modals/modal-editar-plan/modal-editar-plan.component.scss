@@ -124,6 +124,11 @@
     color: var(--ion-color-danger);
   }
 
+  .btn-close{
+    background-color: #fff;
+
+  }
+
   .form-control {
     width: 100%;
     padding: 10px 14px;
@@ -132,6 +137,8 @@
     font-size: 14px;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
+    color:black;
+    background-color: #fff;
 
     &:focus {
       border-color: var(--ion-color-primary);

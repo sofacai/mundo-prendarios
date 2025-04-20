@@ -1,0 +1,25 @@
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e4e6ef;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  background-color: #fff;
+  color:black;
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.1);
+  }
+}
+
+small.text-danger {
+  color: var(--ion-color-danger, #f1416c);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+

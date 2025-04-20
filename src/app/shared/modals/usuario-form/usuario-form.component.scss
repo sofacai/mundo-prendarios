@@ -2,6 +2,7 @@
 
 :host {
   display: block;
+  color:black!important;
 }
 
 /* Backdrop */
@@ -45,7 +46,7 @@
   }
 
   .btn-close {
-    background: transparent;
+    background: none!important;
     border: none;
     font-size: 24px;
     line-height: 1;
@@ -87,7 +88,7 @@
   }
 
   .required {
-    color: var(--ion-color-danger, #f1416c);
+    color: #f1416c;
   }
 
   .form-control {
@@ -97,7 +98,7 @@
     border-radius: 6px;
     font-size: 14px;
     box-sizing: border-box;
-
+    background-color: #fff;
     &:focus {
       border-color: var(--ion-color-primary, #009ef7);
       outline: none;
@@ -125,12 +126,12 @@
   cursor: pointer;
 
   &.btn-primary {
-    background-color: var(--ion-color-primary, #009ef7);
+    background-color: #009ef7;
     color: white;
     border: none;
 
     &:hover {
-      background-color: var(--ion-color-primary-shade, #008bd9);
+      background-color:  #008bd9;
     }
 
     &:disabled {

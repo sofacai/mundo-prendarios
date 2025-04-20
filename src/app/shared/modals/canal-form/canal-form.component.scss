@@ -1,6 +1,7 @@
 /* canal-form.component.scss */
 :host {
   display: block;
+  z-index: 999999;
 }
 
 .canal-form-modal {
@@ -119,6 +120,8 @@
     font-size: 14px;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
+    background-color: #fff;
+    color: black!important;
 
     &:focus {
       border-color: var(--ion-color-primary);
@@ -157,6 +160,11 @@
   border-top: 1px solid #eef0f2;
 }
 
+.btn-close{
+  background-color: #fff!important;
+
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -168,6 +176,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 100px;
+
 
   &.btn-primary {
     background-color: var(--ion-color-primary);
