@@ -1,29 +1,15 @@
-/* Variables */
-:root {
-  --primary-color: #009ef7;
-  --primary-hover: #0095e8;
-  --text-dark: #181c32;
-  --text-gray: #7e8299;
-  --text-light: #a1a5b7;
-  --border-color: #e4e6ef;
-  --bg-light: #f5f8fa;
-  --danger: #f1416c;
-}
-
-/* Contenedor principal */
 .login-container {
   display: flex;
   min-height: 100vh;
   width: 100%;
 }
 
-/* Sección del formulario - Lado izquierdo */
 .login-form-section {
   width: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-light);
+  background-color: #f5f8fa;
 }
 
 .form-container {
@@ -32,7 +18,6 @@
   padding: 2rem;
 }
 
-/* Estilos para el logo */
 .logo-container {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -46,19 +31,19 @@
 h1 {
   font-size: 2rem;
   font-weight: 600;
-  color: var(--text-dark);
+  color: #181c32;
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .register-link-top {
   text-align: center;
-  color: var(--text-gray);
+  color: #7e8299;
   margin-bottom: 2.5rem;
   font-size: 1rem;
 
   a {
-    color: var(--primary-color);
+    color: #009ef7;
     text-decoration: none;
     font-weight: 500;
 
@@ -79,7 +64,7 @@ h1 {
     display: block;
     font-weight: 500;
     margin-bottom: 0.5rem;
-    color: var(--text-dark);
+    color: #181c32;
   }
 
   .form-control {
@@ -88,22 +73,22 @@ h1 {
     padding: 0.75rem 1rem;
     font-size: 1rem;
     background-color: #fff;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e4e6ef;
     border-radius: 0.5rem;
     transition: border-color 0.15s ease;
 
     &:focus {
-      border-color: var(--primary-color);
+      border-color: #009ef7;
       outline: none;
     }
 
     &::placeholder {
-      color: var(--text-light);
+      color: #a1a5b7;
     }
   }
 
   .error-message {
-    color: var(--danger);
+    color: #f1416c;
     font-size: 0.875rem;
     margin-top: 0.25rem;
   }
@@ -118,7 +103,7 @@ h1 {
 
 .forgot-link {
   font-size: 0.875rem;
-  color: var(--primary-color);
+  color: #009ef7;
   text-decoration: none;
 
   &:hover {
@@ -153,7 +138,7 @@ h1 {
   padding: 0.75rem 1rem;
   margin-top: 1rem;
   background-color: rgba(241, 65, 108, 0.1);
-  color: var(--danger);
+  color: #f1416c;
   border-radius: 0.5rem;
   font-size: 0.875rem;
 }
@@ -165,17 +150,16 @@ h1 {
   margin-top: 2rem;
 
   a {
-    color: var(--text-gray);
+    color: #7e8299;
     text-decoration: none;
     font-size: 0.875rem;
 
     &:hover {
-      color: var(--primary-color);
+      color: #009ef7;
     }
   }
 }
 
-/* Sección de la imagen - Lado derecho */
 .login-image-section {
   width: 50%;
   background-color: #1b84ff;
@@ -196,7 +180,6 @@ h1 {
   }
 }
 
-/* Responsive */
 @media (max-width: 991px) {
   .login-container {
     flex-direction: column;
@@ -208,7 +191,7 @@ h1 {
   }
 
   .login-image-section {
-    display: none; /* Ocultar la sección de imagen en móvil */
+    display: none;
   }
 
   .form-container {
@@ -228,10 +211,10 @@ h1 {
   }
 
   .login-image-section {
-    display: none; /* Ocultar la sección de imagen en móvil */
+    display: none;
   }
 
   .form-group .form-control {
-    width: 90%; /* Cambiamos el ancho a 90% en móvil */
+    width: 100%;
   }
 }

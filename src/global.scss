@@ -1,18 +1,18 @@
-/* Global Imports */
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
-/* Base Styles */
+
 * {
   font-family: 'Poppins', sans-serif;
 }
 
 body {
-  background-color: var(--background-color);
+  background-color: #f5f8fa;
   overflow-y: auto;
 }
 
-/* Layout Structure */
+
 .canales-container {
   position: relative;
   min-height: 100vh;
@@ -23,7 +23,7 @@ body {
   flex: 1;
   margin-left: 260px;
   padding: 30px;
-  background-color: var(--background-color);
+  background-color: #f5f8fa;
   transition: all 0.3s ease;
   min-height: 100vh;
 }
@@ -40,7 +40,7 @@ body {
   }
 }
 
-/* Page Headers */
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -63,7 +63,7 @@ body {
   gap: 10px;
 }
 
-/* Card Styling */
+
 .card {
   background-color: white;
   border-radius: 0.75rem;
@@ -90,7 +90,7 @@ body {
   padding: 10px;
 }
 
-/* Button Styles */
+
 .btn {
   border-radius: 0.475rem;
   padding: 0.65rem 1.25rem;
@@ -119,12 +119,12 @@ body {
 }
 
 .btn-secondary {
-  background-color: var(--ion-color-secondary);
+  background-color: #50cd89;
   color: white;
 }
 
 .btn-secondary:hover {
-  background-color: var(--ion-color-secondary-shade);
+  background-color: #46b479;
 }
 
 .btn-light {
@@ -136,7 +136,7 @@ body {
   background-color: #eef3f7;
 }
 
-/* Action Buttons */
+
 .actions-container {
   display: flex;
   justify-content: center;
@@ -188,7 +188,7 @@ body {
   background-color: #f1416c;
 }
 
-/* Badge Styles */
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -292,10 +292,10 @@ body {
   color: #7e8299;
 }
 
-/* Search Box & Filter Styling */
+
 .search-container {
   display: flex;
-  justify-content: space-between; /* Cambiar a space-between */
+  justify-content: space-between;
   align-items: center;
   padding: 0;
   margin: 0;
@@ -359,7 +359,7 @@ body {
   color: #f1416c;
 }
 
-/* Form Selects */
+
 .form-select {
   height: 42px;
   border-radius: 0.475rem;
@@ -398,7 +398,7 @@ body {
   white-space: nowrap;
 }
 
-/* ===== TABLE STYLES START ===== */
+
 .table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -442,7 +442,7 @@ body {
   border-bottom: 0;
 }
 
-/* Sortable Column Headers */
+
 .sortable-header {
   cursor: pointer;
   user-select: none;
@@ -480,9 +480,9 @@ body {
     min-width: 850px;
   }
 }
-/* ===== TABLE STYLES END ===== */
 
-/* Utility Classes */
+
+
 .text-center {
   text-align: center;
 }
@@ -560,7 +560,7 @@ body {
   padding: 3rem;
 }
 
-/* Alert styles */
+
 .alert-danger {
   background-color: #fff5f8;
   color: #f1416c;
@@ -580,7 +580,7 @@ body {
   border-left: 4px solid #009ef7;
 }
 
-/* Spinner */
+
 .spinner-border {
   width: 3rem;
   height: 3rem;
@@ -595,7 +595,7 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Empty state styling */
+
 .text-center .bi-grid-3x3-gap {
   font-size: 3rem;
   color: #B5B5C3;
@@ -614,7 +614,7 @@ body {
   margin-bottom: 1.5rem;
 }
 
-/* Symbol/Icon utilities */
+
 .symbol {
   display: inline-block;
   flex-shrink: 0;
@@ -638,7 +638,7 @@ body {
   border-radius: 0.475rem;
 }
 
-/* Modal Styles */
+
 .canal-form-modal {
   --width: 500px;
   --height: auto;
@@ -677,7 +677,7 @@ body.modal-open {
   display: none !important;
 }
 
-/* Planes Styling */
+
 .planes-section {
   margin-top: 1.5rem;
   padding-top: 1rem;
@@ -747,7 +747,7 @@ body.modal-open {
   border-color: #fff5f8;
 }
 
-/* Cuotas Styling */
+
 .cuotas-btn {
   background-color: #f8f9fa;
   border: 1px solid #e4e6ef;
@@ -773,7 +773,7 @@ body.modal-open {
   background-color: #f1faff;
 }
 
-/* Responsive Search Container */
+
 @media (max-width: 576px) {
   .search-container {
     flex-direction: column;
@@ -789,21 +789,21 @@ body.modal-open {
 
 
 @media (max-width: 991.98px) {
-  /* Ajustar contenedor principal para ocupar todo el ancho */
+
   router-outlet + * {
     width: 100% !important;
     margin-left: 0 !important;
-    padding-top: 60px !important; /* Espacio para el header móvil */
+    padding-top: 60px !important;
   }
 
-  /* Solo cuando el sidebar está abierto */
+
   body.sidebar-open router-outlet + * {
-    margin-left: 260px !important; /* Ancho del sidebar */
+    margin-left: 260px !important;
     width: calc(100% - 260px) !important;
   }
 }
 
-/* Estilos para el header móvil */
+
 .mobile-header {
   display: none;
   position: fixed;
@@ -821,15 +821,15 @@ body.modal-open {
 }
 
 
-/* Estilos específicos para móvil */
+
 @media (max-width: 991.98px) {
-  /* Cuando el sidebar está abierto */
+
   body.sidebar-open .sidebar {
     transform: translateX(0) !important;
     transition: transform 0.3s ease;
   }
 
-  /* Overlay para cuando el sidebar está abierto */
+
   body.sidebar-open::before {
     content: '';
     position: fixed;
@@ -841,14 +841,14 @@ body.modal-open {
     z-index: 999;
   }
 
-  /* Asegurarse que el contenido principal se ajuste */
+
   router-outlet + * {
     width: 100% !important;
     margin-left: 0 !important;
-    padding-top: 60px !important; /* Espacio para el header móvil */
+    padding-top: 60px !important;
   }
 
-  /* Asegurarse que el sidebar esté bien posicionado */
+
   .sidebar {
     transform: translateX(-100%);
     top: 60px !important;
@@ -857,13 +857,13 @@ body.modal-open {
     transition: transform 0.3s ease !important;
   }
 
-  /* Ajustar el botón flotante en móvil */
+
   .floating-btn {
     z-index: 998 !important;
   }
 }
 
-/* Asegurarse que el botón toggle está visible en escritorio */
+
 .toggle-btn.floating {
   display: block !important;
 }
@@ -874,28 +874,28 @@ body.modal-open {
   }
 }
 
-/* Estilos globales para manejar la interacción entre sidebar y contenido principal */
 
-/* Comportamiento normal del body y contenido */
+
+
 body {
   margin: 0;
   padding: 0;
   transition: all 0.3s ease;
 }
 
-/* Cuando el sidebar está abierto en mobile */
+
 body.sidebar-open {
   position: relative;
 }
 
-/* Contenedor principal de la aplicación */
+
 .app-container {
   display: flex;
   min-height: 100vh;
   transition: all 0.3s ease;
 }
 
-/* Sidebar */
+
 .sidebar {
   width: 250px;
   position: fixed;
@@ -908,7 +908,7 @@ body.sidebar-open {
   transition: transform 0.3s ease;
 }
 
-/* Contenido principal */
+
 .main-content {
   flex: 1;
   margin-left: 0;
@@ -916,7 +916,7 @@ body.sidebar-open {
   position: relative;
 }
 
-/* Overlay que aparece al abrir el sidebar en mobile */
+
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -930,7 +930,7 @@ body.sidebar-open {
   opacity: 0;
 }
 
-/* En dispositivos móviles cuando el sidebar está abierto */
+
 @media (max-width: 991px) {
   body.sidebar-open .sidebar {
     transform: translateX(0);
@@ -947,14 +947,14 @@ body.sidebar-open {
     width: 100%;
   }
 
-  /* Ajuste para los componentes del cotizador */
+
   body.sidebar-open .loan-form {
     position: relative;
     z-index: 1;
   }
 }
 
-/* En dispositivos desktop cuando el sidebar está expandido */
+
 @media (min-width: 992px) {
   body:not(.sidebar-collapsed) .sidebar {
     transform: translateX(0);
