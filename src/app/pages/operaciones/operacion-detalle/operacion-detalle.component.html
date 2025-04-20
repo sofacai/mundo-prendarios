@@ -59,12 +59,12 @@
 
     <!-- Contenido principal en cards separadas -->
     <div class="components-grid">
-      <!-- Detalles de la operación -->
-      <div class="card">
+      <!-- Detalles de la operación inicial -->
+      <div class="card equal-height">
         <div class="card-header">
           <div class="card-title">
             <i class="bi bi-clipboard-data me-2 text-primary"></i>
-            Detalles de la Operación
+            Operación Inicial
           </div>
         </div>
         <div class="card-body">
@@ -91,8 +91,40 @@
         </div>
       </div>
 
+      <!-- Detalles de la operación final -->
+      <div class="card equal-height">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-clipboard-check me-2 text-success"></i>
+            Operación Final
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="details-grid">
+            <div class="detail-section">
+              <div class="detail-row">
+                <div class="detail-label">Monto aprobado:</div>
+                <div class="detail-value fw-bold">{{ operacion.montoAprobado ? formatMonto(operacion.montoAprobado) : 'Pendiente' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Plazo aprobado:</div>
+                <div class="detail-value">{{ operacion.mesesAprobados ? operacion.mesesAprobados + ' meses' : 'Pendiente' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Tasa aprobada:</div>
+                <div class="detail-value">{{ operacion.tasaAprobada ? operacion.tasaAprobada + '%' : 'Pendiente' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Plan aprobado:</div>
+                <div class="detail-value">{{ operacion.planAprobadoNombre || 'Pendiente' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Información del Cliente -->
-      <div class="card">
+      <div class="card equal-height" style="grid-column: span 2;">
         <div class="card-header">
           <div class="card-title">
             <i class="bi bi-person-vcard me-2 text-primary"></i>
