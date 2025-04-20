@@ -999,14 +999,6 @@ export class WizardContainerComponent implements OnInit {
     if (!this.KommoService.isAuthenticated()) return;
     if (!operacionCreada || !cliente) return;
 
-    let sexo = cliente.sexo || this.wizardData.clienteSexo || '';
-    if (!sexo && cliente.cuil) {
-      const cuilStr = cliente.cuil.toString();
-      const prefijo = parseInt(cuilStr.substring(0, 2), 10);
-      if (prefijo === 27) sexo = 'F';
-      else if ([20, 23, 24].includes(prefijo)) sexo = 'M';
-    }
-
     const nombre = cliente.nombre || this.wizardData.clienteNombre || '';
     const apellido = cliente.apellido || this.wizardData.clienteApellido || '';
     const telefono = cliente.telefono || this.wizardData.clienteWhatsapp || '+5491100000000';
@@ -1015,6 +1007,7 @@ export class WizardContainerComponent implements OnInit {
     const estadoCivil = cliente.estadoCivil || this.wizardData.estadoCivil || '';
     const ingresos = cliente.ingresos || this.wizardData.ingresos || 0;
     const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
+    const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
 
     let sexoFieldValue: number | undefined;
     if (sexo.toUpperCase() === 'F') sexoFieldValue = 542410;
@@ -1022,8 +1015,11 @@ export class WizardContainerComponent implements OnInit {
 
     this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
       try {
-        // 1. Crear contacto
-        const contactoPayload = [{
+        // Obtener datos del vendedor
+        const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
+
+        // Crear contacto
+        const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto([{
           first_name: nombre,
           last_name: apellido,
           custom_fields_values: [
@@ -1035,27 +1031,26 @@ export class WizardContainerComponent implements OnInit {
             { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] },
             ...(sexoFieldValue ? [{ field_id: 650450, values: [{ enum_id: sexoFieldValue }] }] : [])
           ]
-        }];
+        }]));
 
-        const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto(contactoPayload));
-        const contactId = contactoRes._embedded.contacts[0].id;
+        const contactId = contactoRes._embedded?.contacts?.[0]?.id;
+        if (!contactId) throw new Error('No se pudo obtener el ID del contacto');
 
-        // 2. Obtener vendedor real para crear compañía
-        const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
-        const companyPayload = [{
+        // Crear compañía
+        const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
           name: operacionCompleta.canalNombre || 'Canal Desconocido',
           custom_fields_values: [
             { field_id: 500552, values: [{ value: vendedor.telefono || '+5491100000000' }] },
             { field_id: 962818, values: [{ value: `${vendedor.nombre} ${vendedor.apellido}` }] },
             { field_id: 963284, values: [{ value: operacionCompleta.subcanalNombre || 'Subcanal' }] }
           ]
-        }];
+        }]));
 
-        const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania(companyPayload));
-        const companyId = companiaRes._embedded.companies[0].id;
+        const companyId = companiaRes._embedded?.companies?.[0]?.id;
+        if (!companyId) throw new Error('No se pudo obtener el ID de la compañía');
 
-        // 3. Crear el lead referenciando contact y company
-        const leadPayload = [{
+        // Crear lead final con todo
+        const lead = [{
           name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
           custom_fields_values: [
             { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
@@ -1064,23 +1059,22 @@ export class WizardContainerComponent implements OnInit {
             { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa) || 0 }] },
             ...(operacionCompleta.planNombre ? [{ field_id: 962344, values: [{ value: operacionCompleta.planNombre }] }] : [])
           ],
-          tags: [{ name: "Enviar a Banco" }],
           _embedded: {
             contacts: [{ id: contactId }],
-            companies: [{ id: companyId }]
+            companies: [{ id: companyId }],
+            tags: [{ name: "Enviar a Banco" }]
           }
         }];
 
-        this.kommoLeadService.crearLeadComplejo(leadPayload).subscribe({
-          next: res => console.log('✅ Lead completo creado:', res),
-          error: err => console.error('❌ Error al crear lead final:', err)
-        });
+        console.log('🚀 Payload FINAL a enviar a Kommo:', JSON.stringify(lead, null, 2));
 
+        this.kommoLeadService.crearLeadComplejo(lead).subscribe();
       } catch (error) {
-        console.error('❌ Error en proceso de creación en Kommo:', error);
+        console.error('❌ Error en crearLeadEnKommo:', error);
       }
     });
   }
+
 
 
 
