@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Operacion } from 'src/app/core/services/operacion.service';
+import { Operacion, OperacionService } from 'src/app/core/services/operacion.service';
 
 @Component({
   selector: 'app-subcanal-operaciones-tab',
@@ -17,6 +17,10 @@ export class SubcanalOperacionesTabComponent implements OnChanges {
   estadoFiltro: string = 'all';
   operacionesFiltradas: Operacion[] = [];
 
+  constructor(
+    public operacionService: OperacionService  // debe ser público
+  ) { }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['operaciones']) {
       this.filtrarPorEstado();
@@ -28,7 +32,7 @@ export class SubcanalOperacionesTabComponent implements OnChanges {
       this.operacionesFiltradas = [...this.operaciones];
     } else {
       this.operacionesFiltradas = this.operaciones.filter(op =>
-        op.estado === this.estadoFiltro
+        op.estado?.toLowerCase() === this.estadoFiltro.toLowerCase()
       );
     }
   }
@@ -38,20 +42,7 @@ export class SubcanalOperacionesTabComponent implements OnChanges {
   }
 
   getBadgeClass(estado: string): string {
-    switch (estado) {
-      case 'Liquidada':
-        return 'badge-light-success';
-      case 'Ingresada':
-        return 'badge-light-info';
-      case 'Aprobada':
-        return 'badge-light-primary';
-      case 'Rechazada':
-        return 'badge-light-danger';
-      case 'En proceso':
-        return 'badge-light-warning';
-      default:
-        return 'badge-light-info';
-    }
+    return this.operacionService.getEstadoClass(estado);
   }
 
   formatearMonto(monto: number): string {

@@ -62,17 +62,6 @@
 }
 
 /* Badges */
-.badge {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 6px;
-}
-
-.badge-light-info {
-  background-color: rgba(0, 195, 230, 0.1);
-  color: #00c3e6;
-}
 
 /* Botones de acción */
 .btn-action {
@@ -170,26 +159,7 @@
   min-width: 140px;
 }
 
-/* Estilos para los badges por estado */
-.badge-light-success {
-  background-color: #e8fff3;
-  color: #50cd89;
-}
 
-.badge-light-primary {
-  background-color: #f1faff;
-  color: #009ef7;
-}
-
-.badge-light-danger {
-  background-color: #fff5f8;
-  color: #f1416c;
-}
-
-.badge-light-warning {
-  background-color: #fff8dd;
-  color: #ffc700;
-}
 
 /* Estilos para elementos interactivos */
 .cursor-pointer {

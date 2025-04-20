@@ -179,51 +179,38 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
- // Update the applyFilters method to handle estado filtering correctly
-applyFilters() {
-  let result = [...this.operaciones];
 
-  if (this.searchTerm && this.searchTerm.length >= 3) {
-    const term = this.searchTerm.toLowerCase();
-    result = result.filter(operacion =>
-      (operacion.nombreCliente?.toLowerCase() || '').includes(term) ||
-      (operacion.apellidoCliente?.toLowerCase() || '').includes(term) ||
-      (operacion.plan?.toLowerCase() || '').includes(term) ||
-      (operacion.canalNombre?.toLowerCase() || '').includes(term)
-    );
+  applyFilters() {
+    let result = [...this.operaciones];
+
+    if (this.searchTerm && this.searchTerm.length >= 3) {
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(operacion =>
+        (operacion.nombreCliente?.toLowerCase() || '').includes(term) ||
+        (operacion.apellidoCliente?.toLowerCase() || '').includes(term) ||
+        (operacion.plan?.toLowerCase() || '').includes(term) ||
+        (operacion.canalNombre?.toLowerCase() || '').includes(term)
+      );
+    }
+
+    if (this.filterActive !== 'all') {
+      // Asegurar que la comparación no sea sensible a mayúsculas/minúsculas
+      const filtroLower = this.filterActive.toLowerCase();
+      result = result.filter(operacion => {
+        const estadoLower = operacion.estado?.toLowerCase() || '';
+        return estadoLower === filtroLower;
+      });
+    }
+
+    if (this.sortState.column) {
+      result = this.sortData(result);
+    }
+
+    this.filteredOperaciones = result;
+    this.totalOperaciones = this.filteredOperaciones.length;
+    this.calcularTotalPaginas();
+    this.paginarOperaciones();
   }
-
-  if (this.filterActive !== 'all') {
-    // Convert filter value to proper case for comparison
-    const estadoMap: { [key: string]: string } = {
-      'liquidada': 'Liquidada',
-      'ingresada': 'Ingresada',
-      'active': 'Activo',
-      'pending': 'Pendiente',
-      'completed': 'Completado',
-      'cancelled': 'Cancelado'
-    };
-
-    const estadoFiltro = estadoMap[this.filterActive] || this.filterActive;
-
-    result = result.filter(operacion => {
-      const matches = operacion.estado === estadoFiltro;
-      // For debugging
-      if (!matches && operacion.estado.toLowerCase() === estadoFiltro.toLowerCase()) {
-      }
-      return matches;
-    });
-  }
-
-  if (this.sortState.column) {
-    result = this.sortData(result);
-  }
-
-  this.filteredOperaciones = result;
-  this.totalOperaciones = this.filteredOperaciones.length;
-  this.calcularTotalPaginas();
-  this.paginarOperaciones();
-}
 
   calcularTotalPaginas() {
     this.totalPaginas = Math.ceil(this.filteredOperaciones.length / this.itemsPorPagina);
@@ -384,22 +371,8 @@ applyFilters() {
   }
 
   getEstadoClass(estado: string): string {
-    switch (estado.toLowerCase()) {
-      case 'activo':
-        return 'badge-success';
-      case 'pendiente':
-        return 'badge-warning';
-      case 'completado':
-        return 'badge-info';
-      case 'cancelado':
-        return 'badge-danger';
-      case 'ingresada':
-        return 'badge-info';
-      case 'liquidada':
-        return 'badge-success'; // Green for liquidated operations
-      default:
-        return 'badge-light';
-    }
+    if (!estado) return 'badge-light';
+    return this.operacionService.getEstadoClass(estado);
   }
 
   formatNumber(value: number): string {

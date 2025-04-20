@@ -23,6 +23,16 @@ export interface Operacion {
   fechaCreacion?: Date;
   estado?: string;
   usuarioCreadorId?: number;
+
+  // Nuevos campos del backend
+  montoAprobado?: number;
+  mesesAprobados?: number;
+  tasaAprobada?: number;
+  planAprobadoId?: number;
+  planAprobadoNombre?: string;
+  fechaAprobacion?: Date;
+  liquidada?: boolean;
+  fechaLiquidacion?: Date;
 }
 
 @Injectable({
@@ -150,5 +160,52 @@ export class OperacionService {
       .pipe(
         map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
       );
+  }
+
+  getEstadoColor(estado: string): string {
+    const estadoLower = estado?.toLowerCase() || '';
+
+    switch (estadoLower) {
+      case 'rechazado':
+        return 'rgb(255, 225, 147)';
+      case 'liquidada':
+        return 'rgb(144, 205, 176)';
+      case 'firmas docu':
+        return 'rgb(134, 153, 218)';
+      case 'completando docu':
+        return 'rgb(134, 192, 252)';
+      case 'en analisis':
+        return 'rgb(255, 200, 200)';
+      case 'aprobado definit':
+        return 'rgb(144, 205, 176)';
+      case 'ingresada':
+        return 'rgb(134, 192, 252)';
+      case 'propuesta':
+        return 'rgb(134, 192, 252)';
+      default:
+        return 'rgb(222, 226, 230)';
+    }
+  }
+
+  // Método de utilidad para obtener la clase CSS del estado
+  getEstadoClass(estado: string): string {
+    const estadoLower = estado?.toLowerCase() || '';
+
+    switch (estadoLower) {
+      case 'rechazado':
+        return 'badge-op-rechazado';
+      case 'liquidada':
+        return 'badge-op-liquidada';
+      case 'firmas docu':
+        return 'badge-op-firmas-docu';
+      case 'completando docu':
+        return 'badge-op-completando-docu';
+      case 'en analisis':
+        return 'badge-op-en-analisis';
+      case 'aprobado definit':
+        return 'badge-op-aprobado-definit';
+      default:
+        return 'badge-light';
+    }
   }
 }

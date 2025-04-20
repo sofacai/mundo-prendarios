@@ -2,7 +2,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Operacion } from 'src/app/core/services/operacion.service';
+import { Operacion, OperacionService } from 'src/app/core/services/operacion.service';
 
 @Component({
   selector: 'app-usuario-operaciones',
@@ -24,26 +24,25 @@ export class UsuarioOperacionesComponent implements OnChanges {
   sortDirection: 'asc' | 'desc' = 'desc';
   estadoFiltro: string = 'all';
 
+   constructor(
+    public operacionService: OperacionService
+  ) { }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['operaciones']) {
       this.filtrarPorEstado();
     }
   }
 
-  filtrarPorEstado() {
-    let resultado = [...this.operaciones];
-
-    // Filtrar por estado si no es "all"
-    if (this.estadoFiltro !== 'all') {
-      resultado = resultado.filter(op => op.estado === this.estadoFiltro);
+  filtrarPorEstado(): void {
+    if (this.estadoFiltro === 'all') {
+      this.operacionesFiltradas = [...this.operaciones];
+    } else {
+      this.operacionesFiltradas = this.operaciones.filter(op =>
+        op.estado?.toLowerCase() === this.estadoFiltro.toLowerCase()
+      );
     }
-
-    // Aplicar ordenamiento
-    resultado = this.sortOperaciones(resultado);
-
-    this.operacionesFiltradas = resultado;
   }
-
   sortOperaciones(operaciones: Operacion[]): Operacion[] {
     return operaciones.sort((a, b) => {
       let comparison = 0;
@@ -121,22 +120,8 @@ export class UsuarioOperacionesComponent implements OnChanges {
   }
 
   // Obtener clase para el estado
-  getEstadoClass(estado: string | undefined): string {
-    if (!estado) return 'badge-light-warning';
-
-    switch (estado) {
-      case 'Liquidada':
-        return 'badge-light-success';
-      case 'Ingresada':
-        return 'badge-light-info';
-      case 'Aprobada':
-        return 'badge-light-primary';
-      case 'Rechazada':
-        return 'badge-light-danger';
-      case 'En proceso':
-        return 'badge-light-warning';
-      default:
-        return 'badge-light-info';
-    }
+  getBadgeClass(estado: string): string {
+    return this.operacionService.getEstadoClass(estado);
   }
+
 }
