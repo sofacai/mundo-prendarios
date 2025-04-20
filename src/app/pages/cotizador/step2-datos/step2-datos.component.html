@@ -106,17 +106,23 @@
           <small class="form-hint">Ejemplo: Toyota Etios 1.5 xls 2017</small>
         </div>
 
-        <!-- Tabs Documento -->
-        <div class="tabs">
-          <div class="tab-container">
-            <button class="tab" [class.tab-active]="tipoDocumento === 'CUIL'" (click)="seleccionarTipoDocumento('CUIL')">
-              CUIL
-            </button>
-            <button class="tab" [class.tab-active]="tipoDocumento === 'DNI'" (click)="seleccionarTipoDocumento('DNI')">
-              DNI
-            </button>
-          </div>
-        </div>
+   <!-- Tabs Documento -->
+<div class="tabs">
+  <div class="tab-container">
+    <button class="tab"
+            [class.tab-active]="tipoDocumento === 'CUIL'"
+            [class.tab-inactive]="tipoDocumento !== 'CUIL'"
+            (click)="seleccionarTipoDocumento('CUIL')">
+      CUIL
+    </button>
+    <button class="tab"
+            [class.tab-active]="tipoDocumento === 'DNI'"
+            [class.tab-inactive]="tipoDocumento !== 'DNI'"
+            (click)="seleccionarTipoDocumento('DNI')">
+      DNI
+    </button>
+  </div>
+</div>
 
         <!-- DNI -->
         <div class="form-group" *ngIf="tipoDocumento === 'DNI'">
@@ -132,20 +138,31 @@
         </div>
 
         <!-- Sexo -->
-        <div class="form-group" *ngIf="tipoDocumento === 'DNI'">
-          <label class="form-label">Sexo <span class="required">*</span></label>
-          <div class="radio-group">
-            <div class="radio-option">
-              <input type="radio" id="masculino" formControlName="sexo" value="M">
-              <label for="masculino">Masculino</label>
-            </div>
-            <div class="radio-option">
-              <input type="radio" id="femenino" formControlName="sexo" value="F">
-              <label for="femenino">Femenino</label>
-            </div>
-          </div>
-          <small class="text-danger" *ngIf="sexoInvalido">Debe seleccionar un sexo.</small>
+<!-- Sexo -->
+<div class="form-group" *ngIf="tipoDocumento === 'DNI'">
+  <label class="form-label">Sexo <span class="required">*</span></label>
+  <div class="radio-group">
+    <div class="option-item" (click)="clienteForm.get('sexo')?.setValue('M')">
+      <div class="option-left">
+        <div class="radio" [class.radio-selected]="clienteForm.get('sexo')?.value === 'M'">
+          <div *ngIf="clienteForm.get('sexo')?.value === 'M'" class="radio-inner"></div>
         </div>
+        <span class="option-text">Masculino</span>
+      </div>
+      <input type="radio" id="masculino" formControlName="sexo" value="M" style="display: none;">
+    </div>
+    <div class="option-item" (click)="clienteForm.get('sexo')?.setValue('F')">
+      <div class="option-left">
+        <div class="radio" [class.radio-selected]="clienteForm.get('sexo')?.value === 'F'">
+          <div *ngIf="clienteForm.get('sexo')?.value === 'F'" class="radio-inner"></div>
+        </div>
+        <span class="option-text">Femenino</span>
+      </div>
+      <input type="radio" id="femenino" formControlName="sexo" value="F" style="display: none;">
+    </div>
+  </div>
+  <small class="text-danger" *ngIf="sexoInvalido">Debe seleccionar un sexo.</small>
+</div>
 
         <!-- CUIL -->
         <div class="form-group" *ngIf="tipoDocumento === 'CUIL'">

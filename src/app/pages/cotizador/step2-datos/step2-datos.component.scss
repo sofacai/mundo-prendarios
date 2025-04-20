@@ -3,12 +3,15 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  color:black
 }
 
 .loan-form {
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
+  overflow-y: auto; /* Agregar esta línea para permitir scroll */
+  max-height: 100vh; /* Limitar altura a la ventana visible */
 }
 
 .full-width {
@@ -18,11 +21,10 @@
 .card {
   background-color: white;
   border-radius: 1rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  margin-bottom: 1.25rem;
-  min-height: 36rem; /* Altura mínima para mantener consistencia */
 }
+
 
 .header {
   background: #3378f6;
@@ -89,6 +91,11 @@
   padding: 0.5rem 1.25rem 1.5rem 1.25rem;
   position: relative;
   z-index: 10;
+
+  @media (max-width: 991.98px) {
+    margin-bottom:190px
+  }
+
 }
 
 .title {
@@ -169,12 +176,13 @@
 /* Tabs - para selector de tipo documento */
 .tabs {
   margin-bottom: 1.5rem;
+  background-color: #F0F0F0;
 }
 
 .tab-container {
   background-color: #f3f4f6;
   padding: 0.25rem;
-  border-radius: 0.5rem;
+  border-radius: 0.5rem!important;
   display: flex;
 }
 
@@ -187,7 +195,6 @@
   text-align: center;
   transition: all 0.2s;
   cursor: pointer;
-  border: none;
 }
 
 .tab-active {
@@ -198,7 +205,7 @@
 
 .tab-inactive {
   color: #4b5563;
-  background-color: transparent;
+  background-color: #f0f0f0!important;
 }
 
 .tab-inactive:hover {
@@ -242,29 +249,58 @@
   background-color: #e0e0e0;
 }
 
-/* Radio buttons para selección de sexo */
 .radio-group {
   display: flex;
   gap: 1.5rem;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.radio-option {
+.option-item {
   display: flex;
   align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.radio-option input[type="radio"] {
-  margin-right: 0.5rem;
-  cursor: pointer;
+.option-item:hover {
+  background-color: #f9fafb;
 }
 
-.radio-option label {
-  font-size: 0.875rem;
-  cursor: pointer;
+.option-left {
+  display: flex;
+  align-items: center;
 }
 
+.radio {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #d1d5db;
+  flex-shrink: 0;
+}
+
+.radio-selected {
+  border-color: #3378f6;
+}
+
+.radio-inner {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background-color: #3378f6;
+}
+
+.option-text {
+  font-size: 0.95rem;
+  color: #374151;
+}
 /* Resumen de la solicitud */
 .loan-summary {
   margin-top: 1.5rem;

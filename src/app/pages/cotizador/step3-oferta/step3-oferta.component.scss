@@ -4,21 +4,20 @@
   padding: 0;
   box-sizing: border-box;
 }
-
 .loan-form {
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
+  overflow-y: auto; /* Agregar esta línea para permitir scroll */
+  max-height: 100vh; /* Limitar altura a la ventana visible */
 }
 
 .card {
   background-color: white;
   border-radius: 1rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  margin-bottom: 1.25rem;
 }
-
 .header {
   background: #3378f6;
   padding: 1.25rem;
@@ -83,6 +82,11 @@
   padding: 0.5rem 1.25rem 1.5rem 1.25rem;
   position: relative;
   z-index: 10;
+
+  @media (max-width: 991.98px) {
+    margin-bottom:190px
+  }
+
 }
 
 /* Estilos para el mensaje de éxito */
