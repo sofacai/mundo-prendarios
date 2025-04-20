@@ -22,6 +22,7 @@ import { PlanService } from 'src/app/core/services/plan.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { KommoLeadService } from 'src/app/core/services/kommo-lead.service';
 import { KommoService } from '../../../core/services/kommo.service';
+import { HttpHeaders } from '@angular/common/http';
 
 
 
@@ -70,6 +71,9 @@ export class WizardContainerComponent implements OnInit {
   currentUserRol: RolType = RolType.Vendor;
   vendorSeleccionado: number | null = null;
   subcanales: Subcanal[] = [];
+
+  private yaCreoLeadEnKommo = false;
+
 
   constructor(
     private authService: AuthService,
@@ -524,6 +528,15 @@ export class WizardContainerComponent implements OnInit {
     this.cargando = true;
     this.error = null;
 
+    // 🧠 Deducir sexo si no vino explícito y hay CUIT
+    let sexo = datos.sexo;
+    if (!sexo && datos.cuil) {
+      const cuilStr = datos.cuil.toString();
+      const prefijo = parseInt(cuilStr.substring(0, 2), 10);
+      if (prefijo === 27) sexo = 'F';
+      else if ([20, 23, 24].includes(prefijo)) sexo = 'M';
+    }
+
     // Guardar datos del cliente en el wizard
     this.wizardData = {
       ...this.wizardData,
@@ -534,15 +547,14 @@ export class WizardContainerComponent implements OnInit {
       clienteEmail: datos.email,
       clienteDni: datos.dni || "",
       clienteCuil: datos.cuil || "",
-      clienteSexo: datos.sexo || "",
-      // Nuevos campos
+      clienteSexo: sexo || "",
       ingresos: datos.ingresos,
       auto: datos.auto || "",
       codigoPostal: datos.codigoPostal,
       estadoCivil: datos.estadoCivil || ""
     };
 
-    // Guardar los datos en el servicio compartido para acceder desde Step3
+    // Guardar en servicio compartido para step3
     this.dataService.guardarDatosPaso2({
       nombre: datos.nombre,
       apellido: datos.apellido,
@@ -550,21 +562,17 @@ export class WizardContainerComponent implements OnInit {
       email: datos.email,
       dni: datos.dni || undefined,
       cuil: datos.cuil || undefined,
-      sexo: datos.sexo || undefined,
+      sexo: sexo || undefined,
       clienteId: datos.clienteId,
-      // Nuevos campos
       ingresos: datos.ingresos,
       auto: datos.auto,
       codigoPostal: datos.codigoPostal,
       estadoCivil: datos.estadoCivil
     });
 
-
-    // Si ya tenemos un clienteId, actualizar en lugar de buscar/crear
     if (datos.clienteId) {
       this.actualizarCliente(datos);
     } else {
-      // Buscar cliente existente por DNI o CUIL
       if (datos.dni) {
         this.buscarClientePorDNI(datos);
       } else if (datos.cuil) {
@@ -574,6 +582,7 @@ export class WizardContainerComponent implements OnInit {
       }
     }
   }
+
 
   // Método para actualizar cliente existente
   private actualizarCliente(datos: any) {
@@ -706,7 +715,6 @@ export class WizardContainerComponent implements OnInit {
       }
     });
   }
-  // Método para crear cliente
   private crearCliente(datos: any) {
     const clienteData: ClienteCrearDto = {
       nombre: datos.nombre,
@@ -715,17 +723,14 @@ export class WizardContainerComponent implements OnInit {
       email: datos.email,
       dni: datos.dni || undefined,
       cuil: datos.cuil || undefined,
-      sexo: datos.sexo || undefined,
+      sexo: this.wizardData.clienteSexo || undefined,
       canalId: this.subcanalSeleccionadoInfo?.canalId,
-      // Nuevos campos
       ingresos: datos.ingresos,
       auto: datos.auto,
       codigoPostal: datos.codigoPostal,
       estadoCivil: datos.estadoCivil,
-      // Autoasignación
       autoasignarVendor: true
     };
-
 
     this.clienteService.crearCliente(clienteData).subscribe({
       next: (cliente: Cliente) => {
@@ -734,29 +739,18 @@ export class WizardContainerComponent implements OnInit {
           this.dataService.clienteId = cliente.id;
           this.asignarVendorACliente(cliente.id);
         } else {
-          console.error("Cliente creado sin ID válido");
-          // Si no se creó el cliente correctamente, intentamos avanzar de todas formas
           this.obtenerPlanesYAvanzar();
         }
       },
-      error: (error) => {
-
-        // En caso de error, intentamos avanzar de todas formas
+      error: () => {
         this.obtenerPlanesYAvanzar();
-
-        /* Comentamos este código para evitar mostrar errores al usuario
-        if (error.status === 409) {
-          this.error = "Ya existe un cliente con ese DNI o CUIL.";
-        } else if (error.status === 400) {
-          this.error = "Datos inválidos. Verifica los campos obligatorios.";
-        } else {
-          this.error = "Error al crear cliente. Por favor, intenta nuevamente.";
-        }
-        this.cargando = false;
-        */
       }
     });
   }
+
+
+
+
 
   // Método para asignar vendor a cliente
   private asignarVendorACliente(clienteId: number) {
@@ -794,17 +788,18 @@ export class WizardContainerComponent implements OnInit {
       return;
     }
 
+    if (this.yaCreoLeadEnKommo) {
+      console.warn('⛔ Evitando recrear operación porque ya se creó el lead en Kommo');
+      this.cargando = false;
+      return;
+    }
 
-
-    // Si tenemos información del subcanal, filtramos los planes directamente
     if (this.subcanalSeleccionadoInfo && this.subcanalSeleccionadoInfo.planesDisponibles) {
-      // Filtrar planes aplicables
       const planesAplicables = this.subcanalSeleccionadoInfo.planesDisponibles.filter(plan =>
         this.wizardData.monto! >= plan.montoMinimo &&
         this.wizardData.monto! <= plan.montoMaximo &&
         plan.cuotasAplicables.includes(this.wizardData.plazo!)
       );
-
 
       if (planesAplicables.length === 0) {
         this.error = "No hay planes disponibles para el monto y plazo seleccionados.";
@@ -812,40 +807,27 @@ export class WizardContainerComponent implements OnInit {
         return;
       }
 
-      // Calcular cuota para cada plan
       const planesConCuotas = planesAplicables.map(plan => {
-        // Verifica si hay comisión del subcanal
         const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
-
-        // Calcular cuota básica
         let cuota = this.cotizadorService.calcularCuota(
           this.wizardData.monto!,
           this.wizardData.plazo!,
           plan.tasa,
           this.gastosSeleccionados
         );
-
-        // Aplicar comisión del subcanal si existe
         if (comisionSubcanal > 0) {
           cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
         }
-
         return {
           ...plan,
           cuota: cuota
         };
       });
 
-
-      // Guardar planes en el wizard
       this.wizardData.planesDisponibles = planesConCuotas;
-
-      // Seleccionar el plan con mejor tasa por defecto (normalmente el primero)
       const planSeleccionado = planesConCuotas[0];
 
-      // Crear la operación inmediatamente antes de avanzar al paso 3
       this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then(() => {
-        // Una vez creada la operación, avanzar al paso 3
         this.wizardData.paso = 3;
         this.cargando = false;
       }).catch(error => {
@@ -920,19 +902,38 @@ export class WizardContainerComponent implements OnInit {
     this.cargando = false;
   }
 
+
   private crearOperacion(planId: number, tasa: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      // Si ya existe una operación, actualizar en vez de crear
       if (this.wizardData.operacionId) {
         resolve({ id: this.wizardData.operacionId });
         return;
       }
 
-      // Obtener el ID del usuario creador
       const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
 
+      const operacionData = {
+        monto: this.wizardData.monto!,
+        meses: this.wizardData.plazo!,
+        tasa: tasa,
+        planId: planId,
+        subcanalId: this.subcanalSeleccionado!,
+        canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+        vendedorId: this.vendorSeleccionado ?? 0,
+        usuarioCreadorId: usuarioCreadorId,
+        estado: "Ingresada"
+      };
+
+      const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
+        if (!this.yaCreoLeadEnKommo) {
+          this.yaCreoLeadEnKommo = true;
+          console.log('🔁 Ejecutando crearLeadEnKommo una sola vez');
+          this.crearLeadEnKommo(op, cliente);
+        }
+      };
+
+      // FLUJO 1 - Crear cliente + operación juntos
       if (!this.wizardData.clienteId) {
-        // Preparar datos del cliente
         const clienteData = {
           nombre: this.wizardData.clienteNombre || "",
           apellido: this.wizardData.clienteApellido || "",
@@ -943,73 +944,48 @@ export class WizardContainerComponent implements OnInit {
           cuil: this.wizardData.clienteCuil || "",
           sexo: this.wizardData.clienteSexo || "",
           provincia: "",
-          estadoCivil: ""
-        };
-
-        // Preparar datos de la operación
-        const operacionData = {
-          monto: this.wizardData.monto!,
-          meses: this.wizardData.plazo!,
-          tasa: tasa,
-          planId: planId,
-          subcanalId: this.subcanalSeleccionado!,
-          canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-          vendedorId: this.vendorSeleccionado,
-          usuarioCreadorId: usuarioCreadorId,
-          estado: "Ingresada"
+          estadoCivil: this.wizardData.estadoCivil || ""
         };
 
         this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
-          next: (operacionCreada) => {
-            if (operacionCreada && operacionCreada.id) {
-              this.wizardData.operacionId = operacionCreada.id;
-
-              // Intentar crear un lead en Kommo con datos del cliente
-              this.crearLeadEnKommo(operacionCreada, clienteData);
+          next: (opCreada) => {
+            if (opCreada?.id) {
+              this.wizardData.operacionId = opCreada.id;
+              ejecutarKommoSiNoFue(opCreada, clienteData);
             }
-            resolve(operacionCreada);
+            resolve(opCreada);
           },
-          error: (error: any) => {
-            console.error('Error al crear operación:', error);
+          error: (err) => {
+            console.error('❌ Error creando cliente+operación:', err);
             resolve({ dummy: true });
           }
         });
-      } else {
-        // Obtener datos del cliente - CORREGIDO: usar getClienteById en lugar de getCliente
+      }
+      // FLUJO 2 - Cliente ya existe
+      else {
         this.clienteService.getClienteById(this.wizardData.clienteId).subscribe({
           next: (cliente) => {
-            // Crear solo la operación
             const operacion: Operacion = {
-              monto: this.wizardData.monto!,
-              meses: this.wizardData.plazo!,
-              tasa: tasa,
-              clienteId: this.wizardData.clienteId!, // Usar ! para asegurar que es number
-              planId: planId,
-              subcanalId: this.subcanalSeleccionado!,
-              canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-              vendedorId: this.vendorSeleccionado || 0, // Proporcionar un valor por defecto
-              usuarioCreadorId: usuarioCreadorId,
-              estado: "Ingresada"
+              ...operacionData,
+              clienteId: cliente.id,
             };
 
             this.operacionService.crearOperacion(operacion).subscribe({
-              next: (operacionCreada) => {
-                if (operacionCreada && operacionCreada.id) {
-                  this.wizardData.operacionId = operacionCreada.id;
-
-                  // Intentar crear un lead en Kommo con datos del cliente
-                  this.crearLeadEnKommo(operacionCreada, cliente);
+              next: (opCreada) => {
+                if (opCreada?.id) {
+                  this.wizardData.operacionId = opCreada.id;
+                  ejecutarKommoSiNoFue(opCreada, cliente);
                 }
-                resolve(operacionCreada);
+                resolve(opCreada);
               },
-              error: (error: any) => {
-                console.error('Error al crear operación:', error);
+              error: (err) => {
+                console.error('❌ Error creando operación:', err);
                 resolve({ dummy: true });
               }
             });
           },
-          error: (error: any) => {
-            console.error('Error al obtener cliente:', error);
+          error: (err) => {
+            console.error('❌ Error buscando cliente:', err);
             resolve({ dummy: true });
           }
         });
@@ -1017,41 +993,104 @@ export class WizardContainerComponent implements OnInit {
     });
   }
 
+
+
   private crearLeadEnKommo(operacionCreada: any, cliente: any): void {
-    // Verificar si el servicio Kommo está autenticado
-    if (!this.KommoService.isAuthenticated()) {
-      console.log('No hay autenticación con Kommo disponible');
-      return;
+    if (!this.KommoService.isAuthenticated()) return;
+    if (!operacionCreada || !cliente) return;
+
+    let sexo = cliente.sexo || this.wizardData.clienteSexo || '';
+    if (!sexo && cliente.cuil) {
+      const cuilStr = cliente.cuil.toString();
+      const prefijo = parseInt(cuilStr.substring(0, 2), 10);
+      if (prefijo === 27) sexo = 'F';
+      else if ([20, 23, 24].includes(prefijo)) sexo = 'M';
     }
 
-    // Verificar que tenemos los datos mínimos necesarios
-    if (!operacionCreada || !cliente || !cliente.nombre || !cliente.apellido) {
-      console.error('Datos insuficientes para crear lead en Kommo');
-      return;
-    }
+    const nombre = cliente.nombre || this.wizardData.clienteNombre || '';
+    const apellido = cliente.apellido || this.wizardData.clienteApellido || '';
+    const telefono = cliente.telefono || this.wizardData.clienteWhatsapp || '+5491100000000';
+    const email = cliente.email || this.wizardData.clienteEmail || 'sin-email@mundo.com';
+    const codigoPostal = cliente.codigoPostal?.toString() || this.wizardData.codigoPostal?.toString() || '';
+    const estadoCivil = cliente.estadoCivil || this.wizardData.estadoCivil || '';
+    const ingresos = cliente.ingresos || this.wizardData.ingresos || 0;
+    const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
 
-    // Enriquecer los datos de la operación con la información adicional
-    this.obtenerDatosComplementarios(operacionCreada)
-      .then(operacionCompleta => {
-        console.log('Intentando crear lead en Kommo con datos:', {
-          operacion: operacionCompleta,
-          cliente: cliente
-        });
+    let sexoFieldValue: number | undefined;
+    if (sexo.toUpperCase() === 'F') sexoFieldValue = 542410;
+    if (sexo.toUpperCase() === 'M') sexoFieldValue = 542412;
 
-        // Intentar crear el lead con la estructura completa
-        this.kommoLeadService.crearLeadDesdeOperacion(operacionCompleta, cliente).subscribe({
-          next: (response) => {
-            console.log('Lead creado exitosamente en Kommo:', response);
-          },
-          error: (error) => {
-            console.error('Error al crear lead en Kommo:', error);
+    this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
+      try {
+        // 1. Crear contacto
+        const contactoPayload = [{
+          first_name: nombre,
+          last_name: apellido,
+          custom_fields_values: [
+            { field_id: 500552, values: [{ value: telefono }] },
+            { field_id: 500554, values: [{ value: email }] },
+            { field_id: 650694, values: [{ value: codigoPostal }] },
+            { field_id: 964686, values: [{ value: estadoCivil }] },
+            { field_id: 964710, values: [{ value: ingresos }] },
+            { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] },
+            ...(sexoFieldValue ? [{ field_id: 650450, values: [{ enum_id: sexoFieldValue }] }] : [])
+          ]
+        }];
+
+        const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto(contactoPayload));
+        const contactId = contactoRes._embedded.contacts[0].id;
+
+        // 2. Obtener vendedor real para crear compañía
+        const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
+        const companyPayload = [{
+          name: operacionCompleta.canalNombre || 'Canal Desconocido',
+          custom_fields_values: [
+            { field_id: 500552, values: [{ value: vendedor.telefono || '+5491100000000' }] },
+            { field_id: 962818, values: [{ value: `${vendedor.nombre} ${vendedor.apellido}` }] },
+            { field_id: 963284, values: [{ value: operacionCompleta.subcanalNombre || 'Subcanal' }] }
+          ]
+        }];
+
+        const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania(companyPayload));
+        const companyId = companiaRes._embedded.companies[0].id;
+
+        // 3. Crear el lead referenciando contact y company
+        const leadPayload = [{
+          name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
+          custom_fields_values: [
+            { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
+            { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto) || 0 }] },
+            { field_id: 964680, values: [{ value: parseInt(operacionCompleta.meses) || 0 }] },
+            { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa) || 0 }] },
+            ...(operacionCompleta.planNombre ? [{ field_id: 962344, values: [{ value: operacionCompleta.planNombre }] }] : [])
+          ],
+          tags: [{ name: "Enviar a Banco" }],
+          _embedded: {
+            contacts: [{ id: contactId }],
+            companies: [{ id: companyId }]
           }
+        }];
+
+        this.kommoLeadService.crearLeadComplejo(leadPayload).subscribe({
+          next: res => console.log('✅ Lead completo creado:', res),
+          error: err => console.error('❌ Error al crear lead final:', err)
         });
-      })
-      .catch(error => {
-        console.error('Error al preparar datos para Kommo:', error);
-      });
+
+      } catch (error) {
+        console.error('❌ Error en proceso de creación en Kommo:', error);
+      }
+    });
   }
+
+
+
+
+
+
+
+
+
+
 
   // Método para obtener datos complementarios para Kommo
 private async obtenerDatosComplementarios(operacion: any): Promise<any> {

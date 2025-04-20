@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { KommoService } from './kommo.service';
 
@@ -27,58 +27,146 @@ export class KommoLeadService {
       return throwError(() => new Error('No hay token de autenticación disponible'));
     }
 
-    // Crear los headers
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${auth.accessToken}`,
       'Content-Type': 'application/json'
     });
 
-    // Estructura muy básica del lead para la API estándar de Kommo
     const leadData = [{
       name: `#${operacion.id || 'Nuevo'} - ${cliente.nombre} ${cliente.apellido}`,
-
-      // Campos personalizados básicos de operación
       custom_fields_values: [
-        // ID Operación
-        {
-          field_id: 500886,
-          values: [{ value: operacion.id?.toString() || '' }]
-        },
-        // Monto
-        {
-          field_id: 500892,
-          values: [{ value: operacion.monto?.toString() || '0' }]
-        },
-        // Meses
-        {
-          field_id: 500994,
-          values: [{ value: operacion.meses?.toString() || '0' }]
-        },
-        // Tasa
-        {
-          field_id: 500996,
-          values: [{ value: operacion.tasa?.toString() || '0' }]
-        }
-      ]
+        { field_id: 500886, values: [{ value: operacion.id?.toString() || '' }] },
+        { field_id: 500892, values: [{ value: parseFloat(operacion.monto) || 0 }] },
+        { field_id: 964680, values: [{ value: parseInt(operacion.meses) || 0 }] },
+        { field_id: 500996, values: [{ value: parseFloat(operacion.tasa) || 0 }] }
+      ],
+      tags: [{ name: "Enviar a Banco" }]
     }];
 
-    // Añadir plan si existe
     if (operacion.planNombre) {
       leadData[0].custom_fields_values.push({
-        field_id: 962344, // Plan Nombre
-        values: [{ value: operacion.planNombre || '' }]
+        field_id: 962344,
+        values: [{ value: operacion.planNombre }]
       });
     }
 
-    console.log('Datos básicos del lead a enviar:', JSON.stringify(leadData, null, 2));
+    console.log('📤 Enviando lead a Kommo:', JSON.stringify(leadData, null, 2));
 
     return this.http.post(`${this.apiUrl}/kommo/leads`, leadData, { headers }).pipe(
-      tap(response => console.log('Lead creado en Kommo:', response)),
+      map((leadResponse: any) => {
+        console.log('✅ Lead creado:', leadResponse);
+        return leadResponse;
+      }),
       catchError(error => {
-        console.error('Error al crear lead en Kommo:', error);
-        console.error('Detalles del error:', error.error);
+        console.error('❌ Error al crear lead en Kommo:', error);
         return throwError(() => error);
       })
     );
   }
+
+
+  private crearContactoSimple(cliente: any, headers: HttpHeaders): Observable<any> {
+    const contactoData: any = {
+      add: [
+        {
+          name: `${cliente.nombre} ${cliente.apellido}`,
+          custom_fields_values: []
+        }
+      ]
+    };
+
+    // Teléfono (field_code estándar de Kommo)
+    if (cliente.telefono || cliente.whatsapp) {
+      contactoData.add[0].custom_fields_values.push({
+        field_code: "PHONE",
+        values: [{ value: cliente.telefono || cliente.whatsapp }]
+      });
+    }
+
+    // Email (field_code estándar de Kommo)
+    if (cliente.email) {
+      contactoData.add[0].custom_fields_values.push({
+        field_code: "EMAIL",
+        values: [{ value: cliente.email }]
+      });
+    }
+
+    console.log('🧾 Datos de contacto a enviar a Kommo:', JSON.stringify(contactoData, null, 2));
+
+    return this.http.post(`${this.apiUrl}/kommo/contacts`, contactoData, { headers });
+  }
+
+
+
+  private crearCompaniaSimple(vendedor: any, headers: HttpHeaders): Observable<any> {
+    const companyData: any = {
+      add: [{
+        name: `${vendedor.nombre} ${vendedor.apellido}`,
+        custom_fields_values: []
+      }]
+    };
+
+    // Teléfono
+    if (vendedor.telefono) {
+      companyData.add[0].custom_fields_values.push({
+        field_code: "PHONE",
+        values: [{ value: vendedor.telefono }]
+      });
+    }
+
+    // Email
+    if (vendedor.email) {
+      companyData.add[0].custom_fields_values.push({
+        field_code: "EMAIL",
+        values: [{ value: vendedor.email }]
+      });
+    }
+
+    return this.http.post(`${this.apiUrl}/kommo/companies`, companyData, { headers });
+  }
+
+  private vincularContactoALead(contactId: number, leadId: number, headers: HttpHeaders): Observable<any> {
+    const linkData = {
+      to: [
+        {
+          to_entity_id: leadId,
+          to_entity_type: 'leads'
+        }
+      ]
+    };
+
+    return this.http.post(`${this.apiUrl}/kommo/contacts/${contactId}/link`, linkData, { headers }).pipe(
+      tap(response => console.log(`🔗 Contacto ${contactId} vinculado al lead ${leadId}`, response)),
+      catchError(error => {
+        console.error('❌ Error al vincular contacto con lead:', error);
+        return of({ error });
+      })
+    );
+  }
+
+  crearLeadComplejo(payload: any): Observable<any> {
+    const auth = this.kommoService.getAuthData();
+
+    if (!auth?.accessToken) {
+      console.warn('No hay token de autenticación disponible para Kommo');
+      return throwError(() => new Error('No hay token de autenticación disponible'));
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${auth.accessToken}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.apiUrl}/kommo/leads`, payload, { headers }).pipe(
+      tap(res => console.log('✅ Lead complejo creado:', res)),
+      catchError(error => {
+        console.error('❌ Error al crear lead complejo:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+
+
+
 }

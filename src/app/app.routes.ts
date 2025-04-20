@@ -89,6 +89,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/callback/callback.component').then(m => m.CallbackComponent)
   },
   {
+    path: 'clientes-test',
+    loadComponent: () => import('./pages/test-cliente/test-cliente.component').then(m => m.TestClienteComponent)
+  },
+  {
     path: 'test',
     loadComponent: () => import('./pages/kommo-test/kommo-test.component').then(m => m.KommoTestComponent)
   },

@@ -84,6 +84,20 @@ export class KommoService {
     );
   }
 
+  crearContacto(contacto: any[]) {
+    const auth = this.getAuthData();
+    if (!auth) {
+      console.error('No hay token de autenticación');
+      return throwError(() => new Error('No autorizado'));
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${auth.accessToken}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.apiUrl}/kommo/contacts`, contacto, { headers });
+  }
   getLeads(): Observable<any> {
     const auth = this.getAuthData();
     if (!auth) {
@@ -195,5 +209,58 @@ getAuthData(): (KommoAuthResponse & { expires_at: number }) | null {
       console.log('Token por expirar, refrescando...');
       this.refreshToken(auth.refreshToken).subscribe();
     }
+  }
+
+  crearCompania(compania: any[]) {
+    const auth = this.getAuthData();
+    if (!auth) {
+      return throwError(() => new Error('No autorizado'));
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${auth.accessToken}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.apiUrl}/kommo/companies`, compania, { headers });
+  }
+
+  obtenerAccessToken(): string | null {
+    const rawData = localStorage.getItem('kommo_auth');
+    if (!rawData) return null;
+
+    try {
+      const data = JSON.parse(rawData);
+      return data.accessToken || null;
+    } catch (e) {
+      console.error('Error al parsear token Kommo:', e);
+      return null;
+    }
+  }
+
+  linkearContactoACompania(contactId: number, companyId: number) {
+    const body = {
+      to_entity_id: companyId,
+      to_entity_type: 'companies'
+    };
+
+    return this.http.post(
+      `https://mundoprendario.kommo.com/api/v4/contacts/${contactId}/link`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${this.obtenerAccessToken()}`, // asegurate que este método devuelva bien el token
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  }
+
+  editarContacto(contactId: number, companyId: number) {
+    const body = {
+      company_id: companyId
+    };
+
+    return this.http.patch(`${this.apiUrl}/kommo/contactos/${contactId}`, body);
   }
 }
