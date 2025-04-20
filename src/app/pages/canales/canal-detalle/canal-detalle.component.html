@@ -55,7 +55,7 @@
             <div class="col-12">
               <div class="d-flex flex-column flex-lg-row gap-4">
                 <!-- Información General -->
-                <div style="flex-basis: 50%">
+                <div class="w-100" style="flex: 1 1 100%;">
                   <app-canal-general-info
                     [canal]="canal"
                     [isEditing]="isEditing('general')"
@@ -68,7 +68,7 @@
                 </div>
 
                 <!-- Oficiales Comerciales -->
-                <div style="flex-basis: 50%">
+                <div class="w-100" style="flex: 1 1 100%;">
                   <app-canal-oficiales
                     [oficialesComerciales]="oficialesComerciales"
                     [loading]="loadingOficiales"
@@ -99,7 +99,7 @@
             <div class="col-12 mt-2">
               <div class="d-flex flex-column flex-lg-row gap-4">
                 <!-- Información Fiscal -->
-                <div style="flex-basis: 50%">
+                <div  style="flex: 1 1 100%;">
                   <app-canal-info-fiscal
                     [canal]="canal"
                     [isEditing]="isEditing('fiscal')"
@@ -112,7 +112,7 @@
                 </div>
 
                 <!-- Información Bancaria -->
-                <div style="flex-basis: 50%">
+                <div class="final-mrg"  style="flex: 1 1 100%;">
                   <app-canal-info-bancaria
                     [canal]="canal"
                     [isEditing]="isEditing('bancaria')"

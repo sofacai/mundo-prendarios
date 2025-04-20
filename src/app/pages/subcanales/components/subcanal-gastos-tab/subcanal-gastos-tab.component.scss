@@ -193,3 +193,41 @@
 .p-5 {
   padding: 3rem;
 }
+/* Estilos para tabla con scroll horizontal */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+.custom-table {
+  width: 100%;
+  min-width: 500px; /* Ancho mínimo para que aparezca scroll */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Anchos de columnas en todas las pantallas */
+.custom-table th:first-child,
+.custom-table td:first-child {
+  width: 60px; /* ID */
+}
+
+.custom-table th:nth-child(2),
+.custom-table td:nth-child(2) {
+  width: auto; /* Nombre - espacio flexible */
+}
+
+.custom-table th:nth-child(3),
+.custom-table td:nth-child(3) {
+  width: 120px; /* Porcentaje */
+  text-align: center;
+}
+
+.custom-table th:last-child,
+.custom-table td:last-child {
+  width: 120px; /* Acciones */
+  text-align: center;
+}
+
+/* Mantén los estilos originales para los bordes y demás */

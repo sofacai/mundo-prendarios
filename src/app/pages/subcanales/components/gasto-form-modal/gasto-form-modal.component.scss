@@ -11,6 +11,12 @@
   background: #fff;
   border-radius: 8px;
   overflow: hidden;
+  color: black !important;
+
+}
+
+.btn-close{
+  background-color: #fff;
 }
 
 .modal-header {
@@ -52,6 +58,9 @@
     border: 1px solid #e4e6ef;
     border-radius: 6px;
     font-size: 14px;
+    color:black;
+    background-color: #fff!important;
+    color: black !important;
 
     &:focus {
       border-color: #009ef7;

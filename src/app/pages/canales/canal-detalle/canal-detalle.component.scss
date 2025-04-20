@@ -10,6 +10,7 @@
   display: flex;
   height: 100vh;
   background-color: #f5f8fa;
+
 }
 
 .content-area {
@@ -18,7 +19,6 @@
   transition: margin-left 0.3s ease;
   width: 100%;
   overflow-y: auto;
-
 
   @media (min-width: 992px) {
     margin-left: 260px;
@@ -36,9 +36,10 @@
   }
 }
 
-.canal-detail {
-  margin-top: 1rem;
-  padding-bottom:1rem;
+@media (max-width: 991.98px) {
+  .canal-detail {
+    margin-bottom:1900px!important;
+  }
 }
 
 /* ===============================
@@ -586,4 +587,19 @@
 .status-badge.cursor-pointer:hover {
   opacity: 0.8;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 991.98px) {
+  /* Cambiar d-flex a block en mobile */
+  .d-flex.flex-column.flex-lg-row.gap-4 {
+    display: block !important;
+  }
+
+  /* Asegurar que cada div ocupe todo el ancho */
+  .d-flex.flex-column.flex-lg-row.gap-4 > div {
+    width: 100% !important;
+    margin-bottom: 1.5rem;
+  }
+
+
 }

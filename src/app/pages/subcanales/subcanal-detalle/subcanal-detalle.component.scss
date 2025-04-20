@@ -26,7 +26,7 @@
       margin-left: 0 !important;
       width: 100% !important;
       padding: 1rem;
-      padding-top: 60px !important;
+      padding-top: 30px !important;
 
     }
   }
@@ -34,7 +34,16 @@
   .subcanal-detail {
     margin-top: 1rem;
     padding-bottom:1rem;
+
   }
+
+
+@media (max-width: 991.98px) {
+  .subcanal-detail {
+    margin-bottom:190px!important;
+  }
+}
+
 
   /* ===============================
      HEADER Y NAVEGACIÓN
