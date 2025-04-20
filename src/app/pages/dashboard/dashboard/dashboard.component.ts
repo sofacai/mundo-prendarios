@@ -269,14 +269,14 @@ export class DashboardWelcomeComponent implements OnInit {
     this.totalOperaciones = this.operaciones.length;
 
     // Operaciones liquidadas
-    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada').length;
+    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'LIQUIDADA').length;
 
     // Operaciones pendientes
-    this.operacionesPendientes = this.operaciones.filter(op => op.estado !== 'Liquidada' && op.estado !== 'Rechazada' && op.estado !== 'Cancelada').length;
+    this.operacionesPendientes = this.operaciones.filter(op => op.estado !== 'LIQUIDADA' && op.estado !== 'Rechazada' && op.estado !== 'Cancelada').length;
 
     // Total montos liquidados
     this.totalMontosLiquidados = this.operaciones
-      .filter(op => op.estado === 'Liquidada')
+      .filter(op => op.estado === 'LIQUIDADA')
       .reduce((total, op) => total + op.monto, 0);
   }
 
@@ -303,7 +303,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas por canal
     this.canalStats = this.canales.map(canal => {
       const operacionesCanal = this.operaciones.filter(op => op.canalId === canal.id);
-      const operacionesLiquidadas = operacionesCanal.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesCanal.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: canal.nombreFantasia,
@@ -317,7 +317,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas por plan
     this.planesStats = this.planes.map(plan => {
       const operacionesPlan = this.operaciones.filter(op => op.planId === plan.id);
-      const operacionesLiquidadas = operacionesPlan.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesPlan.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: plan.nombre,
@@ -342,7 +342,7 @@ export class DashboardWelcomeComponent implements OnInit {
         return op.adminCanalId === admin.id;
       });
 
-      const operacionesLiquidadas = operacionesAdmin.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesAdmin.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: `${admin.nombre} ${admin.apellido}`,
@@ -356,7 +356,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Vendor stats
     this.vendorStats = vendors.map(vendor => {
       const operacionesVendor = this.operaciones.filter(op => op.vendedorId === vendor.id);
-      const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: `${vendor.nombre} ${vendor.apellido}`,
@@ -375,7 +375,7 @@ export class DashboardWelcomeComponent implements OnInit {
         return op.oficialComercialId === oficial.id;
       });
 
-      const operacionesLiquidadas = operacionesOficial.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesOficial.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: `${oficial.nombre} ${oficial.apellido}`,
@@ -392,7 +392,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas por canal
     this.canalStats = this.canales.map(canal => {
       const operacionesCanal = this.operaciones.filter(op => op.canalId === canal.id);
-      const operacionesLiquidadas = operacionesCanal.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesCanal.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: canal.nombreFantasia,
@@ -413,7 +413,7 @@ export class DashboardWelcomeComponent implements OnInit {
           return op.adminCanalId === admin.id;
         });
 
-        const operacionesLiquidadas = operacionesAdmin.filter(op => op.estado === 'Liquidada');
+        const operacionesLiquidadas = operacionesAdmin.filter(op => op.estado === 'LIQUIDADA');
 
         return {
           nombre: `${admin.nombre} ${admin.apellido}`,
@@ -429,7 +429,7 @@ export class DashboardWelcomeComponent implements OnInit {
       .filter(u => u.rolId === RolType.Vendor)
       .map(vendor => {
         const operacionesVendor = this.operaciones.filter(op => op.vendedorId === vendor.id);
-        const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'Liquidada');
+        const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'LIQUIDADA');
 
         return {
           nombre: `${vendor.nombre} ${vendor.apellido}`,
@@ -445,7 +445,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas por subcanal
     this.subcanalStats = this.subcanales.map(subcanal => {
       const operacionesSubcanal = this.operaciones.filter(op => op.subcanalId === subcanal.id);
-      const operacionesLiquidadas = operacionesSubcanal.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesSubcanal.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: subcanal.nombre,
@@ -459,7 +459,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas de vendors en estos subcanales
     this.vendorStats = this.vendors.map(vendor => {
       const operacionesVendor = this.operaciones.filter(op => op.vendedorId === vendor.id);
-      const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'LIQUIDADA');
 
       return {
         nombre: `${vendor.nombre} ${vendor.apellido}`,
@@ -732,7 +732,7 @@ export class DashboardWelcomeComponent implements OnInit {
         operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
 
         // Incrementar operaciones liquidadas si aplica
-        if (op.estado === 'Liquidada') {
+        if (op.estado === 'LIQUIDADA') {
           operacionesLiquidadasPorMes.set(mes, (operacionesLiquidadasPorMes.get(mes) || 0) + 1);
         }
       }

@@ -1,5 +1,5 @@
 // src/app/pages/usuarios/components/usuario-operaciones/usuario-operaciones.component.ts
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Operacion, OperacionService } from 'src/app/core/services/operacion.service';
@@ -11,7 +11,7 @@ import { Operacion, OperacionService } from 'src/app/core/services/operacion.ser
   templateUrl: './usuario-operaciones.component.html',
   styleUrls: ['./usuario-operaciones.component.scss']
 })
-export class UsuarioOperacionesComponent implements OnChanges {
+export class UsuarioOperacionesComponent implements OnChanges, OnInit {
   @Input() operaciones: Operacion[] = [];
   @Input() loading: boolean = false;
   @Input() error: string | null = null;
@@ -20,18 +20,29 @@ export class UsuarioOperacionesComponent implements OnChanges {
 
   // Propiedades para filtrado y ordenamiento
   operacionesFiltradas: Operacion[] = [];
-  sortField: string = 'fechaCreacion';
-  sortDirection: 'asc' | 'desc' = 'desc';
+  sortField: string = 'id'; // Default sort by ID
+  sortDirection: 'asc' | 'desc' = 'desc'; // Default order is descending (newest first)
   estadoFiltro: string = 'all';
 
    constructor(
     public operacionService: OperacionService
   ) { }
 
+  ngOnInit(): void {
+    // Aseguramos que se aplique el ordenamiento inicial
+    this.aplicarFiltrosYOrden();
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['operaciones']) {
-      this.filtrarPorEstado();
+      this.aplicarFiltrosYOrden();
     }
+  }
+
+  // Método centralizado para aplicar filtros y ordenamiento
+  aplicarFiltrosYOrden(): void {
+    this.filtrarPorEstado();
+    this.ordenarOperaciones();
   }
 
   filtrarPorEstado(): void {
@@ -43,6 +54,12 @@ export class UsuarioOperacionesComponent implements OnChanges {
       );
     }
   }
+
+  // Método para aplicar el ordenamiento después del filtrado
+  ordenarOperaciones(): void {
+    this.operacionesFiltradas = this.sortOperaciones([...this.operacionesFiltradas]);
+  }
+
   sortOperaciones(operaciones: Operacion[]): Operacion[] {
     return operaciones.sort((a, b) => {
       let comparison = 0;
@@ -88,7 +105,8 @@ export class UsuarioOperacionesComponent implements OnChanges {
       this.sortDirection = 'asc';
     }
 
-    this.filtrarPorEstado();
+    // Aplicar solo el ordenamiento, ya que los filtros no cambiaron
+    this.ordenarOperaciones();
   }
 
   getSortClass(field: string): string {
@@ -123,5 +141,4 @@ export class UsuarioOperacionesComponent implements OnChanges {
   getBadgeClass(estado: string): string {
     return this.operacionService.getEstadoClass(estado);
   }
-
 }
