@@ -68,45 +68,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Integración con Kommo -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <i class="bi bi-link-45deg me-2 text-primary"></i>
-                Integraciones
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="detail-section">
-                <div class="detail-row">
-                  <div class="detail-label">Kommo CRM:</div>
-                  <div class="detail-value">
-                    <div *ngIf="!kommoConnected" id="kommo-button-container"></div>
-                    <div *ngIf="kommoConnected" class="d-flex align-items-center">
-                      <span class="badge badge-success me-2">Conectado</span>
-                      <button class="btn btn-sm btn-light" (click)="disconnectKommo()">
-                        <i class="bi bi-x-circle"></i> Desconectar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="detail-value">
-                  <div *ngIf="!kommoConnected">
-                    <button class="btn btn-primary" (click)="connectKommo()">
-                      <i class="bi bi-link-45deg me-2"></i>Conectar con Kommo
-                    </button>
-                  </div>
-                  <div *ngIf="kommoConnected" class="d-flex align-items-center">
-                    <span class="badge badge-success me-2">Conectado</span>
-                    <button class="btn btn-sm btn-light" (click)="disconnectKommo()">
-                      <i class="bi bi-x-circle"></i> Desconectar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

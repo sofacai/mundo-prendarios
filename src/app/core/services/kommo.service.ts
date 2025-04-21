@@ -8,7 +8,7 @@ import { environment } from 'src/environments/environment';
 })
 export class KommoService {
   private readonly kommoApiBase = 'https://mundoprendario.kommo.com/api/v4';
-  private readonly longLivedToken = environment.kommoToken; // Guardar esto en environment.ts
+  private readonly longLivedToken = environment.kommoToken;
 
   constructor(private http: HttpClient) {}
 

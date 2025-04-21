@@ -9,13 +9,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { UsuarioService, UsuarioDto, UsuarioCrearDto } from 'src/app/core/services/usuario.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { Usuario } from 'src/app/core/models/usuario.model';
-import { KommoService } from 'src/app/core/services/kommo.service';
 
-declare global {
-  interface Window {
-    KommoButton: any;
-  }
-}
 
 @Component({
   selector: 'app-profile-page',
@@ -43,10 +37,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   loading = true;
   error: string | null = null;
   editMode = false;
-  kommoConnected = false;
-
-  private readonly KOMMO_CLIENT_ID = 'c472bc29-e83d-4fe5-9550-29c7c844b060';
-  private readonly KOMMO_REDIRECT_URI = 'http://localhost:8100/callback';
 
 
   isSidebarCollapsed = false;
@@ -57,7 +47,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     private usuarioService: UsuarioService,
     private router: Router,
     private sidebarStateService: SidebarStateService,
-    private KommoService : KommoService
+
   ) { }
 
   ngOnInit() {
@@ -78,13 +68,10 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     );
 
-    this.kommoConnected = this.KommoService.isAuthenticated();
   }
 
   ngAfterViewInit() {
-    if (!this.kommoConnected) {
-      this.loadKommoButtonScript();
-    }
+
   }
 
   ngOnDestroy() {
@@ -182,116 +169,9 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // Métodos para integración con Kommo
-  private loadKommoButtonScript() {
-    if (document.getElementById('kommo-button-script')) {
-      this.initKommoButton();
-      return;
-    }
 
-    const script = document.createElement('script');
-    script.id = 'kommo-button-script';
-    script.src = 'https://cdn.kommo.com/widgets/button/v2/button.js';
-    script.async = true;
-    script.onload = () => {
-      this.initKommoButton();
-    };
-    document.body.appendChild(script);
-  }
 
-  private initKommoButton() {
-    if (!window.KommoButton || !document.getElementById('kommo-button-container')) {
-      return;
-    }
 
-    const kommoButton = new window.KommoButton({
-      clientId: this.KOMMO_CLIENT_ID,
-      redirectUri: this.KOMMO_REDIRECT_URI,
-      title: 'Conectar con Kommo',
-      container: document.getElementById('kommo-button-container'),
-      popupWidth: 800,
-      popupHeight: 600,
-      onAuth: (code: string) => {
-        console.log("Auth code received:", code);
-        this.handleKommoAuth(code);
-      }
-    });
-  }
-
-  private handleKommoAuth(code: string, accountDomain?: string) {
-    console.log(`Autenticando con Kommo: Code=${code}, Domain=${accountDomain || 'no especificado'}`);
-
-    this.loading = true;
-    this.KommoService.exchangeCodeForToken(code, accountDomain).subscribe({
-      next: (data) => {
-        console.log('Autenticación exitosa, datos recibidos:', data);
-        this.KommoService.saveAuthData(data);
-
-        // Verificar que se guardaron los datos correctamente
-        const savedData = this.KommoService.getAuthData();
-        console.log('Datos guardados en localStorage:', savedData);
-
-        this.kommoConnected = this.KommoService.isAuthenticated();
-        console.log('¿Conexión establecida?', this.kommoConnected);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error completo:', err);
-        this.error = 'Error al conectar con Kommo';
-        this.loading = false;
-      }
-    });
-  }
-
-  disconnectKommo() {
-    this.KommoService.clearAuthData();
-    this.kommoConnected = false;
-
-    // Recargar el botón de Kommo
-    setTimeout(() => {
-      this.loadKommoButtonScript();
-    }, 100);
-  }
-
-  connectKommo() {
-    // Usar directamente la URL de autenticación
-    const state = this.generateRandomState();
-    const authUrl = `https://www.kommo.com/oauth?client_id=${this.KOMMO_CLIENT_ID}` +
-      `&state=${state}` +
-      `&mode=popup` +
-      `&redirect_uri=${encodeURIComponent(this.KOMMO_REDIRECT_URI)}`;
-
-    // Abrir en una ventana popup con configuración específica
-    const width = 800;
-    const height = 600;
-    const left = (window.innerWidth - width) / 2;
-    const top = (window.innerHeight - height) / 2;
-
-    const popup = window.open(
-      authUrl,
-      'kommo_auth',
-      `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes,status=yes`
-    );
-
-    // Escuchar mensajes del callback
-    const messageHandler = (event: MessageEvent) => {
-      // Verificar origen para seguridad
-      if (event.origin === window.location.origin && event.data?.source === 'kommo_callback') {
-        console.log('Recibido mensaje del callback:', event.data);
-
-        const code = event.data.code;
-        const accountDomain = event.data.accountDomain;
-
-        if (code) {
-          this.handleKommoAuth(code, accountDomain);
-          // Eliminar el listener después de procesar
-          window.removeEventListener('message', messageHandler);
-        }
-      }
-    };
-
-    window.addEventListener('message', messageHandler);
-  }
 
   private generateRandomState(): string {
     const state = Math.random().toString(36).substring(2, 15);
