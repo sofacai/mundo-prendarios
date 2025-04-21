@@ -4,6 +4,10 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class CotizadorDataService {
+
+  rechazadoPorBcra: boolean = false;
+  situacionBcra: number = 0;
+
   // Datos del paso 1
   monto: number = 0;
   plazo: number = 0;

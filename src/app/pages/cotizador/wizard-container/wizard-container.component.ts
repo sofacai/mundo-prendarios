@@ -23,6 +23,7 @@ import { SidebarStateService } from 'src/app/core/services/sidebar-state.service
 import { KommoLeadService } from 'src/app/core/services/kommo-lead.service';
 import { KommoService } from '../../../core/services/kommo.service';
 import { HttpHeaders } from '@angular/common/http';
+import { BcraService } from '../../../core/services/bcra.service';
 
 
 
@@ -90,6 +91,7 @@ export class WizardContainerComponent implements OnInit {
     private sidebarStateService: SidebarStateService,
     private kommoLeadService: KommoLeadService,
     private KommoService: KommoService,
+    private BcraService:BcraService
 
 
   ) {}
@@ -537,7 +539,14 @@ export class WizardContainerComponent implements OnInit {
       else if ([20, 23, 24].includes(prefijo)) sexo = 'M';
     }
 
-    // Guardar datos del cliente en el wizard
+    // 🧮 Calcular CUIL si no vino y tenemos DNI + sexo
+    let cuilParaBcra = datos.cuil;
+    if (!cuilParaBcra && datos.dni && sexo) {
+      cuilParaBcra = this.calcularCuil(datos.dni, sexo);
+      datos.cuil = cuilParaBcra; // también lo guardamos
+    }
+
+    // Guardar datos del cliente en wizard
     this.wizardData = {
       ...this.wizardData,
       clienteId: datos.clienteId,
@@ -554,7 +563,7 @@ export class WizardContainerComponent implements OnInit {
       estadoCivil: datos.estadoCivil || ""
     };
 
-    // Guardar en servicio compartido para step3
+    // Guardar en servicio compartido
     this.dataService.guardarDatosPaso2({
       nombre: datos.nombre,
       apellido: datos.apellido,
@@ -570,17 +579,58 @@ export class WizardContainerComponent implements OnInit {
       estadoCivil: datos.estadoCivil
     });
 
-    if (datos.clienteId) {
-      this.actualizarCliente(datos);
+    // 🚨 Consultar situación BCRA si tenemos CUIL
+    if (cuilParaBcra) {
+      this.BcraService.consultarSituacion(cuilParaBcra).then(situacion => {
+        console.log('📊 Situación BCRA:', situacion);
+
+        const situacionReal = situacion ?? 0;
+        this.dataService.situacionBcra = situacionReal;
+        this.dataService.rechazadoPorBcra = situacionReal === 0 || [4, 5].includes(situacionReal);
+
+        if (datos.clienteId) {
+          this.actualizarCliente(datos);
+        } else {
+          if (datos.dni) {
+            this.buscarClientePorDNI(datos);
+          } else if (datos.cuil) {
+            this.buscarClientePorCUIL(datos);
+          } else {
+            this.crearCliente(datos);
+          }
+        }
+      }).catch((error: any) => {
+        console.error("❌ Error al consultar BCRA:", error);
+        this.error = "Error al verificar situación crediticia. Intente nuevamente.";
+        this.cargando = false;
+      });
     } else {
-      if (datos.dni) {
-        this.buscarClientePorDNI(datos);
-      } else if (datos.cuil) {
-        this.buscarClientePorCUIL(datos);
-      } else {
-        this.crearCliente(datos);
-      }
+      console.warn('⚠️ No se pudo calcular ni obtener CUIL para BCRA');
+      this.error = "Falta información para consultar la situación crediticia.";
+      this.cargando = false;
     }
+  }
+
+  private calcularCuil(dni: string | number, sexo: 'M' | 'F'): string {
+    const dniStr = dni.toString().padStart(8, '0');
+    const prefijo = sexo === 'F' ? '27' : '20';
+
+    const base = `${prefijo}${dniStr}`;
+    const coeficientes = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+    let suma = 0;
+
+    for (let i = 0; i < coeficientes.length; i++) {
+      suma += parseInt(base[i]) * coeficientes[i];
+    }
+
+    let resto = suma % 11;
+    let verificador;
+
+    if (resto === 0) verificador = 0;
+    else if (resto === 1) verificador = 9;
+    else verificador = 11 - resto;
+
+    return `${prefijo}${dniStr}${verificador}`;
   }
 
 
@@ -716,6 +766,11 @@ export class WizardContainerComponent implements OnInit {
     });
   }
   private crearCliente(datos: any) {
+    // Si no vino CUIL pero sí DNI y sexo, lo calculamos
+    if (!datos.cuil && datos.dni && datos.sexo) {
+      datos.cuil = this.calcularCuil(datos.dni, datos.sexo);
+    }
+
     const clienteData: ClienteCrearDto = {
       nombre: datos.nombre,
       apellido: datos.apellido,
@@ -911,6 +966,7 @@ export class WizardContainerComponent implements OnInit {
       }
 
       const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
+      const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'APTO CREDITO';
 
       const operacionData = {
         monto: this.wizardData.monto!,
@@ -921,7 +977,7 @@ export class WizardContainerComponent implements OnInit {
         canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
         vendedorId: this.vendorSeleccionado ?? 0,
         usuarioCreadorId: usuarioCreadorId,
-        estado: "Ingresada"
+        estado: estadoOperacion
       };
 
       const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
@@ -999,8 +1055,8 @@ export class WizardContainerComponent implements OnInit {
     if (!this.KommoService.isAuthenticated()) return;
     if (!operacionCreada || !cliente) return;
 
-    const nombre = cliente.nombre || this.wizardData.clienteNombre || '';
-    const apellido = cliente.apellido || this.wizardData.clienteApellido || '';
+    const nombre = (cliente?.nombre || this.wizardData.clienteNombre || '').toString();
+    const apellido = (cliente?.apellido || this.wizardData.clienteApellido || '').toString();
     const telefono = cliente.telefono || this.wizardData.clienteWhatsapp || '+5491100000000';
     const email = cliente.email || this.wizardData.clienteEmail || 'sin-email@mundo.com';
     const codigoPostal = cliente.codigoPostal?.toString() || this.wizardData.codigoPostal?.toString() || '';
@@ -1017,18 +1073,24 @@ export class WizardContainerComponent implements OnInit {
       try {
         // Obtener datos del vendedor
         const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
+        const nombreLimpio = (nombre || '').toString().trim();
+const apellidoLimpio = (apellido || '').toString().trim();
+        const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
 
         // Crear contacto
         const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto([{
           first_name: nombre,
           last_name: apellido,
+
           custom_fields_values: [
-            { field_id: 500552, values: [{ value: telefono }] },
-            { field_id: 500554, values: [{ value: email }] },
-            { field_id: 650694, values: [{ value: codigoPostal }] },
-            { field_id: 964686, values: [{ value: estadoCivil }] },
-            { field_id: 964710, values: [{ value: ingresos }] },
-            { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] },
+            { field_id: 500552, values: [{ value: telefono }] }, // Teléfono
+            { field_id: 500554, values: [{ value: email }] },    // Email
+            { field_id: 650694, values: [{ value: codigoPostal }] }, // CP
+            { field_id: 964686, values: [{ value: estadoCivil }] },  // Estado civil
+            { field_id: 964710, values: [{ value: ingresos }] },     // Ingresos
+            { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
+            { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
+            { field_id: 965118, values: [{ value: this.dataService.situacionBcra ?? 0 }] }, // Situación BCRA
             ...(sexoFieldValue ? [{ field_id: 650450, values: [{ enum_id: sexoFieldValue }] }] : [])
           ]
         }]));
@@ -1038,7 +1100,7 @@ export class WizardContainerComponent implements OnInit {
 
         // Crear compañía
         const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
-          name: operacionCompleta.canalNombre || 'Canal Desconocido',
+          name: nombreLead,
           custom_fields_values: [
             { field_id: 500552, values: [{ value: vendedor.telefono || '+5491100000000' }] },
             { field_id: 962818, values: [{ value: `${vendedor.nombre} ${vendedor.apellido}` }] },
@@ -1049,6 +1111,9 @@ export class WizardContainerComponent implements OnInit {
         const companyId = companiaRes._embedded?.companies?.[0]?.id;
         if (!companyId) throw new Error('No se pudo obtener el ID de la compañía');
 
+        const etiquetas = this.dataService.rechazadoPorBcra
+  ? [{ name: 'Rechazado BCRA', id: 54266 }]
+  : [{ name: 'Enviar a Banco', id: 35522 }];
         // Crear lead final con todo
         const lead = [{
           name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
@@ -1062,7 +1127,7 @@ export class WizardContainerComponent implements OnInit {
           _embedded: {
             contacts: [{ id: contactId }],
             companies: [{ id: companyId }],
-            tags: [{ name: "Enviar a Banco" }]
+            tags: etiquetas
           }
         }];
 
