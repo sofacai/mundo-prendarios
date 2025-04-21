@@ -27,6 +27,7 @@ export class SubcanalVendedoresTabComponent implements OnInit {
   @Output() desasignarVendor = new EventEmitter<number>();
   @Output() verDetalleVendor = new EventEmitter<number>();
   @Output() crearVendedor = new EventEmitter<void>();
+  rolVendedor = RolType.Vendor;
 
   // Modal state
   showModal = false;

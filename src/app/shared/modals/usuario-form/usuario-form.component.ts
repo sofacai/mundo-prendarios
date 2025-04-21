@@ -22,6 +22,8 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() usuarioCreado = new EventEmitter<any>();
+  @Input() rolIdPredeterminado?: number;
+
 
   usuarioForm: FormGroup;
   loading = false;
@@ -59,6 +61,20 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.filterRolesByUserPermission();
+
+     // Si hay un rol predeterminado
+  if (this.rolIdPredeterminado) {
+    // Filtrar sólo este rol
+    this.roles = this.allRoles.filter(rol => rol.id === this.rolIdPredeterminado);
+
+    // Establecer el valor en el formulario
+    this.usuarioForm.get('rolId')?.setValue(this.rolIdPredeterminado.toString());
+
+    // Opcionalmente, deshabilitar el campo si solo hay una opción
+    if (this.roles.length === 1) {
+      this.usuarioForm.get('rolId')?.disable();
+    }
+  }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -122,7 +138,7 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
 
   resetForm() {
     this.usuarioForm.reset({
-      rolId: '',
+      rolId: this.rolIdPredeterminado ? this.rolIdPredeterminado.toString() : '',
       telefono: this.phonePrefix
     });
     this.error = null;

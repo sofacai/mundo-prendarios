@@ -70,12 +70,15 @@
                 <!-- Oficiales Comerciales -->
                 <div class="w-100" style="flex: 1 1 100%;">
                   <app-canal-oficiales
-                    [oficialesComerciales]="oficialesComerciales"
-                    [loading]="loadingOficiales"
-                    [error]="errorOficiales"
-                    (toggleEstado)="toggleOficialEstado($event.oficialId, $event.estadoActual)"
-                    (verDetalle)="verDetalleUsuario($event)"
-                  ></app-canal-oficiales>
+                  [oficialesComerciales]="oficialesComerciales"
+                  [loading]="loadingOficiales"
+                  [error]="errorOficiales"
+                  [canalId]="canalId"
+                  (toggleEstado)="toggleOficialEstado($event)"
+                  (verDetalle)="verDetalleUsuario($event)"
+                  (oficialAsignado)="onOficialAsignado($event)"
+                  (oficialDesasignado)="onOficialDesasignado($event)">
+                </app-canal-oficiales>
                 </div>
               </div>
             </div>

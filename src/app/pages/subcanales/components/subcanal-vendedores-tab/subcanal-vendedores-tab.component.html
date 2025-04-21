@@ -161,6 +161,7 @@
 <app-usuario-form
   *ngIf="showCrearVendedorModal"
   [isOpen]="showCrearVendedorModal"
+  [rolIdPredeterminado]="rolVendedor"
   (closeModal)="closeCrearVendedorModal()"
   (usuarioCreado)="onVendedorCreado($event)">
 </app-usuario-form>

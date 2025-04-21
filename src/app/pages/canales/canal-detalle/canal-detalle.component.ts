@@ -60,9 +60,8 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
   error: string | null = null;
   activeTab = 'general'; // Default active tab
 
-  // Propiedades para oficiales comerciales
   oficialesComerciales: any[] = [];
-  loadingOficiales = false;
+  loadingOficiales: boolean = false;
   errorOficiales: string | null = null;
 
   // Estadísticas
@@ -101,6 +100,8 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
   operaciones: Operacion[] = [];
   clientes: Cliente[] = [];
   operacionesLiquidadas = 0; // Nueva propiedad
+
+
 
   constructor(
     private route: ActivatedRoute,
@@ -460,7 +461,8 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleOficialEstado(oficialId: number, estadoActual: boolean) {
+  toggleOficialEstado(event: {oficialId: number, estadoActual: boolean}) {
+    const { oficialId, estadoActual } = event;
     this.loadingOficiales = true;
 
     const request = estadoActual
@@ -484,6 +486,29 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         this.loadingOficiales = false;
       }
     });
+  }
+
+  onOficialAsignado(oficialId: number) {
+    // Recargar la lista de oficiales comerciales
+    this.cargarOficialesComerciales(this.canalId);
+  }
+
+  onOficialDesasignado(oficialId: number) {
+    // Eliminar el oficial de la lista local
+    this.oficialesComerciales = this.oficialesComerciales.filter(
+      oficial => oficial.oficialComercialId !== oficialId
+    );
+  }
+  onVendedorAsignado(vendorId: number): void {
+    console.log(`Vendedor ${vendorId} asignado correctamente al canal ${this.canalId}`);
+    // Opcional: actualizar estadísticas
+    this.totalVendedores = this.vendedores.length;
+  }
+
+  onVendedorDesasignado(vendorId: number): void {
+    console.log(`Vendedor ${vendorId} desasignado correctamente del canal ${this.canalId}`);
+    // Opcional: actualizar estadísticas
+    this.totalVendedores = this.vendedores.length;
   }
 
   toggleSubcanalEstado(subcanalId: number, estadoActual: boolean) {
