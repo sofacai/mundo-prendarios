@@ -110,6 +110,10 @@ export class Step1MontoComponent implements OnInit {
         this.subcanalComision = this.subcanalInfo.subcanalComision;
       }
 
+      // Registrar la selección por defecto (UVA) para que quede establecido desde el inicio
+      console.log('Plan seleccionado por defecto:', this.planSeleccionado);
+      console.log('PlanId correspondiente:', this.planSeleccionado === 'Cuotas Fijas' ? this.planCuotasFijasId : this.planUvaId);
+
     } else {
       this.errorMensaje = "No se encontraron planes disponibles para este subcanal.";
     }
@@ -156,6 +160,14 @@ export class Step1MontoComponent implements OnInit {
 
   seleccionarPlan(plan: 'Cuotas Fijas' | 'UVA') {
     this.planSeleccionado = plan;
+    console.log('Plan seleccionado cambiado a:', plan);
+
+    // Comprobar planId correspondiente
+    const planId = this.planSeleccionado === 'Cuotas Fijas'
+      ? this.planCuotasFijasId
+      : this.planUvaId;
+
+    console.log('PlanId correspondiente:', planId);
   }
 
   calcularCuotaPara(plazo: number): number {
@@ -204,6 +216,11 @@ export class Step1MontoComponent implements OnInit {
       ? this.planCuotasFijasId
       : this.planUvaId;
 
+    console.log('Step1 - Plan seleccionado:', this.planSeleccionado);
+    console.log('Step1 - planCuotasFijasId:', this.planCuotasFijasId);
+    console.log('Step1 - planUvaId:', this.planUvaId);
+    console.log('Step1 - planActivoId final:', planActivoId);
+
     // Buscar el plan activo
     const planActivo = this.subcanalInfo.planesDisponibles.find(plan => plan.id === planActivoId);
 
@@ -228,6 +245,9 @@ export class Step1MontoComponent implements OnInit {
         valorCuota: valorCuota,
         planId: planActivo.id
       });
+
+      console.log('Step1 - Guardado en dataService - planId:', planActivo.id);
+      console.log('Step1 - Guardado en dataService - planTipo:', this.planSeleccionado);
 
     } else {
       this.errorMensaje = "El plan seleccionado no está disponible.";

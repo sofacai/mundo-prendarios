@@ -1,4 +1,7 @@
+// Actualizamos CotizadorDataService para mantener información de subcanal
+
 import { Injectable } from '@angular/core';
+import { SubcanalInfo } from './cotizador.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +19,8 @@ export class CotizadorDataService {
   planId: number = 0;
   vendorId?: number;
 
+  // Información del subcanal seleccionado
+  subcanalInfo?: SubcanalInfo;
 
   // Datos del paso 2
   clienteId?: number;
@@ -82,6 +87,11 @@ export class CotizadorDataService {
     this.estadoCivil = datos.estadoCivil;
   }
 
+  // Guardar información del subcanal
+  guardarSubcanalInfo(subcanalInfo: SubcanalInfo) {
+    this.subcanalInfo = subcanalInfo;
+  }
+
   // Reiniciar todos los datos
   reiniciarDatos() {
     this.monto = 0;
@@ -100,5 +110,6 @@ export class CotizadorDataService {
     this.sexo = undefined;
     this.vendorId = undefined;
 
+    this.subcanalInfo = undefined;
   }
 }

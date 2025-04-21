@@ -87,4 +87,82 @@ export class CotizadorService {
       'Authorization': `Bearer ${token}`
     });
   }
+
+  calcularTablaAmortizacion(monto: number, plazo: number, tasa: number, gastos: any[]): any[] {
+    // Calcular el porcentaje total de gastos
+    const porcentajeGastos = gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
+
+    // Préstamo = monto + gastos
+    const prestamo = monto * (1 + porcentajeGastos / 100);
+
+    // Capital fijo mensual
+    const capitalMensual = Math.round(prestamo / plazo);
+
+    // Tabla de amortización
+    const tabla: any[] = [];
+
+    // Registro inicial (saldo inicial)
+    tabla.push({
+      nroCuota: 0,
+      capital: 0,
+      interes: 0,
+      iva: 0,
+      gasto: 0,
+      cuota: 0,
+      saldo: prestamo
+    });
+
+    // Calcular cada cuota
+    let saldoAnterior = prestamo;
+
+    for (let i = 1; i <= plazo; i++) {
+      // Interés mensual = Saldo anterior * (TNA/360*30)
+      const interesMensual = Math.round(saldoAnterior * ((tasa / 100) / 360 * 30));
+
+      // IVA = 21% del interés
+      const ivaMensual = Math.round(interesMensual * 0.21);
+
+      // Cuota = Capital + Interés + IVA
+      const cuotaMensual = capitalMensual + interesMensual + ivaMensual;
+
+      // Nuevo saldo = Saldo anterior - Capital
+      const nuevoSaldo = saldoAnterior - capitalMensual;
+
+      // Agregar a la tabla
+      tabla.push({
+        nroCuota: i,
+        capital: capitalMensual,
+        interes: interesMensual,
+        iva: ivaMensual,
+        gasto: 0, // No hay gastos mensuales adicionales
+        cuota: cuotaMensual,
+        saldo: nuevoSaldo
+      });
+
+      // Actualizar saldo para el próximo cálculo
+      saldoAnterior = nuevoSaldo;
+    }
+
+    return tabla;
+  }
+
+  esSistemaAleman(planId: number | undefined): boolean {
+    // Si planId es undefined o no es un número, retornar false
+    if (planId === undefined) {
+      console.log('SISTEMA ALEMÁN: planId inválido (undefined)');
+      return false;
+    }
+
+    // Convertir a número si es string para asegurar la comparación
+    const id = Number(planId);
+    if (isNaN(id)) {
+      console.log('SISTEMA ALEMÁN: planId inválido (NaN)');
+      return false;
+    }
+
+    console.log('SISTEMA ALEMÁN: Verificando planId', id, '¿Es igual a 1?', id === 1);
+
+    // El planId 1 usa sistema alemán, el resto no
+    return id === 1;
+  }
 }

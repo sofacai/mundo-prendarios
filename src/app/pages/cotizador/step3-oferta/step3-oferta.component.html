@@ -52,8 +52,8 @@
         </div>
       </div>
 
-      <!-- Detalle de cuotas (desplegable) -->
-      <div class="payment-details">
+      <!-- Detalle de cuotas (para planId=1) -->
+      <div class="payment-details" *ngIf="mostrarTablaAmortizacion">
         <div class="payment-header" (click)="togglePaymentDetail()">
           <span>Ver detalle de cuotas</span>
           <ion-icon [name]="showPaymentDetail ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
@@ -64,9 +64,9 @@
             <span>Cuota</span>
             <span>Monto</span>
           </div>
-          <div class="payment-table-row" *ngFor="let cuota of cuotas; let i = index">
-            <span>Cuota {{ i + 1 }}</span>
-            <span>$ {{ cuota | number:'1.0-0':'es' }}</span>
+          <div class="payment-table-row" *ngFor="let fila of tablaAmortizacion; let i = index">
+            <span *ngIf="i > 0">Cuota {{ fila.nroCuota }}</span>
+            <span *ngIf="i > 0">$ {{ fila.cuota | number:'1.0-0':'es' }}</span>
           </div>
         </div>
       </div>

@@ -363,7 +363,6 @@ export class WizardContainerComponent implements OnInit {
         this.cargando = false;
       },
       error: (error) => {
-        console.error('Error al obtener planes activos:', error);
         this.error = "Error al obtener planes disponibles.";
         this.cargando = false;
       }
@@ -426,7 +425,6 @@ export class WizardContainerComponent implements OnInit {
             }
           },
           error: (error) => {
-            console.error(`Error al obtener planes activos:`, error);
             procesados++;
             if (procesados === total) {
               this.finalizarCargaDeSubcanales(subcanalInfos);
@@ -444,7 +442,6 @@ export class WizardContainerComponent implements OnInit {
     // Add a timeout to prevent infinite loading
     setTimeout(() => {
       if (this.cargando) {
-        console.error('Timeout: La carga de datos tomó demasiado tiempo');
         this.cargando = false;
         this.error = "La carga de datos tomó demasiado tiempo. Por favor, intente nuevamente.";
       }
@@ -481,7 +478,6 @@ export class WizardContainerComponent implements OnInit {
       // Si es string, convertimos a array de números
       return cuotasStr.split(',').map(c => parseInt(c.trim(), 10));
     } catch (e) {
-      console.error('Error al procesar cuotas aplicables:', e);
       return [];
     }
   }
@@ -582,7 +578,6 @@ export class WizardContainerComponent implements OnInit {
     // 🚨 Consultar situación BCRA si tenemos CUIL
     if (cuilParaBcra) {
       this.BcraService.consultarSituacion(cuilParaBcra).then(situacion => {
-        console.log('📊 Situación BCRA:', situacion);
 
         const situacionReal = situacion ?? 0;
         this.dataService.situacionBcra = situacionReal;
@@ -590,12 +585,10 @@ export class WizardContainerComponent implements OnInit {
 
     this.crearCliente(datos);
       }).catch((error: any) => {
-        console.error("❌ Error al consultar BCRA:", error);
         this.error = "Error al verificar situación crediticia. Intente nuevamente.";
         this.cargando = false;
       });
     } else {
-      console.warn('⚠️ No se pudo calcular ni obtener CUIL para BCRA');
       this.error = "Falta información para consultar la situación crediticia.";
       this.cargando = false;
     }
@@ -628,14 +621,13 @@ export class WizardContainerComponent implements OnInit {
   // Método para actualizar una operación existente
   private actualizarOperacion(clienteId: number) {
     if (!this.wizardData.operacionId || !this.wizardData.monto || !this.wizardData.plazo) {
-      console.error('Faltan datos para actualizar la operación');
+
       this.obtenerPlanesYAvanzar();
       return;
     }
 
     // Buscar el plan a utilizar en función de monto y plazo
     if (!this.subcanalSeleccionadoInfo || !this.subcanalSeleccionadoInfo.planesDisponibles) {
-      console.error('No hay información de planes disponibles');
       this.obtenerPlanesYAvanzar();
       return;
     }
@@ -648,7 +640,6 @@ export class WizardContainerComponent implements OnInit {
     );
 
     if (planesAplicables.length === 0) {
-      console.error('No hay planes aplicables para la operación');
       this.obtenerPlanesYAvanzar();
       return;
     }
@@ -722,7 +713,6 @@ export class WizardContainerComponent implements OnInit {
   // Método para asignar vendor a cliente
   private asignarVendorACliente(clienteId: number) {
     if (typeof clienteId !== 'number' || isNaN(clienteId) || clienteId <= 0) {
-      console.error('ID de cliente inválido:', clienteId);
       this.obtenerPlanesYAvanzar();
       return;
     }
@@ -731,7 +721,6 @@ export class WizardContainerComponent implements OnInit {
     const vendorId = this.vendorSeleccionado;
 
     if (!vendorId) {
-      console.error("ID de vendor no disponible");
       this.obtenerPlanesYAvanzar();
       return;
     }
@@ -742,7 +731,6 @@ export class WizardContainerComponent implements OnInit {
         this.obtenerPlanesYAvanzar();
       },
       error: (error) => {
-        console.warn("Error al asignar vendor (continuando de todas formas):", error);
         this.obtenerPlanesYAvanzar();
       }
     });
@@ -756,7 +744,6 @@ export class WizardContainerComponent implements OnInit {
     }
 
     if (this.yaCreoLeadEnKommo) {
-      console.warn('⛔ Evitando recrear operación porque ya se creó el lead en Kommo');
       this.cargando = false;
       return;
     }
@@ -798,12 +785,10 @@ export class WizardContainerComponent implements OnInit {
         this.wizardData.paso = 3;
         this.cargando = false;
       }).catch(error => {
-        console.error('Error al crear la operación:', error);
         this.error = "Hubo un problema al crear la operación. Por favor, intenta nuevamente.";
         this.cargando = false;
       });
     } else {
-      console.error('No hay información de planes en el subcanal seleccionado');
       this.error = "No se encontraron planes disponibles para el subcanal seleccionado.";
       this.cargando = false;
     }
@@ -841,8 +826,9 @@ export class WizardContainerComponent implements OnInit {
       this.subcanalSeleccionadoInfo = subcanalInfo;
       this.gastosSeleccionados = subcanalInfo.gastos || [];
 
+      // Guardar la información en el dataService para que esté disponible en step3
+      this.dataService.guardarSubcanalInfo(subcanalInfo);
     } else {
-      console.error('No se encontró información para el subcanal ID:', subcanalId);
     }
   }
 
@@ -895,7 +881,6 @@ export class WizardContainerComponent implements OnInit {
       const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
         if (!this.yaCreoLeadEnKommo) {
           this.yaCreoLeadEnKommo = true;
-          console.log('🔁 Ejecutando crearLeadEnKommo una sola vez');
           this.crearLeadEnKommo(op, cliente);
         }
       };
@@ -924,7 +909,6 @@ export class WizardContainerComponent implements OnInit {
             resolve(opCreada);
           },
           error: (err) => {
-            console.error('❌ Error creando cliente+operación:', err);
             resolve({ dummy: true });
           }
         });
@@ -947,13 +931,11 @@ export class WizardContainerComponent implements OnInit {
                 resolve(opCreada);
               },
               error: (err) => {
-                console.error('❌ Error creando operación:', err);
                 resolve({ dummy: true });
               }
             });
           },
           error: (err) => {
-            console.error('❌ Error buscando cliente:', err);
             resolve({ dummy: true });
           }
         });
@@ -978,7 +960,66 @@ export class WizardContainerComponent implements OnInit {
     const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
     const auto = (cliente.auto || this.wizardData.auto || '').toString();
 
+    // Obtener el ID del plan seleccionado
+    const planId = this.dataService.planId;
 
+    // Variable para almacenar el nombre real del plan
+    let nombreRealPlan = '';
+
+    // Intentar obtener el nombre real del plan desde los planes disponibles en el subcanal
+    if (this.subcanalSeleccionadoInfo && this.subcanalSeleccionadoInfo.planesDisponibles) {
+      const planEncontrado = this.subcanalSeleccionadoInfo.planesDisponibles.find(plan => plan.id === planId);
+      if (planEncontrado) {
+        nombreRealPlan = planEncontrado.nombre;
+        console.log('Kommo - Nombre real del plan encontrado:', nombreRealPlan);
+      }
+    }
+
+    // Si no se encuentra, buscar el plan a través del servicio
+    if (!nombreRealPlan) {
+      // Primero intentamos buscar en el planService
+      this.planService.getPlan(planId).subscribe({
+        next: (plan) => {
+          if (plan && plan.nombre) {
+            nombreRealPlan = plan.nombre;
+            console.log('Kommo - Nombre real del plan obtenido del servicio:', nombreRealPlan);
+          } else {
+            // Si no se encuentra, usamos el nombre del tipo seleccionado como fallback
+            nombreRealPlan = this.dataService.planTipo || 'UVA';
+            console.log('Kommo - Usando nombre del tipo como fallback:', nombreRealPlan);
+          }
+
+          // Continuamos con el proceso después de obtener el nombre del plan
+          this.continuarCreacionLead(operacionCreada, cliente, nombreRealPlan);
+        },
+        error: (error) => {
+          console.error('Error al obtener plan:', error);
+          // Si hay error, usamos el nombre del tipo seleccionado como fallback
+          nombreRealPlan = this.dataService.planTipo || 'UVA';
+          console.log('Kommo - Usando nombre del tipo como fallback por error:', nombreRealPlan);
+
+          // Continuamos con el proceso después de obtener el nombre del plan
+          this.continuarCreacionLead(operacionCreada, cliente, nombreRealPlan);
+        }
+      });
+    } else {
+      // Si ya encontramos el nombre del plan, continuamos con el proceso
+      this.continuarCreacionLead(operacionCreada, cliente, nombreRealPlan);
+    }
+  }
+
+  // Método auxiliar para continuar con la creación del lead después de obtener el nombre del plan
+  private continuarCreacionLead(operacionCreada: any, cliente: any, nombrePlan: string): void {
+    const nombre = (cliente?.nombre || this.wizardData.clienteNombre || '').toString();
+    const apellido = (cliente?.apellido || this.wizardData.clienteApellido || '').toString();
+    const telefono = cliente.telefono || this.wizardData.clienteWhatsapp || '+5491100000000';
+    const email = cliente.email || this.wizardData.clienteEmail || 'sin-email@mundo.com';
+    const codigoPostal = cliente.codigoPostal?.toString() || this.wizardData.codigoPostal?.toString() || '';
+    const estadoCivil = cliente.estadoCivil || this.wizardData.estadoCivil || '';
+    const ingresos = cliente.ingresos || this.wizardData.ingresos || 0;
+    const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
+    const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
+    const auto = (cliente.auto || this.wizardData.auto || '').toString();
 
     let sexoFieldValue: number | undefined;
     if (sexo.toUpperCase() === 'F') sexoFieldValue = 542410;
@@ -989,7 +1030,7 @@ export class WizardContainerComponent implements OnInit {
         // Obtener datos del vendedor
         const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
         const nombreLimpio = (nombre || '').toString().trim();
-const apellidoLimpio = (apellido || '').toString().trim();
+        const apellidoLimpio = (apellido || '').toString().trim();
         const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
 
         // Crear contacto
@@ -1027,9 +1068,10 @@ const apellidoLimpio = (apellido || '').toString().trim();
         if (!companyId) throw new Error('No se pudo obtener el ID de la compañía');
 
         const etiquetas = this.dataService.rechazadoPorBcra
-  ? [{ name: 'Rechazado BCRA', id: 54266 }]
-  : [{ name: 'Enviar a Banco', id: 35522 }];
-        // Crear lead final con todo
+          ? [{ name: 'Rechazado BCRA', id: 54266 }]
+          : [{ name: 'Enviar a Banco', id: 35522 }];
+
+        // Crear lead final con todo - usando nombrePlan real obtenido
         const lead = [{
           name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
           custom_fields_values: [
@@ -1037,9 +1079,10 @@ const apellidoLimpio = (apellido || '').toString().trim();
             { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto) || 0 }] },
             { field_id: 964680, values: [{ value: parseInt(operacionCompleta.meses) || 0 }] },
             { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa) || 0 }] },
-            { field_id: 965126, values: [{ value: auto }] }, // ✅ auto como texto
+            { field_id: 965126, values: [{ value: auto }] }, // auto como texto
 
-            ...(operacionCompleta.planNombre ? [{ field_id: 962344, values: [{ value: operacionCompleta.planNombre }] }] : [])
+            // Usar el nombre real del plan obtenido
+            { field_id: 962344, values: [{ value: nombrePlan }] }
           ],
           _embedded: {
             contacts: [{ id: contactId }],
@@ -1082,7 +1125,6 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
           operacionCompleta.planNombre = plan.nombre;
         }
       } catch (err) {
-        console.error('Error al obtener plan:', err);
       }
     }
 
@@ -1101,12 +1143,10 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
                 operacionCompleta.canalNombre = canal.nombreFantasia;
               }
             } catch (err) {
-              console.error('Error al obtener canal:', err);
             }
           }
         }
       } catch (err) {
-        console.error('Error al obtener subcanal:', err);
       }
     }
 
@@ -1120,19 +1160,16 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
           operacionCompleta.vendedorEmail = vendedor.email || '';
         }
       } catch (err) {
-        console.error('Error al obtener vendedor:', err);
       }
     }
 
     return operacionCompleta;
   } catch (error) {
-    console.error('Error al obtener datos complementarios:', error);
     return operacion; // Devolver la operación original en caso de error
   }
 }
   enviarOfertaPorWhatsApp(plan: any) {
     if (!this.wizardData.clienteWhatsapp) {
-      console.error('No hay número de WhatsApp para enviar la oferta');
       return;
     }
 
