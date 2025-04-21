@@ -62,19 +62,21 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
   ngOnInit(): void {
     this.filterRolesByUserPermission();
 
-     // Si hay un rol predeterminado
-  if (this.rolIdPredeterminado) {
-    // Filtrar sólo este rol
-    this.roles = this.allRoles.filter(rol => rol.id === this.rolIdPredeterminado);
+    // Si hay un rol predeterminado
+    if (this.rolIdPredeterminado) {
+      console.log('Rol predeterminado:', this.rolIdPredeterminado);
 
-    // Establecer el valor en el formulario
-    this.usuarioForm.get('rolId')?.setValue(this.rolIdPredeterminado.toString());
+      // Filtrar sólo este rol
+      this.roles = this.allRoles.filter(rol => rol.id === this.rolIdPredeterminado);
 
-    // Opcionalmente, deshabilitar el campo si solo hay una opción
-    if (this.roles.length === 1) {
-      this.usuarioForm.get('rolId')?.disable();
+      // Establecer el valor en el formulario como número, no como string
+      this.usuarioForm.get('rolId')?.setValue(this.rolIdPredeterminado);
+
+      // Asegurarse de que el campo esté deshabilitado si solo hay una opción
+      if (this.roles.length === 1) {
+        this.usuarioForm.get('rolId')?.disable();
+      }
     }
-  }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -218,7 +220,9 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
     }
 
     this.loading = true;
-    const formValues = this.usuarioForm.value;
+    const formValues = this.usuarioForm.getRawValue(); // Usa getRawValue() para incluir campos deshabilitados
+
+
 
     const usuarioDto: UsuarioCrearDto = {
       nombre: formValues.nombre,
@@ -226,9 +230,10 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
       email: formValues.email,
       telefono: formValues.telefono,
       password: formValues.password,
-      rolId: parseInt(formValues.rolId, 10),
+      rolId: typeof formValues.rolId === 'string' ? parseInt(formValues.rolId, 10) : formValues.rolId,
       creadorId: this.creadorId
     };
+
 
     this.usuarioService.createUsuario(usuarioDto).subscribe({
       next: (usuario) => {

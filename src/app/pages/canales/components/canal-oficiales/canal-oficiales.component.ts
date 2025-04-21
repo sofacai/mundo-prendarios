@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
@@ -14,7 +14,7 @@ import { UsuarioFormComponent } from 'src/app/shared/modals/usuario-form/usuario
   templateUrl: './canal-oficiales.component.html',
   styleUrls: ['./canal-oficiales.component.scss']
 })
-export class CanalOficialesComponent implements OnInit {
+export class CanalOficialesComponent implements OnInit, OnChanges {
   @Input() oficialesComerciales: any[] = [];
   @Input() loading: boolean = false;
   @Input() error: string | null = null;
@@ -59,25 +59,48 @@ export class CanalOficialesComponent implements OnInit {
     this.isAdmin = currentUser?.rolId === RolType.Administrador;
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    // Si la lista de oficiales comerciales cambia, verificar sus estados
+    if (changes['oficialesComerciales'] && !changes['oficialesComerciales'].firstChange) {
+      this.verificarEstadoOficiales();
+    }
+  }
+
   verificarEstadoOficiales(): void {
     if (this.oficialesComerciales && this.oficialesComerciales.length > 0) {
-      this.oficialesComerciales.forEach(oficial => {
+      // Marcar todos los oficiales como "verificando"
+      const promises = this.oficialesComerciales.map(oficial => {
         // Obtener el ID del oficial (dependiendo de cómo venga la estructura)
         const oficialId = oficial.oficialComercialId || oficial.id;
 
-        // Obtener el estado actualizado del usuario
-        this.usuarioService.getUsuario(oficialId).subscribe({
-          next: (usuario) => {
-            // Actualizar el estado en la lista local si no coincide
-            const estadoActual = oficial.activo !== undefined ? oficial.activo : (oficial.estado === 'Activo');
-            if (estadoActual !== usuario.activo) {
+        // Establecer oficiales como activos hasta que se confirme lo contrario
+        // Esto soluciona el problema del primer oficial apareciendo como inactivo
+        if (oficial.activo === undefined && oficial.estado === undefined) {
+          oficial.activo = true;
+        }
+
+        // Retornar una promesa para cada verificación
+        return new Promise<void>((resolve) => {
+          this.usuarioService.getUsuario(oficialId).subscribe({
+            next: (usuario) => {
+              // Asignar el estado real del backend
+              // Usando referencia directa para actualizar el array original
               oficial.activo = usuario.activo;
+              oficial.estado = usuario.activo ? 'Activo' : 'Inactivo';
+              resolve();
+            },
+            error: (err) => {
+              console.error(`Error al verificar estado del oficial ${oficialId}:`, err);
+              resolve(); // Resolver incluso en caso de error
             }
-          },
-          error: (err) => {
-            console.error(`Error al verificar estado del oficial ${oficialId}:`, err);
-          }
+          });
         });
+      });
+
+      // Esperar a que todas las verificaciones terminen y forzar actualización
+      Promise.all(promises).then(() => {
+        // Esto fuerza a Angular a detectar el cambio en el array
+        this.oficialesComerciales = [...this.oficialesComerciales];
       });
     }
   }
@@ -89,20 +112,8 @@ export class CanalOficialesComponent implements OnInit {
     // Emitir evento al componente padre
     this.toggleEstado.emit({ oficialId, estadoActual });
 
-    // Simular tiempo de respuesta y actualizar estado localmente
-    setTimeout(() => {
-      // Actualizar el estado visual después de un tiempo
-      this.oficialesComerciales = this.oficialesComerciales.map(oficial => {
-        const id = oficial.oficialComercialId || oficial.id;
-        if (id === oficialId) {
-          return {...oficial, activo: !estadoActual};
-        }
-        return oficial;
-      });
-
-      // Quitar indicador de carga
-      this.loadingOficiales.set(oficialId, false);
-    }, 500);
+    // No hacemos cambios locales y esperamos a que el componente padre
+    // actualice los datos después de la operación
   }
 
   onVerDetalle(oficialId: number): void {
@@ -175,14 +186,17 @@ export class CanalOficialesComponent implements OnInit {
           const oficial = this.availableOficiales.find(o => o.id === oficialId);
 
           if (oficial) {
-            // Añadir el oficial a la lista de asignados
-            this.oficialesComerciales.push({
+            // Añadir el oficial a la lista de asignados con estado explicitamente activo
+            const nuevoOficial = {
               oficialComercialId: oficial.id,
               oficialComercialNombre: `${oficial.nombre} ${oficial.apellido}`,
-              activo: oficial.activo,
+              activo: true, // Forzar estado activo
               email: oficial.email,
               telefono: oficial.telefono
-            });
+            };
+
+            // Añadir a la lista existente
+            this.oficialesComerciales = [...this.oficialesComerciales, nuevoOficial];
 
             // Emitir evento
             this.oficialAsignado.emit(oficialId);
@@ -236,6 +250,7 @@ export class CanalOficialesComponent implements OnInit {
         });
     }
   }
+
   onDesasignarOficial(oficialId: number): void {
     if (!this.isAdmin || !this.canalId) return;
 

@@ -182,8 +182,11 @@ errorAdminCanal: string | null = null;
 
 
 
-  cargarAdminCanal(adminCanalId: number) {
+  cargarAdminCanal(adminCanalId: number | null | undefined): void {
+    // Si no hay adminCanalId, establecemos adminCanal a null
     if (!adminCanalId) {
+      this.adminCanal = null;
+      this.loadingAdminCanal = false;
       return;
     }
 
@@ -198,6 +201,7 @@ errorAdminCanal: string | null = null;
       error: (err) => {
         console.error('Error al cargar admin del canal:', err);
         this.errorAdminCanal = 'No se pudo cargar la información del administrador';
+        this.adminCanal = null;
         this.loadingAdminCanal = false;
       }
     });
@@ -213,9 +217,14 @@ errorAdminCanal: string | null = null;
         this.subcanal = subcanal;
         this.calculateBaseStatistics();
 
-        // Cargar el admin del canal si existe
-        if (subcanal.adminCanalId) {
+        // Cargar el admin del canal solo si existe adminCanalId y es mayor que 0
+        if (subcanal.adminCanalId && subcanal.adminCanalId > 0) {
+          console.log('Cargando adminCanal con ID:', subcanal.adminCanalId);
           this.cargarAdminCanal(subcanal.adminCanalId);
+        } else {
+          console.log('No hay adminCanal asignado');
+          this.adminCanal = null;
+          this.loadingAdminCanal = false;
         }
 
         // Cargar datos adicionales en paralelo
@@ -289,6 +298,102 @@ errorAdminCanal: string | null = null;
   }
   getVendorOperacionesLiquidadas(vendorId: number): number {
     return this.operaciones.filter(op => op.vendedorId === vendorId && op.estado && op.estado.toLowerCase() === 'liquidada').length;
+  }
+
+  onAdminAsignado(adminId: number): void {
+    // Primero obtenemos el subcanal actual
+    this.subcanalService.getSubcanal(this.subcanalId).subscribe({
+      next: (subcanal) => {
+        // Preparamos los datos para actualizar
+        const updateData = {
+          nombre: subcanal.nombre,
+          provincia: subcanal.provincia,
+          localidad: subcanal.localidad,
+          canalId: subcanal.canalId,
+          comision: subcanal.comision,
+          adminCanalId: adminId
+        };
+
+        // Actualizamos el subcanal con el nuevo adminCanalId
+        this.subcanalService.updateSubcanal(this.subcanalId, updateData).subscribe({
+          next: () => {
+            // Una vez asignado, cargamos el admin para mostrar sus datos
+            this.cargarAdminCanal(adminId);
+          },
+          error: (err) => {
+            console.error('Error al asignar admin al subcanal:', err);
+            this.errorAdminCanal = 'No se pudo asignar el administrador al subcanal';
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al obtener detalles del subcanal:', err);
+        this.errorAdminCanal = 'Error al obtener detalles del subcanal';
+      }
+    });
+  }
+
+  onAdminDesasignado(adminId: number): void {
+    // Primero obtenemos el subcanal actual
+    this.subcanalService.getSubcanal(this.subcanalId).subscribe({
+      next: (subcanal) => {
+        // Preparamos los datos para actualizar (sin adminCanalId)
+        const updateData = {
+          nombre: subcanal.nombre,
+          provincia: subcanal.provincia,
+          localidad: subcanal.localidad,
+          canalId: subcanal.canalId,
+          comision: subcanal.comision
+          // No incluimos adminCanalId para desasignarlo
+        };
+
+        // Actualizamos el subcanal sin adminCanalId
+        this.subcanalService.updateSubcanal(this.subcanalId, updateData).subscribe({
+          next: () => {
+            // Limpiamos la referencia al admin
+            this.adminCanal = null;
+          },
+          error: (err) => {
+            console.error('Error al desasignar admin del subcanal:', err);
+            this.errorAdminCanal = 'No se pudo desasignar el administrador del subcanal';
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al obtener detalles del subcanal:', err);
+        this.errorAdminCanal = 'Error al obtener detalles del subcanal';
+      }
+    });
+  }
+
+  // Para ver el detalle del administrador
+  verDetalleAdmin(adminId: number): void {
+    this.router.navigate(['/usuarios', adminId]);
+  }
+
+  // Para cambiar el estado del administrador
+  toggleAdminEstado(event: {adminId: number, estadoActual: boolean}): void {
+    const { adminId, estadoActual } = event;
+
+    const request = estadoActual
+      ? this.usuarioService.desactivarUsuario(adminId)
+      : this.usuarioService.activarUsuario(adminId);
+
+    request.subscribe({
+      next: () => {
+        // Actualizar el estado en los datos locales
+        if (this.adminCanal && this.adminCanal.id === adminId) {
+          this.adminCanal = {
+            ...this.adminCanal,
+            activo: !estadoActual
+          };
+        }
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado del administrador:', err);
+        this.errorAdminCanal = 'No se pudo cambiar el estado del administrador';
+      }
+    });
   }
 
 

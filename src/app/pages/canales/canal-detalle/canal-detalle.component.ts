@@ -488,10 +488,27 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
-  onOficialAsignado(oficialId: number) {
-    // Recargar la lista de oficiales comerciales
-    this.cargarOficialesComerciales(this.canalId);
-  }
+ // Actualizar método onOficialAsignado en CanalDetalleComponent
+onOficialAsignado(oficialId: number): void {
+  // Recargar la lista completa de oficiales comerciales
+  this.loadingOficiales = true;
+  this.errorOficiales = null;
+
+  this.canalService.getOficialesComercialCanal(this.canalId).subscribe({
+    next: (data) => {
+      this.oficialesComerciales = data.map(oficial => ({
+        ...oficial,
+        activo: true // Asegurar que todos los oficiales aparezcan como activos inicialmente
+      }));
+      this.loadingOficiales = false;
+    },
+    error: (err) => {
+      console.error('Error al recargar oficiales comerciales:', err);
+      this.errorOficiales = 'No se pudieron cargar los oficiales comerciales';
+      this.loadingOficiales = false;
+    }
+  });
+}
 
   onOficialDesasignado(oficialId: number) {
     // Eliminar el oficial de la lista local

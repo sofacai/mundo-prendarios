@@ -72,10 +72,13 @@
                 <!-- Admin del Canal -->
                 <div style="flex-basis: 50%">
                   <app-subcanal-admin-canal
-                    [adminCanal]="adminCanal"
-                    [loading]="loadingAdminCanal"
-                    [error]="errorAdminCanal">
-                  </app-subcanal-admin-canal>
+                  [adminCanal]="adminCanal"
+                  [loading]="loadingAdminCanal"
+                  [error]="errorAdminCanal"
+                  [subcanalId]="subcanalId"
+                  (adminAsignado)="onAdminAsignado($event)"
+                  (adminDesasignado)="onAdminDesasignado($event)">
+                </app-subcanal-admin-canal>
                 </div>
               </div>
             </div>
