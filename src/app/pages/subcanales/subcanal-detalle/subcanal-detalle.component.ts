@@ -288,9 +288,8 @@ errorAdminCanal: string | null = null;
     this.router.navigate(['/subcanales']);
   }
   getVendorOperacionesLiquidadas(vendorId: number): number {
-    return this.operaciones.filter(op => op.vendedorId === vendorId && op.estado === 'Liquidada').length;
+    return this.operaciones.filter(op => op.vendedorId === vendorId && op.estado && op.estado.toLowerCase() === 'liquidada').length;
   }
-
 
 
   // Métodos para la edición del subcanal

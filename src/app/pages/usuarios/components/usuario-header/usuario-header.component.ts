@@ -61,15 +61,7 @@ export class UsuarioHeaderComponent {
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
   }
 
-  // Método para formatear montos sin decimales
-  formatMontoSinDecimales(amount: number): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
+
 
   // Método para obtener el rol como texto
   getRolName(): string {
@@ -112,21 +104,44 @@ export class UsuarioHeaderComponent {
     this.router.navigate(['/subcanales', subcanalId]);
   }
 
-  // Nuevos métodos para las estadísticas
-  // Obtener cantidad de operaciones liquidadas
-  getOperacionesLiquidadas(): number {
-    return this.operaciones.filter(op => op.estado === 'Liquidada').length;
+   // Obtener cantidad de operaciones liquidadas
+   getOperacionesLiquidadas(): number {
+    return this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
   }
 
   // Obtener cantidad de operaciones rechazadas
   getOperacionesRechazadas(): number {
-    return this.operaciones.filter(op => op.estado === 'Rechazada').length;
+    return this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'rechazada').length;
   }
 
   // Obtener monto total de operaciones liquidadas
   getMontoTotalLiquidadas(): number {
     return this.operaciones
-      .filter(op => op.estado === 'Liquidada')
+      .filter(op => op.estado && op.estado.toLowerCase() === 'liquidada')
       .reduce((total, op) => total + op.monto, 0);
+  }
+
+  // Método para formatear montos sin decimales
+  formatMontoSinDecimales(amount: number): string {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  }
+
+  // Método para formatear montos grandes con K, M, etc.
+  formatMontoAbreviado(amount: number): string {
+    if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(1).replace(/\.0$/, '')}B`;
+    }
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    }
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+    }
+    return `$${amount}`;
   }
 }

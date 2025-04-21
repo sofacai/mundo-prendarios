@@ -359,7 +359,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
         operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
 
         // Incrementar operaciones liquidadas si aplica
-        if (op.estado === 'Liquidada') {
+        if (op.estado && op.estado.toLowerCase() === 'liquidada') {
           operacionesLiquidadasPorMes.set(mes, (operacionesLiquidadasPorMes.get(mes) || 0) + 1);
         }
       }
@@ -389,7 +389,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       .map(planCanal => {
         const operacionesDelPlan = this.operaciones.filter(op => op.planId === planCanal.planId);
         const operacionesCount = operacionesDelPlan.length;
-        const operacionesLiquidadasCount = operacionesDelPlan.filter(op => op.estado === 'Liquidada').length;
+        const operacionesLiquidadasCount = operacionesDelPlan.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
 
         return {
           nombre: planCanal.plan?.nombre || `Plan ${planCanal.planId}`,
@@ -417,7 +417,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       .map(subcanal => {
         const operacionesDelSubcanal = this.operaciones.filter(op => op.subcanalId === subcanal.id);
         const operacionesCount = operacionesDelSubcanal.length;
-        const operacionesLiquidadasCount = operacionesDelSubcanal.filter(op => op.estado === 'Liquidada').length;
+        const operacionesLiquidadasCount = operacionesDelSubcanal.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
 
         return {
           nombre: subcanal.nombre,
@@ -444,7 +444,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       .map(vendor => {
         const operacionesDelVendedor = this.operaciones.filter(op => op.vendedorId === vendor.id);
         const operacionesCount = operacionesDelVendedor.length;
-        const operacionesLiquidadasCount = operacionesDelVendedor.filter(op => op.estado === 'Liquidada').length;
+        const operacionesLiquidadasCount = operacionesDelVendedor.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
 
         return {
           nombre: `${vendor.nombre || ''} ${vendor.apellido || ''}`.trim(),

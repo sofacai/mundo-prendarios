@@ -26,7 +26,6 @@ export class CanalVendedoresComponent implements OnInit {
     this.cargarOperacionesLiquidadas();
   }
 
-  // Método para cargar operaciones liquidadas de cada vendedor
   cargarOperacionesLiquidadas(): void {
     if (this.vendedores && this.vendedores.length > 0) {
       this.vendedores.forEach(vendedor => {
@@ -35,7 +34,7 @@ export class CanalVendedoresComponent implements OnInit {
           next: (operaciones) => {
             // Filtrar por vendedor y estado liquidado
             const operacionesLiquidadas = operaciones.filter(
-              op => op.vendedorId === vendedor.id && op.estado === 'Liquidada'
+              op => op.vendedorId === vendedor.id && op.estado && op.estado.toLowerCase() === 'liquidada'
             ).length;
 
             this.operacionesLiquidadasMap.set(vendedor.id, operacionesLiquidadas);

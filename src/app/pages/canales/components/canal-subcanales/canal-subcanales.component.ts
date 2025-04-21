@@ -34,17 +34,18 @@ modalFormOpen = false;
     this.cargarOperacionesLiquidadas();
   }
 
-  // Método para cargar todas las operaciones liquidadas de los subcanales
   cargarOperacionesLiquidadas(): void {
     if (this.subcanales && this.subcanales.length > 0) {
       this.subcanales.forEach(subcanal => {
-        this.operacionService.getOperacionesLiquidadasPorSubcanal(subcanal.id)
+        this.operacionService.getOperacionesPorSubcanal(subcanal.id)
           .subscribe({
-            next: (total) => {
+            next: (operaciones) => {
+              // Contar operaciones liquidadas
+              const total = operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
               this.operacionesLiquidadasMap.set(subcanal.id, total);
             },
             error: (err) => {
-              console.error(`Error al cargar operaciones liquidadas para subcanal ${subcanal.id}:`, err);
+              console.error(`Error al cargar operaciones para subcanal ${subcanal.id}:`, err);
               this.operacionesLiquidadasMap.set(subcanal.id, 0); // Valor por defecto en caso de error
             }
           });

@@ -201,9 +201,12 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
           next: (operaciones) => {
             // Filtrar operaciones del canal actual
             this.operaciones = operaciones.filter(op => op.canalId === this.canalId);
+            this.totalOperaciones = this.operaciones.length;
+
 
             // Contar operaciones liquidadas
-            this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada').length;
+            this.operacionesLiquidadas = this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
+
 
             // Cargar datos adicionales en paralelo
             this.loadAdditionalData();

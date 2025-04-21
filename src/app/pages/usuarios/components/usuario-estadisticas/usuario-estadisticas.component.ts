@@ -544,6 +544,21 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     return Math.floor(Math.random() * 30) - 10; // Valor entre -10 y 20
   }
 
+
+
+  formatMontoAbreviado(amount: number): string {
+    if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(1).replace(/\.0$/, '')}B`;
+    }
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    }
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+    }
+    return `$${amount}`;
+  }
+
   prepareOperacionesChartData(): { labels: string[], dataTotales: number[], dataLiquidadas: number[] } {
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     const today = new Date();
@@ -564,7 +579,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       const operacionesMes = operacionesPorMes[key] || [];
       dataTotales.push(operacionesMes.length);
 
-      const operacionesLiquidadas = operacionesMes.filter(op => op.estado === 'Liquidada');
+      const operacionesLiquidadas = operacionesMes.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada');
       dataLiquidadas.push(operacionesLiquidadas.length);
     }
 
@@ -644,6 +659,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     return `${prefix}${value}%`;
   }
 
+
   formatMontoSinDecimales(amount: number): string {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -679,9 +695,8 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Métodos para estadísticas de operaciones liquidadas
   getOperacionesLiquidadas(): number {
-    return this.operaciones.filter(op => op.estado === 'Liquidada').length;
+    return this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
   }
-
   getOperacionesLiquidadasPorcentaje(): number {
     if (this.operaciones.length === 0) return 0;
     return Math.round((this.getOperacionesLiquidadas() / this.operaciones.length) * 100);
@@ -690,13 +705,12 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   // Método para calcular monto total de operaciones liquidadas
   getMontoTotalLiquidadas(): number {
     return this.operaciones
-      .filter(op => op.estado === 'Liquidada')
+      .filter(op => op.estado && op.estado.toLowerCase() === 'liquidada')
       .reduce((total, op) => total + op.monto, 0);
   }
 
-  // Método para calcular plazo promedio
   getPlazoPromedio(): number {
-    const operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada');
+    const operacionesLiquidadas = this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada');
 
     if (operacionesLiquidadas.length === 0) return 0;
 

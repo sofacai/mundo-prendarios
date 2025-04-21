@@ -303,7 +303,7 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
       .filter(vendor => vendor.activo)
       .map(vendor => {
         const operacionesCount = this.operaciones
-          .filter(op => op.vendedorId === vendor.id && op.estado === 'Liquidada')
+          .filter(op => op.vendedorId === vendor.id && op.estado && op.estado.toLowerCase() === 'liquidada')
           .length;
         const nombreCompleto = `${vendor.nombre} ${vendor.apellido}`;
         return {
@@ -312,57 +312,55 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
         };
       });
   }
+  groupOperacionesPorMes(): any[] {
+    // Si no hay operaciones, devolver datos de muestra
+    if (!this.operaciones || this.operaciones.length === 0) {
+      return [
+        { mes: 'Ene', cantidad: 0, liquidadas: 0 },
+        { mes: 'Feb', cantidad: 0, liquidadas: 0 },
+        { mes: 'Mar', cantidad: 0, liquidadas: 0 },
+        { mes: 'Abr', cantidad: 0, liquidadas: 0 },
+        { mes: 'May', cantidad: 0, liquidadas: 0 },
+        { mes: 'Jun', cantidad: 0, liquidadas: 0 }
+      ];
+    }
 
-  // Helpers para procesamiento de datos para gráficos
- // Helpers para procesamiento de datos para gráficos
- groupOperacionesPorMes(): any[] {
-  // Si no hay operaciones, devolver datos de muestra
-  if (!this.operaciones || this.operaciones.length === 0) {
-    return [
-      { mes: 'Ene', cantidad: 0, liquidadas: 0 },
-      { mes: 'Feb', cantidad: 0, liquidadas: 0 },
-      { mes: 'Mar', cantidad: 0, liquidadas: 0 },
-      { mes: 'Abr', cantidad: 0, liquidadas: 0 },
-      { mes: 'May', cantidad: 0, liquidadas: 0 },
-      { mes: 'Jun', cantidad: 0, liquidadas: 0 }
-    ];
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const operacionesPorMes = new Map();
+    const liquidadasPorMes = new Map();
+
+    // Inicializar todos los meses con 0
+    meses.forEach(mes => {
+      operacionesPorMes.set(mes, 0);
+      liquidadasPorMes.set(mes, 0);
+    });
+
+    // Agrupar operaciones por mes
+    this.operaciones.forEach(op => {
+      if (op.fechaCreacion) {
+        const fecha = new Date(op.fechaCreacion);
+        const mes = meses[fecha.getMonth()];
+
+        // Total de operaciones
+        operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
+
+        // Operaciones liquidadas
+        if (op.estado && op.estado.toLowerCase() === 'liquidada') {
+          liquidadasPorMes.set(mes, (liquidadasPorMes.get(mes) || 0) + 1);
+        }
+      }
+    });
+
+    // Convertir los mapas a un array de objetos
+    return Array.from(operacionesPorMes.entries())
+      .map(([mes, cantidad]) => ({
+        mes,
+        cantidad,
+        liquidadas: liquidadasPorMes.get(mes) || 0
+      }))
+      .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
   }
 
-  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  const operacionesPorMes = new Map();
-  const liquidadasPorMes = new Map();
-
-  // Inicializar todos los meses con 0
-  meses.forEach(mes => {
-    operacionesPorMes.set(mes, 0);
-    liquidadasPorMes.set(mes, 0);
-  });
-
-  // Agrupar operaciones por mes
-  this.operaciones.forEach(op => {
-    if (op.fechaCreacion) {
-      const fecha = new Date(op.fechaCreacion);
-      const mes = meses[fecha.getMonth()];
-
-      // Total de operaciones
-      operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
-
-      // Operaciones liquidadas
-      if (op.estado === 'Liquidada') {
-        liquidadasPorMes.set(mes, (liquidadasPorMes.get(mes) || 0) + 1);
-      }
-    }
-  });
-
-  // Convertir los mapas a un array de objetos
-  return Array.from(operacionesPorMes.entries())
-    .map(([mes, cantidad]) => ({
-      mes,
-      cantidad,
-      liquidadas: liquidadasPorMes.get(mes) || 0
-    }))
-    .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
-}
 
   getDistribucionVendedores(): any[] {
     // Si no hay vendedores, devolver datos de muestra
@@ -418,7 +416,7 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
         montosPorMes.set(mes, (montosPorMes.get(mes) || 0) + op.monto);
 
         // Montos liquidados
-        if (op.estado === 'Liquidada') {
+        if (op.estado && op.estado.toLowerCase() === 'liquidada') {
           montosLiquidadosPorMes.set(mes, (montosLiquidadosPorMes.get(mes) || 0) + op.monto);
         }
       }

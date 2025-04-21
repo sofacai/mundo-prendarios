@@ -1,5 +1,5 @@
 // Archivo: src/app/pages/canales/components/canal-header/canal-header.component.ts
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Canal } from 'src/app/core/services/canal.service';
 
@@ -10,7 +10,7 @@ import { Canal } from 'src/app/core/services/canal.service';
   templateUrl: './canal-header.component.html',
   styleUrls: ['./canal-header.component.scss']
 })
-export class CanalHeaderComponent {
+export class CanalHeaderComponent implements OnChanges {
   @Input() canal!: Canal;
   @Input() subcanalesActivos: number = 0;
   @Input() subcanalesInactivos: number = 0;
@@ -25,6 +25,11 @@ export class CanalHeaderComponent {
   showImagePreview: boolean = false;
 
   constructor() { }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Si canal-detalle.component.ts actualiza operacionesLiquidadas, no hacemos nada aquí
+    // Este componente solo recibe el valor ya calculado
+  }
 
   onToggleEstado(): void {
     this.toggleEstado.emit();

@@ -158,6 +158,7 @@ export class SubcanalVendedoresTabComponent implements OnInit {
     }
   }
 
+
   // Nuevos métodos para la creación de vendedores
   crearNuevoVendedor(): void {
     this.showCrearVendedorModal = true;

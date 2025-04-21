@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subcanal } from 'src/app/core/services/subcanal.service';
@@ -11,7 +11,7 @@ import { Operacion } from 'src/app/core/services/operacion.service';
   templateUrl: './subcanal-header.component.html',
   styleUrls: ['./subcanal-header.component.scss']
 })
-export class SubcanalHeaderComponent {
+export class SubcanalHeaderComponent implements OnChanges {
   @Input() subcanal!: Subcanal;
   @Input() loading = false;
   @Input() vendedoresActivos = 0;
@@ -22,9 +22,14 @@ export class SubcanalHeaderComponent {
   @Input() operacionesLiquidadas = 0;
   @Input() operacionesRechazadas = 0;
 
-
-
   @Output() toggleEstado = new EventEmitter<void>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Recalcular estadísticas cuando cambien las operaciones
+    if (changes['operaciones'] && this.operaciones) {
+      this.calcularEstadisticas();
+    }
+  }
 
   getGastosPorcentaje(): number {
     if (!this.subcanal || !this.subcanal.gastos || this.subcanal.gastos.length === 0) {
@@ -35,9 +40,9 @@ export class SubcanalHeaderComponent {
 
   calcularEstadisticas() {
     // Calcular operaciones liquidadas
-    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'Liquidada').length;
+    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
 
     // Calcular operaciones rechazadas
-    this.operacionesRechazadas = this.operaciones.filter(op => op.estado === 'Rechazada').length;
+    this.operacionesRechazadas = this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'rechazada').length;
   }
 }
