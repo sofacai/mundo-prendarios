@@ -1056,7 +1056,7 @@ export class WizardContainerComponent implements OnInit {
 
         // Crear compañía
         const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
-          name: nombreLead,
+          name: operacionCompleta.canalNombre || 'Canal', // Usar el nombre del canal en lugar del nombreLead
           custom_fields_values: [
             { field_id: 500552, values: [{ value: vendedor.telefono || '+5491100000000' }] },
             { field_id: 962818, values: [{ value: `${vendedor.nombre} ${vendedor.apellido}` }] },
