@@ -1088,7 +1088,6 @@ const apellidoLimpio = (apellido || '').toString().trim();
             { field_id: 650694, values: [{ value: codigoPostal }] }, // CP
             { field_id: 964686, values: [{ value: estadoCivil }] },  // Estado civil
             { field_id: 964710, values: [{ value: ingresos }] },     // Ingresos
-            { field_id: 965126, values: [{ value: cliente.auto || this.wizardData.auto || '' }] },
             { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
             { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
             { field_id: 965118, values: [{ value: this.dataService.situacionBcra ?? 0 }] }, // Situación BCRA
