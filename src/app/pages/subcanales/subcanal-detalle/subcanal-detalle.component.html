@@ -76,8 +76,13 @@
                   [loading]="loadingAdminCanal"
                   [error]="errorAdminCanal"
                   [subcanalId]="subcanalId"
+
                   (adminAsignado)="onAdminAsignado($event)"
-                  (adminDesasignado)="onAdminDesasignado($event)">
+                  (adminDesasignado)="onAdminDesasignado($event)"
+                  (toggleEstado)="onToggleEstadoAdmin($event)"
+                  >
+
+
                 </app-subcanal-admin-canal>
                 </div>
               </div>

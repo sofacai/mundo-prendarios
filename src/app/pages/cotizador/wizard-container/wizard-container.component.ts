@@ -588,17 +588,7 @@ export class WizardContainerComponent implements OnInit {
         this.dataService.situacionBcra = situacionReal;
         this.dataService.rechazadoPorBcra = situacionReal === 0 || [4, 5].includes(situacionReal);
 
-        if (datos.clienteId) {
-          this.actualizarCliente(datos);
-        } else {
-          if (datos.dni) {
-            this.buscarClientePorDNI(datos);
-          } else if (datos.cuil) {
-            this.buscarClientePorCUIL(datos);
-          } else {
-            this.crearCliente(datos);
-          }
-        }
+    this.crearCliente(datos);
       }).catch((error: any) => {
         console.error("❌ Error al consultar BCRA:", error);
         this.error = "Error al verificar situación crediticia. Intente nuevamente.";
@@ -634,46 +624,6 @@ export class WizardContainerComponent implements OnInit {
   }
 
 
-  // Método para actualizar cliente existente
-  private actualizarCliente(datos: any) {
-    const clienteData: ClienteCrearDto = {
-      nombre: datos.nombre,
-      apellido: datos.apellido,
-      telefono: datos.whatsapp,
-      email: datos.email,
-      dni: datos.dni || undefined,
-      cuil: datos.cuil || undefined,
-      sexo: datos.sexo || undefined,
-      canalId: this.subcanalSeleccionadoInfo?.canalId,
-      // Nuevos campos
-      ingresos: datos.ingresos,
-      auto: datos.auto,
-      codigoPostal: datos.codigoPostal,
-      estadoCivil: datos.estadoCivil
-    };
-
-
-    this.clienteService.actualizarCliente(datos.clienteId, clienteData).subscribe({
-      next: (cliente) => {
-        // Mantener el mismo cliente ID
-        this.wizardData.clienteId = datos.clienteId;
-        this.dataService.clienteId = datos.clienteId;
-
-        // Si hay una operación existente, actualizarla
-        if (this.wizardData.operacionId) {
-          this.actualizarOperacion(datos.clienteId);
-        } else {
-          // Verificar relación con vendor
-          this.asignarVendorACliente(datos.clienteId);
-        }
-      },
-      error: (error) => {
-        console.error("Error al actualizar cliente:", error);
-        this.error = "Error al actualizar datos del cliente. Intente nuevamente.";
-        this.cargando = false;
-      }
-    });
-  }
 
   // Método para actualizar una operación existente
   private actualizarOperacion(clienteId: number) {
@@ -724,47 +674,9 @@ export class WizardContainerComponent implements OnInit {
     this.obtenerPlanesYAvanzar();
   }
 
-  // Método para buscar cliente por CUIL
-  private buscarClientePorCUIL(datos: any) {
-    this.clienteService.getClientePorCuil(datos.cuil).subscribe({
-      next: (cliente: Cliente) => {
-        // Asegurarnos que el ID no es undefined
-        if (cliente && typeof cliente.id === 'number') {
-          this.wizardData.clienteId = cliente.id;
-          this.dataService.clienteId = cliente.id;
-          this.asignarVendorACliente(cliente.id);
-        } else {
-          console.error("Cliente sin ID válido");
-          this.crearCliente(datos);
-        }
-      },
-      error: (err) => {
-        // No se encontró, crear nuevo cliente
-        this.crearCliente(datos);
-      }
-    });
-  }
 
-  // Método para buscar cliente por DNI
-  private buscarClientePorDNI(datos: any) {
-    this.clienteService.getClientePorDni(datos.dni).subscribe({
-      next: (cliente: Cliente) => {
-        // Asegurarnos que el ID no es undefined
-        if (cliente && typeof cliente.id === 'number') {
-          this.wizardData.clienteId = cliente.id;
-          this.dataService.clienteId = cliente.id;
-          this.asignarVendorACliente(cliente.id);
-        } else {
-          console.error("Cliente sin ID válido");
-          this.crearCliente(datos);
-        }
-      },
-      error: (err) => {
-        // En lugar de intentar con CUIL, vamos directo a crear cliente nuevo
-        this.crearCliente(datos);
-      }
-    });
-  }
+
+
   private crearCliente(datos: any) {
     // Si no vino CUIL pero sí DNI y sexo, lo calculamos
     if (!datos.cuil && datos.dni && datos.sexo) {
@@ -1064,6 +976,9 @@ export class WizardContainerComponent implements OnInit {
     const ingresos = cliente.ingresos || this.wizardData.ingresos || 0;
     const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
     const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
+    const auto = (cliente.auto || this.wizardData.auto || '').toString();
+
+
 
     let sexoFieldValue: number | undefined;
     if (sexo.toUpperCase() === 'F') sexoFieldValue = 542410;
@@ -1122,6 +1037,8 @@ const apellidoLimpio = (apellido || '').toString().trim();
             { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto) || 0 }] },
             { field_id: 964680, values: [{ value: parseInt(operacionCompleta.meses) || 0 }] },
             { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa) || 0 }] },
+            { field_id: 965126, values: [{ value: auto }] }, // ✅ auto como texto
+
             ...(operacionCompleta.planNombre ? [{ field_id: 962344, values: [{ value: operacionCompleta.planNombre }] }] : [])
           ],
           _embedded: {

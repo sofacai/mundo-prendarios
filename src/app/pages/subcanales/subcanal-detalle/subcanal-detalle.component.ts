@@ -370,7 +370,23 @@ errorAdminCanal: string | null = null;
   verDetalleAdmin(adminId: number): void {
     this.router.navigate(['/usuarios', adminId]);
   }
+  onToggleEstadoAdmin(event: { adminId: number; estadoActual: boolean }): void {
+    const { adminId, estadoActual } = event;
 
+    const accion$ = estadoActual
+      ? this.usuarioService.desactivarUsuario(adminId)
+      : this.usuarioService.activarUsuario(adminId);
+
+    accion$.subscribe({
+      next: () => {
+        if (this.adminCanal && this.adminCanal.id === adminId) {
+          this.adminCanal.activo = !estadoActual;
+        }
+      },
+      error: (err) => {
+      }
+    });
+  }
   // Para cambiar el estado del administrador
   toggleAdminEstado(event: {adminId: number, estadoActual: boolean}): void {
     const { adminId, estadoActual } = event;

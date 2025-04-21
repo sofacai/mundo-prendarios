@@ -18,6 +18,7 @@ export class SubcanalAdminCanalComponent implements OnInit {
   @Input() loading: boolean = false;
   @Input() error: string | null = null;
   @Input() subcanalId: number = 0;
+  @Output() toggleEstado = new EventEmitter<{adminId: number, estadoActual: boolean}>();
 
   @Output() adminAsignado = new EventEmitter<number>();
   @Output() adminDesasignado = new EventEmitter<number>();
@@ -53,6 +54,12 @@ export class SubcanalAdminCanalComponent implements OnInit {
     return activo ? 'badge-success' : 'badge-danger';
   }
 
+  // Nuevo método para cambiar admin (unifica la lógica)
+  cambiarAdmin(): void {
+    if (!this.isAdmin) return;
+    this.openModal();
+  }
+
   // Métodos para el modal de asignación de admins
   openModal(): void {
     if (!this.isAdmin) return;
@@ -70,6 +77,17 @@ export class SubcanalAdminCanalComponent implements OnInit {
     this.selectedAdminId = '';
     this.errorMessage = null;
   }
+  toggleAdminEstado(): void {
+    console.log('Click en toggle, adminCanal:', this.adminCanal);
+
+    if (!this.isAdmin || !this.adminCanal) return;
+
+    this.toggleEstado.emit({
+      adminId: this.adminCanal.id,
+      estadoActual: this.adminCanal.activo
+    });
+  }
+
 
   loadDisponibleAdmins(): void {
     this.isLoading = true;
@@ -78,7 +96,7 @@ export class SubcanalAdminCanalComponent implements OnInit {
     this.usuarioService.getUsuariosPorRol(RolType.AdminCanal)
       .subscribe({
         next: (admins) => {
-          // Filtrar los que están activos Y no son el admin actual
+          // Filtrar solo los activos y que no sean el admin actual
           this.availableAdmins = admins.filter(admin =>
             admin.activo &&
             (!this.adminCanal || admin.id !== this.adminCanal.id)
@@ -129,9 +147,25 @@ export class SubcanalAdminCanalComponent implements OnInit {
   }
 
   onDesasignarAdmin(): void {
-    if (!this.isAdmin || !this.subcanalId || !this.adminCanal) return;
+    // Verificamos que se cumplen todas las condiciones
+    if (!this.isAdmin) {
+      console.error('No es admin');
+      return;
+    }
 
-    if (confirm('¿Está seguro que desea desasignar este administrador del subcanal?')) {
+    if (!this.subcanalId) {
+      console.error('No hay subcanalId');
+      return;
+    }
+
+    if (!this.adminCanal) {
+      console.error('No hay adminCanal');
+      return;
+    }
+
+    // Usar la confirmación
+    if (confirm('¿Está seguro que desea desasignar este administrador del subcanal? El subcanal quedará sin administrador asignado.')) {
+      console.log('Desasignando admin con ID:', this.adminCanal.id);
       // Emitir evento al componente padre para que maneje la desasignación
       this.adminDesasignado.emit(this.adminCanal.id);
     }

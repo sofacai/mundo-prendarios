@@ -1,74 +1,144 @@
+/* Estilos para las tarjetas de detalle */
+.detail-card {
+  margin-bottom: 1.5rem;
+  height: 100%;
+  position: relative;
+}
 
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
 
-/* Estilos adicionales para el componente */
-.card-header {
+.card .card-header {
+  background-color: transparent;
+  border-bottom: 1px solid #eef0f2;
+  padding: 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Botones */
-.btn {
-  height: 36px;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 500;
-  display: inline-flex;
+.card-title {
+  margin-bottom: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #181c32;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+}
+
+.card-title i {
+  color: #009ef7;
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.card-body.p-4 {
+  padding: 1.5rem !important;
+}
+
+.detail-row .detail-label {
+  font-size: 0.85rem;
+  color: #a1a5b7;
+  margin-bottom: 0.35rem;
+}
+
+.detail-row .detail-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.detail-row {
+  margin-bottom: 1.25rem;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Controles de edición */
+.edit-controls {
+  display: flex;
+  align-items: center;
+}
+
+.btn-edit {
+  background: none;
+  border: none;
+  color: #a1a5b7;
   cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.btn-edit:hover {
+  color: #009ef7;
+  background-color: rgba(0, 158, 247, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  color: #50cd89;
+}
+
+.btn-save:hover {
+  color: #3aa066;
+  background-color: rgba(80, 205, 137, 0.1);
+}
+
+.btn-cancel {
+  color: #f1416c;
+}
+
+.btn-cancel:hover {
+  color: #d9214b;
+  background-color: rgba(241, 65, 108, 0.1);
+}
+
+/* Botones para canal */
+.btn-sm {
+  height: 32px;
+  padding: 4px 12px;
+  font-size: 13px;
+  min-width: 80px;
+}
+
+.btn-light-primary {
+  background-color: rgba(0, 158, 247, 0.1);
+  color: #009ef7;
   border: none;
 
-  &.btn-primary {
-    background-color: #009ef7;
-    color: #fff;
-
-    &:hover:not(:disabled) {
-      background-color: #0095e8;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  &.btn-secundary {
-    background-color: #f0f0f0;
-    color: #3f4254;
-
-    &:hover:not(:disabled) {
-      background-color: #e0e0e0;
-    }
-  }
-
-  &.btn-success {
-    background-color: #50cd89;
-    color: #fff;
-
-    &:hover:not(:disabled) {
-      background-color: #47be7d;
-    }
-  }
-
-  &.btn-sm {
-    height: 32px;
-    padding: 0.35rem 0.65rem;
-    font-size: 13px;
+  &:hover {
+    background-color: rgba(0, 158, 247, 0.2);
   }
 }
 
-.me-2 {
-  margin-right: 0.5rem;
-}
-
-/* Badges y estados */
+/* Badge */
 .badge {
   padding: 0.35rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 6px;
+  display: inline-block;
+  cursor: pointer;
 }
 
 .badge-success {
@@ -79,42 +149,6 @@
 .badge-danger {
   background-color: #fff5f8;
   color: #f1416c;
-}
-
-.badge-light-success {
-  background-color: rgba(80, 205, 137, 0.1);
-  color: #50cd89;
-}
-
-/* Botones de acción */
-.btn-action {
-  background: none;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-action.btn-remove {
-  color: #f1416c;
-}
-
-.btn-action:hover {
-  background-color: #f5f8fa;
-}
-
-/* Cursor pointer y hover */
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.text-hover-primary:hover {
-  color: #009ef7;
 }
 
 /* Modal */
@@ -257,11 +291,19 @@
   color: #f1416c;
 }
 
-/* Tamaños, espaciados y texto */
-.fs-2 {
-  font-size: 2rem;
+.alert-warning {
+  background-color: #fff8dd;
+  color: #ffc700;
 }
 
+/* Spinner */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.2em;
+}
+
+/* Márgenes y espaciado */
 .mt-2 {
   margin-top: 0.5rem;
 }
@@ -270,57 +312,24 @@
   margin-top: 1rem;
 }
 
-.p-4 {
-  padding: 1.5rem;
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.me-1 {
+  margin-right: 0.25rem;
+}
+
+.me-2 {
+  margin-right: 0.5rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .py-4 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-muted {
-  color: #a1a5b7;
-}
-
-.fw-bold {
-  font-weight: bold;
-}
-
-/* Tablas */
-.custom-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-bottom: 1rem;
-}
-
-.custom-table thead th {
-  background-color: #f5f8fa;
-  color: #7e8299;
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-  padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid #eef0f2;
-  letter-spacing: 0.5px;
-}
-
-.custom-table tbody td {
-  padding: 1rem 1.25rem;
-  vertical-align: middle;
-  border-bottom: 1px solid #eef0f2;
-  color: #181c32;
-  font-size: 14px;
-}
-
-/* Spinner */
-.spinner-border-sm {
-  width: 1rem;
-  height: 1rem;
-  border-width: 0.2em;
 }
