@@ -119,6 +119,11 @@ ngOnInit() {
     this.showPaymentDetail = !this.showPaymentDetail;
   }
 
+  reiniciarCotizador() {
+    window.location.reload();
+
+  }
+
   generarCuotas() {
     // Verificar si es un plan con sistema alemán
     if (this.mostrarTablaAmortizacion) {

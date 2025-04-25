@@ -1,7 +1,12 @@
-// src/app/core/services/bcra.service.ts
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+
+export interface BcraResponse {
+  situacion: number | null;
+  periodo: string | null;
+  formatted: string | null; // Para almacenar el formato situacion#periodo
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,25 +16,41 @@ export class BcraService {
 
   constructor(private http: HttpClient) {}
 
-  async consultarSituacion(cuit: string): Promise<number | null> {
+  async consultarSituacion(cuit: string): Promise<BcraResponse> {
     try {
       const response: any = await firstValueFrom(
-        this.http.get(`https://api.bcra.gob.ar/CentralDeDeudores/v1.0/Deudas/${cuit}`)
+        this.http.get(`${this.API_URL}/${cuit}`)
       );
 
-      const entidades = response?.results?.periodos?.[0]?.entidades;
+      const periodos = response?.results?.periodos;
 
-      if (!entidades || entidades.length === 0) return null;
+      if (!periodos || periodos.length === 0) {
+        return { situacion: null, periodo: null, formatted: null };
+      }
 
-      // Obtener el valor de situación más alta entre todas las entidades (por si hay más de una)
+      // Tomamos el período más reciente (primer elemento del array)
+      const periodoActual = periodos[0].periodo;
+      const entidades = periodos[0].entidades;
+
+      if (!entidades || entidades.length === 0) {
+        return { situacion: null, periodo: periodoActual, formatted: null };
+      }
+
+      // Obtener el valor de situación más alta entre todas las entidades
       const situaciones = entidades.map((e: any) => e.situacion);
       const maxSituacion = Math.max(...situaciones);
 
-      return maxSituacion;
+      // Crear formato combinado para Kommo: situacion#periodo
+      const formatted = `${maxSituacion}#${periodoActual}`;
+
+      return {
+        situacion: maxSituacion,
+        periodo: periodoActual,
+        formatted: formatted
+      };
     } catch (error) {
       console.error('Error al consultar BCRA:', error);
-      return null;
+      return { situacion: null, periodo: null, formatted: null };
     }
   }
-
 }

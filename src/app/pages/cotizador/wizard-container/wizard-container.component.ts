@@ -187,7 +187,8 @@ export class WizardContainerComponent implements OnInit {
       }
 
       if (subcanalesActivos.length === 1) {
-        this.subcanalSeleccionado = subcanalesActivos[0].id;
+        // En vez de solo asignar el ID, usamos el método completo de selección
+        this.seleccionarSubcanalPorId(subcanalesActivos[0].id);
         this.necesitaSeleccionarSubcanal = false;
       } else {
         this.necesitaSeleccionarSubcanal = true;
@@ -577,13 +578,17 @@ export class WizardContainerComponent implements OnInit {
 
     // 🚨 Consultar situación BCRA si tenemos CUIL
     if (cuilParaBcra) {
-      this.BcraService.consultarSituacion(cuilParaBcra).then(situacion => {
-
-        const situacionReal = situacion ?? 0;
+      this.BcraService.consultarSituacion(cuilParaBcra).then(bcraResponse => {
+        // Guardamos tanto la situación numérica como el formato combinado
+        const situacionReal = bcraResponse.situacion ?? 0;
         this.dataService.situacionBcra = situacionReal;
+        this.dataService.bcraFormatted = bcraResponse.formatted || `${situacionReal}#`;
+        this.dataService.bcraPeriodo = bcraResponse.periodo || "";
+
+        // La lógica de rechazo sigue igual - solo basada en la situación
         this.dataService.rechazadoPorBcra = situacionReal === 0 || [4, 5].includes(situacionReal);
 
-    this.crearCliente(datos);
+        this.crearCliente(datos);
       }).catch((error: any) => {
         this.error = "Error al verificar situación crediticia. Intente nuevamente.";
         this.cargando = false;
@@ -1046,7 +1051,7 @@ export class WizardContainerComponent implements OnInit {
             { field_id: 964710, values: [{ value: ingresos }] },     // Ingresos
             { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
             { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
-            { field_id: 965118, values: [{ value: this.dataService.situacionBcra ?? 0 }] }, // Situación BCRA
+            { field_id: 969444, values: [{ value: this.dataService.bcraFormatted || `${this.dataService.situacionBcra}#` }] },
             ...(sexoFieldValue ? [{ field_id: 650450, values: [{ enum_id: sexoFieldValue }] }] : [])
           ]
         }]));

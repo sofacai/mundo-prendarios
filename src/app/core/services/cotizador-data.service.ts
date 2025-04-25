@@ -10,6 +10,8 @@ export class CotizadorDataService {
 
   rechazadoPorBcra: boolean = false;
   situacionBcra: number = 0;
+  bcraPeriodo: string = '';
+  bcraFormatted: string = '';
 
   // Datos del paso 1
   monto: number = 0;
@@ -111,5 +113,12 @@ export class CotizadorDataService {
     this.vendorId = undefined;
 
     this.subcanalInfo = undefined;
+
+    this.situacionBcra = 0;
+    this.bcraPeriodo = '';
+    this.bcraFormatted = '';
+    this.rechazadoPorBcra = false;
   }
+
+
 }
