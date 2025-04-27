@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { PlanService, Plan, PlanCrearDto } from 'src/app/core/services/plan.service';
+import { PlanService, Plan, PlanCrearDto, PlanTasa, PlanTasaCrearDto } from 'src/app/core/services/plan.service';
 
 @Component({
   selector: 'app-plan-form',
@@ -24,14 +24,17 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
   title = 'Nuevo Plan';
   isEditing = false;
 
-  // Opciones de cuotas disponibles
-  cuotasDisponibles = [
-    { valor: 12, seleccionado: false },
-    { valor: 24, seleccionado: false },
-    { valor: 36, seleccionado: false },
-    { valor: 48, seleccionado: false },
-    { valor: 60, seleccionado: false }
-  ];
+  // Mapa de plazos para mostrar en la tabla
+  plazosMap: { [key: number]: string } = {
+    12: '12',
+    24: '24',
+    36: '36',
+    48: '48',
+    60: '60'
+  };
+
+  // Plazos disponibles para tasas
+  plazosDisponibles = [12, 24, 36, 48, 60];
 
   constructor(
     private fb: FormBuilder,
@@ -64,6 +67,7 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
         } else {
           this.isEditing = false;
           this.title = 'Nuevo Plan';
+          this.initTasasForm(); // Inicializar la tabla de tasas con valores predeterminados
         }
       } else if (!changes['isOpen'].firstChange) {
         // Remover clase y estilos cuando se cierra el modal
@@ -86,8 +90,43 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       fechaFin: ['', Validators.required],
       montoMinimo: ['', [Validators.required, Validators.min(0)]],
       montoMaximo: ['', [Validators.required, Validators.min(0)]],
-      tasa: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      tasas: this.fb.array([])
     });
+
+    // Inicializar las tasas para cada plazo
+    this.initTasasForm();
+  }
+
+  initTasasForm() {
+    const tasasArray = this.planForm.get('tasas') as FormArray;
+
+    // Limpiar el array primero
+    while (tasasArray.length > 0) {
+      tasasArray.removeAt(0);
+    }
+
+    // Crear un form group para cada plazo
+    this.plazosDisponibles.forEach(plazo => {
+      tasasArray.push(this.createTasaFormGroup(plazo));
+    });
+  }
+
+  createTasaFormGroup(plazo: number): FormGroup {
+    return this.fb.group({
+      plazo: [plazo],
+      tasaA: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      tasaB: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      tasaC: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+    });
+  }
+
+  get tasasFormArray(): FormArray {
+    return this.planForm.get('tasas') as FormArray;
+  }
+
+  // Ayuda a TypeScript a entender que cada control es un FormGroup
+  getFormGroup(index: number): FormGroup {
+    return this.tasasFormArray.at(index) as FormGroup;
   }
 
   resetForm() {
@@ -96,12 +135,11 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       fechaInicio: '',
       fechaFin: '',
       montoMinimo: '',
-      montoMaximo: '',
-      tasa: '',
+      montoMaximo: ''
     });
 
-    // Resetear selección de cuotas
-    this.cuotasDisponibles.forEach(cuota => cuota.seleccionado = false);
+    // Resetear tasas
+    this.initTasasForm();
 
     this.error = null;
   }
@@ -116,14 +154,16 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
           fechaInicio: this.formatDateForInput(plan.fechaInicio),
           fechaFin: this.formatDateForInput(plan.fechaFin),
           montoMinimo: plan.montoMinimo,
-          montoMaximo: plan.montoMaximo,
-          tasa: plan.tasa,
+          montoMaximo: plan.montoMaximo
         });
 
-        // Marcar las cuotas que ya están seleccionadas
-        this.cuotasDisponibles.forEach(cuota => {
-          cuota.seleccionado = plan.cuotasAplicablesList.includes(cuota.valor);
-        });
+        // Cargar las tasas si existen
+        if (plan.tasas && plan.tasas.length > 0) {
+          this.loadTasas(plan.tasas);
+        } else {
+          // Si no hay tasas, cargarlas desde el servicio
+          this.loadTasasFromService();
+        }
       },
       error: (err) => {
         console.error('Error al cargar plan:', err);
@@ -132,14 +172,41 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
+  loadTasasFromService() {
+    if (!this.planId) return;
+
+    this.planService.getTasasByPlanId(this.planId).subscribe({
+      next: (tasas) => {
+        this.loadTasas(tasas);
+      },
+      error: (err) => {
+        console.error('Error al cargar tasas:', err);
+      }
+    });
+  }
+
+  loadTasas(tasas: PlanTasa[]) {
+    // Reset el formArray de tasas
+    this.initTasasForm();
+
+    // Mapear las tasas recibidas a los FormGroup
+    tasas.forEach(tasa => {
+      const index = this.plazosDisponibles.indexOf(tasa.plazo);
+      if (index !== -1) {
+        const tasaGroup = this.tasasFormArray.at(index) as FormGroup;
+        tasaGroup.patchValue({
+          tasaA: tasa.tasaA,
+          tasaB: tasa.tasaB,
+          tasaC: tasa.tasaC
+        });
+      }
+    });
+  }
+
   formatDateForInput(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD para input type="date"
-  }
-
-  toggleCuota(cuota: any) {
-    cuota.seleccionado = !cuota.seleccionado;
   }
 
   formatMonto(event: any, field: string) {
@@ -162,10 +229,20 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  getCuotasSeleccionadas(): number[] {
-    return this.cuotasDisponibles
-      .filter(cuota => cuota.seleccionado)
-      .map(cuota => cuota.valor);
+  getTasasFromForm(): PlanTasaCrearDto[] {
+    const tasas: PlanTasaCrearDto[] = [];
+
+    this.tasasFormArray.controls.forEach((control: any) => {
+      const tasa = control.value;
+      tasas.push({
+        plazo: tasa.plazo,
+        tasaA: tasa.tasaA,
+        tasaB: tasa.tasaB,
+        tasaC: tasa.tasaC
+      });
+    });
+
+    return tasas;
   }
 
   cerrarModal() {
@@ -179,38 +256,51 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       // Marcar todos los campos como tocados para mostrar errores
       Object.keys(this.planForm.controls).forEach(key => {
         const control = this.planForm.get(key);
-        control?.markAsTouched();
+        if (control instanceof FormArray) {
+          control.controls.forEach(c => {
+            if (c instanceof FormGroup) {
+              Object.keys(c.controls).forEach(k => {
+                c.get(k)?.markAsTouched();
+              });
+            }
+          });
+        } else {
+          control?.markAsTouched();
+        }
       });
-      return;
-    }
-
-    // Verificar que al menos una cuota esté seleccionada
-    const cuotasSeleccionadas = this.getCuotasSeleccionadas();
-    if (cuotasSeleccionadas.length === 0) {
-      this.error = 'Debe seleccionar al menos una opción de cuotas.';
       return;
     }
 
     this.loading = true;
     this.error = null;
 
-    // Preparar fechas en formato DD/MM/YYYY
+    // Preparar fechas en formato DD/MM/YYYY para el backend
     const fechaInicio = new Date(this.planForm.value.fechaInicio);
     const fechaFin = new Date(this.planForm.value.fechaFin);
 
     const fechaInicioStr = this.formatDate(fechaInicio);
     const fechaFinStr = this.formatDate(fechaFin);
 
+    // Obtener las tasas del formulario
+    const tasas = this.getTasasFromForm();
+
+    // Extraer plazos de las tasas para usarlos como cuotasAplicables
+    const cuotasAplicables = tasas.map(t => t.plazo);
+
     // Crear el objeto PlanCrearDto
     const planDto: PlanCrearDto = {
       nombre: this.planForm.value.nombre,
       fechaInicio: this.planForm.value.fechaInicio,
+      fechaInicioStr: fechaInicioStr,
       fechaFin: this.planForm.value.fechaFin,
+      fechaFinStr: fechaFinStr,
       montoMinimo: this.planForm.value.montoMinimo,
       montoMaximo: this.planForm.value.montoMaximo,
-      cuotasAplicables: cuotasSeleccionadas,
-      tasa: this.planForm.value.tasa,
-      activo: true
+      cuotasAplicables: cuotasAplicables,
+      tasa: 0, // Valor predeterminado ya que no se usa
+      gastoOtorgamiento: 0, // Valor predeterminado
+      banco: '', // Valor predeterminado
+      tasas: tasas
     };
 
     if (this.isEditing && this.planId) {

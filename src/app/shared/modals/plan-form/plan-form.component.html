@@ -61,29 +61,39 @@
             </small>
           </div>
 
-          <!-- Cuotas -->
+          <!-- Tabla de tasas -->
           <div class="form-group full-width">
-            <label>Cuotas Aplicables <span class="required">*</span></label>
-            <div class="cuotas-container">
-              <div *ngFor="let cuota of cuotasDisponibles" class="cuota-option"
-                   [class.selected]="cuota.seleccionado" (click)="toggleCuota(cuota)">
-                {{ cuota.valor }} meses
-              </div>
+            <label>Tasas por plazo y antigüedad <span class="required">*</span></label>
+            <div class="tasas-table-container">
+              <table class="tasas-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>0km a 10 años (A) %</th>
+                    <th>11 a 12 años (B) %</th>
+                    <th>13 a 15 años (C) %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of tasasFormArray.controls; let i = index" [formGroup]="getFormGroup(i)">
+                    <td class="plazo-cell">{{plazosMap[getFormGroup(i).get('plazo')?.value]}} meses</td>
+                    <td>
+                      <input type="number" formControlName="tasaA" class="form-control tasa-input" min="0" max="100" step="0.01">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="tasaB" class="form-control tasa-input" min="0" max="100" step="0.01">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="tasaC" class="form-control tasa-input" min="0" max="100" step="0.01">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <small class="text-danger" *ngIf="getCuotasSeleccionadas().length === 0 && (planForm.touched || error)">
-              Seleccione al menos una opción de cuotas
+            <small class="text-danger" *ngIf="tasasFormArray.invalid && (planForm.touched || error)">
+              Complete todas las tasas con valores válidos (0-100)
             </small>
           </div>
-
-          <!-- Tasa -->
-          <div class="form-group">
-            <label>Tasa (%) <span class="required">*</span></label>
-            <input type="number" class="form-control" formControlName="tasa" min="0" max="100" step="0.01">
-            <small class="text-danger" *ngIf="planForm.get('tasa')?.invalid && planForm.get('tasa')?.touched">
-              Introduzca una tasa válida (0-100)
-            </small>
-          </div>
-
         </div>
 
         <!-- Error general -->

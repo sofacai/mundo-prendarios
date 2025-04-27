@@ -33,8 +33,10 @@ export interface Plan {
   cuotasAplicables: string;
   cuotasAplicablesList: number[];
   tasa: number;
-  montoFijo: number;
+  gastoOtorgamiento: number; // Cambiado de montoFijo
+  banco: string; // Nuevo campo
   activo: boolean;
+  tasas: any[]; // Nuevo campo para las tasas
 }
 
 export interface PlanCanal {

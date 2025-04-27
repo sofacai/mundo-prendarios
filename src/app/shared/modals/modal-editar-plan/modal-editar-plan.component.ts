@@ -1,9 +1,8 @@
-// Importar ToastService si decide usarlo para notificaciones
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { PlanService, Plan, PlanCrearDto } from 'src/app/core/services/plan.service';
+import { PlanService, Plan, PlanCrearDto, PlanTasa, PlanTasaCrearDto } from 'src/app/core/services/plan.service';
 
 @Component({
   selector: 'app-modal-editar-plan',
@@ -21,9 +20,20 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
   plan: Plan | null = null;
   planForm: FormGroup;
   loading = false;
-  statusUpdating = false; // Nuevo estado para actualización del estado
+  statusUpdating = false;
   error: string | null = null;
-  cuotasDisponibles = [12, 24, 36, 48, 60];
+
+  // Mapa de plazos para mostrar en la tabla
+  plazosMap: { [key: number]: string } = {
+    12: '12',
+    24: '24',
+    36: '36',
+    48: '48',
+    60: '60'
+  };
+
+  // Plazos disponibles para tasas
+  plazosDisponibles = [12, 24, 36, 48, 60];
 
   constructor(
     private fb: FormBuilder,
@@ -40,9 +50,8 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
       fechaFin: ['', Validators.required],
       montoMinimo: [0, [Validators.required, Validators.min(0)]],
       montoMaximo: [0, [Validators.required, Validators.min(0)]],
-      cuotasAplicables: this.fb.array([], Validators.required),
-      tasa: [0, [Validators.required, Validators.min(0)]],
-      activo: [true]
+      activo: [true],
+      tasas: this.fb.array([])
     });
   }
 
@@ -98,23 +107,25 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
         const fechaInicio = new Date(plan.fechaInicio).toISOString().split('T')[0];
         const fechaFin = new Date(plan.fechaFin).toISOString().split('T')[0];
 
-        // Limpiar y reconstruir el FormArray de cuotasAplicables
-        this.cuotasControl.clear();
-
-        // Asignar los valores al formulario
+        // Asignar los valores básicos al formulario
         this.planForm.patchValue({
           nombre: plan.nombre,
           fechaInicio: fechaInicio,
           fechaFin: fechaFin,
           montoMinimo: plan.montoMinimo,
           montoMaximo: plan.montoMaximo,
-          tasa: plan.tasa,
           activo: plan.activo
         });
 
-        // Marcar las cuotas aplicables
-        if (plan.cuotasAplicablesList && plan.cuotasAplicablesList.length > 0) {
-          this.actualizarCuotasSeleccionadas(plan.cuotasAplicablesList);
+        // Inicializar las tasas
+        this.initTasasForm();
+
+        // Cargar las tasas si existen
+        if (plan.tasas && plan.tasas.length > 0) {
+          this.loadTasas(plan.tasas);
+        } else {
+          // Si no hay tasas, cargarlas desde el servicio
+          this.loadTasasFromService();
         }
 
         this.loading = false;
@@ -127,49 +138,83 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
     });
   }
 
-  get cuotasControl() {
-    return this.planForm.get('cuotasAplicables') as FormArray;
-  }
+  initTasasForm() {
+    const tasasArray = this.planForm.get('tasas') as FormArray;
 
-  actualizarCuotasSeleccionadas(cuotasSeleccionadas: number[]) {
-    this.cuotasControl.clear();
-    cuotasSeleccionadas.forEach(cuota => {
-      this.cuotasControl.push(this.fb.control(cuota));
+    // Limpiar el array primero
+    while (tasasArray.length > 0) {
+      tasasArray.removeAt(0);
+    }
+
+    // Crear un form group para cada plazo
+    this.plazosDisponibles.forEach(plazo => {
+      tasasArray.push(this.createTasaFormGroup(plazo));
     });
   }
 
-  toggleCuota(cuota: number) {
-    const index = this.cuotasControl.controls.findIndex(control => control.value === cuota);
-
-    if (index !== -1) {
-      // Si ya está seleccionada, la removemos
-      this.cuotasControl.removeAt(index);
-    } else {
-      // Si no está seleccionada, la agregamos
-      this.cuotasControl.push(this.fb.control(cuota));
-    }
+  createTasaFormGroup(plazo: number): FormGroup {
+    return this.fb.group({
+      plazo: [plazo],
+      tasaA: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      tasaB: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      tasaC: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+    });
   }
 
-  isCuotaSelected(cuota: number): boolean {
-    return this.cuotasControl.controls.some(control => control.value === cuota);
+  loadTasasFromService() {
+    if (!this.planId) return;
+
+    this.planService.getTasasByPlanId(this.planId).subscribe({
+      next: (tasas) => {
+        this.loadTasas(tasas);
+      },
+      error: (err) => {
+        console.error('Error al cargar tasas:', err);
+      }
+    });
   }
 
-  cerrarModal() {
-    // Limpiar form y errores
-    this.planForm.reset();
-    this.cuotasControl.clear();
-    this.error = null;
-    this.plan = null;
-
-    // Remover clase del body al cerrar el modal
-    this.renderer.removeClass(document.body, 'modal-open');
-    this.renderer.removeStyle(document.body, 'padding-right');
-
-    // Notificar al componente padre
-    this.closeModal.emit(true);
+  loadTasas(tasas: PlanTasa[]) {
+    // Mapear las tasas recibidas a los FormGroup
+    tasas.forEach(tasa => {
+      const index = this.plazosDisponibles.indexOf(tasa.plazo);
+      if (index !== -1) {
+        const tasaGroup = this.tasasFormArray.at(index) as FormGroup;
+        tasaGroup.patchValue({
+          tasaA: tasa.tasaA,
+          tasaB: tasa.tasaB,
+          tasaC: tasa.tasaC
+        });
+      }
+    });
   }
 
-  // Nuevo método para manejar el cambio de estado desde el toggle
+  get tasasFormArray(): FormArray {
+    return this.planForm.get('tasas') as FormArray;
+  }
+
+  // Ayuda a TypeScript a entender que cada control es un FormGroup
+  getFormGroup(index: number): FormGroup {
+    return this.tasasFormArray.at(index) as FormGroup;
+  }
+
+  getTasasFromForm(): PlanTasaCrearDto[] {
+    const tasas: PlanTasaCrearDto[] = [];
+
+    this.tasasFormArray.controls.forEach((control: any) => {
+      const tasa = control.value;
+      tasas.push({
+        plazo: tasa.plazo,
+        tasaA: tasa.tasaA,
+        tasaB: tasa.tasaB,
+        tasaC: tasa.tasaC
+      });
+    });
+
+    return tasas;
+  }
+
+  // Método para manejar el cambio de estado desde el toggle
   onToggleEstado(event: any) {
     if (!this.plan || this.statusUpdating) return;
 
@@ -204,12 +249,37 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
     });
   }
 
+  cerrarModal() {
+    // Limpiar form y errores
+    this.planForm.reset();
+    this.initTasasForm();
+    this.error = null;
+    this.plan = null;
+
+    // Remover clase del body al cerrar el modal
+    this.renderer.removeClass(document.body, 'modal-open');
+    this.renderer.removeStyle(document.body, 'padding-right');
+
+    // Notificar al componente padre
+    this.closeModal.emit(true);
+  }
+
   actualizarPlan() {
     if (this.planForm.invalid || !this.plan) {
       // Marcar todos los campos como tocados para mostrar errores
       Object.keys(this.planForm.controls).forEach(key => {
         const control = this.planForm.get(key);
-        control?.markAsTouched();
+        if (control instanceof FormArray) {
+          control.controls.forEach(c => {
+            if (c instanceof FormGroup) {
+              Object.keys(c.controls).forEach(k => {
+                c.get(k)?.markAsTouched();
+              });
+            }
+          });
+        } else {
+          control?.markAsTouched();
+        }
       });
       return;
     }
@@ -219,16 +289,33 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
     // Obtener los valores del formulario
     const formValues = this.planForm.value;
 
+    // Obtener las tasas del formulario
+    const tasas = this.getTasasFromForm();
+
+    // Extraer plazos de las tasas para usarlos como cuotasAplicables
+    const cuotasAplicables = tasas.map(t => t.plazo);
+
+    // Preparar fechas en formato DD/MM/YYYY
+    const fechaInicio = new Date(formValues.fechaInicio);
+    const fechaFin = new Date(formValues.fechaFin);
+
+    const fechaInicioStr = this.formatDate(fechaInicio);
+    const fechaFinStr = this.formatDate(fechaFin);
+
     // Crear el DTO para enviar al servidor
     const planDto: PlanCrearDto = {
       nombre: formValues.nombre,
       fechaInicio: formValues.fechaInicio,
+      fechaInicioStr: fechaInicioStr,
       fechaFin: formValues.fechaFin,
+      fechaFinStr: fechaFinStr,
       montoMinimo: formValues.montoMinimo,
       montoMaximo: formValues.montoMaximo,
-      cuotasAplicables: formValues.cuotasAplicables,
-      tasa: formValues.tasa,
-      activo: formValues.activo
+      cuotasAplicables: cuotasAplicables,
+      tasa: 0, // Valor predeterminado ya que no se usa más
+      gastoOtorgamiento: 0, // Valor predeterminado
+      banco: '', // Valor predeterminado
+      tasas: tasas
     };
 
     this.planService.updatePlan(this.plan.id, planDto).subscribe({
@@ -243,5 +330,12 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
         console.error('Error actualizando plan:', err);
       }
     });
+  }
+
+  formatDate(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 }
