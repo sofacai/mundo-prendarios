@@ -1,4 +1,4 @@
-<!-- HTML - Header actualizado en step1-monto.component.html -->
+<!-- HTML actualizado de step1-monto.component.html -->
 <div class="loan-form">
   <!-- Header con progreso -->
   <div class="card">
@@ -20,6 +20,14 @@
     </div>
 
     <div class="content">
+      <!-- Spinner de carga -->
+      <div *ngIf="cargando" class="loading-overlay">
+        <div class="spinner-container">
+          <div class="spinner"></div>
+          <p>Cargando plazos disponibles...</p>
+        </div>
+      </div>
+
       <!-- Primera caja: Input monto del préstamo -->
       <div class="amount-box">
         <div class="form-group">
@@ -29,6 +37,7 @@
             <input
               id="loanAmount"
               type="text"
+              placeholder=""
               [(ngModel)]="montoFormateado"
               (input)="onMontoInputChange($event)"
               class="loan-input">
@@ -90,28 +99,30 @@
         </div>
 
         <!-- Selección de plazo -->
-        <div class="form-group">
-          <h3 class="term-heading">Elegí el plazo</h3>
-          <div class="term-options">
-            <button
-              *ngFor="let p of plazosOrdenados"
-              class="term-option"
-              [class.term-option-selected]="plazo === p"
-              (click)="seleccionarPlazo(p)">
-              <!-- <div *ngIf="p === 60" class="recommended-badge">Recomendado</div> -->
-              <div class="option-left">
-                <div class="radio" [class.radio-selected]="plazo === p">
-                  <div *ngIf="plazo === p" class="radio-inner"></div>
+
+          <div class="form-group" *ngIf="!cargando">
+            <h3 class="term-heading">Elegí el plazo</h3>
+            <div class="term-options">
+              <button
+                *ngFor="let p of plazosOrdenados"
+                class="term-option"
+                [class.term-option-selected]="plazo === p"
+                [class.term-option-inactive]="!esPlazoActivo(p)"
+                (click)="seleccionarPlazo(p)">
+                <div class="option-left">
+                  <div class="radio" [class.radio-selected]="plazo === p">
+                    <div *ngIf="plazo === p" class="radio-inner"></div>
+                  </div>
+                  <span class="term-text">{{p}} Cuotas</span>
                 </div>
-                <span class="term-text">{{p}} Cuotas</span>
-              </div>
-              <span class="term-amount" [class.term-amount-selected]="plazo === p">
-                $ {{calcularCuotaPara(p) | number:'1.0-0'}}
-              </span>
-            </button>
+                <span class="term-amount" [class.term-amount-selected]="plazo === p">
+                  $ {{calcularCuotaPara(p) | number:'1.0-0'}}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+
 
       <!-- Mensaje de error -->
       <div *ngIf="errorMensaje" class="error-message">
@@ -119,7 +130,7 @@
       </div>
 
       <!-- Botón continuar -->
-      <button class="btn btn-primary" (click)="onContinuar()">
+      <button class="btn btn-primary" [disabled]="cargando" (click)="onContinuar()">
         Continuar
       </button>
     </div>

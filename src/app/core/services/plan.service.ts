@@ -127,11 +127,7 @@ export class PlanService {
     return this.http.get<PlanTasa[]>(`${this.apiUrlTasa}/plan/${planId}`, { headers });
   }
 
-  // Nuevo método para obtener solo tasas activas
-  getTasasActivasByPlanId(planId: number): Observable<PlanTasa[]> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<PlanTasa[]>(`${this.apiUrlTasa}/plan/${planId}/activas`, { headers });
-  }
+
 
   getTasaByPlanIdAndPlazo(planId: number, plazo: number): Observable<PlanTasa> {
     const headers = this.getAuthHeaders();

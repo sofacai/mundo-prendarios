@@ -481,3 +481,104 @@
   border-radius: 9999px;
   margin-right: 0.5rem;
 }
+
+/* Estilos adicionales para step1-monto.component.scss */
+
+/* Spinner de carga */
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(51, 120, 246, 0.2);
+  border-top-color: #3378f6;
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-container p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Estilos para opciones de plazo desactivadas */
+.term-option-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.term-option-disabled:hover {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.term-option-disabled .term-text,
+.term-option-disabled .term-amount {
+  color: #9ca3af;
+}
+
+/* Ajustar botón primario cuando está deshabilitado */
+.btn-primary:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Mostrar un tooltip para plazos desactivados */
+.term-option-disabled {
+  position: relative;
+}
+
+.term-option-inactive {
+  display: none; /* Ocultar completamente en lugar de deshabilitar */
+}
+
+
+.term-option-disabled::after {
+  content: "Este plazo no está disponible";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  background-color: #374151;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 10;
+}
+
+.term-option-disabled:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
