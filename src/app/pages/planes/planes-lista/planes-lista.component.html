@@ -75,13 +75,8 @@
                   Monto
                   <i class="bi" [ngClass]="getSortIcon('montoMaximo')"></i>
                 </th>
-                <th>
-                  Cuotas
-                </th>
-                <th (click)="sortBy('tasa')" class="sortable-header">
-                  Tasa
-                  <i class="bi" [ngClass]="getSortIcon('tasa')"></i>
-                </th>
+
+
                 <th (click)="sortBy('fechaInicio')" class="sortable-header">
                   Vigencia
                   <i class="bi" [ngClass]="getSortIcon('fechaInicio')"></i>
@@ -104,16 +99,7 @@
                   </span>
                 </td>
                 <td>${{ formatMonto(plan.montoMinimo) }} - ${{ formatMonto(plan.montoMaximo) }}</td>
-                <td>
-                  <span class="badge badge-light-info">
-                    {{ formatCuotas(plan.cuotasAplicablesList) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge badge-light-warning">
-                    {{ formatTasa(plan.tasa) }}
-                  </span>
-                </td>
+
                 <td>
                   <div class="text-dark">{{ plan.fechaInicioStr }}</div>
                   <div class="text-muted fs-7">{{ plan.fechaFinStr }}</div>

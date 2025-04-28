@@ -40,6 +40,37 @@
         </div>
       </div>
 
+      <!-- Checkbox compacto para auto 0km -->
+      <div class="compact-checkbox">
+        <input
+          type="checkbox"
+          id="isNew"
+          [(ngModel)]="isAuto0km"
+          (change)="onAutoAntiguedadChange()">
+        <label for="isNew">El auto es 0km</label>
+      </div>
+
+      <!-- Campo para año solo visible si no es 0km -->
+      <div class="year-input-section" *ngIf="!isAuto0km">
+        <div class="form-group">
+          <label for="autoYear" class="form-label">Año del auto</label>
+          <div class="input-wrapper">
+            <input
+              id="autoYear"
+              type="number"
+              min="2010"
+              max="{{currentYear}}"
+              [(ngModel)]="autoYear"
+              (change)="onAutoAntiguedadChange()"
+              class="loan-input">
+          </div>
+          <p class="min-loan">
+            <span class="min-loan-dot"></span>
+            Hasta 15 años de antigüedad
+          </p>
+        </div>
+      </div>
+
       <!-- Segunda caja: Selección de tabs y plazos -->
       <div class="term-box">
         <!-- Tabs -->

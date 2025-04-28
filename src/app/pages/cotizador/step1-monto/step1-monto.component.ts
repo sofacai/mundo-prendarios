@@ -9,7 +9,15 @@ import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { PlanService } from 'src/app/core/services/plan.service';
 registerLocaleData(localeEs, 'es');
+
+// Enumeración para manejo de antigüedad
+export enum AntiguedadGrupo {
+  A = 'A', // 0km a 10 años
+  B = 'B', // 11 a 12 años
+  C = 'C'  // 13 a 15 años
+}
 
 @Component({
   selector: 'app-step1-monto',
@@ -20,7 +28,7 @@ registerLocaleData(localeEs, 'es');
 })
 export class Step1MontoComponent implements OnInit {
   @Input() subcanalInfo: SubcanalInfo | null = null;
-  @Output() continuar = new EventEmitter<{monto: number, plazo: number}>();
+  @Output() continuar = new EventEmitter<{monto: number, plazo: number, antiguedadGrupo: string}>();
   @Output() volver = new EventEmitter<void>();
 
   monto: number = 1000000;
@@ -34,6 +42,12 @@ export class Step1MontoComponent implements OnInit {
   montoMinimo: number = 50000;
   montoMaximo: number = 5000000;
   planSeleccionado: 'Cuotas Fijas' | 'UVA' = 'UVA'; // Predeterminado a UVA como en la imagen
+
+  // Variables para el manejo de antigüedad del auto
+  isAuto0km: boolean = true;
+  autoYear: number = new Date().getFullYear(); // Año actual por defecto
+  currentYear: number = new Date().getFullYear(); // Para limitar el input de año
+  antiguedadGrupo: AntiguedadGrupo = AntiguedadGrupo.A; // Por defecto grupo A (0km-10 años)
 
   // Planes fijos para las pestañas
   planCuotasFijasId: number = 1;
@@ -49,13 +63,15 @@ export class Step1MontoComponent implements OnInit {
   canalGastos: any[] = [];
   subcanalComision: number = 0;
 
+  // Tasas específicas por plazo y antigüedad (se cargarán dinámicamente)
+  tasasPorPlazo: {[planId: number]: {[plazo: number]: {tasaA: number, tasaB: number, tasaC: number}}} = {};
+
   constructor(
     private router: Router,
     private cotizadorService: CotizadorService,
     private dataService: CotizadorDataService,
-    private sidebarStateService: SidebarStateService
-
-
+    private sidebarStateService: SidebarStateService,
+    private planService: PlanService
   ) {}
 
   ngOnInit() {
@@ -99,7 +115,6 @@ export class Step1MontoComponent implements OnInit {
 
       if (!this.planUva) {
         this.planUva = planes.length > 1 ? planes[1] : planes[0];
-        console.warn(`Plan para UVA (ID: ${this.planUvaId}) no encontrado. Usando plan alternativo ID: ${this.planUva.id}`);
       }
 
       // Guardamos los gastos del canal
@@ -110,12 +125,69 @@ export class Step1MontoComponent implements OnInit {
         this.subcanalComision = this.subcanalInfo.subcanalComision;
       }
 
-      // Registrar la selección por defecto (UVA) para que quede establecido desde el inicio
-      console.log('Plan seleccionado por defecto:', this.planSeleccionado);
-      console.log('PlanId correspondiente:', this.planSeleccionado === 'Cuotas Fijas' ? this.planCuotasFijasId : this.planUvaId);
+      // Cargar las tasas específicas para cada plan y plazo
+      this.cargarTasasPorPlazo();
+
+
 
     } else {
       this.errorMensaje = "No se encontraron planes disponibles para este subcanal.";
+    }
+  }
+
+
+
+  // Método para cargar las tasas específicas por plazo y antigüedad
+  cargarTasasPorPlazo() {
+    // Verificar ambos planes y cargar sus tasas
+    const planIds = [this.planCuotasFijasId, this.planUvaId];
+
+    planIds.forEach(planId => {
+      if (!planId) return;
+
+      // Obtener las tasas para este plan
+      this.planService.getTasasByPlanId(planId).subscribe({
+        next: (tasas) => {
+          // Inicializar objeto para este plan si no existe
+          if (!this.tasasPorPlazo[planId]) {
+            this.tasasPorPlazo[planId] = {};
+          }
+
+          // Guardar las tasas por plazo
+          tasas.forEach(tasa => {
+            this.tasasPorPlazo[planId][tasa.plazo] = {
+              tasaA: tasa.tasaA,
+              tasaB: tasa.tasaB,
+              tasaC: tasa.tasaC
+            };
+          });
+
+        },
+        error: (error) => {
+        }
+      });
+    });
+  }
+
+  // Método para obtener la tasa específica según antigüedad y plazo
+  obtenerTasaEspecifica(planId: number, plazo: number): number {
+    // Si no tenemos las tasas específicas, usar la tasa general del plan
+    if (!this.tasasPorPlazo[planId] || !this.tasasPorPlazo[planId][plazo]) {
+      const plan = planId === this.planCuotasFijasId ? this.planCuotasFijas : this.planUva;
+      return plan ? plan.tasa : 0;
+    }
+
+    // Obtener la tasa según el grupo de antigüedad
+    const tasasPlazo = this.tasasPorPlazo[planId][plazo];
+    switch (this.antiguedadGrupo) {
+      case AntiguedadGrupo.A:
+        return tasasPlazo.tasaA;
+      case AntiguedadGrupo.B:
+        return tasasPlazo.tasaB;
+      case AntiguedadGrupo.C:
+        return tasasPlazo.tasaC;
+      default:
+        return tasasPlazo.tasaA; // Por defecto, usar tasa A
     }
   }
 
@@ -154,53 +226,127 @@ export class Step1MontoComponent implements OnInit {
     event.target.value = this.montoFormateado;
   }
 
+  // Método para manejar cambios en la antigüedad del auto
+  onAutoAntiguedadChange() {
+    const currentYear = new Date().getFullYear();
+
+    if (this.isAuto0km) {
+      // Si es 0km, siempre es grupo A
+      this.antiguedadGrupo = AntiguedadGrupo.A;
+      this.autoYear = currentYear; // Actualizar el año al actual
+      this.errorMensaje = null;
+    } else {
+      // Validar que el año esté dentro del rango permitido (hasta 15 años de antigüedad)
+      if (this.autoYear < currentYear - 15 || this.autoYear > currentYear) {
+        if (this.autoYear < currentYear - 15) {
+          this.autoYear = currentYear - 15; // Ajustar al mínimo permitido
+        } else if (this.autoYear > currentYear) {
+          this.autoYear = currentYear; // Ajustar al máximo permitido
+        }
+      }
+
+      // Calcular la antigüedad en años
+      const antiguedadAnios = currentYear - this.autoYear;
+
+      // Asignar grupo según la antigüedad
+      if (antiguedadAnios <= 10) { // 0-10 años (2015-2025)
+        this.antiguedadGrupo = AntiguedadGrupo.A;
+      } else if (antiguedadAnios <= 12) { // 11-12 años (2013-2014)
+        this.antiguedadGrupo = AntiguedadGrupo.B;
+      } else if (antiguedadAnios <= 15) { // 13-15 años (2010-2012)
+        this.antiguedadGrupo = AntiguedadGrupo.C;
+      } else {
+        // Este caso no debería ocurrir por la validación anterior
+        this.antiguedadGrupo = AntiguedadGrupo.C;
+      }
+    }
+
+    // Obtener y mostrar las tasas disponibles para el grupo de antigüedad
+    const planId = this.planSeleccionado === 'Cuotas Fijas' ? this.planCuotasFijasId : this.planUvaId;
+
+    if (this.tasasPorPlazo[planId] && this.tasasPorPlazo[planId][this.plazo]) {
+      const tasasDisponibles = this.tasasPorPlazo[planId][this.plazo];
+
+
+      let tasaAplicada = 0;
+      switch (this.antiguedadGrupo) {
+        case AntiguedadGrupo.A:
+          tasaAplicada = tasasDisponibles.tasaA;
+          break;
+        case AntiguedadGrupo.B:
+          tasaAplicada = tasasDisponibles.tasaB;
+          break;
+        case AntiguedadGrupo.C:
+          tasaAplicada = tasasDisponibles.tasaC;
+          break;
+      }
+    } else {
+
+    }
+  }
+
+  // Método para obtener texto descriptivo del grupo de antigüedad
+  getAntiguedadTexto(): string {
+    const currentYear = new Date().getFullYear();
+    const antiguedadAnios = currentYear - this.autoYear;
+
+    switch (this.antiguedadGrupo) {
+      case AntiguedadGrupo.A:
+        return `${antiguedadAnios} años (Grupo A)`;
+      case AntiguedadGrupo.B:
+        return `${antiguedadAnios} años (Grupo B)`;
+      case AntiguedadGrupo.C:
+        return `${antiguedadAnios} años (Grupo C)`;
+      default:
+        return `${antiguedadAnios} años`;
+    }
+  }
+
   seleccionarPlazo(plazo: number) {
     this.plazo = plazo;
   }
 
   seleccionarPlan(plan: 'Cuotas Fijas' | 'UVA') {
     this.planSeleccionado = plan;
-    console.log('Plan seleccionado cambiado a:', plan);
 
     // Comprobar planId correspondiente
     const planId = this.planSeleccionado === 'Cuotas Fijas'
       ? this.planCuotasFijasId
       : this.planUvaId;
 
-    console.log('PlanId correspondiente:', planId);
   }
 
   calcularCuotaPara(plazo: number): number {
     // Obtener el plan activo según la pestaña seleccionada
     const planActivo = this.planSeleccionado === 'Cuotas Fijas' ? this.planCuotasFijas : this.planUva;
+    const planId = this.planSeleccionado === 'Cuotas Fijas' ? this.planCuotasFijasId : this.planUvaId;
 
     if (!planActivo) {
       console.error('No se encontró un plan activo para calcular la cuota');
       return 0;
     }
 
-
     try {
-      // 1. Obtener cuota básica según la tasa del plan seleccionado
-      let montoTotal = this.monto;
+      // 1. Obtener la tasa específica según antigüedad y plazo
+      const tasa = this.obtenerTasaEspecifica(planId, plazo);
 
-      // 2. Calcular la cuota mensual con el servicio
-      const cuotaBasica = this.cotizadorService.calcularCuota(
-        montoTotal,
-        plazo,
-        planActivo.tasa,  // Usar la tasa del plan seleccionado (Cuotas Fijas o UVA)
-        this.canalGastos
-      );
-
-      // 3. Aplicar comisión del subcanal si existe
-      let cuotaFinal = cuotaBasica;
-      if (this.subcanalComision > 0) {
-        cuotaFinal = Math.round(cuotaFinal * (1 + this.subcanalComision / 100));
+      // Solo loguear cuando es el plazo seleccionado
+      if (plazo === this.plazo) {
+        const porcentajeGastos = this.canalGastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
+        const montoConGastos = this.monto * (1 + porcentajeGastos / 100);
+        const capitalMensual = Math.round(montoConGastos / plazo);
+        const interesMensual = Math.round(montoConGastos * ((tasa / 100) / 360 * 30));
+        const ivaMensual = Math.round(interesMensual * 0.21);
       }
 
-      return cuotaFinal;
+      // 2. Calcular la cuota con el servicio
+      return this.cotizadorService.calcularCuota(
+        this.monto,
+        plazo,
+        tasa,
+        this.canalGastos
+      );
     } catch (error) {
-      console.error('Error al calcular cuota:', error);
       return 0;
     }
   }
@@ -216,10 +362,7 @@ export class Step1MontoComponent implements OnInit {
       ? this.planCuotasFijasId
       : this.planUvaId;
 
-    console.log('Step1 - Plan seleccionado:', this.planSeleccionado);
-    console.log('Step1 - planCuotasFijasId:', this.planCuotasFijasId);
-    console.log('Step1 - planUvaId:', this.planUvaId);
-    console.log('Step1 - planActivoId final:', planActivoId);
+
 
     // Buscar el plan activo
     const planActivo = this.subcanalInfo.planesDisponibles.find(plan => plan.id === planActivoId);
@@ -234,8 +377,11 @@ export class Step1MontoComponent implements OnInit {
         return;
       }
 
-      // Calcular el valor de la cuota para el plan seleccionado
+      // Calcular el valor de la cuota para el plan seleccionado con la tasa específica
       const valorCuota = this.calcularCuotaPara(this.plazo);
+
+      // Obtener la tasa específica
+      const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
 
       // Guardar los datos en el servicio compartido
       this.dataService.guardarDatosPaso1({
@@ -243,11 +389,19 @@ export class Step1MontoComponent implements OnInit {
         plazo: this.plazo,
         planTipo: this.planSeleccionado,
         valorCuota: valorCuota,
-        planId: planActivo.id
+        planId: planActivo.id,
+        tasaAplicada: tasaEspecifica,
+        antiguedadGrupo: this.antiguedadGrupo
       });
 
-      console.log('Step1 - Guardado en dataService - planId:', planActivo.id);
-      console.log('Step1 - Guardado en dataService - planTipo:', this.planSeleccionado);
+      // Guardar el dato del auto en el dataService
+      if (this.isAuto0km) {
+        this.dataService.auto = "0km";
+      } else {
+        this.dataService.auto = this.autoYear.toString();
+      }
+
+
 
     } else {
       this.errorMensaje = "El plan seleccionado no está disponible.";
@@ -257,7 +411,8 @@ export class Step1MontoComponent implements OnInit {
     // Continuar al siguiente paso
     this.continuar.emit({
       monto: this.monto,
-      plazo: this.plazo
+      plazo: this.plazo,
+      antiguedadGrupo: this.antiguedadGrupo
     });
   }
 }

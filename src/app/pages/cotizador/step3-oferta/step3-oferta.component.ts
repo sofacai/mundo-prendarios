@@ -48,7 +48,7 @@ export class Step3OfertaComponent implements OnInit {
 
  // En step3-oferta.component.ts - modificar ngOnInit()
 
-ngOnInit() {
+ ngOnInit() {
   // Obtener datos del servicio compartido primero
   this.monto = this.dataService.monto;
   this.plazo = this.dataService.plazo;
@@ -78,7 +78,7 @@ ngOnInit() {
     this.planSeleccionado = {
       nombre: this.dataService.planTipo,
       id: selectedPlanId,
-      tasa: 0 // Valor por defecto
+      tasa: this.dataService.tasaAplicada || 0 // Usar la tasa específica aplicada
     };
 
     console.log('Step3 - Usando datos desde dataService (sin planes):', this.planSeleccionado);
@@ -105,7 +105,10 @@ ngOnInit() {
   console.log('Nombre plan:', this.planSeleccionado.nombre);
   console.log('Monto solicitado:', this.monto);
   console.log('Meses:', this.plazo);
-  console.log('TNA:', this.planSeleccionado.tasa, '%');
+  console.log('TNA regular:', this.planSeleccionado.tasa, '%');
+  console.log('TNA aplicada según antigüedad:', this.dataService.tasaAplicada || this.planSeleccionado.tasa, '%');
+  console.log('Antigüedad del auto:', this.dataService.antiguedadGrupo);
+  console.log('Auto:', this.dataService.auto);
   console.log('Gastos del canal:', gastosCanal);
   console.log('Mostrar tabla amortización:', this.mostrarTablaAmortizacion);
   console.log('----------------------------------');
@@ -130,21 +133,70 @@ ngOnInit() {
       // Obtener gastos del canal de la subcanalInfo almacenada
       const gastosCanal = this.obtenerGastos();
 
-      // Generar tabla de amortización sistema alemán
-      this.tablaAmortizacion = this.cotizadorService.calcularTablaAmortizacion(
-        this.monto,
-        this.plazo,
-        this.planSeleccionado.tasa,
-        gastosCanal
-      );
+      // Obtener la antigüedad del auto del dataService
+      const antiguedadGrupo = this.dataService.antiguedadGrupo || 'A';
+      const tasaAplicada = this.dataService.tasaAplicada || this.planSeleccionado.tasa;
+
+      console.log(`Generando tabla de amortización`);
+      console.log(`Monto: $${this.monto}, Plazo: ${this.plazo}, Tasa: ${tasaAplicada}%`);
+
+      // Sistema alemán - Generación directa de la tabla
+      const porcentajeGastos = gastosCanal.reduce((total, gasto) => total + gasto.porcentaje, 0);
+      const montoTotal = this.monto * (1 + porcentajeGastos / 100);
+      const capitalMensual = Math.round(montoTotal / this.plazo);
+
+      this.tablaAmortizacion = [
+        {
+          nroCuota: 0,
+          capital: 0,
+          interes: 0,
+          iva: 0,
+          gasto: 0,
+          cuota: 0,
+          saldo: montoTotal
+        }
+      ];
+
+      let saldoAnterior = montoTotal;
+
+      for (let i = 1; i <= this.plazo; i++) {
+        // Interés mensual = Saldo anterior * (TNA/360*30)
+        const interesMensual = Math.round(saldoAnterior * ((tasaAplicada / 100) / 360 * 30));
+
+        // IVA = 21% del interés
+        const ivaMensual = Math.round(interesMensual * 0.21);
+
+        // Cuota = Capital + Interés + IVA
+        const cuotaMensual = capitalMensual + interesMensual + ivaMensual;
+
+        // Nuevo saldo = Saldo anterior - Capital
+        const nuevoSaldo = saldoAnterior - capitalMensual;
+
+        this.tablaAmortizacion.push({
+          nroCuota: i,
+          capital: capitalMensual,
+          interes: interesMensual,
+          iva: ivaMensual,
+          gasto: 0,
+          cuota: cuotaMensual,
+          saldo: nuevoSaldo
+        });
+
+        saldoAnterior = nuevoSaldo;
+      }
 
       // Las cuotas para el resumen principal se toman de la tabla
       this.cuotas = this.tablaAmortizacion.slice(1).map(fila => fila.cuota);
+
+      console.log(`Tabla generada con ${this.tablaAmortizacion.length} filas`);
+      console.log(`Primera cuota: $${this.tablaAmortizacion[1]?.cuota}`);
     } else {
       // Para planes no alemanes, todas las cuotas son iguales
       this.cuotas = Array(this.plazo).fill(this.valorCuota);
     }
   }
+
+
 
   private obtenerGastos(): any[] {
     // Intentar obtener los gastos del subcanal seleccionado
@@ -160,6 +212,8 @@ ngOnInit() {
 
     return subcanalInfoGastos;
   }
+
+
 
   enviarPorWhatsapp() {
     if (this.planSeleccionado && this.planSeleccionado.id) {

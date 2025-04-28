@@ -40,6 +40,9 @@ interface WizardData {
   clienteCuil?: string;
   clienteSexo?: string;
   // Nuevos campos
+  isAuto0km?: boolean;
+  autoYear?: number;
+  antiguedadGrupo?: string; // 'A', 'B', o 'C'
   ingresos?: number;
   auto?: string;
   codigoPostal?: number;
@@ -495,9 +498,10 @@ export class WizardContainerComponent implements OnInit {
 
 
 
-  continuarPaso1(datos: {monto: number, plazo: number}) {
+  continuarPaso1(datos: {monto: number, plazo: number, antiguedadGrupo: string}) {
     this.wizardData.monto = datos.monto;
     this.wizardData.plazo = datos.plazo;
+    this.wizardData.antiguedadGrupo = datos.antiguedadGrupo;
     this.wizardData.paso = 2;
 
     // Asegurarse de mantener el vendorId
@@ -505,15 +509,15 @@ export class WizardContainerComponent implements OnInit {
       this.wizardData.vendorId = this.vendorSeleccionado;
     }
 
-
-    // Guardar en el data service con el vendorId
+    // Guardar en el data service con el vendorId y la antigüedad
     this.dataService.guardarDatosPaso1({
       monto: datos.monto,
       plazo: datos.plazo,
       planTipo: this.dataService.planTipo,
       valorCuota: this.dataService.valorCuota,
       planId: this.dataService.planId,
-      vendorId: this.wizardData.vendorId
+      vendorId: this.wizardData.vendorId,
+      antiguedadGrupo: datos.antiguedadGrupo as any
     });
 
     // Crear un nuevo objeto para asegurar detección de cambios
@@ -754,6 +758,7 @@ export class WizardContainerComponent implements OnInit {
     }
 
     if (this.subcanalSeleccionadoInfo && this.subcanalSeleccionadoInfo.planesDisponibles) {
+      // Filtrar planes por monto y plazo
       const planesAplicables = this.subcanalSeleccionadoInfo.planesDisponibles.filter(plan =>
         this.wizardData.monto! >= plan.montoMinimo &&
         this.wizardData.monto! <= plan.montoMaximo &&
@@ -766,32 +771,84 @@ export class WizardContainerComponent implements OnInit {
         return;
       }
 
-      const planesConCuotas = planesAplicables.map(plan => {
-        const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
-        let cuota = this.cotizadorService.calcularCuota(
-          this.wizardData.monto!,
-          this.wizardData.plazo!,
-          plan.tasa,
-          this.gastosSeleccionados
+      // Obtener tasas específicas para cada plan según antigüedad
+      const planesConTasas$ = planesAplicables.map(plan => {
+        return this.planService.getTasaByPlanIdAndPlazo(plan.id, this.wizardData.plazo!).pipe(
+          map(tasa => {
+            // Determinar la tasa según el grupo de antigüedad
+            let tasaAplicada = tasa.tasaA; // Por defecto usar tasa A
+
+            if (this.wizardData.antiguedadGrupo === 'B') {
+              tasaAplicada = tasa.tasaB;
+            } else if (this.wizardData.antiguedadGrupo === 'C') {
+              tasaAplicada = tasa.tasaC;
+            }
+
+            // Calcular cuota con la tasa específica
+            const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
+            let cuota = this.cotizadorService.calcularCuota(
+              this.wizardData.monto!,
+              this.wizardData.plazo!,
+              tasaAplicada,
+              this.gastosSeleccionados
+            );
+
+            if (comisionSubcanal > 0) {
+              cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
+            }
+
+            return {
+              ...plan,
+              tasa: tasaAplicada, // Actualizar la tasa con la específica para la antigüedad
+              cuota: cuota,
+              tasaEspecifica: {
+                tasaA: tasa.tasaA,
+                tasaB: tasa.tasaB,
+                tasaC: tasa.tasaC
+              }
+            };
+          }),
+          catchError(error => {
+            console.error(`Error al obtener tasa para plan ${plan.id}:`, error);
+            // Si hay error, usar la tasa general del plan
+            const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
+            let cuota = this.cotizadorService.calcularCuota(
+              this.wizardData.monto!,
+              this.wizardData.plazo!,
+              plan.tasa,
+              this.gastosSeleccionados
+            );
+
+            if (comisionSubcanal > 0) {
+              cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
+            }
+
+            return of({
+              ...plan,
+              cuota: cuota
+            });
+          })
         );
-        if (comisionSubcanal > 0) {
-          cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
-        }
-        return {
-          ...plan,
-          cuota: cuota
-        };
       });
 
-      this.wizardData.planesDisponibles = planesConCuotas;
-      const planSeleccionado = planesConCuotas[0];
+      // Combinar todos los observables de planes con tasas
+      forkJoin(planesConTasas$).subscribe({
+        next: (planesConCuotas) => {
+          this.wizardData.planesDisponibles = planesConCuotas;
+          const planSeleccionado = planesConCuotas[0];
 
-      this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then(() => {
-        this.wizardData.paso = 3;
-        this.cargando = false;
-      }).catch(error => {
-        this.error = "Hubo un problema al crear la operación. Por favor, intenta nuevamente.";
-        this.cargando = false;
+          this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then(() => {
+            this.wizardData.paso = 3;
+            this.cargando = false;
+          }).catch(error => {
+            this.error = "Hubo un problema al crear la operación. Por favor, intenta nuevamente.";
+            this.cargando = false;
+          });
+        },
+        error: (error) => {
+          this.error = "Error al calcular planes disponibles.";
+          this.cargando = false;
+        }
       });
     } else {
       this.error = "No se encontraron planes disponibles para el subcanal seleccionado.";

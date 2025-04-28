@@ -1,7 +1,13 @@
-// Actualizamos CotizadorDataService para mantener información de subcanal
+// Actualizamos CotizadorDataService para mantener información de antigüedad del auto
 
 import { Injectable } from '@angular/core';
 import { SubcanalInfo } from './cotizador.service';
+
+export enum AntiguedadGrupo {
+  A = 'A', // 0km a 10 años
+  B = 'B', // 11 a 12 años
+  C = 'C'  // 13 a 15 años
+}
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +27,12 @@ export class CotizadorDataService {
   planId: number = 0;
   vendorId?: number;
 
+  // Información de antigüedad del auto
+  auto?: string; // Será '0km' o el año del auto
+  isAuto0km: boolean = true;
+  antiguedadGrupo: AntiguedadGrupo = AntiguedadGrupo.A;
+  tasaAplicada?: number; // Tasa específica que se aplicó según antigüedad
+
   // Información del subcanal seleccionado
   subcanalInfo?: SubcanalInfo;
 
@@ -35,20 +47,22 @@ export class CotizadorDataService {
   sexo?: string;
 
   ingresos?: number;
-  auto?: string;
   codigoPostal?: number;
   estadoCivil?: string;
 
   constructor() { }
 
-  // Guardar datos del paso 1
+  // Guardar datos del paso 1 - Actualizado para incluir antigüedad
   guardarDatosPaso1(datos: {
     monto: number,
     plazo: number,
     planTipo: 'Cuotas Fijas' | 'UVA',
     valorCuota: number,
     planId: number,
-    vendorId?: number
+    vendorId?: number,
+    auto?: string,
+    antiguedadGrupo?: AntiguedadGrupo,
+    tasaAplicada?: number
   }) {
     this.monto = datos.monto;
     this.plazo = datos.plazo;
@@ -57,6 +71,16 @@ export class CotizadorDataService {
     this.planId = datos.planId;
     if (datos.vendorId) {
       this.vendorId = datos.vendorId;
+    }
+    if (datos.auto) {
+      this.auto = datos.auto;
+      this.isAuto0km = datos.auto === '0km';
+    }
+    if (datos.antiguedadGrupo) {
+      this.antiguedadGrupo = datos.antiguedadGrupo;
+    }
+    if (datos.tasaAplicada) {
+      this.tasaAplicada = datos.tasaAplicada;
     }
   }
 
@@ -84,7 +108,11 @@ export class CotizadorDataService {
     this.sexo = datos.sexo;
     this.clienteId = datos.clienteId;
     this.ingresos = datos.ingresos;
-    this.auto = datos.auto;
+    // Solo actualizar auto si viene en los datos del paso 2
+    if (datos.auto) {
+      this.auto = datos.auto;
+      this.isAuto0km = datos.auto === '0km';
+    }
     this.codigoPostal = datos.codigoPostal;
     this.estadoCivil = datos.estadoCivil;
   }
@@ -112,6 +140,11 @@ export class CotizadorDataService {
     this.sexo = undefined;
     this.vendorId = undefined;
 
+    this.auto = undefined;
+    this.isAuto0km = true;
+    this.antiguedadGrupo = AntiguedadGrupo.A;
+    this.tasaAplicada = undefined;
+
     this.subcanalInfo = undefined;
 
     this.situacionBcra = 0;
@@ -119,6 +152,4 @@ export class CotizadorDataService {
     this.bcraFormatted = '';
     this.rechazadoPorBcra = false;
   }
-
-
 }

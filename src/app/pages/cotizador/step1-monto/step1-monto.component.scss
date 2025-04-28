@@ -396,3 +396,88 @@
     z-index: 2; /* Asegurar que está sobre el overlay */
   }
 }
+/* Estilos para el checkbox compacto */
+.compact-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.compact-checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  accent-color: #3378f6;
+}
+
+.compact-checkbox label {
+  color: #374151;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Estilos para la sección de año del auto */
+.year-input-section {
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Aplicar los mismos estilos que el campo de monto */
+.year-input-section .loan-input {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.year-input-section .loan-input:focus {
+  border-color: #3378f6;
+  box-shadow: 0 0 0 2px rgba(51, 120, 246, 0.2);
+}
+
+.year-input-section .form-label {
+  display: block;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Mantener consistencia con otros elementos */
+.min-loan {
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-top: 0.375rem;
+}
+
+.min-loan-dot {
+  display: inline-block;
+  width: 0.25rem;
+  height: 0.25rem;
+  background-color: #9ca3af;
+  border-radius: 9999px;
+  margin-right: 0.5rem;
+}

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from 'src/environments/environment';
 
@@ -51,11 +52,41 @@ export class CotizadorService {
     return this.http.get<DatosWizard>(url, { headers });
   }
 
-  getPlanesParaCotizar(monto: number, plazo: number, subcanalId: number): Observable<any[]> {
+  getPlanesParaCotizar(monto: number, plazo: number, subcanalId: number, antiguedadGrupo: string = 'A'): Observable<any[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<any[]>(
-      `${this.apiUrl}/VendorInfo/planes-cotizar?monto=${monto}&plazo=${plazo}&subcanalId=${subcanalId}`,
+      `${this.apiUrl}/VendorInfo/planes-cotizar?monto=${monto}&plazo=${plazo}&subcanalId=${subcanalId}&antiguedadGrupo=${antiguedadGrupo}`,
       { headers }
+    );
+  }
+
+  calcularCuotaConAntiguedad(monto: number, plazo: number, planId: number, antiguedadGrupo: string, gastos: any[]): Observable<number> {
+    // Primero obtenemos la tasa específica según el plan, plazo y antigüedad
+    return this.http.get<any>(`${this.apiUrl}/PlanTasa/plan/${planId}/plazo/${plazo}`).pipe(
+      map(tasa => {
+        // Seleccionar la tasa según el grupo de antigüedad
+        let tasaAplicada = tasa.tasaA; // Por defecto, grupo A
+
+        if (antiguedadGrupo === 'B') {
+          tasaAplicada = tasa.tasaB;
+        } else if (antiguedadGrupo === 'C') {
+          tasaAplicada = tasa.tasaC;
+        }
+
+        // Calcular cuota con la tasa seleccionada
+        return this.calcularCuota(monto, plazo, tasaAplicada, gastos);
+      }),
+      catchError(error => {
+        // En caso de error, intentamos con la tasa general del plan
+        return this.http.get<any>(`${this.apiUrl}/Plan/${planId}`).pipe(
+          map(plan => {
+            return this.calcularCuota(monto, plazo, plan.tasa, gastos);
+          }),
+          catchError(err => {
+            return of(0); // Retornar 0 en caso de error total
+          })
+        );
+      })
     );
   }
 
@@ -63,16 +94,22 @@ export class CotizadorService {
     // Suma de porcentajes de gastos
     const porcentajeGastos = gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
 
-    // Tasa mensual (tasa anual / 12)
-    const tasaMensual = tasa / 12 / 100;
+    // Monto con gastos
+    const montoConGastos = monto * (1 + porcentajeGastos / 100);
 
-    // Cálculo de cuota básica usando fórmula de préstamo
-    const cuotaBasica = monto * (tasaMensual * Math.pow(1 + tasaMensual, plazo)) / (Math.pow(1 + tasaMensual, plazo) - 1);
+    // Capital fijo mensual
+    const capitalMensual = Math.round(montoConGastos / plazo);
 
-    // Agregar gastos a la cuota
-    const cuotaConGastos = cuotaBasica * (1 + porcentajeGastos / 100);
+    // Interés para primera cuota = Monto con gastos * (TNA/360*30)
+    const interesMensual = Math.round(montoConGastos * ((tasa / 100) / 360 * 30));
 
-    return Math.round(cuotaConGastos);
+    // IVA = 21% del interés
+    const ivaMensual = Math.round(interesMensual * 0.21);
+
+    // Cuota primera = Capital + Interés + IVA
+    const cuota = capitalMensual + interesMensual + ivaMensual;
+
+    return cuota;
   }
 
   guardarCotizacion(datos: any): Observable<any> {
@@ -86,6 +123,38 @@ export class CotizadorService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
+  }
+
+  calcularTablaAmortizacionConAntiguedad(monto: number, plazo: number, planId: number, antiguedadGrupo: string, gastos: any[]): Observable<any[]> {
+    // Primero obtenemos la tasa específica según el plan, plazo y antigüedad
+    return this.http.get<any>(`${this.apiUrl}/PlanTasa/plan/${planId}/plazo/${plazo}`).pipe(
+      map(tasa => {
+        // Seleccionar la tasa según el grupo de antigüedad
+        let tasaAplicada = tasa.tasaA; // Por defecto, grupo A
+
+        if (antiguedadGrupo === 'B') {
+          tasaAplicada = tasa.tasaB;
+        } else if (antiguedadGrupo === 'C') {
+          tasaAplicada = tasa.tasaC;
+        }
+
+        // Calcular tabla con la tasa seleccionada
+        return this.calcularTablaAmortizacion(monto, plazo, tasaAplicada, gastos);
+      }),
+      catchError(error => {
+        console.error('Error al obtener tasa para tabla de amortización:', error);
+        // En caso de error, intentamos con la tasa general del plan
+        return this.http.get<any>(`${this.apiUrl}/Plan/${planId}`).pipe(
+          map(plan => {
+            return this.calcularTablaAmortizacion(monto, plazo, plan.tasa, gastos);
+          }),
+          catchError(err => {
+            console.error('Error al obtener plan para tabla de amortización:', err);
+            return of([]); // Retornar array vacío en caso de error total
+          })
+        );
+      })
+    );
   }
 
   calcularTablaAmortizacion(monto: number, plazo: number, tasa: number, gastos: any[]): any[] {
@@ -160,7 +229,6 @@ export class CotizadorService {
       return false;
     }
 
-    console.log('SISTEMA ALEMÁN: Verificando planId', id, '¿Es igual a 1?', id === 1);
 
     // El planId 1 usa sistema alemán, el resto no
     return id === 1;
