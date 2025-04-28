@@ -83,14 +83,34 @@ export class Step1MontoComponent implements OnInit {
       this.montoMinimo = Math.min(...planes.map(plan => plan.montoMinimo));
       this.montoMaximo = Math.max(...planes.map(plan => plan.montoMaximo));
 
-      // Obtenemos todos los plazos disponibles sin duplicados
-      const todosPlazos: number[] = [];
-      planes.forEach(plan => {
-        plan.cuotasAplicables.forEach((cuota: number) => {
-          todosPlazos.push(cuota);
+      // Obtenemos solo los plazos disponibles para los planes ID 1 y 2
+      const planesSeleccionados = planes.filter(plan => plan.id === this.planCuotasFijasId || plan.id === this.planUvaId);
+      if (planesSeleccionados.length > 0) {
+        const todosPlazos: number[] = [];
+        planesSeleccionados.forEach(plan => {
+          if (plan.cuotasAplicables && Array.isArray(plan.cuotasAplicables)) {
+            plan.cuotasAplicables.forEach((cuota: number) => {
+              todosPlazos.push(cuota);
+            });
+          }
         });
-      });
-      this.plazosDisponibles = [...new Set(todosPlazos)].sort((a, b) => a - b);
+
+        // Filtrar plazos únicos y ordenar
+        this.plazosDisponibles = [...new Set(todosPlazos)].sort((a, b) => a - b);
+        console.log('Plazos disponibles para los planes seleccionados:', this.plazosDisponibles);
+      } else {
+        console.warn('No se encontraron los planes específicos (ID 1 y 2). Usando todos los planes disponibles.');
+        // Si no tenemos los planes específicos, usamos todos los disponibles
+        const todosPlazos: number[] = [];
+        planes.forEach(plan => {
+          if (plan.cuotasAplicables && Array.isArray(plan.cuotasAplicables)) {
+            plan.cuotasAplicables.forEach((cuota: number) => {
+              todosPlazos.push(cuota);
+            });
+          }
+        });
+        this.plazosDisponibles = [...new Set(todosPlazos)].sort((a, b) => a - b);
+      }
 
       // Preseleccionamos 60 cuotas si está disponible
       if (this.plazosDisponibles.includes(60)) {
@@ -108,13 +128,14 @@ export class Step1MontoComponent implements OnInit {
       this.planUva = planes.find(plan => plan.id === this.planUvaId);
 
       // Si no se encuentran los planes específicos, usamos los primeros disponibles
-      if (!this.planCuotasFijas) {
+      if (!this.planCuotasFijas && planes.length > 0) {
         this.planCuotasFijas = planes[0];
         console.warn(`Plan para Cuotas Fijas (ID: ${this.planCuotasFijasId}) no encontrado. Usando plan alternativo ID: ${this.planCuotasFijas.id}`);
       }
 
-      if (!this.planUva) {
+      if (!this.planUva && planes.length > 0) {
         this.planUva = planes.length > 1 ? planes[1] : planes[0];
+        console.warn(`Plan para UVA (ID: ${this.planUvaId}) no encontrado. Usando plan alternativo ID: ${this.planUva.id}`);
       }
 
       // Guardamos los gastos del canal
@@ -127,9 +148,6 @@ export class Step1MontoComponent implements OnInit {
 
       // Cargar las tasas específicas para cada plan y plazo
       this.cargarTasasPorPlazo();
-
-
-
     } else {
       this.errorMensaje = "No se encontraron planes disponibles para este subcanal.";
     }

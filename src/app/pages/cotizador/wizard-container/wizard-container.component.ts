@@ -472,16 +472,19 @@ export class WizardContainerComponent implements OnInit {
 
 
 
-  obtenerCuotasAplicables(cuotasStr: string): number[] {
+  obtenerCuotasAplicables(cuotasStr: string | any): number[] {
     if (!cuotasStr) return [];
+
     try {
       // Intentamos parsear directamente si ya es un array
       if (Array.isArray(cuotasStr)) {
-        return cuotasStr;
+        return cuotasStr.map(c => typeof c === 'string' ? parseInt(c, 10) : c);
       }
+
       // Si es string, convertimos a array de números
-      return cuotasStr.split(',').map(c => parseInt(c.trim(), 10));
+      return cuotasStr.split(',').map((c: string) => parseInt(c.trim(), 10)).filter((n: number) => !isNaN(n));
     } catch (e) {
+      console.error('Error al parsear cuotas aplicables:', e);
       return [];
     }
   }
@@ -491,10 +494,12 @@ export class WizardContainerComponent implements OnInit {
     this.necesitaSeleccionarSubcanal = false;
     this.subcanalSeleccionado = null;
     this.subcanalSeleccionadoInfo = null;
-    this.vendorSeleccionado = null;
+    this.datosWizard = null;
     this.wizardData = { paso: 1 };
-    this.dataService.reiniciarDatos();
+    this.vendorSeleccionado = null;
+    this.wizardData.vendorId = undefined;
   }
+
 
 
 
@@ -872,7 +877,13 @@ export class WizardContainerComponent implements OnInit {
 
     this.seleccionarSubcanalPorId(subcanalId);
     this.necesitaSeleccionarSubcanal = false;
+
+    // Si estamos en creación propia, asegurarnos que vendorId sea undefined
+    if (this.vendorSeleccionado === null) {
+      this.wizardData.vendorId = undefined;
+    }
   }
+
   seleccionarSubcanalPorId(subcanalId: number) {
     if (!this.datosWizard || !this.datosWizard.subcanales) {
       return;
@@ -935,7 +946,8 @@ export class WizardContainerComponent implements OnInit {
         planId: planId,
         subcanalId: this.subcanalSeleccionado!,
         canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-        vendedorId: this.vendorSeleccionado ?? 0,
+        // Incluir vendorId solo si existe uno seleccionado
+        vendedorId: this.vendorSeleccionado ?? undefined,
         usuarioCreadorId: usuarioCreadorId,
         estado: estadoOperacion
       };
@@ -971,6 +983,7 @@ export class WizardContainerComponent implements OnInit {
             resolve(opCreada);
           },
           error: (err) => {
+            console.error('Error al crear cliente y operación:', err);
             resolve({ dummy: true });
           }
         });
@@ -993,18 +1006,19 @@ export class WizardContainerComponent implements OnInit {
                 resolve(opCreada);
               },
               error: (err) => {
+                console.error('Error al crear operación:', err);
                 resolve({ dummy: true });
               }
             });
           },
           error: (err) => {
+            console.error('Error al obtener cliente:', err);
             resolve({ dummy: true });
           }
         });
       }
     });
   }
-
 
 
   private crearLeadEnKommo(operacionCreada: any, cliente: any): void {
@@ -1089,8 +1103,14 @@ export class WizardContainerComponent implements OnInit {
 
     this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
       try {
-        // Obtener datos del vendedor
-        const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
+        // Obtener datos del creador o vendedor según corresponda
+        const usuarioId = operacionCompleta.vendedorId || this.authService.currentUserValue?.id;
+        let usuarioData: any = {};
+
+        if (usuarioId) {
+          usuarioData = await firstValueFrom(this.usuarioService.getUsuario(usuarioId));
+        }
+
         const nombreLimpio = (nombre || '').toString().trim();
         const apellidoLimpio = (apellido || '').toString().trim();
         const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
@@ -1120,8 +1140,11 @@ export class WizardContainerComponent implements OnInit {
         const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
           name: operacionCompleta.canalNombre || 'Canal', // Usar el nombre del canal en lugar del nombreLead
           custom_fields_values: [
-            { field_id: 500552, values: [{ value: vendedor.telefono || '+5491100000000' }] },
-            { field_id: 962818, values: [{ value: `${vendedor.nombre} ${vendedor.apellido}` }] },
+            // Usar teléfono del usuario creador si no hay vendedor
+            { field_id: 500552, values: [{ value: usuarioData.telefono || '+5491100000000' }] },
+            // Usar nombre del usuario creador si no hay vendedor
+            { field_id: 962818, values: [{ value: usuarioData.nombre && usuarioData.apellido ?
+              `${usuarioData.nombre} ${usuarioData.apellido}` : 'Usuario del sistema' }] },
             { field_id: 963284, values: [{ value: operacionCompleta.subcanalNombre || 'Subcanal' }] }
           ]
         }]));
@@ -1283,4 +1306,137 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
     this.error = null;
     window.location.href = '/home'; // Redirigir a home
   }
+
+
+// Modificar el método para cargar subcanales del usuario actual y mostrar el selector
+crearOperacionSinVendor() {
+  this.vendorSeleccionado = null;
+  this.wizardData.vendorId = undefined;
+  this.necesitaSeleccionarVendor = false;
+
+  // Iniciar carga de subcanales del usuario actual
+  this.cargarSubcanalesUsuarioActual();
+}
+
+cargarSubcanalesUsuarioActual() {
+  this.cargando = true;
+  this.error = null;
+
+  const usuario = this.authService.currentUserValue;
+
+  if (!usuario || !usuario.id) {
+    this.error = "No se pudo identificar al usuario actual.";
+    this.cargando = false;
+    return;
+  }
+
+  // Función que se ejecutará después de obtener los subcanales
+  const procesarSubcanales = (subcanales: Subcanal[]) => {
+    if (!subcanales || subcanales.length === 0) {
+      this.error = "No hay subcanales disponibles para tu rol.";
+      this.cargando = false;
+      return;
+    }
+
+    // Filtrar solo los subcanales activos
+    const subcanalesActivos = subcanales.filter(s => s.activo);
+
+    if (subcanalesActivos.length === 0) {
+      this.error = "No hay subcanales activos disponibles.";
+      this.cargando = false;
+      return;
+    }
+
+    this.subcanales = subcanalesActivos;
+
+    // Convertir subcanales al formato del wizard
+    this.convertirSubcanalesAFormatoWizard(subcanalesActivos);
+  };
+
+  // Determinar qué endpoint usar según el rol
+  switch (usuario.rolId) {
+    // Para Administrador u Oficial Comercial
+    case RolType.Administrador:
+    case RolType.OficialComercial:
+      // Usar getSubcanales para obtener todos los subcanales
+      this.subcanalService.getSubcanales().pipe(
+        catchError(error => {
+          console.error('Error al cargar subcanales completos:', error);
+          return of([]);
+        }),
+        finalize(() => this.cargando = false)
+      ).subscribe(procesarSubcanales);
+      break;
+
+    // Para Admin Canal y Vendor
+    case RolType.AdminCanal:
+    case RolType.Vendor:
+    default:
+      // Usar getSubcanalesPorUsuario para obtener solo los asignados al usuario
+      this.subcanalService.getSubcanalesPorUsuario(usuario.id).pipe(
+        catchError(error => {
+          console.error('Error al cargar subcanales del usuario:', error);
+          return of([]);
+        }),
+        finalize(() => this.cargando = false)
+      ).subscribe(procesarSubcanales);
+      break;
+  }
+}
+
+convertirSubcanalesAFormatoWizard(subcanales: Subcanal[]) {
+  this.cargando = true;
+
+  // Obtener planes activos una sola vez para todos los subcanales
+  this.planService.getPlanesActivos().pipe(
+    catchError(error => {
+      console.error('Error al obtener planes activos:', error);
+      return of([]);
+    })
+  ).subscribe(planes => {
+    if (!planes || planes.length === 0) {
+      this.error = "No hay planes activos disponibles.";
+      this.cargando = false;
+      return;
+    }
+
+    // Crear array para almacenar SubcanalInfo
+    const subcanalInfos: SubcanalInfo[] = [];
+
+    // Procesar cada subcanal
+    subcanales.forEach(subcanal => {
+      // Convertir los planes al formato esperado
+      const planesDisponibles = planes.map(plan => ({
+        id: plan.id,
+        nombre: plan.nombre,
+        tasa: plan.tasa,
+        montoMinimo: plan.montoMinimo,
+        montoMaximo: plan.montoMaximo,
+        cuotasAplicables: plan.cuotasAplicablesList || this.obtenerCuotasAplicables(plan.cuotasAplicables)
+      }));
+
+      // Crear el objeto SubcanalInfo
+      subcanalInfos.push({
+        subcanalId: subcanal.id,
+        subcanalNombre: subcanal.nombre,
+        subcanalActivo: subcanal.activo,
+        subcanalComision: subcanal.comision,
+        canalId: subcanal.canalId,
+        gastos: subcanal.gastos || [],
+        planesDisponibles: planesDisponibles
+      });
+    });
+
+    if (subcanalInfos.length === 0) {
+      this.error = "No se encontraron subcanales con planes disponibles.";
+      this.cargando = false;
+      return;
+    }
+
+    // Configurar el datosWizard para el selector
+    this.datosWizard = { subcanales: subcanalInfos };
+    this.necesitaSeleccionarSubcanal = true;
+    this.cargando = false;
+  });
+}
 }

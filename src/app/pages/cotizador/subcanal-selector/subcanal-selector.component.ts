@@ -14,15 +14,15 @@ import { SidebarStateService } from 'src/app/core/services/sidebar-state.service
 })
 export class SubcanalSelectorComponent implements OnInit {
   @Input() subcanales: SubcanalInfo[] = [];
+  @Input() isCreacionPropia: boolean = false; // Nueva propiedad para indicar si es creación propia
   @Output() seleccionarSubcanal = new EventEmitter<number>();
-  @Output() volver = new EventEmitter<void>(); // Nuevo EventEmitter para volver
+  @Output() volver = new EventEmitter<void>();
 
   subcanalId: number | null = null;
   subcanalesActivos: SubcanalInfo[] = [];
   errorMessage: string | null = null;
 
   constructor(
-    // Mantén los constructores existentes y añade:
     private sidebarStateService: SidebarStateService
   ) {}
 
@@ -51,6 +51,12 @@ export class SubcanalSelectorComponent implements OnInit {
   }
 
   onVolver() {
-    window.location.href = '/cotizador';
+    if (this.isCreacionPropia) {
+      // Si estamos en creación propia, volvemos al selector de vendor
+      this.volver.emit();
+    } else {
+      // Comportamiento original
+      window.location.href = '/cotizador';
+    }
   }
 }

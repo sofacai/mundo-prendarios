@@ -16,11 +16,14 @@ export class VendorSelectorComponent implements OnInit {
   @Input() vendors: any[] = [];
   @Input() currentUserRol: RolType = RolType.Vendor; // Usar un valor del enum en lugar de 0
   @Output() seleccionarVendor = new EventEmitter<number>();
-  @Output() volver = new EventEmitter<void>(); // Nuevo EventEmitter para volver
+  @Output() crearOperacionSinVendor = new EventEmitter<void>(); // Nueva emisión para operación propia
+  @Output() volver = new EventEmitter<void>();
 
   vendorId: number | null = null;
   searchTerm: string = '';
   filteredVendors: any[] = [];
+  crearOperacionPropia: boolean = false; // Nueva propiedad
+
   rolNames: {[key: number]: string} = {
     [RolType.Administrador]: 'Administrador',
     [RolType.OficialComercial]: 'Oficial Comercial',
@@ -28,7 +31,6 @@ export class VendorSelectorComponent implements OnInit {
   };
 
   constructor(
-    // Mantén los constructores existentes y añade:
     private sidebarStateService: SidebarStateService
   ) {}
 
@@ -57,14 +59,27 @@ export class VendorSelectorComponent implements OnInit {
     );
   }
 
+  onCrearOperacionPropiaChange() {
+    // Si selecciona crear operación propia, deseleccionamos el vendedor
+    if (this.crearOperacionPropia) {
+      this.vendorId = null;
+    }
+  }
+
   onSeleccionarVendor() {
-    if (this.vendorId) {
+    if (this.crearOperacionPropia) {
+      // Emitir evento para crear operación sin vendedor
+      this.crearOperacionSinVendor.emit();
+    } else if (this.vendorId) {
+      // Emitir evento con el vendedor seleccionado
       this.seleccionarVendor.emit(this.vendorId);
     }
   }
 
   selectVendor(vendorId: number) {
     this.vendorId = vendorId;
+    // Desactivar la opción de crear operación propia cuando se selecciona un vendedor
+    this.crearOperacionPropia = false;
   }
 
   onVolver() {

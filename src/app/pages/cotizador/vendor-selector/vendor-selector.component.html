@@ -1,3 +1,4 @@
+<!-- Modificación de vendor-selector.component.html -->
 <div class="vendor-selector-container">
   <div class="header">
     <div class="header-top">
@@ -19,12 +20,21 @@
     <h2 class="title">Seleccionar Vendedor</h2>
 
     <p class="subtitle">
-      Como {{ rolName }}, puedes realizar cotizaciones en nombre de un vendedor.
-      Selecciona el vendedor para el que deseas realizar esta cotización.
+      Como {{ rolName }}, puedes realizar cotizaciones en nombre de un vendedor o crear la operación tú mismo.
     </p>
 
-    <!-- Buscador -->
-    <div class="search-box">
+    <!-- Checkbox para crear operación sin vendedor -->
+    <div class="self-operation-checkbox">
+      <input
+        type="checkbox"
+        id="selfOperation"
+        [(ngModel)]="crearOperacionPropia"
+        (change)="onCrearOperacionPropiaChange()">
+      <label for="selfOperation">Quiero crear la operación yo mismo sin seleccionar vendedor</label>
+    </div>
+
+    <!-- Buscador - Solo visible si no seleccionó crear operación propia -->
+    <div class="search-box" *ngIf="!crearOperacionPropia">
       <input
         type="text"
         placeholder="Buscar vendedor..."
@@ -33,8 +43,8 @@
         class="search-input">
     </div>
 
-    <!-- Lista de vendedores -->
-    <div class="vendors-list">
+    <!-- Lista de vendedores - Solo visible si no seleccionó crear operación propia -->
+    <div class="vendors-list" *ngIf="!crearOperacionPropia">
       <div
         *ngFor="let vendor of filteredVendors"
         class="vendor-item"
@@ -58,7 +68,11 @@
 
     <div class="form-footer">
       <button class="btn btn-secondary" (click)="onVolver()">Volver</button>
-      <button class="btn btn-primary" [disabled]="!vendorId" (click)="onSeleccionarVendor()">Continuar</button>
+      <button class="btn btn-primary"
+              [disabled]="!crearOperacionPropia && !vendorId"
+              (click)="onSeleccionarVendor()">
+        Continuar
+      </button>
     </div>
   </div>
 </div>

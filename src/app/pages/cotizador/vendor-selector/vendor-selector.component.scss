@@ -259,3 +259,36 @@
     margin-bottom: 0.75rem;
   }
 }
+
+.self-operation-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f0f7ff;
+  border-radius: 0.5rem;
+  border: 1px solid #dbeafe;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.self-operation-checkbox:hover {
+  background-color: #e0f2fe;
+}
+
+.self-operation-checkbox input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1.5px solid #3378f6;
+  border-radius: 0.25rem;
+  margin-right: 0.75rem;
+  cursor: pointer;
+  accent-color: #3378f6;
+}
+
+.self-operation-checkbox label {
+  color: #374151;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+}
