@@ -11,6 +11,7 @@ export interface PlanTasa {
   tasaA: number; // Para autos 0-10 años
   tasaB: number; // Para autos 11-12 años
   tasaC: number; // Para autos 13+ años
+  activo: boolean; // Nuevo campo para activar/desactivar plazos
 }
 
 export interface PlanTasaCrearDto {
@@ -18,6 +19,7 @@ export interface PlanTasaCrearDto {
   tasaA: number;
   tasaB: number;
   tasaC: number;
+  activo: boolean; // Nuevo campo
 }
 
 export interface Plan {
@@ -118,11 +120,17 @@ export class PlanService {
     return this.http.patch<any>(`${this.apiUrl}/${id}/desactivar`, {}, { headers });
   }
 
-  // NUEVOS MÉTODOS PARA PLAN TASA
+  // MÉTODOS PARA PLAN TASA
 
   getTasasByPlanId(planId: number): Observable<PlanTasa[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<PlanTasa[]>(`${this.apiUrlTasa}/plan/${planId}`, { headers });
+  }
+
+  // Nuevo método para obtener solo tasas activas
+  getTasasActivasByPlanId(planId: number): Observable<PlanTasa[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<PlanTasa[]>(`${this.apiUrlTasa}/plan/${planId}/activas`, { headers });
   }
 
   getTasaByPlanIdAndPlazo(planId: number, plazo: number): Observable<PlanTasa> {
@@ -138,6 +146,17 @@ export class PlanService {
   updateTasa(tasaId: number, tasa: PlanTasaCrearDto): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.put<any>(`${this.apiUrlTasa}/${tasaId}`, tasa, { headers });
+  }
+
+  // Nuevos métodos para activar/desactivar tasas
+  activarTasa(tasaId: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.patch<any>(`${this.apiUrlTasa}/${tasaId}/activar`, {}, { headers });
+  }
+
+  desactivarTasa(tasaId: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.patch<any>(`${this.apiUrlTasa}/${tasaId}/desactivar`, {}, { headers });
   }
 
   deleteTasa(tasaId: number): Observable<any> {
@@ -161,5 +180,10 @@ export class PlanService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
+  }
+
+  // Utilidad para obtener plazos válidos disponibles
+  getPlazosValidos(): number[] {
+    return [12, 18, 24, 30, 36, 48, 60];
   }
 }

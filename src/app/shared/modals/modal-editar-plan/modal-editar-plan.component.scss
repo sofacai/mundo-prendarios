@@ -259,3 +259,76 @@
     grid-column: span 1;
   }
 }
+
+/* Agrega estos estilos al final de los archivos .scss de ambos componentes */
+
+.plazo-estado-cell {
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 40px;
+    height: 20px;
+    background-color: #e4e6ef;
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: white;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s ease;
+    }
+
+    &:checked {
+      background-color: var(--ion-color-success);
+
+      &:before {
+        left: 22px;
+      }
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--ion-color-dark);
+  }
+}
+
+.tasas-table {
+  th, td {
+    min-width: 100px;
+  }
+
+  .plazo-cell {
+    min-width: 80px;
+    white-space: nowrap;
+  }
+}

@@ -27,14 +27,16 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
   // Mapa de plazos para mostrar en la tabla
   plazosMap: { [key: number]: string } = {
     12: '12',
+    18: '18',
     24: '24',
+    30: '30',
     36: '36',
     48: '48',
     60: '60'
   };
 
   // Plazos disponibles para tasas
-  plazosDisponibles = [12, 24, 36, 48, 60];
+  plazosDisponibles = [12, 18, 24, 30, 36, 48, 60];
 
   constructor(
     private fb: FormBuilder,
@@ -116,7 +118,8 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
       plazo: [plazo],
       tasaA: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
       tasaB: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      tasaC: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+      tasaC: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      activo: [true] // Nuevo campo para activar/desactivar plazos
     });
   }
 
@@ -197,7 +200,8 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
         tasaGroup.patchValue({
           tasaA: tasa.tasaA,
           tasaB: tasa.tasaB,
-          tasaC: tasa.tasaC
+          tasaC: tasa.tasaC,
+          activo: tasa.activo // Cargar el estado activo
         });
       }
     });
@@ -229,6 +233,19 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  // Método para manejar toggle de estado de una tasa específica
+  onToggleTasaEstado(event: any, tasaIndex: number) {
+    const tasaGroup = this.getFormGroup(tasaIndex);
+    const nuevoEstado = event.target.checked;
+    tasaGroup.get('activo')?.setValue(nuevoEstado, { emitEvent: false });
+
+    // Si estamos en modo edición y hay un planId, actualizar la tasa en el servidor
+    if (this.isEditing && this.planId) {
+      // Este código sería similar al de modal-editar-plan, pero aquí no tenemos acceso directo al array de tasas del plan
+      // Se actualizará cuando se guarde todo el plan
+    }
+  }
+
   getTasasFromForm(): PlanTasaCrearDto[] {
     const tasas: PlanTasaCrearDto[] = [];
 
@@ -238,7 +255,8 @@ export class PlanFormComponent implements OnInit, OnChanges, OnDestroy {
         plazo: tasa.plazo,
         tasaA: tasa.tasaA,
         tasaB: tasa.tasaB,
-        tasaC: tasa.tasaC
+        tasaC: tasa.tasaC,
+        activo: tasa.activo // Incluir el estado activo
       });
     });
 

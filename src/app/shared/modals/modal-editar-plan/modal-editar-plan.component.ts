@@ -26,14 +26,16 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
   // Mapa de plazos para mostrar en la tabla
   plazosMap: { [key: number]: string } = {
     12: '12',
+    18: '18',
     24: '24',
+    30: '30',
     36: '36',
     48: '48',
     60: '60'
   };
 
   // Plazos disponibles para tasas
-  plazosDisponibles = [12, 24, 36, 48, 60];
+  plazosDisponibles = [12, 18, 24, 30, 36, 48, 60];
 
   constructor(
     private fb: FormBuilder,
@@ -157,7 +159,8 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
       plazo: [plazo],
       tasaA: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
       tasaB: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
-      tasaC: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+      tasaC: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      activo: [true] // Nuevo campo activo
     });
   }
 
@@ -183,7 +186,8 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
         tasaGroup.patchValue({
           tasaA: tasa.tasaA,
           tasaB: tasa.tasaB,
-          tasaC: tasa.tasaC
+          tasaC: tasa.tasaC,
+          activo: tasa.activo // Cargar el estado activo
         });
       }
     });
@@ -207,18 +211,19 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
         plazo: tasa.plazo,
         tasaA: tasa.tasaA,
         tasaB: tasa.tasaB,
-        tasaC: tasa.tasaC
+        tasaC: tasa.tasaC,
+        activo: tasa.activo // Incluir estado activo
       });
     });
 
     return tasas;
   }
 
-  // Método para manejar el cambio de estado desde el toggle
+  // Método para manejar el cambio de estado desde el toggle principal del plan
   onToggleEstado(event: any) {
     if (!this.plan || this.statusUpdating) return;
 
-    const nuevoEstado = event.detail.checked;
+    const nuevoEstado = event.target.checked;
 
     // Verificar si el estado ha cambiado realmente
     if (nuevoEstado === this.plan.activo) return;
@@ -247,6 +252,34 @@ export class ModalEditarPlanComponent implements OnChanges, OnDestroy {
         this.statusUpdating = false;
       }
     });
+  }
+
+  // Nuevo método para manejar toggle de estado de una tasa específica
+  onToggleTasaEstado(event: any, tasaIndex: number) {
+    const tasaGroup = this.getFormGroup(tasaIndex);
+    const nuevoEstado = event.target.checked;
+
+    // Si estamos modificando un plan existente y la tasa tiene ID, actualizarla en el servidor
+    if (this.plan && this.plan.tasas && this.plan.tasas[tasaIndex] && this.plan.tasas[tasaIndex].id) {
+      const tasaId = this.plan.tasas[tasaIndex].id;
+      const accion = nuevoEstado
+        ? this.planService.activarTasa(tasaId)
+        : this.planService.desactivarTasa(tasaId);
+
+      accion.subscribe({
+        next: () => {
+          if (this.plan && this.plan.tasas) {
+            this.plan.tasas[tasaIndex].activo = nuevoEstado;
+          }
+          tasaGroup.get('activo')?.setValue(nuevoEstado, { emitEvent: false });
+        },
+        error: (err) => {
+          tasaGroup.get('activo')?.setValue(!nuevoEstado, { emitEvent: false });
+          this.error = `No se pudo ${nuevoEstado ? 'activar' : 'desactivar'} la tasa. Intente nuevamente.`;
+          console.error(`Error al ${nuevoEstado ? 'activar' : 'desactivar'} la tasa:`, err);
+        }
+      });
+    }
   }
 
   cerrarModal() {
