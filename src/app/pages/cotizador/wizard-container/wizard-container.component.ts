@@ -1006,7 +1006,11 @@ export class WizardContainerComponent implements OnInit {
         // Incluir vendorId solo si existe uno seleccionado
         vendedorId: this.vendorSeleccionado ?? undefined,
         usuarioCreadorId: usuarioCreadorId,
-        estado: estadoOperacion
+        estado: estadoOperacion,
+        cuotaInicial: this.dataService.cuotaInicial,
+        cuotaPromedio: this.dataService.cuotaPromedio,
+        autoInicial: this.dataService.auto || this.wizardData.auto,
+        observaciones: this.dataService.observaciones || ''
       };
 
       const ejecutarKommoSiNoFue = (op: any, cliente: any) => {

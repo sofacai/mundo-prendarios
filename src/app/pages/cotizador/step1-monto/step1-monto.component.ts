@@ -339,7 +339,6 @@ cargarPlazosDisponibles() {
       if (!this.tasasPorPlazo[planId][plazoActual] ||
           !this.tasasPorPlazo[planId][plazoActual].activo) {
 
-        // Buscar el primer plazo disponible y activo
         const primerPlazoDisponible = this.plazosDisponibles.find(p =>
           this.tasasPorPlazo[planId][p] &&
           this.tasasPorPlazo[planId][p].activo
@@ -440,6 +439,8 @@ cargarPlazosDisponibles() {
 
       // Calcular el valor de la cuota para el plan seleccionado con la tasa específica
       const valorCuota = this.calcularCuotaPara(this.plazo);
+      const cuotaInicial = valorCuota;
+      const cuotaPromedio = valorCuota;
 
       // Obtener la tasa específica
       const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
@@ -452,7 +453,10 @@ cargarPlazosDisponibles() {
         valorCuota: valorCuota,
         planId: planActivo.id,
         tasaAplicada: tasaEspecifica,
-        antiguedadGrupo: this.antiguedadGrupo
+        antiguedadGrupo: this.antiguedadGrupo,
+        // Añadir los nuevos campos
+        cuotaInicial: cuotaInicial,
+        cuotaPromedio: cuotaPromedio
       });
 
       // Guardar el dato del auto en el dataService

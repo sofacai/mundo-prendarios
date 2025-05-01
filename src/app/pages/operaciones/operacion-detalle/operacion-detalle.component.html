@@ -60,117 +60,118 @@
     <!-- Contenido principal en cards separadas -->
    <!-- Modificar la estructura del grid y cards -->
 <div class="components-grid">
-  <!-- Detalles de la operación inicial -->
-  <div class="card equal-height">
-    <div class="card-header">
-      <div class="card-title">
-        <i class="bi bi-clipboard-data me-2 text-primary"></i>
-        Operación Inicial
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="details-grid">
-        <div class="detail-section">
-          <div class="detail-row">
-            <div class="detail-label">Monto:</div>
-            <div class="detail-value fw-bold">{{ formatMonto(operacion.monto) }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Plazo:</div>
-            <div class="detail-value">{{ operacion.meses }} meses</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Plan:</div>
-            <div class="detail-value">{{ operacion.planNombre || 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Cuota inicial:</div>
-            <div class="detail-value">{{ calcularCuotaMensual() }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Detalles de la operación final -->
-  <div class="card equal-height">
-    <div class="card-header">
-      <div class="card-title">
-        <i class="bi bi-clipboard-check me-2 text-success"></i>
-        Operación Final
-      </div>
+<!-- Detalles de la operación inicial -->
+<div class="card equal-height">
+  <div class="card-header">
+    <div class="card-title">
+      <i class="bi bi-clipboard-data me-2 text-primary"></i>
+      Operación Inicial
     </div>
-    <div class="card-body">
-      <div class="details-grid">
-        <div class="detail-section">
-          <div class="detail-row">
-            <div class="detail-label">Monto aprobado:</div>
-            <div class="detail-value fw-bold">{{ operacion.montoAprobado ? formatMonto(operacion.montoAprobado) : 'Pendiente' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Plazo aprobado:</div>
-            <div class="detail-value">{{ operacion.mesesAprobados ? operacion.mesesAprobados + ' meses' : 'Pendiente' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Tasa aprobada:</div>
-            <div class="detail-value">{{ operacion.tasaAprobada ? operacion.tasaAprobada + '%' : 'Pendiente' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Plan aprobado:</div>
-            <div class="detail-value">{{ operacion.planAprobadoNombre || 'Pendiente' }}</div>
-          </div>
+  </div>
+  <div class="card-body">
+    <div class="details-grid">
+      <div class="detail-section">
+        <div class="detail-row">
+          <div class="detail-label">Monto:</div>
+          <div class="detail-value fw-bold">{{ formatMonto(operacion.monto) }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Plazo:</div>
+          <div class="detail-value">{{ operacion.meses }} meses</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Plan:</div>
+          <div class="detail-value">{{ operacion.planNombre || 'No especificado' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Tasa:</div>
+          <div class="detail-value">{{ operacion.tasa }}%</div>
+        </div>
+        <!-- Nuevos campos -->
+        <div class="detail-row">
+          <div class="detail-label">Cuota:</div>
+          <div class="detail-value">{{ operacion.cuotaInicial ? formatMonto(operacion.cuotaInicial) : '-' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Cuota promedio:</div>
+          <div class="detail-value">{{ operacion.cuotaPromedio ? formatMonto(operacion.cuotaPromedio) : '-' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Auto:</div>
+          <div class="detail-value">{{ operacion.autoInicial || 'No especificado' }}</div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Información del Cliente - Reemplazar style inline por clase CSS -->
-  <div class="card equal-height cliente-card">
-    <div class="card-header">
-      <div class="card-title">
-        <i class="bi bi-person-vcard me-2 text-primary"></i>
-        Información del Cliente
-      </div>
+<!-- Detalles de la operación final -->
+<div class="card equal-height">
+  <div class="card-header">
+    <div class="card-title">
+      <i class="bi bi-clipboard-check me-2 text-success"></i>
+      Operación Final
     </div>
-    <div class="card-body">
-      <div class="details-grid">
-        <div class="detail-section">
-          <div class="detail-row">
-            <div class="detail-label">Nombre completo:</div>
-            <div class="detail-value fw-bold">{{ cliente?.nombre }} {{ cliente?.apellido }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Teléfono:</div>
-            <div class="detail-value">{{ cliente?.telefono || 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Email:</div>
-            <div class="detail-value">{{ cliente?.email || 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">DNI:</div>
-            <div class="detail-value">{{ cliente?.dni || 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Ingresos:</div>
-            <div class="detail-value">{{ (cliente && cliente.ingresos != null) ? formatMonto(cliente.ingresos) : 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Auto:</div>
-            <div class="detail-value">{{ cliente?.auto || 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Código Postal:</div>
-            <div class="detail-value">{{ cliente?.codigoPostal || 'No especificado' }}</div>
-          </div>
-          <div class="detail-row">
-            <div class="detail-label">Estado Civil:</div>
-            <div class="detail-value">{{ cliente?.estadoCivil || 'No especificado' }}</div>
+  </div>
+  <div class="card-body">
+    <div class="details-grid">
+      <div class="detail-section">
+        <div class="detail-row">
+          <div class="detail-label">Monto:</div>
+          <div class="detail-value fw-bold">{{ operacion.montoAprobado ? formatMonto(operacion.montoAprobado) : 'Pendiente' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Plazo:</div>
+          <div class="detail-value">{{ operacion.mesesAprobados ? operacion.mesesAprobados + ' meses' : 'Pendiente' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Plan aprobado:</div>
+          <div class="detail-value">{{ operacion.planAprobadoNombre || 'Pendiente' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Tasa:</div>
+          <div class="detail-value">{{ operacion.tasaAprobada ? operacion.tasaAprobada + '%' : 'Pendiente' }}</div>
+        </div>
+
+        <!-- Nuevos campos -->
+        <div class="detail-row">
+          <div class="detail-label">Cuota inicial:</div>
+          <div class="detail-value">{{ operacion.cuotaInicialAprobada ? formatMonto(operacion.cuotaInicialAprobada) : 'Pendiente' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Cuota promedio:</div>
+          <div class="detail-value">{{ operacion.cuotaPromedioAprobada ? formatMonto(operacion.cuotaPromedioAprobada) : 'Pendiente' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Auto:</div>
+          <div class="detail-value">{{ operacion.autoAprobado || 'Pendiente' }}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Ver aprobado definitivo:</div>
+          <div class="detail-value">
+            <a *ngIf="operacion.urlAprobadoDefinitivo" [href]="operacion.urlAprobadoDefinitivo" target="_blank">
+              Ver documento
+            </a>
+            <span *ngIf="!operacion.urlAprobadoDefinitivo">Pendiente</span>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<div class="card equal-height" *ngIf="operacion.observaciones">
+  <div class="card-header">
+    <div class="card-title">
+      <i class="bi bi-chat-text me-2 text-primary"></i>
+      Observaciones
+    </div>
+  </div>
+  <div class="card-body">
+    <p class="mb-0">{{ operacion.observaciones }}</p>
+  </div>
+</div>
 </div>
   </div>
   </div>

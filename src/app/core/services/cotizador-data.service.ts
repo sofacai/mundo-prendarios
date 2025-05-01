@@ -34,6 +34,15 @@ export class CotizadorDataService {
   // Información del subcanal seleccionado
   subcanalInfo?: SubcanalInfo;
 
+  cuotaInicial: number = 0;
+  cuotaInicialAprobada: number = 0;
+  cuotaPromedio: number = 0;
+  cuotaPromedioAprobada: number = 0;
+  autoInicial: string = '';
+  autoAprobado: string = '';
+  urlAprobadoDefinitivo: string = '';
+  observaciones: string = '';
+
   // Datos del paso 2
   clienteId?: number;
   nombre: string = '';
@@ -63,7 +72,9 @@ export class CotizadorDataService {
     vendorId?: number,
     auto?: string,
     antiguedadGrupo?: AntiguedadGrupo,
-    tasaAplicada?: number
+    tasaAplicada?: number,
+    cuotaInicial?: number,
+    cuotaPromedio?: number
   }) {
     this.monto = datos.monto;
     this.plazo = datos.plazo;
@@ -72,6 +83,12 @@ export class CotizadorDataService {
     this.planId = datos.planId;
     if (datos.vendorId) {
       this.vendorId = datos.vendorId;
+    }
+    if (datos.cuotaInicial) {
+      this.cuotaInicial = datos.cuotaInicial;
+    }
+    if (datos.cuotaPromedio) {
+      this.cuotaPromedio = datos.cuotaPromedio;
     }
     if (datos.auto) {
       this.auto = datos.auto;
@@ -159,5 +176,14 @@ export class CotizadorDataService {
     this.rechazadoPorBcra = false;
 
     this.operacionId = undefined;
+
+    this.cuotaInicial = 0;
+    this.cuotaInicialAprobada = 0;
+    this.cuotaPromedio = 0;
+    this.cuotaPromedioAprobada = 0;
+    this.autoInicial = '';
+    this.autoAprobado = '';
+    this.urlAprobadoDefinitivo = '';
+    this.observaciones = '';
   }
 }

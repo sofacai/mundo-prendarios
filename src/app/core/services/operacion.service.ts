@@ -33,6 +33,14 @@ export interface Operacion {
   fechaAprobacion?: Date;
   liquidada?: boolean;
   fechaLiquidacion?: Date;
+  cuotaInicial?: number;
+  cuotaInicialAprobada?: number;
+  cuotaPromedio?: number;
+  cuotaPromedioAprobada?: number;
+  autoInicial?: string;
+  autoAprobado?: string;
+  urlAprobadoDefinitivo?: string;
+  observaciones?: string;
 }
 
 @Injectable({
@@ -72,7 +80,12 @@ export class OperacionService {
       canalId: operacion.canalId,
       vendedorId: operacion.vendedorId,
       usuarioCreadorId: operacion.usuarioCreadorId,
-      estado: operacion.estado || "Ingresada"
+      estado: operacion.estado || "Ingresada",
+      // Nuevos campos
+      cuotaInicial: operacion.cuotaInicial,
+      cuotaPromedio: operacion.cuotaPromedio,
+      autoInicial: operacion.autoInicial,
+      observaciones: operacion.observaciones
     };
 
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion`, operacionDto, { headers });
@@ -103,7 +116,12 @@ export class OperacionService {
         canalId: operacionData.canalId,
         vendedorId: operacionData.vendedorId,
         usuarioCreadorId: operacionData.usuarioCreadorId,
-        estado: operacionData.estado || "Ingresada"
+        estado: operacionData.estado || "Ingresada",
+        // Nuevos campos
+        cuotaInicial: operacionData.cuotaInicial,
+        cuotaPromedio: operacionData.cuotaPromedio,
+        autoInicial: operacionData.autoInicial,
+        observaciones: operacionData.observaciones
       }
     };
 
