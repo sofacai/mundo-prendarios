@@ -48,6 +48,8 @@ export class Step1MontoComponent implements OnInit {
   planCuotasFijasId: number = 1;
   planUvaId: number = 2;
 
+  valorCuota: number = 0
+
   // Valores de los planes (se llenarán a partir de subcanalInfo)
   planCuotasFijas: any = null;
   planUva: any = null;
@@ -404,6 +406,35 @@ cargarPlazosDisponibles() {
       return 0;
     }
   }
+  private guardarDatosConCuotas(planId: number, tasa: number, cuotaInicial: number, cuotaPromedio: number) {
+    // Guardar los datos en el servicio compartido
+    this.dataService.guardarDatosPaso1({
+      monto: this.monto,
+      plazo: this.plazo,
+      planTipo: this.planSeleccionado,
+      valorCuota: this.valorCuota,
+      planId: planId,
+      tasaAplicada: tasa,
+      antiguedadGrupo: this.antiguedadGrupo,
+      // Añadir los nuevos campos
+      cuotaInicial: cuotaInicial,
+      cuotaPromedio: cuotaPromedio
+    });
+
+    // Guardar el dato del auto en el dataService
+    if (this.isAuto0km) {
+      this.dataService.auto = "0km";
+    } else {
+      this.dataService.auto = this.autoYear.toString();
+    }
+
+    // Continuar al siguiente paso
+    this.continuar.emit({
+      monto: this.monto,
+      plazo: this.plazo,
+      antiguedadGrupo: this.antiguedadGrupo
+    });
+  }
 
   onContinuar() {
     if (!this.subcanalInfo || !this.subcanalInfo.planesDisponibles) {
@@ -439,42 +470,55 @@ cargarPlazosDisponibles() {
 
       // Calcular el valor de la cuota para el plan seleccionado con la tasa específica
       const valorCuota = this.calcularCuotaPara(this.plazo);
-      const cuotaInicial = valorCuota;
-      const cuotaPromedio = valorCuota;
 
-      // Obtener la tasa específica
-      const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
+      // Inicializar variables para cuotaInicial y cuotaPromedio
+      let cuotaInicial = 0;
+      let cuotaPromedio = 0;
 
-      // Guardar los datos en el servicio compartido
-      this.dataService.guardarDatosPaso1({
-        monto: this.monto,
-        plazo: this.plazo,
-        planTipo: this.planSeleccionado,
-        valorCuota: valorCuota,
-        planId: planActivo.id,
-        tasaAplicada: tasaEspecifica,
-        antiguedadGrupo: this.antiguedadGrupo,
-        // Añadir los nuevos campos
-        cuotaInicial: cuotaInicial,
-        cuotaPromedio: cuotaPromedio
-      });
+      // MODIFICACIÓN: Solo calcular tabla de amortización para plan ID 1 (tasa fija)
+      if (planActivoId === 1) {
+        // Obtener la tasa específica
+        const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
 
-      // Guardar el dato del auto en el dataService
-      if (this.isAuto0km) {
-        this.dataService.auto = "0km";
+        // Obtener gastos del subcanal
+        const gastos = this.subcanalInfo.gastos || [];
+
+        // Calcular tabla de amortización
+        this.cotizadorService.calcularTablaAmortizacionConAntiguedad(
+          this.monto,
+          this.plazo,
+          planActivoId,
+          this.antiguedadGrupo,
+          gastos
+        ).subscribe(tabla => {
+          if (tabla && tabla.length > 0) {
+            // La primera cuota (excluyendo el registro inicial con nroCuota=0)
+            const primeraCuota = tabla.find(fila => fila.nroCuota === 1);
+            if (primeraCuota) {
+              cuotaInicial = primeraCuota.cuota;
+            }
+
+            // Calcular el promedio de todas las cuotas
+            const cuotas = tabla.filter(fila => fila.nroCuota > 0).map(fila => fila.cuota);
+            if (cuotas.length > 0) {
+              cuotaPromedio = cuotas.reduce((sum, cuota) => sum + cuota, 0) / cuotas.length;
+            }
+
+            this.guardarDatosConCuotas(planActivoId, tasaEspecifica, cuotaInicial, cuotaPromedio);
+          } else {
+            this.guardarDatosConCuotas(planActivoId, tasaEspecifica, valorCuota, valorCuota);
+          }
+        }, error => {
+          // En caso de error, usar el valor de cuota calculado
+          this.guardarDatosConCuotas(planActivoId, this.obtenerTasaEspecifica(planActivoId, this.plazo), valorCuota, valorCuota);
+        });
       } else {
-        this.dataService.auto = this.autoYear.toString();
+        // Para UVA o planes que no son ID 1, establecer en 0
+        this.guardarDatosConCuotas(planActivoId, this.obtenerTasaEspecifica(planActivoId, this.plazo), 0, 0);
       }
     } else {
       this.errorMensaje = "El plan seleccionado no está disponible.";
       return;
     }
-
-    // Continuar al siguiente paso
-    this.continuar.emit({
-      monto: this.monto,
-      plazo: this.plazo,
-      antiguedadGrupo: this.antiguedadGrupo
-    });
   }
 }

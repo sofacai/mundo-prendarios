@@ -647,6 +647,8 @@ export class WizardContainerComponent implements OnInit {
             this.dataService.situacionBcra = 0;
             this.dataService.bcraFormatted = "sin bcra";
             this.dataService.bcraPeriodo = "";
+
+            // IMPORTANTE: Forzar rechazadoPorBcra a false para asegurar que se marque como APTO CREDITO
             this.dataService.rechazadoPorBcra = false;
 
             // Continuar con el proceso
@@ -1222,7 +1224,8 @@ export class WizardContainerComponent implements OnInit {
 
         // Caso sin BCRA
         if (this.dataService.bcraFormatted === "sin bcra") {
-          etiquetas = [{ name: 'Sin BCRA', id: 54267 }]; // Usar el ID real de la etiqueta "Sin BCRA"
+          etiquetas = [{ name: 'Sin BCRA', id: 54267 },     { name: 'Enviar a Banco', id: 35522 }
+          ];
         }
         // Caso rechazado
         else if (this.dataService.rechazadoPorBcra) {
