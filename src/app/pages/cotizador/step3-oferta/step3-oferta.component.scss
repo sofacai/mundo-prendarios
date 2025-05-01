@@ -387,3 +387,44 @@
     overflow-x: auto;
   }
 }
+/* Add these styles to step3-oferta.component.scss */
+
+/* Operation ID styling */
+.operation-id {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #f3f4f6;
+  border-radius: 1rem;
+  display: inline-block;
+}
+
+/* Declined status styling */
+.declined-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.declined-icon {
+  width: 4rem;
+  height: 4rem;
+  color: #ef4444;
+  margin-bottom: 1rem;
+}
+
+.declined-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.declined-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}

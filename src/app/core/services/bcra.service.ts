@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, catchError } from 'rxjs';
+import { throwError } from 'rxjs';
 
 export interface BcraResponse {
   situacion: number | null;
@@ -19,7 +20,12 @@ export class BcraService {
   async consultarSituacion(cuit: string): Promise<BcraResponse> {
     try {
       const response: any = await firstValueFrom(
-        this.http.get(`${this.API_URL}/${cuit}`)
+        this.http.get(`${this.API_URL}/${cuit}`).pipe(
+          catchError(error => {
+            // Preservar el status del error para un manejo específico en el componente
+            return throwError(() => error);
+          })
+        )
       );
 
       const periodos = response?.results?.periodos;
@@ -50,7 +56,8 @@ export class BcraService {
       };
     } catch (error) {
       console.error('Error al consultar BCRA:', error);
-      return { situacion: null, periodo: null, formatted: null };
+      // Propagamos el error para manejarlo en el componente
+      throw error;
     }
   }
 }

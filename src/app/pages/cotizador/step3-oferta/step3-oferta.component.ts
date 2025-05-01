@@ -1,4 +1,3 @@
-// Actualizar Step3OfertaComponent para mostrar tabla de amortización
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -29,6 +28,7 @@ export class Step3OfertaComponent implements OnInit {
   @Input() monto: number = 0;
   @Input() plazo: number = 0;
   @Input() planes: any[] = [];
+  @Input() operacionId: number | undefined;
   @Output() seleccionarPlan = new EventEmitter<number>();
   @Output() volver = new EventEmitter<void>();
   @Output() realizarOtraOferta = new EventEmitter<void>();
@@ -39,6 +39,7 @@ export class Step3OfertaComponent implements OnInit {
   valorCuota: number = 0;
   planSeleccionado: any = {};
   mostrarTablaAmortizacion: boolean = false;
+  esRechazado: boolean = false;
 
   constructor(
     private dataService: CotizadorDataService,
@@ -46,14 +47,27 @@ export class Step3OfertaComponent implements OnInit {
     private cotizadorService: CotizadorService
   ) {}
 
- // En step3-oferta.component.ts - modificar ngOnInit()
-
  ngOnInit() {
   // Obtener datos del servicio compartido primero
   this.monto = this.dataService.monto;
   this.plazo = this.dataService.plazo;
   this.valorCuota = this.dataService.valorCuota;
 
+  // Verificar si está rechazado por BCRA
+  this.esRechazado = this.dataService.rechazadoPorBcra;
+
+  // Obtener el ID de operación si no fue proporcionado
+  if (!this.operacionId && this.dataService.operacionId) {
+    this.operacionId = this.dataService.operacionId;
+  }
+
+  // Si está rechazado, no necesitamos procesar los detalles del plan
+  if (this.esRechazado) {
+    console.log('Operación rechazada - ID:', this.operacionId);
+    return;
+  }
+
+  // A partir de aquí solo se ejecuta para operaciones aprobadas
   // Identificar el planId seleccionado en step1
   const selectedPlanId = this.dataService.planId;
   console.log('Step3 - planId seleccionado en step1:', selectedPlanId);
@@ -111,6 +125,8 @@ export class Step3OfertaComponent implements OnInit {
   console.log('Auto:', this.dataService.auto);
   console.log('Gastos del canal:', gastosCanal);
   console.log('Mostrar tabla amortización:', this.mostrarTablaAmortizacion);
+  console.log('Operación ID:', this.operacionId);
+  console.log('Estado BCRA:', this.dataService.bcraFormatted);
   console.log('----------------------------------');
 }
 
@@ -124,7 +140,6 @@ export class Step3OfertaComponent implements OnInit {
 
   reiniciarCotizador() {
     window.location.reload();
-
   }
 
   generarCuotas() {
@@ -196,8 +211,6 @@ export class Step3OfertaComponent implements OnInit {
     }
   }
 
-
-
   private obtenerGastos(): any[] {
     // Intentar obtener los gastos del subcanal seleccionado
     // Si hay un wizard container con subcanalSeleccionadoInfo, usar sus gastos
@@ -212,8 +225,6 @@ export class Step3OfertaComponent implements OnInit {
 
     return subcanalInfoGastos;
   }
-
-
 
   enviarPorWhatsapp() {
     if (this.planSeleccionado && this.planSeleccionado.id) {

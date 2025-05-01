@@ -587,21 +587,76 @@ export class WizardContainerComponent implements OnInit {
 
     // 🚨 Consultar situación BCRA si tenemos CUIL
     if (cuilParaBcra) {
-      this.BcraService.consultarSituacion(cuilParaBcra).then(bcraResponse => {
-        // Guardamos tanto la situación numérica como el formato combinado
-        const situacionReal = bcraResponse.situacion ?? 0;
-        this.dataService.situacionBcra = situacionReal;
-        this.dataService.bcraFormatted = bcraResponse.formatted || `${situacionReal}#`;
-        this.dataService.bcraPeriodo = bcraResponse.periodo || "";
+      this.BcraService.consultarSituacion(cuilParaBcra)
+        .then(bcraResponse => {
+          // Guardamos la situación numérica
+          const situacionReal = bcraResponse.situacion ?? 0;
+          const periodoStr = bcraResponse.periodo || "";
+          this.dataService.situacionBcra = situacionReal;
+          this.dataService.bcraPeriodo = periodoStr;
 
-        // La lógica de rechazo sigue igual - solo basada en la situación
-        this.dataService.rechazadoPorBcra = situacionReal === 0 || [4, 5].includes(situacionReal);
+          // Determinar si es un caso a revisar (situaciones comprometidas con período reciente)
+          let esParaRevisar = false;
+          let rechazado = false;
 
-        this.crearCliente(datos);
-      }).catch((error: any) => {
-        this.error = "Error al verificar situación crediticia. Intente nuevamente.";
-        this.cargando = false;
-      });
+          // Solo evaluamos períodos si tenemos situaciones comprometidas (4, 5, 6)
+          if ([4, 5, 6].includes(situacionReal) && periodoStr) {
+            // Convertir período formato YYYYMM a Date
+            const periodoAno = parseInt(periodoStr.substring(0, 4), 10);
+            const periodoMes = parseInt(periodoStr.substring(4, 6), 10) - 1; // Meses en JS son 0-11
+            const fechaPeriodo = new Date(periodoAno, periodoMes);
+
+            // Obtener fecha actual y restar 4 meses
+            const fechaActual = new Date();
+            const cuatroMesesAtras = new Date();
+            cuatroMesesAtras.setMonth(fechaActual.getMonth() - 4);
+
+            // Si el período es más reciente que 4 meses atrás, es para revisar
+            if (fechaPeriodo >= cuatroMesesAtras) {
+              esParaRevisar = true;
+              rechazado = false; // No rechazamos, pero marcamos para revisar
+            } else {
+              // Período más antiguo que 4 meses: mantener rechazo
+              rechazado = true;
+            }
+          } else if ([4, 5, 6].includes(situacionReal)) {
+            // Si tiene situación comprometida pero no tiene período, rechazamos por defecto
+            rechazado = true;
+          }
+
+          // Formato final para Kommo
+          let formattedValue = `${situacionReal}#${periodoStr}`;
+          if (esParaRevisar) {
+            formattedValue += "#revisar";
+          }
+          this.dataService.bcraFormatted = formattedValue;
+
+          // Guardar estado de rechazo
+          this.dataService.rechazadoPorBcra = rechazado;
+
+          this.crearCliente(datos);
+        })
+        .catch((error: any) => {
+          console.error('Error al consultar BCRA:', error);
+
+          // Manejo específico de errores HTTP 500 o 404
+          if (error?.status === 500 || error?.status === 404) {
+            console.log('BCRA no disponible, continuando sin validación');
+
+            // Establecer valores por defecto para "sin BCRA"
+            this.dataService.situacionBcra = 0;
+            this.dataService.bcraFormatted = "sin bcra";
+            this.dataService.bcraPeriodo = "";
+            this.dataService.rechazadoPorBcra = false;
+
+            // Continuar con el proceso
+            this.crearCliente(datos);
+          } else {
+            // Para otros errores, mostrar mensaje de error y detener carga
+            this.error = "Error al verificar situación crediticia. Intente nuevamente.";
+            this.cargando = false;
+          }
+        });
     } else {
       this.error = "Falta información para consultar la situación crediticia.";
       this.cargando = false;
@@ -932,6 +987,8 @@ export class WizardContainerComponent implements OnInit {
   private crearOperacion(planId: number, tasa: number): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.wizardData.operacionId) {
+        // Si ya tenemos un ID de operación, actualizar dataService y resolver
+        this.dataService.guardarOperacionId(this.wizardData.operacionId);
         resolve({ id: this.wizardData.operacionId });
         return;
       }
@@ -978,6 +1035,8 @@ export class WizardContainerComponent implements OnInit {
           next: (opCreada) => {
             if (opCreada?.id) {
               this.wizardData.operacionId = opCreada.id;
+              // Guardar ID en dataService
+              this.dataService.guardarOperacionId(opCreada.id);
               ejecutarKommoSiNoFue(opCreada, clienteData);
             }
             resolve(opCreada);
@@ -1001,6 +1060,8 @@ export class WizardContainerComponent implements OnInit {
               next: (opCreada) => {
                 if (opCreada?.id) {
                   this.wizardData.operacionId = opCreada.id;
+                  // Guardar ID en dataService
+                  this.dataService.guardarOperacionId(opCreada.id);
                   ejecutarKommoSiNoFue(opCreada, cliente);
                 }
                 resolve(opCreada);
@@ -1084,7 +1145,7 @@ export class WizardContainerComponent implements OnInit {
     }
   }
 
-  // Método auxiliar para continuar con la creación del lead después de obtener el nombre del plan
+  // Modified continuarCreacionLead method to handle "sin bcra" case
   private continuarCreacionLead(operacionCreada: any, cliente: any, nombrePlan: string): void {
     const nombre = (cliente?.nombre || this.wizardData.clienteNombre || '').toString();
     const apellido = (cliente?.apellido || this.wizardData.clienteApellido || '').toString();
@@ -1115,11 +1176,11 @@ export class WizardContainerComponent implements OnInit {
         const apellidoLimpio = (apellido || '').toString().trim();
         const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
 
-        // Crear contacto
+        // Crear contacto con el valor de BCRA apropiado
+        // Si es "sin bcra", se usará ese valor específico
         const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto([{
           first_name: nombre,
           last_name: apellido,
-
           custom_fields_values: [
             { field_id: 500552, values: [{ value: telefono }] }, // Teléfono
             { field_id: 500554, values: [{ value: email }] },    // Email
@@ -1128,7 +1189,7 @@ export class WizardContainerComponent implements OnInit {
             { field_id: 964710, values: [{ value: ingresos }] },     // Ingresos
             { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
             { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
-            { field_id: 969444, values: [{ value: this.dataService.bcraFormatted || `${this.dataService.situacionBcra}#` }] },
+            { field_id: 969444, values: [{ value: this.dataService.bcraFormatted }] }, // Campo BCRA
             ...(sexoFieldValue ? [{ field_id: 650450, values: [{ enum_id: sexoFieldValue }] }] : [])
           ]
         }]));
@@ -1152,9 +1213,28 @@ export class WizardContainerComponent implements OnInit {
         const companyId = companiaRes._embedded?.companies?.[0]?.id;
         if (!companyId) throw new Error('No se pudo obtener el ID de la compañía');
 
-        const etiquetas = this.dataService.rechazadoPorBcra
-          ? [{ name: 'Rechazado BCRA', id: 54266 }]
-          : [{ name: 'Enviar a Banco', id: 35522 }];
+        // Determinar etiquetas según estado BCRA
+        let etiquetas;
+
+        // Caso sin BCRA
+        if (this.dataService.bcraFormatted === "sin bcra") {
+          etiquetas = [{ name: 'Sin BCRA', id: 54267 }]; // Usar el ID real de la etiqueta "Sin BCRA"
+        }
+        // Caso rechazado
+        else if (this.dataService.rechazadoPorBcra) {
+          etiquetas = [{ name: 'Rechazado BCRA', id: 54266 }];
+        }
+        // Caso para revisar (cuando el formato contiene "#revisar")
+        else if (this.dataService.bcraFormatted.includes("#revisar")) {
+          etiquetas = [
+            { name: 'Revisar BCRA', id: 54268 }, // Usar el ID real de la etiqueta "Revisar BCRA"
+            { name: 'Enviar a Banco', id: 35522 } // Incluimos también esta etiqueta ya que es apto para crédito
+          ];
+        }
+        // Caso normal
+        else {
+          etiquetas = [{ name: 'Enviar a Banco', id: 35522 }];
+        }
 
         // Crear lead final con todo - usando nombrePlan real obtenido
         const lead = [{
@@ -1184,7 +1264,6 @@ export class WizardContainerComponent implements OnInit {
       }
     });
   }
-
 
 
 

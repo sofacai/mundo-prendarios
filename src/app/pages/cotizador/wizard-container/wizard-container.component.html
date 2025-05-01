@@ -64,6 +64,7 @@
     [monto]="wizardData.monto!"
     [plazo]="wizardData.plazo!"
     [planes]="wizardData.planesDisponibles || []"
+    [operacionId]="wizardData.operacionId"
     (seleccionarPlan)="seleccionarPlan($event)"
     (volver)="volverAlPasoAnterior()"
     (realizarOtraOferta)="reiniciarWizard()">

@@ -1,5 +1,3 @@
-// Actualizamos CotizadorDataService para mantener información de antigüedad del auto
-
 import { Injectable } from '@angular/core';
 import { SubcanalInfo } from './cotizador.service';
 
@@ -49,6 +47,9 @@ export class CotizadorDataService {
   ingresos?: number;
   codigoPostal?: number;
   estadoCivil?: string;
+
+  // ID de la operación creada
+  operacionId?: number;
 
   constructor() { }
 
@@ -122,6 +123,11 @@ export class CotizadorDataService {
     this.subcanalInfo = subcanalInfo;
   }
 
+  // Guardar ID de operación
+  guardarOperacionId(operacionId: number) {
+    this.operacionId = operacionId;
+  }
+
   // Reiniciar todos los datos
   reiniciarDatos() {
     this.monto = 0;
@@ -151,5 +157,7 @@ export class CotizadorDataService {
     this.bcraPeriodo = '';
     this.bcraFormatted = '';
     this.rechazadoPorBcra = false;
+
+    this.operacionId = undefined;
   }
 }

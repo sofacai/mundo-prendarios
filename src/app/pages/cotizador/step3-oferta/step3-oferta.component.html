@@ -19,74 +19,95 @@
     </div>
 
     <div class="content">
-      <!-- Mensaje de éxito -->
-      <div class="success-message">
-        <div class="success-icon">
-          <div class="check-circle">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
+      <!-- CONTENIDO PARA RECHAZADO -->
+      <div *ngIf="!esRechazado" class="declined-content">
+        <div class="declined-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h2 class="declined-title">{{ clienteNombre }}, en este momento no tenemos una oferta para brindarte</h2>
+        <div class="operation-id" *ngIf="operacionId">ID: {{ operacionId }}</div>
+
+        <div class="actions">
+          <button class="btn-secondary" (click)="reiniciarCotizador()">Nueva consulta</button>
+        </div>
+      </div>
+
+      <!-- CONTENIDO PARA APROBADO -->
+      <div *ngIf="esRechazado">
+        <!-- Mensaje de éxito -->
+        <div class="success-message">
+          <div class="success-icon">
+            <div class="check-circle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+          </div>
+          <h2 class="success-title">{{ clienteNombre }}, esta es la oferta estimada que tenemos para vos!</h2>
+          <div class="operation-id" *ngIf="operacionId">ID: {{ operacionId }}</div>
+        </div>
+
+        <!-- Resumen de la oferta -->
+        <div class="offer-summary">
+          <div class="summary-row">
+            <span class="summary-label">Monto solicitado:</span>
+            <span class="summary-value">$ {{ monto | number:'1.0-0':'es' }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Plan:</span>
+            <span class="summary-value">{{ planSeleccionado.nombre }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Cuotas:</span>
+            <span class="summary-value">{{ plazo }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Valor de cuota:</span>
+            <span class="summary-value">$ {{ valorCuota | number:'1.0-0':'es' }}</span>
           </div>
         </div>
-        <h2 class="success-title">{{ clienteNombre }}, esta es la oferta estimada que tenemos para vos!</h2>
-      </div>
 
-      <!-- Resumen de la oferta -->
-      <div class="offer-summary">
-        <div class="summary-row">
-          <span class="summary-label">Monto solicitado:</span>
-          <span class="summary-value">$ {{ monto | number:'1.0-0':'es' }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Plan:</span>
-          <span class="summary-value">{{ planSeleccionado.nombre }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Cuotas:</span>
-          <span class="summary-value">{{ plazo }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Valor de cuota:</span>
-          <span class="summary-value">$ {{ valorCuota | number:'1.0-0':'es' }}</span>
-        </div>
-      </div>
-
-      <!-- Detalle de cuotas (para planId=1) -->
-      <div class="payment-details" *ngIf="mostrarTablaAmortizacion">
-        <div class="payment-header" (click)="togglePaymentDetail()">
-          <span>Ver detalle de cuotas</span>
-          <ion-icon [name]="showPaymentDetail ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
-        </div>
-
-        <div class="payment-table" *ngIf="showPaymentDetail">
-          <div class="payment-table-header">
-            <span>Cuota</span>
-            <span>Monto</span>
+        <!-- Detalle de cuotas (para planId=1) -->
+        <div class="payment-details" *ngIf="mostrarTablaAmortizacion">
+          <div class="payment-header" (click)="togglePaymentDetail()">
+            <span>Ver detalle de cuotas</span>
+            <ion-icon [name]="showPaymentDetail ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
           </div>
-          <div class="payment-table-row" *ngFor="let fila of tablaAmortizacion; let i = index">
-            <span *ngIf="i > 0">Cuota {{ fila.nroCuota }}</span>
-            <span *ngIf="i > 0">$ {{ fila.cuota | number:'1.0-0':'es' }}</span>
+
+          <div class="payment-table" *ngIf="showPaymentDetail">
+            <div class="payment-table-header">
+              <span>Cuota</span>
+              <span>Monto</span>
+            </div>
+            <div class="payment-table-row" *ngFor="let fila of tablaAmortizacion; let i = index">
+              <span *ngIf="i > 0">Cuota {{ fila.nroCuota }}</span>
+              <span *ngIf="i > 0">$ {{ fila.cuota | number:'1.0-0':'es' }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Acciones -->
-      <div class="actions">
-        <button class="btn-whatsapp" (click)="enviarPorWhatsapp()">
-          <ion-icon name="logo-whatsapp"></ion-icon>
-          <span>Enviar por WhatsApp</span>
-        </button>
+        <!-- Acciones -->
+        <div class="actions">
+          <button class="btn-whatsapp" (click)="enviarPorWhatsapp()">
+            <ion-icon name="logo-whatsapp"></ion-icon>
+            <span>Enviar por WhatsApp</span>
+          </button>
 
-        <div class="secondary-actions">
-          <button class="btn-secondary" (click)="reiniciarCotizador()">Nueva oferta</button>
+          <div class="secondary-actions">
+            <button class="btn-secondary" (click)="reiniciarCotizador()">Nueva oferta</button>
+          </div>
         </div>
-      </div>
 
-      <!-- Disclaimer -->
-      <div class="disclaimer">
-        <p>*Los montos son estimativos y están sujetos a evaluación crediticia.</p>
-        <p>**Las cuotas no incluyen el seguro del auto.</p>
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+          <p>*Los montos son estimativos y están sujetos a evaluación crediticia.</p>
+          <p>**Las cuotas no incluyen el seguro del auto.</p>
+        </div>
       </div>
     </div>
   </div>
