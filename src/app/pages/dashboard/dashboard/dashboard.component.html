@@ -1,241 +1,297 @@
 <div class="dashboard-welcome-container">
   <app-sidebar></app-sidebar>
   <div class="content-area">
-  <!-- Header with greeting -->
-  <div class="welcome-header">
-    <div class="welcome-title">
-      <h1>Bienvenido, {{userName}}</h1>
-      <p class="welcome-subtitle">Panel de control y estadísticas</p>
-    </div>
-  </div>
-
-  <!-- Loading indicator -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Cargando estadísticas...</p>
-  </div>
-
-  <!-- No data message -->
-  <div *ngIf="!isLoading && !hasData" class="no-data-container">
-    <div class="no-data-box">
-      <i class="bi bi-bar-chart-line"></i>
-      <h2>Comienza a cargar operaciones</h2>
-      <p>Aún no hay operaciones cargadas para mostrar estadísticas. ¡Crea tu primera cotización y comienza a ver los resultados!</p>
-      <button class="btn btn-primary" routerLink="/cotizador">Crear cotización</button>
-    </div>
-  </div>
-
-  <!-- Dashboard content when data is available -->
-  <div *ngIf="!isLoading && hasData" class="dashboard-content">
-    <!-- Stats summary cards -->
-    <div class="stats-summary">
-      <div class="stat-card">
-        <div class="stat-icon-box primary-light">
-          <i class="bi bi-clipboard-data"></i>
-        </div>
-        <div class="stat-content">
-          <h3 class="stat-value">{{totalOperaciones}}</h3>
-          <p class="stat-label">Total operaciones</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon-box success-light">
-          <i class="bi bi-check-circle"></i>
-        </div>
-        <div class="stat-content">
-          <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
-          <p class="stat-label">Operaciones liquidadas</p>
-        </div>
-      </div>
-
-
-      <div class="stat-card">
-        <div class="stat-icon-box info-light">
-          <i class="bi bi-cash"></i>
-        </div>
-        <div class="stat-content">
-          <h3 class="stat-value">{{formatMoney(totalMontosLiquidados)}}</h3>
-          <p class="stat-label">Montos liquidados</p>
-        </div>
+    <!-- Header with greeting -->
+    <div class="welcome-header">
+      <div class="welcome-title">
+        <h1>Bienvenido, {{userName}}</h1>
+        <p class="welcome-subtitle">Panel de control y estadísticas</p>
       </div>
     </div>
 
-    <!-- Charts row -->
-    <div class="charts-row">
-      <!-- Operaciones por mes chart -->
-      <div class="chart-card">
-        <div class="card-header">
-          <h3>Operaciones por Mes</h3>
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas id="operacionesChart"></canvas>
-          </div>
-        </div>
-      </div>
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando estadísticas...</p>
+    </div>
 
-      <!-- Distribution chart -->
-      <div class="chart-card">
-        <div class="card-header">
-          <h3>{{getChartLabel()}}</h3>
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas id="distribucionChart"></canvas>
-          </div>
-        </div>
+    <!-- No data message -->
+    <div *ngIf="!isLoading && !hasData" class="no-data-container">
+      <div class="no-data-box">
+        <i class="bi bi-bar-chart-line"></i>
+        <h2>Comienza a cargar operaciones</h2>
+        <p>Aún no hay operaciones cargadas para mostrar estadísticas. ¡Crea tu primera cotización y comienza a ver los resultados!</p>
+        <button class="btn btn-primary" routerLink="/cotizador">Crear cotización</button>
       </div>
     </div>
 
-
-    <!-- Top performers section based on role -->
-    <div class="top-performers-section">
-      <h3 class="section-title">Top Rendimiento</h3>
-
-      <!-- Admin - Show top canales and vendors -->
-      <div *ngIf="userRole === rolType.Administrador" class="top-lists">
-        <div class="top-list-card">
-          <div class="card-header">
-            <h4 style="color:black">Top Canales</h4>
+    <!-- Dashboard content when data is available -->
+    <div *ngIf="!isLoading && hasData" class="dashboard-content">
+      <!-- Stats summary cards -->
+      <div class="stats-summary">
+        <div class="stat-card">
+          <div class="stat-icon-box primary-light">
+            <i class="bi bi-clipboard-data"></i>
           </div>
-          <div class="card-body">
-            <ul class="top-list">
-              <li *ngFor="let canal of getTopItems(canalStats)" class="top-list-item">
-                <span class="item-name">{{canal.nombre}}</span>
-                <span class="item-stats">
-                  <span class="item-total">{{canal.totalOperaciones}}</span>
-                  <span class="item-detail">({{canal.operacionesLiquidadas}} liquidadas)</span>
-                </span>
-              </li>
-              <li *ngIf="canalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
-            </ul>
+          <div class="stat-content">
+            <h3 class="stat-value">{{totalOperaciones}}</h3>
+            <p class="stat-label">Total operaciones</p>
           </div>
         </div>
 
-        <div class="top-list-card">
-          <div class="card-header">
-            <h4 style="color:black">Top Vendors</h4>
+        <div class="stat-card">
+          <div class="stat-icon-box success-light">
+            <i class="bi bi-check-circle"></i>
           </div>
-          <div class="card-body">
-            <ul class="top-list">
-              <li *ngFor="let vendor of getTopItems(vendorStats)" class="top-list-item">
-                <span class="item-name">{{vendor.nombre}}</span>
-                <span class="item-stats">
-                  <span class="item-total">{{vendor.totalOperaciones}}</span>
-                  <span class="item-detail">({{vendor.operacionesLiquidadas}} liquidadas)</span>
-                </span>
-              </li>
-              <li *ngIf="vendorStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
-            </ul>
+          <div class="stat-content">
+            <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
+            <p class="stat-label">Operaciones liquidadas</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-box info-light">
+            <i class="bi bi-cash"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{formatMoney(totalMontosLiquidados)}}</h3>
+            <p class="stat-label">Montos liquidados</p>
           </div>
         </div>
       </div>
 
-      <!-- Oficial Comercial - Show top canales and admin canales -->
-      <div *ngIf="userRole === rolType.OficialComercial" class="top-lists">
-        <div class="top-list-card">
+      <!-- Charts row -->
+      <div class="charts-row">
+        <!-- Operaciones por mes chart with filter controls -->
+        <div class="chart-card">
           <div class="card-header">
-            <h4 style="color:black">Top Canales</h4>
+            <div class="chart-header-content">
+              <h3>Operaciones por Mes</h3>
+              <div class="chart-filters">
+                <div class="date-filter">
+                  <div class="form-group">
+                    <label for="startMonth">Desde:</label>
+                    <select id="startMonth" [(ngModel)]="chartStartMonth" (change)="updateOperacionesChart()">
+                      <option *ngFor="let month of availableMonths; let i = index" [value]="i">{{ month }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="endMonth">Hasta:</label>
+                    <select id="endMonth" [(ngModel)]="chartEndMonth" (change)="updateOperacionesChart()">
+                      <option *ngFor="let month of availableMonths; let i = index" [value]="i">{{ month }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="chart-type-toggle">
+                  <button [class.active]="chartType === 'bar'" (click)="changeChartType('bar')">
+                    <i class="bi bi-bar-chart"></i>
+                  </button>
+                  <button [class.active]="chartType === 'line'" (click)="changeChartType('line')">
+                    <i class="bi bi-graph-up"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="card-body">
-            <ul class="top-list">
-              <li *ngFor="let canal of getTopItems(canalStats)" class="top-list-item">
-                <span class="item-name">{{canal.nombre}}</span>
-                <span class="item-stats">
-                  <span class="item-total">{{canal.totalOperaciones}}</span>
-                  <span class="item-detail">({{canal.operacionesLiquidadas}} liquidadas)</span>
-                </span>
-              </li>
-              <li *ngIf="canalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
-            </ul>
+            <div class="chart-container">
+              <canvas id="operacionesChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-summary">
+            <div class="summary-item">
+              <span class="summary-label">Total Operaciones:</span>
+              <span class="summary-value">{{ totalOperacionesEnRango }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Operaciones Liquidadas:</span>
+              <span class="summary-value">{{ operacionesLiquidadasEnRango }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Porcentaje Liquidado:</span>
+              <span class="summary-value">{{ getPorcentajeLiquidado() }}%</span>
+            </div>
           </div>
         </div>
 
-        <div class="top-list-card">
+        <!-- Distribution chart with legend toggle -->
+        <div class="chart-card">
           <div class="card-header">
-            <h4 style="color:black">Top Administradores de Canal</h4>
+            <div class="chart-header-content">
+              <h3>{{getChartLabel()}}</h3>
+              <div class="chart-filters">
+                <div class="chart-type-toggle">
+                  <button [class.active]="distribucionChartType === 'doughnut'" (click)="changeDistribucionChartType('doughnut')">
+                    <i class="bi bi-pie-chart"></i>
+                  </button>
+                  <button [class.active]="distribucionChartType === 'bar'" (click)="changeDistribucionChartType('bar')">
+                    <i class="bi bi-bar-chart"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="card-body">
-            <ul class="top-list">
-              <li *ngFor="let admin of getTopItems(adminCanalStats)" class="top-list-item">
-                <span class="item-name">{{admin.nombre}}</span>
-                <span class="item-stats">
-                  <span class="item-total">{{admin.totalOperaciones}}</span>
-                  <span class="item-detail">({{admin.operacionesLiquidadas}} liquidadas)</span>
-                </span>
-              </li>
-              <li *ngIf="adminCanalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
-            </ul>
+            <div class="chart-container">
+              <canvas id="distribucionChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-summary" *ngIf="distribucionChartType === 'doughnut'">
+            <div class="summary-item" *ngFor="let item of topEntitiesForDistribution; let i = index">
+              <span class="summary-label" [style.color]="distribucionChartColors[i]">{{item.nombre}}:</span>
+              <span class="summary-value">{{item.totalOperaciones}} ({{formatPorcentaje(item.totalOperaciones, totalOperaciones)}}%)</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- AdminCanal - Show top subcanales and vendors -->
-      <div *ngIf="userRole === rolType.AdminCanal" class="top-lists">
-        <div class="top-list-card">
-          <div class="card-header">
-            <h4>Top Subcanales</h4>
-          </div>
-          <div class="card-body">
-            <ul class="top-list">
-              <li *ngFor="let subcanal of getTopItems(subcanalStats)" class="top-list-item">
-                <span class="item-name">{{subcanal.nombre}}</span>
-                <span class="item-stats">
-                  <span class="item-total">{{subcanal.totalOperaciones}}</span>
-                  <span class="item-detail">({{subcanal.operacionesLiquidadas}} liquidadas)</span>
-                </span>
-              </li>
-              <li *ngIf="subcanalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
-            </ul>
-          </div>
-        </div>
+      <!-- Top performers section based on role -->
+      <div class="top-performers-section">
+        <h3 class="section-title">Top Rendimiento</h3>
 
-        <div class="top-list-card">
-          <div class="card-header">
-            <h4>Top Vendors</h4>
-          </div>
-          <div class="card-body">
-            <ul class="top-list">
-              <li *ngFor="let vendor of getTopItems(vendorStats)" class="top-list-item">
-                <span class="item-name">{{vendor.nombre}}</span>
-                <span class="item-stats">
-                  <span class="item-total">{{vendor.totalOperaciones}}</span>
-                  <span class="item-detail">({{vendor.operacionesLiquidadas}} liquidadas)</span>
-                </span>
-              </li>
-              <li *ngIf="vendorStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Vendor - Show latest operations -->
-      <div *ngIf="userRole === rolType.Vendor" class="top-lists">
-        <div class="top-list-card full-width">
-          <div class="card-header">
-            <h4>Mis Últimas Operaciones</h4>
-          </div>
-          <div class="card-body">
-            <ul class="top-list operation-list">
-              <li *ngFor="let op of getTopItems(operaciones)" class="top-list-item">
-                <span class="item-name">
-                  <span class="operation-date">{{op.fechaCreacion | date:'dd/MM/yyyy'}}</span>
-                  <span class="operation-client">{{op.clienteNombre || 'Cliente'}}</span>
-                </span>
-                <span class="item-stats">
-                  <span class="operation-amount">{{formatMoney(op.monto)}}</span>
-                  <span class="operation-status" [ngClass]="'status-' + (op.estado || 'pendiente').toLowerCase()">
-                    {{op.estado || 'Pendiente'}}
+        <!-- Admin - Show top canales and vendors -->
+        <div *ngIf="userRole === rolType.Administrador" class="top-lists">
+          <div class="top-list-card">
+            <div class="card-header">
+              <h4 style="color:black">Top Canales</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list">
+                <li *ngFor="let canal of getTopItems(canalStats)" class="top-list-item">
+                  <span class="item-name">{{canal.nombre}}</span>
+                  <span class="item-stats">
+                    <span class="item-total">{{canal.totalOperaciones}}</span>
+                    <span class="item-detail">({{canal.operacionesLiquidadas}} liquidadas)</span>
                   </span>
-                </span>
-              </li>
-              <li *ngIf="operaciones.length === 0" class="empty-list-item">No hay operaciones disponibles</li>
-            </ul>
+                </li>
+                <li *ngIf="canalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="top-list-card">
+            <div class="card-header">
+              <h4 style="color:black">Top Vendors</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list">
+                <li *ngFor="let vendor of getTopItems(vendorStats)" class="top-list-item">
+                  <span class="item-name">{{vendor.nombre}}</span>
+                  <span class="item-stats">
+                    <span class="item-total">{{vendor.totalOperaciones}}</span>
+                    <span class="item-detail">({{vendor.operacionesLiquidadas}} liquidadas)</span>
+                  </span>
+                </li>
+                <li *ngIf="vendorStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oficial Comercial - Show top canales and admin canales -->
+        <div *ngIf="userRole === rolType.OficialComercial" class="top-lists">
+          <div class="top-list-card">
+            <div class="card-header">
+              <h4 style="color:black">Top Canales</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list">
+                <li *ngFor="let canal of getTopItems(canalStats)" class="top-list-item">
+                  <span class="item-name">{{canal.nombre}}</span>
+                  <span class="item-stats">
+                    <span class="item-total">{{canal.totalOperaciones}}</span>
+                    <span class="item-detail">({{canal.operacionesLiquidadas}} liquidadas)</span>
+                  </span>
+                </li>
+                <li *ngIf="canalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="top-list-card">
+            <div class="card-header">
+              <h4 style="color:black">Top Administradores de Canal</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list">
+                <li *ngFor="let admin of getTopItems(adminCanalStats)" class="top-list-item">
+                  <span class="item-name">{{admin.nombre}}</span>
+                  <span class="item-stats">
+                    <span class="item-total">{{admin.totalOperaciones}}</span>
+                    <span class="item-detail">({{admin.operacionesLiquidadas}} liquidadas)</span>
+                  </span>
+                </li>
+                <li *ngIf="adminCanalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- AdminCanal - Show top subcanales and vendors -->
+        <div *ngIf="userRole === rolType.AdminCanal" class="top-lists">
+          <div class="top-list-card">
+            <div class="card-header">
+              <h4>Top Subcanales</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list">
+                <li *ngFor="let subcanal of getTopItems(subcanalStats)" class="top-list-item">
+                  <span class="item-name">{{subcanal.nombre}}</span>
+                  <span class="item-stats">
+                    <span class="item-total">{{subcanal.totalOperaciones}}</span>
+                    <span class="item-detail">({{subcanal.operacionesLiquidadas}} liquidadas)</span>
+                  </span>
+                </li>
+                <li *ngIf="subcanalStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="top-list-card">
+            <div class="card-header">
+              <h4>Top Vendors</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list">
+                <li *ngFor="let vendor of getTopItems(vendorStats)" class="top-list-item">
+                  <span class="item-name">{{vendor.nombre}}</span>
+                  <span class="item-stats">
+                    <span class="item-total">{{vendor.totalOperaciones}}</span>
+                    <span class="item-detail">({{vendor.operacionesLiquidadas}} liquidadas)</span>
+                  </span>
+                </li>
+                <li *ngIf="vendorStats.length === 0" class="empty-list-item">No hay datos disponibles</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendor - Show latest operations -->
+        <div *ngIf="userRole === rolType.Vendor" class="top-lists">
+          <div class="top-list-card full-width">
+            <div class="card-header">
+              <h4>Mis Últimas Operaciones</h4>
+            </div>
+            <div class="card-body">
+              <ul class="top-list operation-list">
+                <li *ngFor="let op of getTopItems(operaciones)" class="top-list-item">
+                  <span class="item-name">
+                    <span class="operation-date">{{op.fechaCreacion | date:'dd/MM/yyyy'}}</span>
+                    <span class="operation-client">{{op.clienteNombre || 'Cliente'}}</span>
+                  </span>
+                  <span class="item-stats">
+                    <span class="operation-amount">{{formatMoney(op.monto)}}</span>
+                    <span class="operation-status" [ngClass]="'status-' + (op.estado || 'pendiente').toLowerCase()">
+                      {{op.estado || 'Pendiente'}}
+                    </span>
+                  </span>
+                </li>
+                <li *ngIf="operaciones.length === 0" class="empty-list-item">No hay operaciones disponibles</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 </div>

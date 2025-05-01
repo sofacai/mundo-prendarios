@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Chart, registerables } from 'chart.js';
+import { FormsModule } from '@angular/forms';
+import { Chart, ChartOptions, ChartType, registerables } from 'chart.js';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { OperacionService } from 'src/app/core/services/operacion.service';
 import { CanalService } from 'src/app/core/services/canal.service';
@@ -19,7 +20,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -41,6 +42,23 @@ export class DashboardWelcomeComponent implements OnInit {
   operacionesLiquidadas: number = 0;
   operacionesPendientes: number = 0;
   totalMontosLiquidados: number = 0;
+
+  // Chart configuration
+  chartType: string = 'bar'; // 'bar' or 'line'
+  distribucionChartType: string = 'doughnut'; // 'doughnut' or 'bar'
+  availableMonths: string[] = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  chartStartMonth: number = 0;
+  chartEndMonth: number = 5;
+  totalOperacionesEnRango: number = 0;
+  operacionesLiquidadasEnRango: number = 0;
+  distribucionChartColors: string[] = [
+    'rgba(0, 158, 247, 0.8)',
+    'rgba(80, 205, 137, 0.8)',
+    'rgba(255, 199, 0, 0.8)',
+    'rgba(241, 65, 108, 0.8)',
+    'rgba(114, 57, 234, 0.8)'
+  ];
+  topEntitiesForDistribution: any[] = [];
 
   // Lists según rol
   canales: any[] = [];
@@ -68,6 +86,14 @@ export class DashboardWelcomeComponent implements OnInit {
 
   isSidebarCollapsed = false;
 
+  // Data structures for chart metrics
+  operacionesPorMes: {
+    meses: string[];
+    totales: number[];
+    liquidadas: number[];
+    fullData: { mes: string, total: number, liquidadas: number }[];
+  } = { meses: [], totales: [], liquidadas: [], fullData: [] };
+
 
   constructor(
     private authService: AuthService,
@@ -77,8 +103,6 @@ export class DashboardWelcomeComponent implements OnInit {
     private usuarioService: UsuarioService,
     private planService: PlanService,
     private sidebarStateService: SidebarStateService
-
-
   ) {}
 
   ngOnInit(): void {
@@ -104,6 +128,7 @@ export class DashboardWelcomeComponent implements OnInit {
   ngAfterViewInit(): void {
     // Los gráficos se inicializarán después de cargar los datos
   }
+
   private adjustContentArea() {
     const contentArea = document.querySelector('.content-area') as HTMLElement;
     if (contentArea) {
@@ -119,6 +144,164 @@ export class DashboardWelcomeComponent implements OnInit {
     if (this.sidebarSubscription) {
       this.sidebarSubscription.unsubscribe();
     }
+
+    if (this.operacionesChart) {
+      this.operacionesChart.destroy();
+    }
+
+    if (this.distribucionChart) {
+      this.distribucionChart.destroy();
+    }
+
+    if (this.comparacionChart) {
+      this.comparacionChart.destroy();
+    }
+  }
+
+  // Chart type change methods
+  changeChartType(type: string): void {
+    this.chartType = type;
+    this.updateOperacionesChart();
+  }
+
+  changeDistribucionChartType(type: string): void {
+    this.distribucionChartType = type;
+    this.updateDistribucionChart();
+  }
+
+  updateOperacionesChart(): void {
+    if (!this.operacionesChart) return;
+
+    // Get data for selected range
+    const filteredData = this.getFilteredChartData();
+
+    // Calculate summary stats for the filtered range
+    this.totalOperacionesEnRango = filteredData.totales.reduce((sum, value) => sum + value, 0);
+    this.operacionesLiquidadasEnRango = filteredData.liquidadas.reduce((sum, value) => sum + value, 0);
+
+    // Recrear el gráfico con el nuevo tipo
+    const canvas = this.operacionesChart.canvas;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Guardar los datos y configuración actuales
+    const data = {
+      labels: filteredData.meses,
+      datasets: [
+        {
+          label: 'Total Operaciones',
+          data: filteredData.totales,
+          backgroundColor: 'rgba(0, 158, 247, 0.7)',
+          borderColor: 'rgba(0, 158, 247, 1)',
+          borderWidth: 2,
+          tension: 0.4
+        },
+        {
+          label: 'Operaciones Liquidadas',
+          data: filteredData.liquidadas,
+          backgroundColor: 'rgba(80, 205, 137, 0.7)',
+          borderColor: 'rgba(80, 205, 137, 1)',
+          borderWidth: 2,
+          tension: 0.4
+        }
+      ]
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        },
+        title: {
+          display: false
+        }
+      }
+    };
+
+    // Destruir el gráfico actual
+    this.operacionesChart.destroy();
+
+    // Crear un nuevo gráfico con el tipo actualizado
+    this.operacionesChart = new Chart(ctx, {
+      type: this.chartType as any,
+      data: data,
+      options: options
+    });
+  }
+
+  updateDistribucionChart(): void {
+    if (!this.distribucionChart) return;
+
+    // Recrear el gráfico con el nuevo tipo
+    const canvas = this.distribucionChart.canvas;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Obtener los datos actuales
+    const data = this.distribucionChart.data;
+
+    // Crear un nuevo objeto de opciones basado en el tipo de gráfico
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: this.distribucionChartType === 'bar' ? 'y' as const : undefined,
+      plugins: {
+        legend: {
+          position: 'right' as const,
+          display: this.distribucionChartType === 'doughnut'
+        }
+      }
+    };
+
+    // Destruir el gráfico actual
+    this.distribucionChart.destroy();
+
+    // Crear un nuevo gráfico con el tipo actualizado
+    this.distribucionChart = new Chart(ctx, {
+      type: this.distribucionChartType as any,
+      data: data,
+      options: options
+    });
+  }
+
+  // Helper method to get filtered data based on month selection
+  getFilteredChartData(): { meses: string[], totales: number[], liquidadas: number[] } {
+    // Ensure start month is before end month
+    const start = Math.min(this.chartStartMonth, this.chartEndMonth);
+    const end = Math.max(this.chartStartMonth, this.chartEndMonth);
+
+    // Extract data for the selected range
+    const meses = this.operacionesPorMes.meses.slice(start, end + 1);
+    const totales = this.operacionesPorMes.totales.slice(start, end + 1);
+    const liquidadas = this.operacionesPorMes.liquidadas.slice(start, end + 1);
+
+    return { meses, totales, liquidadas };
+  }
+
+  // Percentage calculation helper
+  getPorcentajeLiquidado(): string {
+    if (this.totalOperacionesEnRango === 0) return "0";
+    return ((this.operacionesLiquidadasEnRango / this.totalOperacionesEnRango) * 100).toFixed(1);
+  }
+
+  formatPorcentaje(valor: number, total: number): string {
+    if (total === 0) return "0";
+    return ((valor / total) * 100).toFixed(1);
   }
 
   loadDataBasedOnRole(): void {
@@ -472,8 +655,40 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   processData(): void {
-    // Agrupar operaciones por mes
-    const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
+    // Agrupar operaciones por mes y preparar datos para gráficos
+    const operacionesPorMesData = this.groupOperacionesPorMes();
+    this.operacionesPorMes = operacionesPorMesData;
+
+    // Calcular total y operaciones liquidadas en el rango seleccionado
+    this.totalOperacionesEnRango = operacionesPorMesData.totales.slice(this.chartStartMonth, this.chartEndMonth + 1)
+      .reduce((sum, value) => sum + value, 0);
+    this.operacionesLiquidadasEnRango = operacionesPorMesData.liquidadas.slice(this.chartStartMonth, this.chartEndMonth + 1)
+      .reduce((sum, value) => sum + value, 0);
+
+    // Preparar datos para el gráfico de distribución
+    this.prepareDistributionData();
+  }
+
+  prepareDistributionData(): void {
+    // Configurar datos de entidades principales según el rol para el gráfico de distribución
+    if (this.userRole === RolType.Administrador) {
+      this.topEntitiesForDistribution = this.canalStats.slice(0, 5);
+    } else if (this.userRole === RolType.OficialComercial) {
+      this.topEntitiesForDistribution = this.canalStats.slice(0, 5);
+    } else if (this.userRole === RolType.AdminCanal) {
+      this.topEntitiesForDistribution = this.subcanalStats.slice(0, 5);
+    } else {
+      // Para Vendor, mostrar por estado
+      const operacionesPorEstado: Map<string, number> = new Map();
+      this.operaciones.forEach(op => {
+        const estado = op.estado || 'Sin estado';
+        operacionesPorEstado.set(estado, (operacionesPorEstado.get(estado) || 0) + 1);
+      });
+
+      this.topEntitiesForDistribution = Array.from(operacionesPorEstado.entries())
+        .map(([nombre, totalOperaciones]) => ({ nombre, totalOperaciones }))
+        .sort((a, b) => b.totalOperaciones - a.totalOperaciones);
+    }
   }
 
   initializeCharts(): void {
@@ -482,11 +697,6 @@ export class DashboardWelcomeComponent implements OnInit {
       setTimeout(() => {
         this.initOperacionesChart();
         this.initDistribucionChart();
-
-        // Para admin y oficial comercial, inicializar gráfico de comparación
-        if (this.userRole === RolType.Administrador || this.userRole === RolType.OficialComercial) {
-          this.initComparacionChart();
-        }
       }, 300);
     }
   }
@@ -497,35 +707,33 @@ export class DashboardWelcomeComponent implements OnInit {
 
     const ctx = canvas as HTMLCanvasElement;
 
-    // Agrupar operaciones por mes
-    const operacionesPorMes = this.groupOperacionesPorMes();
+    // Obtener datos filtrados para el rango seleccionado
+    const filteredData = this.getFilteredChartData();
 
     if (this.operacionesChart) {
       this.operacionesChart.destroy();
     }
 
     this.operacionesChart = new Chart(ctx, {
-      type: 'line',
+      type: this.chartType as any,
       data: {
-        labels: operacionesPorMes.meses,
+        labels: filteredData.meses,
         datasets: [
           {
             label: 'Total Operaciones',
-            data: operacionesPorMes.totales,
-            backgroundColor: 'rgba(0, 158, 247, 0.2)',
+            data: filteredData.totales,
+            backgroundColor: 'rgba(0, 158, 247, 0.7)',
             borderColor: 'rgba(0, 158, 247, 1)',
             borderWidth: 2,
-            tension: 0.4,
-            fill: true
+            tension: 0.4
           },
           {
             label: 'Operaciones Liquidadas',
-            data: operacionesPorMes.liquidadas,
-            backgroundColor: 'rgba(80, 205, 137, 0.2)',
+            data: filteredData.liquidadas,
+            backgroundColor: 'rgba(80, 205, 137, 0.7)',
             borderColor: 'rgba(80, 205, 137, 1)',
             borderWidth: 2,
-            tension: 0.4,
-            fill: true
+            tension: 0.4
           }
         ]
       },
@@ -559,142 +767,33 @@ export class DashboardWelcomeComponent implements OnInit {
 
     const ctx = canvas as HTMLCanvasElement;
 
-    let labels: string[] = [];
-    let data: number[] = [];
-
-    // Datos según rol
-    if (this.userRole === RolType.Administrador) {
-      labels = this.canalStats.slice(0, 5).map(item => item.nombre);
-      data = this.canalStats.slice(0, 5).map(item => item.totalOperaciones);
-    } else if (this.userRole === RolType.OficialComercial) {
-      labels = this.canalStats.slice(0, 5).map(item => item.nombre);
-      data = this.canalStats.slice(0, 5).map(item => item.totalOperaciones);
-    } else if (this.userRole === RolType.AdminCanal) {
-      labels = this.subcanalStats.slice(0, 5).map(item => item.nombre);
-      data = this.subcanalStats.slice(0, 5).map(item => item.totalOperaciones);
-    } else {
-      // Para Vendor, mostrar por estado
-      const operacionesPorEstado: {[key: string]: number} = {};
-      this.operaciones.forEach(op => {
-        const estado = op.estado || 'Sin estado';
-        operacionesPorEstado[estado] = (operacionesPorEstado[estado] || 0) + 1;
-      });
-
-      labels = Object.keys(operacionesPorEstado);
-      data = Object.values(operacionesPorEstado);
-    }
+    // Preparar datos para el gráfico de distribución
+    const labels = this.topEntitiesForDistribution.map(item => item.nombre);
+    const data = this.topEntitiesForDistribution.map(item => item.totalOperaciones);
 
     if (this.distribucionChart) {
       this.distribucionChart.destroy();
     }
 
     this.distribucionChart = new Chart(ctx, {
-      type: 'doughnut',
+      type: this.distribucionChartType as any,
       data: {
         labels,
         datasets: [{
           data,
-          backgroundColor: [
-            'rgba(0, 158, 247, 0.7)',
-            'rgba(80, 205, 137, 0.7)',
-            'rgba(255, 199, 0, 0.7)',
-            'rgba(241, 65, 108, 0.7)',
-            'rgba(114, 57, 234, 0.7)'
-          ],
+          backgroundColor: this.distribucionChartColors,
+          borderColor: this.distribucionChartColors.map(color => color.replace('0.8', '1')),
           borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: this.distribucionChartType === 'bar' ? 'y' : undefined,
         plugins: {
           legend: {
-            position: 'right'
-          }
-        }
-      }
-    });
-  }
-
-  initComparacionChart(): void {
-    const canvas = document.getElementById('comparacionChart');
-    if (!canvas) return;
-
-    const ctx = canvas as HTMLCanvasElement;
-
-    // Para comparar rendimiento por tipo de usuario (solo para admin y oficial comercial)
-    let labels: string[] = [];
-    let dataTotales: number[] = [];
-    let dataLiquidadas: number[] = [];
-
-    if (this.userRole === RolType.Administrador) {
-      // Crear datos comparativos por tipo de rol
-      const adminCanal = this.adminCanalStats.reduce((sum, item) => sum + item.totalOperaciones, 0);
-      const oficialComercial = this.oficialComercialStats.reduce((sum, item) => sum + item.totalOperaciones, 0);
-      const vendor = this.vendorStats.reduce((sum, item) => sum + item.totalOperaciones, 0);
-
-      const adminCanalLiquidadas = this.adminCanalStats.reduce((sum, item) => sum + item.operacionesLiquidadas, 0);
-      const oficialComercialLiquidadas = this.oficialComercialStats.reduce((sum, item) => sum + item.operacionesLiquidadas, 0);
-      const vendorLiquidadas = this.vendorStats.reduce((sum, item) => sum + item.operacionesLiquidadas, 0);
-
-      labels = ['Admin Canal', 'Oficial Comercial', 'Vendor'];
-      dataTotales = [adminCanal, oficialComercial, vendor];
-      dataLiquidadas = [adminCanalLiquidadas, oficialComercialLiquidadas, vendorLiquidadas];
-    } else if (this.userRole === RolType.OficialComercial) {
-      // Mostrar top 5 vendors vs admin canales
-      const topVendors = this.vendorStats.slice(0, 3);
-      const topAdminCanales = this.adminCanalStats.slice(0, 2);
-
-      labels = [
-        ...topVendors.map(v => v.nombre),
-        ...topAdminCanales.map(a => a.nombre)
-      ];
-
-      dataTotales = [
-        ...topVendors.map(v => v.totalOperaciones),
-        ...topAdminCanales.map(a => a.totalOperaciones)
-      ];
-
-      dataLiquidadas = [
-        ...topVendors.map(v => v.operacionesLiquidadas),
-        ...topAdminCanales.map(a => a.operacionesLiquidadas)
-      ];
-    }
-
-    if (this.comparacionChart) {
-      this.comparacionChart.destroy();
-    }
-
-    this.comparacionChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Total Operaciones',
-            data: dataTotales,
-            backgroundColor: 'rgba(0, 158, 247, 0.7)',
-            borderColor: 'rgba(0, 158, 247, 1)',
-            borderWidth: 1
-          },
-          {
-            label: 'Operaciones Liquidadas',
-            data: dataLiquidadas,
-            backgroundColor: 'rgba(80, 205, 137, 0.7)',
-            borderColor: 'rgba(80, 205, 137, 1)',
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              precision: 0
-            }
+            position: 'right',
+            display: this.distribucionChartType === 'doughnut'
           }
         }
       }
@@ -702,10 +801,11 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   // Helper methods
-  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[]} {
+  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[], fullData: any[]} {
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const operacionesPorMes = new Map();
     const operacionesLiquidadasPorMes = new Map();
+    const fullData: any[] = [];
 
     // Inicializar todos los meses con 0
     meses.forEach(mes => {
@@ -716,9 +816,14 @@ export class DashboardWelcomeComponent implements OnInit {
     // Si no hay operaciones, devolver datos de muestra
     if (!this.operaciones || this.operaciones.length === 0) {
       return {
-        meses: meses.slice(0, 6),
-        totales: Array(6).fill(0),
-        liquidadas: Array(6).fill(0)
+        meses: meses,
+        totales: Array(12).fill(0),
+        liquidadas: Array(12).fill(0),
+        fullData: meses.map(mes => ({
+          mes,
+          total: 0,
+          liquidadas: 0
+        }))
       };
     }
 
@@ -738,12 +843,19 @@ export class DashboardWelcomeComponent implements OnInit {
       }
     });
 
-    // Obtener los últimos 6 meses
-    const mesesRecientes = meses.slice(0, 6);
-    const totales = mesesRecientes.map(mes => operacionesPorMes.get(mes) || 0);
-    const liquidadas = mesesRecientes.map(mes => operacionesLiquidadasPorMes.get(mes) || 0);
+    // Crear array completo de datos
+    const totales = meses.map(mes => operacionesPorMes.get(mes) || 0);
+    const liquidadas = meses.map(mes => operacionesLiquidadasPorMes.get(mes) || 0);
 
-    return { meses: mesesRecientes, totales, liquidadas };
+    meses.forEach((mes, index) => {
+      fullData.push({
+        mes,
+        total: totales[index],
+        liquidadas: liquidadas[index]
+      });
+    });
+
+    return { meses, totales, liquidadas, fullData };
   }
 
   agruparOperacionesPorMes(operaciones: any[]): { [key: string]: any[] } {

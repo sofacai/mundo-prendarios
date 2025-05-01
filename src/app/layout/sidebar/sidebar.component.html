@@ -160,35 +160,47 @@
       </div>
 
       <!-- Nueva sección: Profile y Logout -->
-      <div class="user-menu">
-        <ul class="menu-list">
-          <!-- Perfil -->
-          <li class="menu-item" [class.active]="isActiveRoute('/profile')">
-            <a (click)="navigateTo('/profile')" class="menu-link">
-              <div class="menu-icon">
-                <i class="bi bi-person-circle"></i>
-              </div>
-              <span class="menu-text" *ngIf="!isSidebarCollapsed">Perfil</span>
-            </a>
-            <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Perfil</div>
-          </li>
-
-          <!-- Logout -->
-          <li class="menu-item">
-            <a (click)="logout()" class="menu-link">
-              <div class="menu-icon">
-                <i class="bi bi-box-arrow-right"></i>
-              </div>
-              <span class="menu-text" *ngIf="!isSidebarCollapsed">Cerrar Sesión</span>
-            </a>
-            <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Cerrar Sesión</div>
-          </li>
-        </ul>
-
-        <button class="toggle-btn floating" (click)="toggleSidebar()">
-          <i class="bi" [ngClass]="isSidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
-        </button>
+     <!-- User menu section with WhatsApp contact link added -->
+<div class="user-menu">
+  <!-- WhatsApp Contact Link -->
+  <div class="whatsapp-contact">
+    <a href="https://wa.me/5491178561602" target="_blank" class="contact-link">
+      <div class="contact-icon">
+        <i class="bi bi-whatsapp"></i>
       </div>
+      <span class="contact-text" *ngIf="!isSidebarCollapsed">Contacto (+54 9 11 7856 1602)</span>
+    </a>
+    <div class="contact-tooltip" *ngIf="isSidebarCollapsed">Contacto WhatsApp</div>
+  </div>
+
+  <ul class="menu-list">
+    <!-- Perfil -->
+    <li class="menu-item" [class.active]="isActiveRoute('/profile')">
+      <a (click)="navigateTo('/profile')" class="menu-link">
+        <div class="menu-icon">
+          <i class="bi bi-person-circle"></i>
+        </div>
+        <span class="menu-text" *ngIf="!isSidebarCollapsed">Perfil</span>
+      </a>
+      <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Perfil</div>
+    </li>
+
+    <!-- Logout -->
+    <li class="menu-item">
+      <a (click)="logout()" class="menu-link">
+        <div class="menu-icon">
+          <i class="bi bi-box-arrow-right"></i>
+        </div>
+        <span class="menu-text" *ngIf="!isSidebarCollapsed">Cerrar Sesión</span>
+      </a>
+      <div class="menu-tooltip" *ngIf="isSidebarCollapsed">Cerrar Sesión</div>
+    </li>
+  </ul>
+
+  <button class="toggle-btn floating" (click)="toggleSidebar()">
+    <i class="bi" [ngClass]="isSidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+  </button>
+</div>
     </div>
   </div>
 

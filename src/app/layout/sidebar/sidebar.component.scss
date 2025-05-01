@@ -478,3 +478,89 @@ $header-height: 60px;
   margin-left: $sidebar-width;
   transition: margin-left $transition-duration ease;
 }
+// WhatsApp contact styles
+.whatsapp-contact {
+  padding: 0.75rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.5rem;
+    color: #9899ac;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+
+    &:hover {
+      background-color: $sidebar-hover-bg;
+
+      .contact-text {
+        color: $sidebar-active-text;
+      }
+
+      .contact-icon {
+        color: #25D366; // WhatsApp green
+      }
+    }
+
+    .contact-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+      color: #25D366; // WhatsApp green
+
+      .sidebar-collapsed & {
+        margin: 0 auto;
+      }
+    }
+
+    .contact-text {
+      flex-grow: 1;
+      white-space: nowrap;
+      transition: color 0.2s ease;
+    }
+  }
+
+  .contact-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #30313f;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1002;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 5px 5px 5px 0;
+      border-style: solid;
+      border-color: transparent #30313f transparent transparent;
+    }
+  }
+
+  &:hover .contact-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+}
