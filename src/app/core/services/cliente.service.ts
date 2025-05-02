@@ -27,6 +27,7 @@ export interface Cliente {
   auto?: string;
   codigoPostal?: number;
   fechaNacimiento?: string;
+  dniConyuge?: string;
 }
 
 export interface ClienteCrearDto {
@@ -46,6 +47,8 @@ export interface ClienteCrearDto {
   auto?: string;
   codigoPostal?: number;
   fechaNacimiento?: string;
+  dniConyuge?: string;
+
 }
 
 

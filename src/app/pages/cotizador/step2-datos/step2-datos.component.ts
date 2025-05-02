@@ -47,6 +47,18 @@ export class Step2DatosComponent implements OnInit {
     this.updateValidatorsBasedOnDocType();
     this.cargarDatosGuardados();
 
+    this.clienteForm.get('estadoCivil')?.valueChanges.subscribe(value => {
+      if (value === 'Casado/a') {
+        this.clienteForm.get('dniConyuge')?.setValidators([
+          this.validarDNI.bind(this)
+        ]);
+      } else {
+        this.clienteForm.get('dniConyuge')?.clearValidators();
+        this.clienteForm.get('dniConyuge')?.setValue('');
+      }
+      this.clienteForm.get('dniConyuge')?.updateValueAndValidity({ emitEvent: false });
+    });
+
     setTimeout(() => {
       const whatsappControl = this.clienteForm.get('whatsapp');
       if (whatsappControl && (!whatsappControl.value || whatsappControl.value === '')) {
@@ -70,6 +82,33 @@ export class Step2DatosComponent implements OnInit {
       this.populateFormWithData(datosCliente);
     }
   }
+
+  onDniConyugeInput(event: any) {
+    let value = event.target.value.replace(/\D/g, '').slice(0, 8);
+    let formatted = '';
+
+    if (value.length <= 2) {
+      formatted = value;
+    } else if (value.length <= 5) {
+      formatted = `${value.slice(0, value.length - 3)}.${value.slice(-3)}`;
+    } else {
+      formatted = `${value.slice(0, value.length - 6)}.${value.slice(-6, -3)}.${value.slice(-3)}`;
+    }
+
+    event.target.value = formatted;
+    this.clienteForm.get('dniConyuge')?.setValue(formatted, { emitEvent: false });
+  }
+
+  // Añadir getter para verificar si el DNI del cónyuge es inválido
+  get dniConyugeInvalido(): boolean {
+    // Solo validar si el estado civil es Casado/a
+    if (this.clienteForm.get('estadoCivil')?.value !== 'Casado/a') {
+      return false;
+    }
+    const control = this.clienteForm.get('dniConyuge');
+    return !!(control?.touched && control.errors?.['dniInvalido']);
+  }
+
 
   populateFormWithData(data: any) {
     if (data.dni) {
@@ -104,7 +143,8 @@ export class Step2DatosComponent implements OnInit {
       // Campos existentes
       dni: data.dni || '',
       cuil: data.cuil || '',
-      sexo: data.sexo || ''
+      sexo: data.sexo || '',
+      dniConyuge: ['']
     });
   }
 
@@ -142,14 +182,24 @@ export class Step2DatosComponent implements OnInit {
       if (clearValues) this.clienteForm.patchValue({ dni: '', sexo: '' });
     }
 
+    // Aplicar validadores al campo dniConyuge solo si el estado civil es 'Casado/a'
+    if (this.clienteForm.get('estadoCivil')?.value === 'Casado/a') {
+      this.clienteForm.get('dniConyuge')?.setValidators([
+        this.validarDNI.bind(this)
+      ]);
+    } else {
+      this.clienteForm.get('dniConyuge')?.clearValidators();
+      if (clearValues) this.clienteForm.patchValue({ dniConyuge: '' });
+    }
+
     this.clienteForm.get('dni')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('cuil')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('sexo')?.updateValueAndValidity({ emitEvent: false });
+    this.clienteForm.get('dniConyuge')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('codigoPostal')?.setValidators([
       this.validarCodigoPostal.bind(this)
     ]);
     this.clienteForm.get('codigoPostal')?.updateValueAndValidity({ emitEvent: false });
-
   }
 
   validarCodigoPostal(control: any) {
@@ -347,6 +397,9 @@ export class Step2DatosComponent implements OnInit {
       if (formData.codigoPostal) {
         formData.codigoPostal = parseInt(formData.codigoPostal, 10);
       }
+      if (formData.dniConyuge) {
+        formData.dniConyuge = this.limpiarFormato(formData.dniConyuge);
+      }
 
       this.continuar.emit(formData);
     } else {
@@ -362,7 +415,11 @@ export class Step2DatosComponent implements OnInit {
         this.clienteForm.get('sexo')?.markAsTouched();
       } else {
         this.clienteForm.get('cuil')?.markAsTouched();
+      };
+      if (this.clienteForm.get('estadoCivil')?.value === 'Casado/a') {
+        this.clienteForm.get('dniConyuge')?.markAsTouched();
       }
+
     }
   }
 

@@ -24,6 +24,7 @@ export class CotizadorDataService {
   valorCuota: number = 0;
   planId: number = 0;
   vendorId?: number;
+  dniConyuge?: string;
 
   // Información de antigüedad del auto
   auto?: string; // Será '0km' o el año del auto
@@ -116,6 +117,7 @@ export class CotizadorDataService {
     auto?: string;
     codigoPostal?: number;
     estadoCivil?: string;
+    dniConyuge?: string;
   }) {
     this.nombre = datos.nombre;
     this.apellido = datos.apellido;
@@ -133,6 +135,8 @@ export class CotizadorDataService {
     }
     this.codigoPostal = datos.codigoPostal;
     this.estadoCivil = datos.estadoCivil;
+    this.dniConyuge = datos.dniConyuge;
+
   }
 
   // Guardar información del subcanal

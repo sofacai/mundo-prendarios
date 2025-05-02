@@ -99,6 +99,18 @@
           </div>
         </div>
 
+        <div class="form-group" *ngIf="clienteForm.get('estadoCivil')?.value === 'Casado/a'">
+          <label class="form-label">DNI Cónyuge</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="dniConyuge"
+            (input)="onDniConyugeInput($event)">
+          <small class="text-danger" *ngIf="dniConyugeInvalido">
+            El DNI del cónyuge debe contener entre 7 y 8 dígitos numéricos.
+          </small>
+        </div>
+
         <!-- Auto (ancho completo) -->
         <div class="form-group full-width">
           <label class="form-label">Auto</label>

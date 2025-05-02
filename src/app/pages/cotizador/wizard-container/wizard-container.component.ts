@@ -50,6 +50,7 @@ interface WizardData {
   planesDisponibles?: any[];
   operacionId?: number;
   vendorId?: number;
+  dniConyuge?: string;
 }
 
 @Component({
@@ -566,7 +567,9 @@ export class WizardContainerComponent implements OnInit {
       ingresos: datos.ingresos,
       auto: datos.auto || "",
       codigoPostal: datos.codigoPostal,
-      estadoCivil: datos.estadoCivil || ""
+      estadoCivil: datos.estadoCivil || "",
+      dniConyuge: datos.dniConyuge || ""
+
     };
 
     // Guardar en servicio compartido
@@ -582,7 +585,9 @@ export class WizardContainerComponent implements OnInit {
       ingresos: datos.ingresos,
       auto: datos.auto,
       codigoPostal: datos.codigoPostal,
-      estadoCivil: datos.estadoCivil
+      estadoCivil: datos.estadoCivil,
+      dniConyuge: datos.dniConyuge
+
     });
 
     // 🚨 Consultar situación BCRA si tenemos CUIL
@@ -758,7 +763,9 @@ export class WizardContainerComponent implements OnInit {
       auto: datos.auto,
       codigoPostal: datos.codigoPostal,
       estadoCivil: datos.estadoCivil,
-      autoasignarVendor: true
+      autoasignarVendor: true,
+      dniConyuge: datos.dniConyuge || undefined,
+
     };
 
     this.clienteService.crearCliente(clienteData).subscribe({
