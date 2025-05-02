@@ -442,12 +442,10 @@ cargarPlazosDisponibles() {
       return;
     }
 
-    // Determinar el plan activo
     const planActivoId = this.planSeleccionado === 'Cuotas Fijas' ?
       (this.planCuotasFijas?.id || this.planCuotasFijasId) :
       (this.planUva?.id || this.planUvaId);
 
-    // Buscar el plan activo
     const planActivo = this.subcanalInfo.planesDisponibles.find(plan => plan.id === planActivoId);
 
     if (!planActivo) {
@@ -529,7 +527,6 @@ cargarPlazosDisponibles() {
                 const cuotaInicial = primeraCuota.cuota;
                 const cuotaPromedio = cuotas.reduce((sum, cuota) => sum + cuota, 0) / cuotas.length;
 
-                // Actualizar valores en dataService (no afecta el flujo)
                 this.dataService.cuotaInicial = cuotaInicial;
                 this.dataService.cuotaPromedio = cuotaPromedio;
               }
@@ -541,12 +538,9 @@ cargarPlazosDisponibles() {
           }
         );
       } catch (error) {
-        console.error('Error en onContinuar:', error);
-        // Fallar de forma segura
         this.guardarDatosConCuotas(planActivoId, tasaEspecifica, this.valorCuota, this.valorCuota);
       }
     } else {
-      // Para planes UVA, usar 0 en cuota inicial y promedio
       this.guardarDatosConCuotas(planActivoId, tasaEspecifica, 0, 0);
     }
   }
