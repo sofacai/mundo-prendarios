@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
 
@@ -131,7 +131,22 @@ export class PlanService {
 
   getTasaByPlanIdAndPlazo(planId: number, plazo: number): Observable<PlanTasa> {
     const headers = this.getAuthHeaders();
-    return this.http.get<PlanTasa>(`${this.apiUrlTasa}/plan/${planId}/plazo/${plazo}`, { headers });
+    return this.http.get<PlanTasa>(`${this.apiUrlTasa}/plan/${planId}/plazo/${plazo}`, { headers })
+      .pipe(
+        catchError(error => {
+          console.error(`Error al obtener tasa para plan ${planId} y plazo ${plazo}:`, error);
+          // Devolver un objeto con valores por defecto para evitar que la app se rompa
+          return of({
+            id: 0,
+            planId: planId,
+            plazo: plazo,
+            tasaA: 55, // Valores razonables de fallback
+            tasaB: 65,
+            tasaC: 75,
+            activo: true
+          });
+        })
+      );
   }
 
   createTasa(planId: number, tasa: PlanTasaCrearDto): Observable<PlanTasa> {
@@ -182,4 +197,5 @@ export class PlanService {
   getPlazosValidos(): number[] {
     return [12, 18, 24, 30, 36, 48, 60];
   }
+
 }

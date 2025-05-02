@@ -47,89 +47,100 @@ export class Step3OfertaComponent implements OnInit {
     private cotizadorService: CotizadorService
   ) {}
 
- ngOnInit() {
-  // Obtener datos del servicio compartido primero
-  this.monto = this.dataService.monto;
-  this.plazo = this.dataService.plazo;
-  this.valorCuota = this.dataService.valorCuota;
+  ngOnInit() {
+    // Obtener datos del servicio compartido primero
+    this.monto = this.dataService.monto;
+    this.plazo = this.dataService.plazo;
 
-  // Verificar si está rechazado por BCRA
-  this.esRechazado = this.dataService.rechazadoPorBcra;
-
-  // Obtener el ID de operación si no fue proporcionado
-  if (!this.operacionId && this.dataService.operacionId) {
-    this.operacionId = this.dataService.operacionId;
-  }
-
-  // Si está rechazado, no necesitamos procesar los detalles del plan
-  if (this.esRechazado) {
-    console.log('Operación rechazada - ID:', this.operacionId);
-    return;
-  }
-
-  // A partir de aquí solo se ejecuta para operaciones aprobadas
-  // Identificar el planId seleccionado en step1
-  const selectedPlanId = this.dataService.planId;
-  console.log('Step3 - planId seleccionado en step1:', selectedPlanId);
-
-  // Si hay planes disponibles, buscar el plan correspondiente
-  if (this.planes && this.planes.length > 0) {
-    // Buscar el plan que coincida con el seleccionado en step1
-    const planSeleccionado = this.planes.find(plan => plan.id === selectedPlanId);
-
-    // Si se encuentra, usarlo; si no, usar el primero de la lista
-    if (planSeleccionado) {
-      this.planSeleccionado = planSeleccionado;
-      console.log('Step3 - Usando plan seleccionado en step1:', this.planSeleccionado);
+    // Usar cuotaInicial en lugar de valorCuota cuando esté disponible
+    // y el planId sea 1 (tasa fija)
+    if (this.dataService.planId === 1 && this.dataService.cuotaInicial > 0) {
+      this.valorCuota = this.dataService.cuotaInicial;
     } else {
-      this.planSeleccionado = this.planes[0];
-      console.log('Step3 - Plan no encontrado, usando el primero:', this.planSeleccionado);
+      this.valorCuota = this.dataService.valorCuota;
     }
 
-    this.valorCuota = this.planSeleccionado.cuota;
-  } else {
-    // Si no hay planes disponibles, usar los datos del servicio
-    this.planSeleccionado = {
-      nombre: this.dataService.planTipo,
-      id: selectedPlanId,
-      tasa: this.dataService.tasaAplicada || 0 // Usar la tasa específica aplicada
-    };
+    // Verificar si está rechazado por BCRA
+    this.esRechazado = this.dataService.rechazadoPorBcra;
 
-    console.log('Step3 - Usando datos desde dataService (sin planes):', this.planSeleccionado);
+    // Obtener el ID de operación si no fue proporcionado
+    if (!this.operacionId && this.dataService.operacionId) {
+      this.operacionId = this.dataService.operacionId;
+    }
+
+    // Si está rechazado, no necesitamos procesar los detalles del plan
+    if (this.esRechazado) {
+      console.log('Operación rechazada - ID:', this.operacionId);
+      return;
+    }
+
+    // A partir de aquí solo se ejecuta para operaciones aprobadas
+    // Identificar el planId seleccionado en step1
+    const selectedPlanId = this.dataService.planId;
+    console.log('Step3 - planId seleccionado en step1:', selectedPlanId);
+
+    // Si hay planes disponibles, buscar el plan correspondiente
+    if (this.planes && this.planes.length > 0) {
+      // Buscar el plan que coincida con el seleccionado en step1
+      const planSeleccionado = this.planes.find(plan => plan.id === selectedPlanId);
+
+      // Si se encuentra, usarlo; si no, usar el primero de la lista
+      if (planSeleccionado) {
+        this.planSeleccionado = planSeleccionado;
+        console.log('Step3 - Usando plan seleccionado en step1:', this.planSeleccionado);
+      } else {
+        this.planSeleccionado = this.planes[0];
+        console.log('Step3 - Plan no encontrado, usando el primero:', this.planSeleccionado);
+      }
+
+      // Actualizar valorCuota solo si usamos un plan de los enviados
+      if (selectedPlanId === 1 && this.dataService.cuotaInicial > 0) {
+        // Mantener la cuotaInicial para tasa fija
+      } else {
+        this.valorCuota = this.planSeleccionado.cuota;
+      }
+    } else {
+      // Si no hay planes disponibles, usar los datos del servicio
+      this.planSeleccionado = {
+        nombre: this.dataService.planTipo,
+        id: selectedPlanId,
+        tasa: this.dataService.tasaAplicada || 0 // Usar la tasa específica aplicada
+      };
+
+      console.log('Step3 - Usando datos desde dataService (sin planes):', this.planSeleccionado);
+    }
+
+    // Obtener el planId numérico
+    let planId = this.planSeleccionado.id;
+    if (typeof planId === 'string') {
+      planId = parseInt(planId, 10);
+    }
+
+    console.log('Step3 - planId definitivo:', planId);
+
+    // Verificar si es plan con sistema alemán (planId = 1)
+    this.mostrarTablaAmortizacion = this.cotizadorService.esSistemaAleman(planId);
+
+    // Generar la tabla de amortización o cuotas simples según corresponda
+    this.generarCuotas();
+
+    // Imprimir datos de cálculo en consola
+    const gastosCanal = this.obtenerGastos();
+    console.log('--- DATOS DE CÁLCULO AMORTIZACIÓN ---');
+    console.log('Plan ID:', this.planSeleccionado.id);
+    console.log('Nombre plan:', this.planSeleccionado.nombre);
+    console.log('Monto solicitado:', this.monto);
+    console.log('Meses:', this.plazo);
+    console.log('TNA regular:', this.planSeleccionado.tasa, '%');
+    console.log('TNA aplicada según antigüedad:', this.dataService.tasaAplicada || this.planSeleccionado.tasa, '%');
+    console.log('Antigüedad del auto:', this.dataService.antiguedadGrupo);
+    console.log('Auto:', this.dataService.auto);
+    console.log('Gastos del canal:', gastosCanal);
+    console.log('Mostrar tabla amortización:', this.mostrarTablaAmortizacion);
+    console.log('Operación ID:', this.operacionId);
+    console.log('Estado BCRA:', this.dataService.bcraFormatted);
+    console.log('----------------------------------');
   }
-
-  // Obtener el planId numérico
-  let planId = this.planSeleccionado.id;
-  if (typeof planId === 'string') {
-    planId = parseInt(planId, 10);
-  }
-
-  console.log('Step3 - planId definitivo:', planId);
-
-  // Verificar si es plan con sistema alemán (planId = 1)
-  this.mostrarTablaAmortizacion = this.cotizadorService.esSistemaAleman(planId);
-
-  // Generar la tabla de amortización o cuotas simples según corresponda
-  this.generarCuotas();
-
-  // Imprimir datos de cálculo en consola
-  const gastosCanal = this.obtenerGastos();
-  console.log('--- DATOS DE CÁLCULO AMORTIZACIÓN ---');
-  console.log('Plan ID:', this.planSeleccionado.id);
-  console.log('Nombre plan:', this.planSeleccionado.nombre);
-  console.log('Monto solicitado:', this.monto);
-  console.log('Meses:', this.plazo);
-  console.log('TNA regular:', this.planSeleccionado.tasa, '%');
-  console.log('TNA aplicada según antigüedad:', this.dataService.tasaAplicada || this.planSeleccionado.tasa, '%');
-  console.log('Antigüedad del auto:', this.dataService.antiguedadGrupo);
-  console.log('Auto:', this.dataService.auto);
-  console.log('Gastos del canal:', gastosCanal);
-  console.log('Mostrar tabla amortización:', this.mostrarTablaAmortizacion);
-  console.log('Operación ID:', this.operacionId);
-  console.log('Estado BCRA:', this.dataService.bcraFormatted);
-  console.log('----------------------------------');
-}
-
   toggleSidebar(): void {
     this.sidebarStateService.toggleCotizadorSidebar();
   }

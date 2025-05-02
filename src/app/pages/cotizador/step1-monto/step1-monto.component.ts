@@ -442,7 +442,7 @@ cargarPlazosDisponibles() {
       return;
     }
 
-    // Determinar qué plan se está usando actualmente
+    // Determinar el plan activo
     const planActivoId = this.planSeleccionado === 'Cuotas Fijas' ?
       (this.planCuotasFijas?.id || this.planCuotasFijasId) :
       (this.planUva?.id || this.planUvaId);
@@ -450,75 +450,104 @@ cargarPlazosDisponibles() {
     // Buscar el plan activo
     const planActivo = this.subcanalInfo.planesDisponibles.find(plan => plan.id === planActivoId);
 
-    // Validar si el monto y plazo están dentro del plan seleccionado
-    if (planActivo) {
-      const montoValido = this.monto >= planActivo.montoMinimo && this.monto <= planActivo.montoMaximo;
-      const plazoValido = planActivo.cuotasAplicables.includes(this.plazo);
-
-      if (!montoValido || !plazoValido) {
-        this.errorMensaje = "El monto o plazo seleccionado no está disponible para este plan.";
-        return;
-      }
-
-      // Verificar si la tasa para el plazo está activa
-      if (this.tasasPorPlazo[planActivoId] &&
-          this.tasasPorPlazo[planActivoId][this.plazo] &&
-          !this.tasasPorPlazo[planActivoId][this.plazo].activo) {
-        this.errorMensaje = "El plazo seleccionado no está activo para este plan.";
-        return;
-      }
-
-      // Calcular el valor de la cuota para el plan seleccionado con la tasa específica
-      const valorCuota = this.calcularCuotaPara(this.plazo);
-
-      // Inicializar variables para cuotaInicial y cuotaPromedio
-      let cuotaInicial = 0;
-      let cuotaPromedio = 0;
-
-      // MODIFICACIÓN: Solo calcular tabla de amortización para plan ID 1 (tasa fija)
-      if (planActivoId === 1) {
-        // Obtener la tasa específica
-        const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
-
-        // Obtener gastos del subcanal
-        const gastos = this.subcanalInfo.gastos || [];
-
-        // Calcular tabla de amortización
-        this.cotizadorService.calcularTablaAmortizacionConAntiguedad(
-          this.monto,
-          this.plazo,
-          planActivoId,
-          this.antiguedadGrupo,
-          gastos
-        ).subscribe(tabla => {
-          if (tabla && tabla.length > 0) {
-            // La primera cuota (excluyendo el registro inicial con nroCuota=0)
-            const primeraCuota = tabla.find(fila => fila.nroCuota === 1);
-            if (primeraCuota) {
-              cuotaInicial = primeraCuota.cuota;
-            }
-
-            // Calcular el promedio de todas las cuotas
-            const cuotas = tabla.filter(fila => fila.nroCuota > 0).map(fila => fila.cuota);
-            if (cuotas.length > 0) {
-              cuotaPromedio = cuotas.reduce((sum, cuota) => sum + cuota, 0) / cuotas.length;
-            }
-
-            this.guardarDatosConCuotas(planActivoId, tasaEspecifica, cuotaInicial, cuotaPromedio);
-          } else {
-            this.guardarDatosConCuotas(planActivoId, tasaEspecifica, valorCuota, valorCuota);
-          }
-        }, error => {
-          // En caso de error, usar el valor de cuota calculado
-          this.guardarDatosConCuotas(planActivoId, this.obtenerTasaEspecifica(planActivoId, this.plazo), valorCuota, valorCuota);
-        });
-      } else {
-        // Para UVA o planes que no son ID 1, establecer en 0
-        this.guardarDatosConCuotas(planActivoId, this.obtenerTasaEspecifica(planActivoId, this.plazo), 0, 0);
-      }
-    } else {
+    if (!planActivo) {
       this.errorMensaje = "El plan seleccionado no está disponible.";
       return;
+    }
+
+    // Validaciones
+    const montoValido = this.monto >= planActivo.montoMinimo && this.monto <= planActivo.montoMaximo;
+    const plazoValido = planActivo.cuotasAplicables.includes(this.plazo);
+
+    if (!montoValido || !plazoValido) {
+      this.errorMensaje = "El monto o plazo seleccionado no está disponible para este plan.";
+      return;
+    }
+
+    // Verificar tasa activa
+    if (this.tasasPorPlazo[planActivoId] &&
+        this.tasasPorPlazo[planActivoId][this.plazo] &&
+        !this.tasasPorPlazo[planActivoId][this.plazo].activo) {
+      this.errorMensaje = "El plazo seleccionado no está activo para este plan.";
+      return;
+    }
+
+    // Calcular la cuota y guardarla en la propiedad
+    this.valorCuota = this.calcularCuotaPara(this.plazo);
+
+    // Obtener tasa específica
+    const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
+
+    // Plan ID 1 = Tasa Fija (calcular tabla de amortización)
+    // Para otros planes, usar valores por defecto
+    if (planActivoId === 1) {
+      try {
+        // Guardar cuota inicial y promedio con los valores actuales
+        // en caso de que la tabla falle
+        const cuotaInicialDefault = this.valorCuota;
+        const cuotaPromedioDefault = this.valorCuota;
+
+        // Evitar que falle el flujo si ocurre un error
+        this.dataService.guardarDatosPaso1({
+          monto: this.monto,
+          plazo: this.plazo,
+          planTipo: this.planSeleccionado,
+          valorCuota: this.valorCuota,
+          planId: planActivoId,
+          tasaAplicada: tasaEspecifica,
+          antiguedadGrupo: this.antiguedadGrupo,
+          cuotaInicial: cuotaInicialDefault,
+          cuotaPromedio: cuotaPromedioDefault
+        });
+
+        // Guardar dato del auto
+        if (this.isAuto0km) {
+          this.dataService.auto = "0km";
+        } else {
+          this.dataService.auto = this.autoYear.toString();
+        }
+
+        // Continuar al siguiente paso inmediatamente
+        this.continuar.emit({
+          monto: this.monto,
+          plazo: this.plazo,
+          antiguedadGrupo: this.antiguedadGrupo
+        });
+
+        // Intentar actualizar cuotas en segundo plano
+        // Aunque ocurra un error, el flujo ya continuó
+        const gastos = this.subcanalInfo.gastos || [];
+        this.cotizadorService.calcularTablaAmortizacionConAntiguedad(
+          this.monto, this.plazo, planActivoId, this.antiguedadGrupo, gastos
+        ).subscribe(
+          tabla => {
+            if (tabla && tabla.length > 1) {
+              const primeraCuota = tabla.find(fila => fila.nroCuota === 1);
+              const cuotas = tabla.filter(fila => fila.nroCuota > 0).map(fila => fila.cuota);
+
+              if (primeraCuota && cuotas.length > 0) {
+                const cuotaInicial = primeraCuota.cuota;
+                const cuotaPromedio = cuotas.reduce((sum, cuota) => sum + cuota, 0) / cuotas.length;
+
+                // Actualizar valores en dataService (no afecta el flujo)
+                this.dataService.cuotaInicial = cuotaInicial;
+                this.dataService.cuotaPromedio = cuotaPromedio;
+              }
+            }
+          },
+          error => {
+            console.error('Error al calcular tabla de amortización:', error);
+            // No mostrar error al usuario, ya que el flujo continuó
+          }
+        );
+      } catch (error) {
+        console.error('Error en onContinuar:', error);
+        // Fallar de forma segura
+        this.guardarDatosConCuotas(planActivoId, tasaEspecifica, this.valorCuota, this.valorCuota);
+      }
+    } else {
+      // Para planes UVA, usar 0 en cuota inicial y promedio
+      this.guardarDatosConCuotas(planActivoId, tasaEspecifica, 0, 0);
     }
   }
 }
