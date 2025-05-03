@@ -71,6 +71,10 @@ export const routes: Routes = [
     data: { roles: [RolType.Administrador] }
   },
   {
+    path: 'auth/recuperar-password',
+    loadComponent: () => import('./pages/auth/recuperar-password/recuperar-password.component').then(m => m.RecuperarPasswordComponent)
+  },
+  {
     path: 'cotizador',
     component: WizardContainerComponent,
     canActivate: [AuthGuard] // Si tienes un guard

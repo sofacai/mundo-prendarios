@@ -7,7 +7,7 @@
         <img src="assets/logo_color.webp" alt="Logo" class="logo">
       </div>
       <h1>Ingresar</h1>
-      <div class="register-link-top">No tenés cuenta? <a routerLink="/auth/register">Registrate</a></div>
+      <div class="register-link-top">No tenés cuenta? <a href="http://mundoprendario.com/registrar" target="_blank">Registrate</a></div>
 
       <!-- Formulario -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
@@ -31,7 +31,7 @@
         <div class="form-group">
           <div class="password-header">
             <label for="password">Contraseña</label>
-            <a href="javascript:void(0)" class="forgot-link">¿Olvidaste tu contraseña?</a>
+            <a routerLink="/auth/recuperar-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
           </div>
           <input
             class="form-control"
