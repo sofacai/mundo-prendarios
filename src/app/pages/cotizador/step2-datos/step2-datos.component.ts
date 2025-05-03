@@ -39,7 +39,8 @@ export class Step2DatosComponent implements OnInit {
       estadoCivil: [''],
       dni: [''],
       cuil: [''],
-      sexo: ['']
+      sexo: [''],
+      dniConyuge: ['']
     });
   }
 
@@ -144,7 +145,7 @@ export class Step2DatosComponent implements OnInit {
       dni: data.dni || '',
       cuil: data.cuil || '',
       sexo: data.sexo || '',
-      dniConyuge: ['']
+       dniConyuge: data.dniConyuge || ''
     });
   }
 
@@ -399,6 +400,8 @@ export class Step2DatosComponent implements OnInit {
       }
       if (formData.dniConyuge) {
         formData.dniConyuge = this.limpiarFormato(formData.dniConyuge);
+        console.log('DNI Conyuge after cleaning:', formData.dniConyuge); // Add this for debugging
+
       }
 
       this.continuar.emit(formData);

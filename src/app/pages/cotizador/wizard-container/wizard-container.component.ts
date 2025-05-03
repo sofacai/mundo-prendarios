@@ -1158,7 +1158,8 @@ export class WizardContainerComponent implements OnInit {
     }
   }
 
-  // Modified continuarCreacionLead method to handle "sin bcra" case
+
+
   private continuarCreacionLead(operacionCreada: any, cliente: any, nombrePlan: string): void {
     const nombre = (cliente?.nombre || this.wizardData.clienteNombre || '').toString();
     const apellido = (cliente?.apellido || this.wizardData.clienteApellido || '').toString();
@@ -1170,10 +1171,12 @@ export class WizardContainerComponent implements OnInit {
     const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
     const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
     const auto = (cliente.auto || this.wizardData.auto || '').toString();
+    const dniConyuge = cliente.dniConyuge || this.wizardData.dniConyuge || '';
 
-    let sexoFieldValue: number | undefined;
-    if (sexo.toUpperCase() === 'F') sexoFieldValue = 542410;
-    if (sexo.toUpperCase() === 'M') sexoFieldValue = 542412;
+    // Definimos el valor de sexo como string, no como número
+    let sexoFieldValue: string | undefined;
+    if (sexo.toUpperCase() === 'F') sexoFieldValue = "542410";
+    if (sexo.toUpperCase() === 'M') sexoFieldValue = "542412";
 
     this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
       try {
@@ -1189,22 +1192,39 @@ export class WizardContainerComponent implements OnInit {
         const apellidoLimpio = (apellido || '').toString().trim();
         const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
 
-        // Crear contacto con el valor de BCRA apropiado
-        // Si es "sin bcra", se usará ese valor específico
+        // Crear array para los custom_fields_values
+        const contactCustomFields = [
+          { field_id: 500552, values: [{ value: telefono }] }, // Teléfono
+          { field_id: 500554, values: [{ value: email }] },    // Email
+          { field_id: 650694, values: [{ value: codigoPostal }] }, // CP
+          { field_id: 964686, values: [{ value: estadoCivil }] },  // Estado civil
+          { field_id: 973550, values: [{ value: ingresos }] },     // Ingresos (ID actualizado)
+          { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
+          { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
+          { field_id: 969444, values: [{ value: this.dataService.bcraFormatted }] } // Campo BCRA
+        ];
+
+        // Agregar el campo de sexo si existe
+        if (sexoFieldValue) {
+          contactCustomFields.push({
+            field_id: 650450,
+            values: [{ value: sexoFieldValue }]
+          });
+        }
+
+        // Agregar DNI Cónyuge solo si existe
+        if (dniConyuge) {
+          contactCustomFields.push({
+            field_id: 973544,
+            values: [{ value: parseInt(dniConyuge, 10) }]
+          });
+        }
+
+        // Crear contacto
         const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto([{
           first_name: nombre,
           last_name: apellido,
-          custom_fields_values: [
-            { field_id: 500552, values: [{ value: telefono }] }, // Teléfono
-            { field_id: 500554, values: [{ value: email }] },    // Email
-            { field_id: 650694, values: [{ value: codigoPostal }] }, // CP
-            { field_id: 964686, values: [{ value: estadoCivil }] },  // Estado civil
-            { field_id: 964710, values: [{ value: ingresos }] },     // Ingresos
-            { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
-            { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
-            { field_id: 969444, values: [{ value: this.dataService.bcraFormatted }] }, // Campo BCRA
-            ...(sexoFieldValue ? [{ field_id: 650450, values: [{ enum_id: sexoFieldValue }] }] : [])
-          ]
+          custom_fields_values: contactCustomFields
         }]));
 
         const contactId = contactoRes._embedded?.contacts?.[0]?.id;
@@ -1212,11 +1232,9 @@ export class WizardContainerComponent implements OnInit {
 
         // Crear compañía
         const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
-          name: operacionCompleta.canalNombre || 'Canal', // Usar el nombre del canal en lugar del nombreLead
+          name: operacionCompleta.canalNombre || 'Canal',
           custom_fields_values: [
-            // Usar teléfono del usuario creador si no hay vendedor
             { field_id: 500552, values: [{ value: usuarioData.telefono || '+5491100000000' }] },
-            // Usar nombre del usuario creador si no hay vendedor
             { field_id: 962818, values: [{ value: usuarioData.nombre && usuarioData.apellido ?
               `${usuarioData.nombre} ${usuarioData.apellido}` : 'Usuario del sistema' }] },
             { field_id: 963284, values: [{ value: operacionCompleta.subcanalNombre || 'Subcanal' }] }
@@ -1229,40 +1247,57 @@ export class WizardContainerComponent implements OnInit {
         // Determinar etiquetas según estado BCRA
         let etiquetas;
 
-        // Caso sin BCRA
         if (this.dataService.bcraFormatted === "sin bcra") {
-          etiquetas = [{ name: 'Sin BCRA', id: 54267 },     { name: 'Enviar a Banco', id: 35522 }
-          ];
-        }
-        // Caso rechazado
-        else if (this.dataService.rechazadoPorBcra) {
+          etiquetas = [{ name: 'Sin BCRA', id: 54267 }, { name: 'Enviar a Banco', id: 35522 }];
+        } else if (this.dataService.rechazadoPorBcra) {
           etiquetas = [{ name: 'Rechazado BCRA', id: 54266 }];
-        }
-        // Caso para revisar (cuando el formato contiene "#revisar")
-        else if (this.dataService.bcraFormatted.includes("#revisar")) {
+        } else if (this.dataService.bcraFormatted.includes("#revisar")) {
           etiquetas = [
-            { name: 'Revisar BCRA', id: 54268 }, // Usar el ID real de la etiqueta "Revisar BCRA"
-            { name: 'Enviar a Banco', id: 35522 } // Incluimos también esta etiqueta ya que es apto para crédito
+            { name: 'Revisar BCRA', id: 54268 },
+            { name: 'Enviar a Banco', id: 35522 }
           ];
-        }
-        // Caso normal
-        else {
+        } else {
           etiquetas = [{ name: 'Enviar a Banco', id: 35522 }];
         }
 
-        // Crear lead final con todo - usando nombrePlan real obtenido
+        // Crear array para los campos del lead
+        const leadCustomFields = [
+          { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
+          { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto.toString()) || 0 }] },
+          { field_id: 964680, values: [{ value: parseInt(operacionCompleta.meses.toString()) || 0 }] },
+          { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa.toString()) || 0 }] },
+          { field_id: 965126, values: [{ value: auto }] }, // Auto como estaba antes
+          { field_id: 962344, values: [{ value: nombrePlan }] } // Nombre del plan
+        ];
+
+        // Agregar plazo aprobado si existe
+        if (operacionCompleta.mesesAprobados) {
+          leadCustomFields.push({
+            field_id: 973562,
+            values: [{ value: parseInt(operacionCompleta.mesesAprobados.toString()) || 0 }]
+          });
+        }
+
+        // Agregar cuota inicial si existe
+        if (this.dataService.cuotaInicial) {
+          leadCustomFields.push({
+            field_id: 973552,
+            values: [{ value: parseInt(this.dataService.cuotaInicial.toString()) || 0 }]
+          });
+        }
+
+        // Agregar cuota promedio solo si es plan ID 1
+        if (this.dataService.planId === 1 && this.dataService.cuotaPromedio) {
+          leadCustomFields.push({
+            field_id: 973554,
+            values: [{ value: parseInt(this.dataService.cuotaPromedio.toString()) || 0 }]
+          });
+        }
+
+        // Crear lead final
         const lead = [{
           name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
-          custom_fields_values: [
-            { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
-            { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto) || 0 }] },
-            { field_id: 964680, values: [{ value: parseInt(operacionCompleta.meses) || 0 }] },
-            { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa) || 0 }] },
-            { field_id: 965126, values: [{ value: auto }] }, // auto como texto
-
-            // Usar el nombre real del plan obtenido
-            { field_id: 962344, values: [{ value: nombrePlan }] }
-          ],
+          custom_fields_values: leadCustomFields,
           _embedded: {
             contacts: [{ id: contactId }],
             companies: [{ id: companyId }],
@@ -1278,8 +1313,6 @@ export class WizardContainerComponent implements OnInit {
       }
     });
   }
-
-
 
 
 
