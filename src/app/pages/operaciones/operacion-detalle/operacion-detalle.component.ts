@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
@@ -11,6 +12,10 @@ import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.servic
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
 import { Subscription } from 'rxjs';
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SafePipe } from 'src/app/shared/pipes/safe.pipe';
+
 
 @Component({
   selector: 'app-operacion-detalle',
@@ -18,11 +23,14 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     IonicModule,
-    SidebarComponent
+    SidebarComponent,
+    SafePipe
   ],
   templateUrl: './operacion-detalle.component.html',
   styleUrls: ['./operacion-detalle.component.scss']
 })
+
+
 export class OperacionDetalleComponent implements OnInit, OnDestroy {
   operacionId!: number;
   operacion!: Operacion;
@@ -30,6 +38,11 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   vendor: UsuarioDto | null = null;
   canal: Canal | null = null;
   subcanal: Subcanal | null = null;
+
+  // Variable para controlar la visualización del documento
+  showDocumentPreview = false;
+  documentUrl = '';
+  documentType: 'image' | 'pdf' | 'other' = 'other';
 
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
@@ -45,7 +58,9 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     private usuarioService: UsuarioService,
     private canalService: CanalService,
     private subcanalService: SubcanalService,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private alertController: AlertController,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {
@@ -188,9 +203,12 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
 
   // Métodos de formato
   formatMonto(monto: number): string {
+    // Formatear sin centavos
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'ARS'
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(monto);
   }
 
@@ -206,27 +224,50 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   }
 
   getEstadoClass(estado: string): string {
-    switch (estado.toLowerCase()) {
-      case 'activo':
-        return 'badge-success';
-      case 'pendiente':
-        return 'badge-warning';
-      case 'completado':
-        return 'badge-info';
-      case 'cancelado':
-        return 'badge-danger';
-      case 'Ingresada':
-        return 'badge-info';
-      case 'liquidada':
-        return 'badge-success'; // Green for liquidated operations
-      default:
-        return 'badge-light';
+    const estadoLower = estado.toLowerCase();
+
+    // Usando el método del servicio que ya contiene todos los mapeos
+    return this.operacionService.getEstadoClass(estadoLower);
+  }
+
+  // Mostrar observaciones en un popup
+  async mostrarObservaciones() {
+    const alert = await this.alertController.create({
+      header: 'Observaciones',
+      message: this.operacion.observaciones,
+      buttons: ['Cerrar']
+    });
+
+    await alert.present();
+  }
+
+  // Previsualizar documento
+  verDocumento() {
+    if (this.operacion.urlAprobadoDefinitivo) {
+      this.documentUrl = this.operacion.urlAprobadoDefinitivo;
+
+      // Determinar el tipo de documento
+      const url = this.operacion.urlAprobadoDefinitivo.toLowerCase();
+      if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif')) {
+        this.documentType = 'image';
+      } else if (url.endsWith('.pdf')) {
+        this.documentType = 'pdf';
+      } else {
+        this.documentType = 'other';
+      }
+
+      this.showDocumentPreview = true;
     }
   }
-  calcularCuotaMensual(): string {
-    if (!this.operacion) return '-';
-    const { monto, tasa, meses } = this.operacion;
-    const cuota = (monto * (1 + tasa/100)) / meses;
-    return this.formatMonto(cuota);
+
+  cerrarModalAlClickearFuera(event: MouseEvent) {
+    // Verificar si el clic fue fuera del contenido del modal
+    if ((event.target as HTMLElement).classList.contains('document-preview-overlay')) {
+      this.cerrarVistaDocumento();
+    }
+  }
+
+  cerrarVistaDocumento() {
+    this.showDocumentPreview = false;
   }
 }

@@ -24,7 +24,7 @@ export interface Operacion {
   estado?: string;
   usuarioCreadorId?: number;
 
-  // Nuevos campos del backend
+  // Campos existentes
   montoAprobado?: number;
   mesesAprobados?: number;
   tasaAprobada?: number;
@@ -81,11 +81,12 @@ export class OperacionService {
       vendedorId: operacion.vendedorId,
       usuarioCreadorId: operacion.usuarioCreadorId,
       estado: operacion.estado || "Ingresada",
-      // Nuevos campos
+      // Incluir todos los campos adicionales
       cuotaInicial: operacion.cuotaInicial,
       cuotaPromedio: operacion.cuotaPromedio,
       autoInicial: operacion.autoInicial,
-      observaciones: operacion.observaciones
+      observaciones: operacion.observaciones,
+      urlAprobadoDefinitivo: operacion.urlAprobadoDefinitivo
     };
 
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion`, operacionDto, { headers });
@@ -117,17 +118,17 @@ export class OperacionService {
         vendedorId: operacionData.vendedorId,
         usuarioCreadorId: operacionData.usuarioCreadorId,
         estado: operacionData.estado || "Ingresada",
-        // Nuevos campos
+        // Incluir todos los campos adicionales
         cuotaInicial: operacionData.cuotaInicial,
         cuotaPromedio: operacionData.cuotaPromedio,
         autoInicial: operacionData.autoInicial,
-        observaciones: operacionData.observaciones
+        observaciones: operacionData.observaciones,
+        urlAprobadoDefinitivo: operacionData.urlAprobadoDefinitivo
       }
     };
 
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion/cliente`, combinado, { headers });
   }
-
 
   // Obtener operaciones de un canal específico
   getOperacionesPorCanal(canalId: number): Observable<Operacion[]> {
@@ -140,7 +141,7 @@ export class OperacionService {
     const headers = this.getAuthHeaders();
     return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/canal/${canalId}`, { headers })
       .pipe(
-        map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
+        map(operaciones => operaciones.filter(op => op.estado === 'LIQUIDADA').length)
       );
   }
 
@@ -162,7 +163,7 @@ export class OperacionService {
     const headers = this.getAuthHeaders();
     return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/subcanal/${subcanalId}`, { headers })
       .pipe(
-        map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
+        map(operaciones => operaciones.filter(op => op.estado === 'LIQUIDADA').length)
       );
   }
 
@@ -176,7 +177,7 @@ export class OperacionService {
     const headers = this.getAuthHeaders();
     return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/cliente/${clienteId}`, { headers })
       .pipe(
-        map(operaciones => operaciones.filter(op => op.estado === 'Liquidada').length)
+        map(operaciones => operaciones.filter(op => op.estado === 'LIQUIDADA').length)
       );
   }
 
@@ -188,14 +189,22 @@ export class OperacionService {
         return 'rgb(255, 225, 147)';
       case 'liquidada':
         return 'rgb(144, 205, 176)';
-      case 'firmas docu':
+      case 'firmar docum':
         return 'rgb(134, 153, 218)';
+      case 'en gestion':
+        return 'rgb(134, 192, 252)';
       case 'completando docu':
         return 'rgb(134, 192, 252)';
       case 'en analisis':
         return 'rgb(255, 200, 200)';
-      case 'aprobado definit':
+      case 'aprobado def':
         return 'rgb(144, 205, 176)';
+      case 'enviada':
+        return 'rgb(255, 225, 147)';
+      case 'en proc.insc.':
+        return 'rgb(16, 89, 157)';
+      case 'en proc.liq.':
+        return 'rgb(131, 33, 97)';
       case 'ingresada':
         return 'rgb(134, 192, 252)';
       case 'propuesta':
@@ -214,14 +223,22 @@ export class OperacionService {
         return 'badge-op-rechazado';
       case 'liquidada':
         return 'badge-op-liquidada';
-      case 'firmas docu':
+      case 'firmar docum':
         return 'badge-op-firmas-docu';
       case 'completando docu':
         return 'badge-op-completando-docu';
+      case 'en gestion':
+        return 'badge-op-en-gestion';
       case 'en analisis':
         return 'badge-op-en-analisis';
-      case 'aprobado definit':
-        return 'badge-op-aprobado-definit';
+      case 'aprobado def':
+        return 'badge-op-aprobado-def';
+      case 'enviada':
+        return 'badge-op-enviada';
+      case 'en proc.insc.':
+        return 'badge-op-en-proc-insc';
+      case 'en proc.liq.':
+        return 'badge-op-en-proc-liq';
       default:
         return 'badge-light';
     }
