@@ -26,6 +26,8 @@ export class CotizadorDataService {
   vendorId?: number;
   dniConyuge?: string;
 
+  modoSimulacion: boolean = false;
+
   // Información de antigüedad del auto
   auto?: string; // Será '0km' o el año del auto
   isAuto0km: boolean = true;

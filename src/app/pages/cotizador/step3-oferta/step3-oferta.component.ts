@@ -42,9 +42,9 @@ export class Step3OfertaComponent implements OnInit {
   esRechazado: boolean = false;
 
   constructor(
-    private dataService: CotizadorDataService,
+    public dataService: CotizadorDataService,
     private sidebarStateService: SidebarStateService,
-    private cotizadorService: CotizadorService
+    private cotizadorService: CotizadorService,
   ) {}
 
   ngOnInit() {

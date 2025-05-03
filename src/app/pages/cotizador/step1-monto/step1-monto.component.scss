@@ -582,3 +582,37 @@
   opacity: 1;
   visibility: visible;
 }
+
+.simulation-badge {
+  display: flex;
+  align-items: center;
+  background-color: #ffe082;
+  color: #e65100;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: auto;
+  margin-right: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.simulation-badge ion-icon {
+  margin-right: 0.25rem;
+  font-size: 1rem;
+}
+
+/* Ajustar el header-top para acomodar el nuevo badge */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  flex-shrink: 0;
+}
+
+.menu-button {
+  flex-shrink: 0;
+}

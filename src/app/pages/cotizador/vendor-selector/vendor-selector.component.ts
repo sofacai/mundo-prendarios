@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RolType } from 'src/app/core/models/usuario.model';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { CotizadorDataService } from 'src/app/core/services/cotizador-data.service';
 
 @Component({
   selector: 'app-vendor-selector',
@@ -24,6 +25,9 @@ export class VendorSelectorComponent implements OnInit {
   filteredVendors: any[] = [];
   crearOperacionPropia: boolean = false; // Nueva propiedad
 
+  modoSimulacion: boolean = false;
+mostrarOpcionSimulacion: boolean = false;
+
   rolNames: {[key: number]: string} = {
     [RolType.Administrador]: 'Administrador',
     [RolType.OficialComercial]: 'Oficial Comercial',
@@ -31,11 +35,20 @@ export class VendorSelectorComponent implements OnInit {
   };
 
   constructor(
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private dataService: CotizadorDataService
   ) {}
 
   ngOnInit() {
     this.filteredVendors = [...this.vendors];
+
+    const esRolConPermiso = this.currentUserRol === 1 || this.currentUserRol === 4;
+    this.mostrarOpcionSimulacion = esRolConPermiso;
+  }
+
+  onModoSimulacionChange() {
+    // Guardar el estado en el servicio compartido
+    this.dataService.modoSimulacion = this.modoSimulacion;
   }
 
   toggleSidebar(): void {
@@ -67,6 +80,9 @@ export class VendorSelectorComponent implements OnInit {
   }
 
   onSeleccionarVendor() {
+    // Guardar modo simulación en el servicio
+    this.dataService.modoSimulacion = this.modoSimulacion;
+
     if (this.crearOperacionPropia) {
       // Emitir evento para crear operación sin vendedor
       this.crearOperacionSinVendor.emit();

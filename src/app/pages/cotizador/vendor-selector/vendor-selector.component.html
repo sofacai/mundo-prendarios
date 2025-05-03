@@ -23,6 +23,18 @@
       Como {{ rolName }}, puedes realizar cotizaciones en nombre de un vendedor o crear la operación tú mismo.
     </p>
 
+    <div class="simulation-mode-checkbox" *ngIf="mostrarOpcionSimulacion">
+      <input
+        type="checkbox"
+        id="simulationMode"
+        [(ngModel)]="modoSimulacion"
+        (change)="onModoSimulacionChange()">
+      <label for="simulationMode">
+        <span class="simulation-label">MODO SIMULACIÓN</span>
+        <span class="simulation-description">Solo para demostración. No se crearán registros reales.</span>
+      </label>
+    </div>
+
     <!-- Checkbox para crear operación sin vendedor -->
     <div class="self-operation-checkbox">
       <input

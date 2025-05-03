@@ -67,7 +67,7 @@ export class Step1MontoComponent implements OnInit {
   constructor(
     private router: Router,
     private cotizadorService: CotizadorService,
-    private dataService: CotizadorDataService,
+    public dataService: CotizadorDataService,
     private sidebarStateService: SidebarStateService,
     private planService: PlanService
   ) {}

@@ -5,7 +5,26 @@
   background-color: white;
   border-radius: 0rem 0rem 1rem 1rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-  overflow-y: auto; /* Permitir scroll general */
+  overflow-y: auto; /* ¡IMPORTANTE! Esto permite el scroll vertical */
+  max-height: 95vh; /* Ligeramente menor que la altura completa de la ventana */
+  display: flex;
+  flex-direction: column;
+  &::-webkit-scrollbar {
+    width: 4px; /* Ancho muy delgado */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; /* Track transparente */
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1); /* Color muy suave */
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2); /* Un poco más oscuro al pasar el mouse */
+  }
 }
 
 .header {
@@ -39,8 +58,8 @@
   padding: 0.5rem 1.25rem 1.5rem 1.25rem;
   position: relative;
   z-index: 10;
-  margin-top: -0.5rem; /* Ajuste para compensar el espacio del borde curvo */
-}
+  margin-top: -0.5rem;
+  overflow-y: visible;}
 
 .title {
   font-size: 1.25rem;
