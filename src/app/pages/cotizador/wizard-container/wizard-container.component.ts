@@ -1382,29 +1382,58 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
     return operacion; // Devolver la operación original en caso de error
   }
 }
-  enviarOfertaPorWhatsApp(plan: any) {
-    if (!this.wizardData.clienteWhatsapp) {
-      return;
-    }
-
-    const telefono = this.wizardData.clienteWhatsapp.replace(/\D/g, '');
-    const nombre = this.wizardData.clienteNombre || "cliente";
-    const monto = this.wizardData.monto?.toLocaleString('es-AR') || "0";
-    const cuotas = this.wizardData.plazo || "0";
-    const valorCuota = plan.cuota.toLocaleString('es-AR');
-
-    // Construir el mensaje
-    const mensaje = encodeURIComponent(
-      `¡Hola ${nombre}! Te enviamos el detalle de tu oferta de Mundo Prendario:\n\n` +
-      `Monto: $${monto}\n` +
-      `Cuotas: ${cuotas}\n` +
-      `Valor de cuota: $${valorCuota}\n\n` +
-      `¿Te gustaría continuar con el proceso?`
-    );
-
-    // Abrir WhatsApp en una nueva pestaña
-    window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+enviarOfertaPorWhatsApp(plan: any) {
+  if (!this.wizardData.clienteWhatsapp) {
+    return;
   }
+
+  // Format telephone number correctly for WhatsApp
+  let telefono = this.wizardData.clienteWhatsapp.replace(/\D/g, '');
+
+  // Ensure it has the correct format for WhatsApp API
+  if (!telefono.startsWith('549')) {
+    // If it has a different country code, try to preserve it
+    if (telefono.startsWith('54')) {
+      // Add the 9 after country code for Argentina mobile
+      telefono = telefono.replace(/^54/, '549');
+    } else {
+      // Default to Argentina format if no country code
+      telefono = '549' + telefono.replace(/^0/, '');
+    }
+  }
+
+  // Make sure we have a valid phone number
+  if (telefono.length < 10) {
+    console.error('Número de teléfono inválido:', telefono);
+    return;
+  }
+
+  const nombre = this.wizardData.clienteNombre || "cliente";
+  const monto = this.wizardData.monto?.toLocaleString('es-AR') || "0";
+  const cuotas = this.wizardData.plazo || "0";
+  const valorCuota = plan.cuota.toLocaleString('es-AR');
+  const autoInicial = this.dataService.auto || this.wizardData.auto || "no especificado";
+  const idOperacion = this.wizardData.operacionId || "";
+
+  // Check if the operation is rejected
+  const esRechazado = this.dataService.rechazadoPorBcra;
+
+  // Construir el mensaje según el estado de aprobación
+  let mensaje;
+
+  if (esRechazado) {
+    mensaje = encodeURIComponent(
+      `¡Hola ${nombre}! En este momento no tenemos ninguna oferta viable para vos.`
+    );
+  } else {
+    mensaje = encodeURIComponent(
+      `¡Hola ${nombre}! Estamos gestionando una solicitud de préstamo de $${monto} para el auto ${autoInicial} en ${cuotas} cuotas y con un valor estimado de cuota $${valorCuota} *N° de Operación: ${idOperacion}*`
+    );
+  }
+
+  // Open WhatsApp in a new tab
+  window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+}
 
   volverAlPasoAnterior() {
     if (this.wizardData.paso > 1) {

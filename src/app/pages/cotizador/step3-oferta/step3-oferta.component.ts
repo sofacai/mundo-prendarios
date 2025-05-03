@@ -177,6 +177,7 @@ export class Step3OfertaComponent implements OnInit {
     if (this.planSeleccionado && this.planSeleccionado.id) {
       this.seleccionarPlan.emit(this.planSeleccionado.id);
     } else {
+      console.error('No hay plan seleccionado para enviar');
     }
   }
 
