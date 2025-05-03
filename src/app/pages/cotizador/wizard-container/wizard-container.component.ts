@@ -1174,9 +1174,9 @@ export class WizardContainerComponent implements OnInit {
     const dniConyuge = cliente.dniConyuge || this.wizardData.dniConyuge || '';
 
     // Definimos el valor de sexo como string, no como número
-    let sexoFieldValue: string | undefined;
-    if (sexo.toUpperCase() === 'F') sexoFieldValue = "542410";
-    if (sexo.toUpperCase() === 'M') sexoFieldValue = "542412";
+    let sexoValue: string | undefined;
+    if (sexo && sexo.toUpperCase() === 'F') sexoValue = "F";
+    if (sexo && sexo.toUpperCase() === 'M') sexoValue = "M";
 
     this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
       try {
@@ -1205,10 +1205,10 @@ export class WizardContainerComponent implements OnInit {
         ];
 
         // Agregar el campo de sexo si existe
-        if (sexoFieldValue) {
+        if (sexoValue) {
           contactCustomFields.push({
-            field_id: 650450,
-            values: [{ value: sexoFieldValue }]
+            field_id: 973566,
+            values: [{ value: sexoValue }]
           });
         }
 
@@ -1264,7 +1264,6 @@ export class WizardContainerComponent implements OnInit {
         const leadCustomFields = [
           { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
           { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto.toString()) || 0 }] },
-          { field_id: 964680, values: [{ value: parseInt(operacionCompleta.meses.toString()) || 0 }] },
           { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa.toString()) || 0 }] },
           { field_id: 965126, values: [{ value: auto }] }, // Auto como estaba antes
           { field_id: 962344, values: [{ value: nombrePlan }] } // Nombre del plan
