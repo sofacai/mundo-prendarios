@@ -904,7 +904,10 @@ export class WizardContainerComponent implements OnInit {
       forkJoin(planesConTasas$).subscribe({
         next: (planesConCuotas) => {
           this.wizardData.planesDisponibles = planesConCuotas;
-          const planSeleccionado = planesConCuotas[0];
+
+          // Instead of using the first plan, find the plan that matches the selected planId
+          const planIdSeleccionado = this.dataService.planId;
+          const planSeleccionado = planesConCuotas.find(plan => plan.id === planIdSeleccionado) || planesConCuotas[0];
 
           this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then(() => {
             this.wizardData.paso = 3;
@@ -1016,8 +1019,8 @@ export class WizardContainerComponent implements OnInit {
         vendedorId: this.vendorSeleccionado ?? undefined,
         usuarioCreadorId: usuarioCreadorId,
         estado: estadoOperacion,
-        cuotaInicial: this.dataService.cuotaInicial,
-        cuotaPromedio: this.dataService.cuotaPromedio,
+        cuotaInicial: this.dataService.cuotaInicial || this.dataService.valorCuota,
+        cuotaPromedio: this.dataService.cuotaPromedio || this.dataService.valorCuota,
         autoInicial: this.dataService.auto || this.wizardData.auto,
         observaciones: this.dataService.observaciones || ''
       };

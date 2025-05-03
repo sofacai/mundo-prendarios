@@ -374,7 +374,16 @@ cargarPlazosDisponibles() {
 
   seleccionarPlan(plan: 'Cuotas Fijas' | 'UVA') {
     this.planSeleccionado = plan;
-    // Al cambiar de plan, actualizar las cuotas disponibles
+
+    // Set the correct plan ID based on the selected plan type
+    const planId = plan === 'Cuotas Fijas' ?
+                 (this.planCuotasFijas?.id || this.planCuotasFijasId) :
+                 (this.planUva?.id || this.planUvaId);
+
+    // Store the selected plan ID in the data service
+    this.dataService.planId = planId;
+
+    // Rest of the method...
     this.actualizarCuotas();
   }
 
@@ -476,42 +485,40 @@ cargarPlazosDisponibles() {
     // Obtener tasa específica
     const tasaEspecifica = this.obtenerTasaEspecifica(planActivoId, this.plazo);
 
-    // Plan ID 1 = Tasa Fija (calcular tabla de amortización)
-    // Para otros planes, usar valores por defecto
+    // Para TODOS los planes, guardar la cuota inicial y la cuota promedio
+    // con el valor actual de la cuota calculada
+    this.dataService.guardarDatosPaso1({
+      monto: this.monto,
+      plazo: this.plazo,
+      planTipo: this.planSeleccionado,
+      valorCuota: this.valorCuota,
+      planId: planActivoId,
+      tasaAplicada: tasaEspecifica,
+      antiguedadGrupo: this.antiguedadGrupo,
+      // Guardar siempre la cuota inicial para todos los planes
+      cuotaInicial: this.valorCuota,
+      // Por defecto, usar el mismo valor de cuota
+      cuotaPromedio: this.valorCuota
+    });
+
+    // Guardar dato del auto
+    if (this.isAuto0km) {
+      this.dataService.auto = "0km";
+    } else {
+      this.dataService.auto = this.autoYear.toString();
+    }
+
+    // Continuar al siguiente paso inmediatamente
+    this.continuar.emit({
+      monto: this.monto,
+      plazo: this.plazo,
+      antiguedadGrupo: this.antiguedadGrupo
+    });
+
+    // Solo para el Plan ID 1 (Tasa Fija), intentar calcular una tabla de amortización más precisa
+    // pero continuar aunque falle este cálculo
     if (planActivoId === 1) {
       try {
-        // Guardar cuota inicial y promedio con los valores actuales
-        // en caso de que la tabla falle
-        const cuotaInicialDefault = this.valorCuota;
-        const cuotaPromedioDefault = this.valorCuota;
-
-        // Evitar que falle el flujo si ocurre un error
-        this.dataService.guardarDatosPaso1({
-          monto: this.monto,
-          plazo: this.plazo,
-          planTipo: this.planSeleccionado,
-          valorCuota: this.valorCuota,
-          planId: planActivoId,
-          tasaAplicada: tasaEspecifica,
-          antiguedadGrupo: this.antiguedadGrupo,
-          cuotaInicial: cuotaInicialDefault,
-          cuotaPromedio: cuotaPromedioDefault
-        });
-
-        // Guardar dato del auto
-        if (this.isAuto0km) {
-          this.dataService.auto = "0km";
-        } else {
-          this.dataService.auto = this.autoYear.toString();
-        }
-
-        // Continuar al siguiente paso inmediatamente
-        this.continuar.emit({
-          monto: this.monto,
-          plazo: this.plazo,
-          antiguedadGrupo: this.antiguedadGrupo
-        });
-
         // Intentar actualizar cuotas en segundo plano
         // Aunque ocurra un error, el flujo ya continuó
         const gastos = this.subcanalInfo.gastos || [];
@@ -538,10 +545,9 @@ cargarPlazosDisponibles() {
           }
         );
       } catch (error) {
-        this.guardarDatosConCuotas(planActivoId, tasaEspecifica, this.valorCuota, this.valorCuota);
+        console.error('Error al intentar calcular tabla de amortización:', error);
+        // No detener el flujo por este error, ya que los datos básicos ya se guardaron
       }
-    } else {
-      this.guardarDatosConCuotas(planActivoId, tasaEspecifica, 0, 0);
     }
   }
 }
