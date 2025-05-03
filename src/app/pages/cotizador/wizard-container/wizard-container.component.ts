@@ -1212,12 +1212,17 @@ export class WizardContainerComponent implements OnInit {
           });
         }
 
-        // Agregar DNI Cónyuge solo si existe
-        if (dniConyuge) {
-          contactCustomFields.push({
-            field_id: 973544,
-            values: [{ value: parseInt(dniConyuge, 10) }]
-          });
+        if (dniConyuge && dniConyuge.trim() !== '') {
+          // Limpiar cualquier carácter no numérico y convertir a entero
+          const dniConyugeNumerico = parseInt(dniConyuge.replace(/\D/g, ''), 10);
+
+          // Solo agregar si tenemos un número válido
+          if (!isNaN(dniConyugeNumerico) && dniConyugeNumerico > 0) {
+            contactCustomFields.push({
+              field_id: 973572,
+              values: [{ value: dniConyugeNumerico }]
+            });
+          }
         }
 
         // Crear contacto
@@ -1266,30 +1271,26 @@ export class WizardContainerComponent implements OnInit {
           { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto.toString()) || 0 }] },
           { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa.toString()) || 0 }] },
           { field_id: 965126, values: [{ value: auto }] }, // Auto como estaba antes
-          { field_id: 962344, values: [{ value: nombrePlan }] } // Nombre del plan
+          { field_id: 962344, values: [{ value: nombrePlan }] }, // Nombre del plan
+          { field_id: 973570, values: [{ value: parseInt(operacionCompleta.meses.toString()) || 0 }] }, // Número de meses del préstamo
         ];
+
+        leadCustomFields.push({
+          field_id: 973552,
+          values: [{ value: parseInt(this.dataService.cuotaInicial?.toString()) || 0 }]
+        });
+
+        leadCustomFields.push({
+          field_id: 973554,
+          values: [{ value: this.dataService.planId === 1 ?
+            parseInt(this.dataService.cuotaPromedio?.toString()) || 0 : 0 }]
+        });
 
         // Agregar plazo aprobado si existe
         if (operacionCompleta.mesesAprobados) {
           leadCustomFields.push({
             field_id: 973562,
             values: [{ value: parseInt(operacionCompleta.mesesAprobados.toString()) || 0 }]
-          });
-        }
-
-        // Agregar cuota inicial si existe
-        if (this.dataService.cuotaInicial) {
-          leadCustomFields.push({
-            field_id: 973552,
-            values: [{ value: parseInt(this.dataService.cuotaInicial.toString()) || 0 }]
-          });
-        }
-
-        // Agregar cuota promedio solo si es plan ID 1
-        if (this.dataService.planId === 1 && this.dataService.cuotaPromedio) {
-          leadCustomFields.push({
-            field_id: 973554,
-            values: [{ value: parseInt(this.dataService.cuotaPromedio.toString()) || 0 }]
           });
         }
 
