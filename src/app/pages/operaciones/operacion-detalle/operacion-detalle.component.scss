@@ -350,8 +350,8 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  display: flex;
-  justify-content: center;
+  display:flex;
+  flex: justify-content;
   align-items: center;
   padding: 20px;
 }
@@ -390,13 +390,37 @@
 }
 
 /* Estilos para el botón de observaciones */
-.badge-op-enviada {
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em 0.75em;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+}
+
+.badge-op-rechazado {
   background-color: rgb(255, 225, 147);
   color: #000;
 }
 
-.badge-op-aprobado-def {
+.badge-op-liquidada {
   background-color: rgb(144, 205, 176);
+  color: #fff;
+}
+
+.badge-op-firmas-docu {
+  background-color: rgb(134, 153, 218);
+  color: #fff;
+}
+
+.badge-op-completando-docu {
+  background-color: rgb(134, 192, 252);
   color: #fff;
 }
 
@@ -405,9 +429,24 @@
   color: #fff;
 }
 
-.badge-op-firmar-docum {
-  background-color: rgb(134, 153, 218);
+.badge-op-apto-credito {
+  background-color: rgb(144, 205, 176);
   color: #fff;
+}
+
+.badge-op-en-analisis {
+  background-color: rgb(255, 200, 200);
+  color: #fff;
+}
+
+.badge-op-aprobado-def {
+  background-color: rgb(144, 205, 176);
+  color: #fff;
+}
+
+.badge-op-enviada {
+  background-color: rgb(255, 225, 147);
+  color: #000;
 }
 
 .badge-op-en-proc-insc {
@@ -420,15 +459,11 @@
   color: #fff;
 }
 
-.badge-op-rechazado {
-  background-color: #f1416c;
-  color: #fff;
+.badge-light {
+  background-color: rgb(222, 226, 230);
+  color: #7e8299;
 }
 
-.badge-op-liquidada {
-  background-color: rgb(144, 205, 176);
-  color: #fff;
-}
 .document-content {
   flex: 1;
   width: 100%;

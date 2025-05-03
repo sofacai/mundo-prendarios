@@ -241,33 +241,79 @@ tr.cursor-pointer {
   white-space: nowrap;
   text-transform: capitalize;
   letter-spacing: 0.2px;
-
-  &.badge-success {
-    background-color: rgba(80, 205, 137, 0.1);
-    color: #50cd89;
-  }
-
-  &.badge-danger {
-    background-color: rgba(241, 65, 108, 0.1);
-    color: #f1416c;
-  }
-
-  &.badge-warning {
-    background-color: rgba(255, 199, 0, 0.1);
-    color: #ffc700;
-  }
-
-  &.badge-info {
-    background-color: rgba(0, 158, 247, 0.1);
-    color: #009ef7;
-  }
-
-  &.badge-light {
-    background-color: rgba(222, 226, 230, 0.5);
-    color: #7e8299;
-  }
 }
 
+/* Status-specific badge styles */
+.badge-op-rechazado {
+  background-color: rgb(255, 225, 147);
+  color: #000;
+}
+
+.badge-op-liquidada {
+  background-color: rgb(144, 205, 176);
+  color: #fff;
+}
+
+.badge-op-firmas-docu {
+  background-color: rgb(134, 153, 218);
+  color: #fff;
+}
+
+.badge-op-en-gestion {
+  background-color: rgb(134, 192, 252);
+  color: #fff;
+}
+
+.badge-op-completando-docu {
+  background-color: rgb(134, 192, 252);
+  color: #fff;
+}
+
+.badge-op-en-analisis {
+  background-color: rgb(255, 200, 200);
+  color: #fff;
+}
+
+.badge-op-aprobado-def {
+  background-color: rgb(144, 205, 176);
+  color: #fff;
+}
+
+.badge-op-enviada {
+  background-color: rgb(255, 225, 147);
+  color: #000;
+}
+
+.badge-op-en-proc-insc {
+  background-color: rgb(16, 89, 157);
+  color: #fff;
+}
+
+.badge-op-en-proc-liq {
+  background-color: rgb(131, 33, 97);
+  color: #fff;
+}
+
+.badge-op-ingresada {
+  background-color: rgb(134, 192, 252);
+  color: #fff;
+}
+
+.badge-op-propuesta {
+  background-color: rgb(134, 192, 252);
+  color: #fff;
+}
+
+.badge-op-apto-credito {
+  background-color: rgb(144, 205, 176);
+  color: #fff;
+}
+
+/* Default badge */
+.badge-light {
+  background-color: rgb(222, 226, 230);
+  color: #7e8299;
+}
 .pagination-container {
   margin-top: 1.5rem;
   padding: 1rem;

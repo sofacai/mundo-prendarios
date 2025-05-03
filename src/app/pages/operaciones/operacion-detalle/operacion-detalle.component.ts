@@ -224,10 +224,8 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   }
 
   getEstadoClass(estado: string): string {
-    const estadoLower = estado.toLowerCase();
 
-    // Usando el método del servicio que ya contiene todos los mapeos
-    return this.operacionService.getEstadoClass(estadoLower);
+    return this.operacionService.getEstadoClass(estado);
   }
 
   // Mostrar observaciones en un popup

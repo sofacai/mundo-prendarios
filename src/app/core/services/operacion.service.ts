@@ -216,8 +216,14 @@ export class OperacionService {
 
   // Método de utilidad para obtener la clase CSS del estado
   getEstadoClass(estado: string): string {
-    const estadoLower = estado?.toLowerCase() || '';
+    const estadoLower = estado?.toLowerCase()?.trim() || '';
 
+    // Usar una regex para hacer coincidir "apto credito" con variantes
+    if (/apto\s*cr[eé]dito/.test(estadoLower)) {
+      return 'badge-op-apto-credito';
+    }
+
+    // Para el resto de los estados
     switch (estadoLower) {
       case 'rechazado':
         return 'badge-op-rechazado';
@@ -239,7 +245,13 @@ export class OperacionService {
         return 'badge-op-en-proc-insc';
       case 'en proc.liq.':
         return 'badge-op-en-proc-liq';
+      case 'ingresada':
+        return 'badge-op-ingresada';
+      case 'propuesta':
+        return 'badge-op-propuesta';
       default:
+        // Imprimir el estado no reconocido para depuración
+        console.log('Estado no reconocido:', estado);
         return 'badge-light';
     }
   }

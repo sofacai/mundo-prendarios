@@ -334,13 +334,11 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   }
 
   sortBy(column: string) {
-
     if (this.sortState.column === column) {
       this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortState = { column, direction: 'asc' };
     }
-
 
     this.paginaActual = 1;
     this.applyFilters();

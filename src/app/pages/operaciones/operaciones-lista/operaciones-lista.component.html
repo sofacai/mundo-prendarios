@@ -41,10 +41,17 @@
               <option value="all">Todos los estados</option>
               <option value="rechazado">Rechazado</option>
               <option value="liquidada">Liquidada</option>
-              <option value="firmas docu">Firmas Docu</option>
+              <option value="firmar docum">Firmar Docum</option>
               <option value="completando docu">Completando Docu</option>
+              <option value="en gestion">En Gestión</option>
               <option value="en analisis">En Análisis</option>
-              <option value="aprobado definit">Aprobado Definit</option>
+              <option value="aprobado def">Aprobado Def</option>
+              <option value="enviada">Enviada</option>
+              <option value="en proc.insc.">En Proc. Insc.</option>
+              <option value="en proc.liq.">En Proc. Liq.</option>
+              <option value="ingresada">Ingresada</option>
+              <option value="propuesta">Propuesta</option>
+              <option value="apto credito">Apto Crédito</option>
             </select>
           </div>
         </div>
@@ -126,7 +133,8 @@
                   <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleCanal(operacion.canalId || 0)">
                     {{ operacion.canalNombre }}
                   </a>
-                </td>             <td>
+                </td>
+                <td>
                   <div class="badge" [ngClass]="getEstadoClass(operacion.estado)">
                     {{ operacion.estado }}
                   </div>
