@@ -1061,7 +1061,7 @@ export class WizardContainerComponent implements OnInit {
       }
 
       const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
-      const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'APTO CREDITO';
+      const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'ENVIADA';
 
       const cuotaInicial = this.dataService.valorCuota;
       let cuotaPromedio = this.dataService.valorCuota;
