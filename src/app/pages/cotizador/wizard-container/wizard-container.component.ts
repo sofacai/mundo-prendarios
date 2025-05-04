@@ -941,8 +941,6 @@ export class WizardContainerComponent implements OnInit {
                 dniConyuge: this.wizardData.dniConyuge
               };
 
-              // Llamar a crearLeadEnKommo
-              this.crearLeadEnKommo(operacionCreada, clienteData);
             }
 
             // Avanzar al paso 3
