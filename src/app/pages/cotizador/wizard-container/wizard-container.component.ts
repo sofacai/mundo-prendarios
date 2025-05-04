@@ -1063,17 +1063,103 @@ export class WizardContainerComponent implements OnInit {
         return;
       }
 
-      // Si no estamos en modo simulación, seguir con el código original...
-      // Resto del código original sin cambios...
+      // Si ya tenemos un ID de operación, actualizar dataService y resolver
       if (this.wizardData.operacionId) {
-        // Si ya tenemos un ID de operación, actualizar dataService y resolver
         this.dataService.guardarOperacionId(this.wizardData.operacionId);
         resolve({ id: this.wizardData.operacionId });
         return;
       }
 
-      // Resto del método sin cambios (el código original completo)
-      // ...
+      const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
+      const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'APTO CREDITO';
+
+      const operacionData = {
+        monto: this.wizardData.monto!,
+        meses: this.wizardData.plazo!,
+        tasa: tasa,
+        planId: planId,
+        subcanalId: this.subcanalSeleccionado!,
+        canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+        // Incluir vendorId solo si existe uno seleccionado
+        vendedorId: this.vendorSeleccionado ?? undefined,
+        usuarioCreadorId: usuarioCreadorId,
+        estado: estadoOperacion,
+        // Corregido: eliminar propiedades duplicadas
+        cuotaInicial: this.dataService.cuotaInicial || this.dataService.valorCuota,
+        cuotaPromedio: this.dataService.cuotaPromedio || this.dataService.valorCuota,
+        autoInicial: this.dataService.auto || this.wizardData.auto,
+        observaciones: this.dataService.observaciones || ''
+      };
+
+      const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
+        if (!this.yaCreoLeadEnKommo) {
+          this.yaCreoLeadEnKommo = true;
+          this.crearLeadEnKommo(op, cliente);
+        }
+      };
+
+      // FLUJO 1 - Crear cliente + operación juntos
+      if (!this.wizardData.clienteId) {
+        const clienteData = {
+          nombre: this.wizardData.clienteNombre || "",
+          apellido: this.wizardData.clienteApellido || "",
+          whatsapp: this.wizardData.clienteWhatsapp || "",
+          telefono: this.wizardData.clienteWhatsapp || "",
+          email: this.wizardData.clienteEmail || "",
+          dni: this.wizardData.clienteDni || "",
+          cuil: this.wizardData.clienteCuil || "",
+          sexo: this.wizardData.clienteSexo || "",
+          provincia: "",
+          estadoCivil: this.wizardData.estadoCivil || ""
+        };
+
+        this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
+          next: (opCreada) => {
+            if (opCreada?.id) {
+              this.wizardData.operacionId = opCreada.id;
+              // Guardar ID en dataService
+              this.dataService.guardarOperacionId(opCreada.id);
+              ejecutarKommoSiNoFue(opCreada, clienteData);
+            }
+            resolve(opCreada);
+          },
+          error: (err) => {
+            console.error('Error al crear cliente y operación:', err);
+            resolve({ dummy: true });
+          }
+        });
+      }
+      // FLUJO 2 - Cliente ya existe
+      else {
+        this.clienteService.getClienteById(this.wizardData.clienteId).subscribe({
+          next: (cliente) => {
+            const operacion: Operacion = {
+              ...operacionData,
+              clienteId: cliente.id,
+            };
+
+            this.operacionService.crearOperacion(operacion).subscribe({
+              next: (opCreada) => {
+                if (opCreada?.id) {
+                  this.wizardData.operacionId = opCreada.id;
+                  // Guardar ID en dataService
+                  this.dataService.guardarOperacionId(opCreada.id);
+                  ejecutarKommoSiNoFue(opCreada, cliente);
+                }
+                resolve(opCreada);
+              },
+              error: (err) => {
+                console.error('Error al crear operación:', err);
+                resolve({ dummy: true });
+              }
+            });
+          },
+          error: (err) => {
+            console.error('Error al obtener cliente:', err);
+            resolve({ dummy: true });
+          }
+        });
+      }
     });
   }
 
