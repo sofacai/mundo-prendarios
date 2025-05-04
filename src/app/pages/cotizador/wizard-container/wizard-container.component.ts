@@ -1039,17 +1039,10 @@ export class WizardContainerComponent implements OnInit {
 
   private crearOperacion(planId: number, tasa: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      // Verificar modo simulación
       if (this.dataService.modoSimulacion) {
-        // Simular ID de operación
-        const operacionIdSimulado = -new Date().getTime(); // ID negativo para simular
+        const operacionIdSimulado = -new Date().getTime();
         this.wizardData.operacionId = operacionIdSimulado;
         this.dataService.guardarOperacionId(operacionIdSimulado);
-
-        // Mostrar mensaje de simulación en consola (para depuración)
-        console.log('SIMULACIÓN: Se creó una operación simulada con ID:', operacionIdSimulado);
-
-        // Resolver con datos simulados
         resolve({
           id: operacionIdSimulado,
           simulado: true,
@@ -1061,7 +1054,6 @@ export class WizardContainerComponent implements OnInit {
         return;
       }
 
-      // Si ya tenemos un ID de operación, actualizar dataService y resolver
       if (this.wizardData.operacionId) {
         this.dataService.guardarOperacionId(this.wizardData.operacionId);
         resolve({ id: this.wizardData.operacionId });
@@ -1071,6 +1063,13 @@ export class WizardContainerComponent implements OnInit {
       const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
       const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'APTO CREDITO';
 
+      const cuotaInicial = this.dataService.valorCuota;
+      let cuotaPromedio = this.dataService.valorCuota;
+
+      if (planId === 1 && this.dataService.cuotaPromedio > 0) {
+        cuotaPromedio = this.dataService.cuotaPromedio;
+      }
+
       const operacionData = {
         monto: this.wizardData.monto!,
         meses: this.wizardData.plazo!,
@@ -1078,13 +1077,11 @@ export class WizardContainerComponent implements OnInit {
         planId: planId,
         subcanalId: this.subcanalSeleccionado!,
         canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-        // Incluir vendorId solo si existe uno seleccionado
         vendedorId: this.vendorSeleccionado ?? undefined,
         usuarioCreadorId: usuarioCreadorId,
         estado: estadoOperacion,
-        // Corregido: eliminar propiedades duplicadas
-        cuotaInicial: this.dataService.cuotaInicial || this.dataService.valorCuota,
-        cuotaPromedio: this.dataService.cuotaPromedio || this.dataService.valorCuota,
+        cuotaInicial: cuotaInicial,
+        cuotaPromedio: cuotaPromedio,
         autoInicial: this.dataService.auto || this.wizardData.auto,
         observaciones: this.dataService.observaciones || ''
       };
@@ -1096,7 +1093,6 @@ export class WizardContainerComponent implements OnInit {
         }
       };
 
-      // FLUJO 1 - Crear cliente + operación juntos
       if (!this.wizardData.clienteId) {
         const clienteData = {
           nombre: this.wizardData.clienteNombre || "",
@@ -1115,19 +1111,16 @@ export class WizardContainerComponent implements OnInit {
           next: (opCreada) => {
             if (opCreada?.id) {
               this.wizardData.operacionId = opCreada.id;
-              // Guardar ID en dataService
               this.dataService.guardarOperacionId(opCreada.id);
               ejecutarKommoSiNoFue(opCreada, clienteData);
             }
             resolve(opCreada);
           },
           error: (err) => {
-            console.error('Error al crear cliente y operación:', err);
             resolve({ dummy: true });
           }
         });
       }
-      // FLUJO 2 - Cliente ya existe
       else {
         this.clienteService.getClienteById(this.wizardData.clienteId).subscribe({
           next: (cliente) => {
@@ -1140,20 +1133,17 @@ export class WizardContainerComponent implements OnInit {
               next: (opCreada) => {
                 if (opCreada?.id) {
                   this.wizardData.operacionId = opCreada.id;
-                  // Guardar ID en dataService
                   this.dataService.guardarOperacionId(opCreada.id);
                   ejecutarKommoSiNoFue(opCreada, cliente);
                 }
                 resolve(opCreada);
               },
               error: (err) => {
-                console.error('Error al crear operación:', err);
                 resolve({ dummy: true });
               }
             });
           },
           error: (err) => {
-            console.error('Error al obtener cliente:', err);
             resolve({ dummy: true });
           }
         });
@@ -1349,7 +1339,7 @@ export class WizardContainerComponent implements OnInit {
 
         leadCustomFields.push({
           field_id: 973552,
-          values: [{ value: parseInt(this.dataService.cuotaInicial?.toString()) || 0 }]
+          values: [{ value: parseInt(this.dataService.valorCuota?.toString()) || 0 }]
         });
 
         leadCustomFields.push({
@@ -1357,6 +1347,22 @@ export class WizardContainerComponent implements OnInit {
           values: [{ value: this.dataService.planId === 1 ?
             parseInt(this.dataService.cuotaPromedio?.toString()) || 0 : 0 }]
         });
+        if (this.dataService.planId === 1) {
+          // Si hay un valor calculado en cuotaPromedio, usarlo
+          if (this.dataService.cuotaPromedio > 0) {
+            leadCustomFields.push({
+              field_id: 973554,
+              values: [{ value: parseInt(this.dataService.cuotaPromedio.toString()) || 0 }]
+            });
+          }
+          // Si no hay un valor calculado, usar el mismo valor que la cuota inicial
+          else {
+            leadCustomFields.push({
+              field_id: 973554,
+              values: [{ value: parseInt(this.dataService.valorCuota.toString()) || 0 }]
+            });
+          }
+        }
 
         // Agregar plazo aprobado si existe
         if (operacionCompleta.mesesAprobados) {
@@ -1385,7 +1391,6 @@ export class WizardContainerComponent implements OnInit {
       }
     });
   }
-
 
 
 

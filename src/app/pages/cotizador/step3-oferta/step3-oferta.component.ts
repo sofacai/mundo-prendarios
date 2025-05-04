@@ -86,6 +86,24 @@ export class Step3OfertaComponent implements OnInit {
 
     // Generar la tabla de amortización
     this.generarCuotas();
+
+    // Si estamos en Plan ID 1, calcular y guardar la cuota promedio
+    if (this.planSeleccionado.id === 1) {
+      this.calcularYGuardarCuotaPromedio();
+    }
+  }
+
+  // Método para calcular y guardar la cuota promedio
+  private calcularYGuardarCuotaPromedio(): void {
+    if (this.tablaAmortizacion && this.tablaAmortizacion.length > 1) {
+      const cuotas = this.tablaAmortizacion.slice(1).map(fila => fila.cuota);
+      const suma = cuotas.reduce((total, cuota) => total + cuota, 0);
+      const promedio = Math.round(suma / cuotas.length);
+
+      // Guardar en dataService
+      this.dataService.cuotaPromedio = promedio;
+      console.log('Cuota promedio calculada y guardada:', promedio);
+    }
   }
   toggleSidebar(): void {
     this.sidebarStateService.toggleCotizadorSidebar();
@@ -107,8 +125,12 @@ export class Step3OfertaComponent implements OnInit {
     const porcentajeGastos = gastosCanal.reduce((total, gasto) => total + gasto.porcentaje, 0);
     const montoTotal = this.monto * (1 + porcentajeGastos / 100);
 
-    // CUOTA FIJA (principal) - Este valor es constante
-    const cuotaBase = 628870; // Este valor debe venir del step1 o calcularse
+    // CUOTA FIJA (principal) - Calcular el valor base para la fórmula francesa
+    // En lugar de hardcodear el valor, lo calculamos con la fórmula correcta
+    const tasaMensual = tasaAplicada / 100 / 12;
+    const factor = Math.pow(1 + tasaMensual, this.plazo);
+    // Fórmula francesa para cuota base (sin IVA)
+    const cuotaBase = montoTotal * (tasaMensual * factor) / (factor - 1);
 
     // Iniciar la tabla con el saldo inicial
     this.tablaAmortizacion = [
@@ -127,16 +149,13 @@ export class Step3OfertaComponent implements OnInit {
     let saldoAnterior = montoTotal;
 
     for (let i = 1; i <= this.plazo; i++) {
-      // Tasa mensual (similar al Excel)
-      const tasaMensual = tasaAplicada / 100 / 12;
-
       // Interés = Saldo anterior * tasa mensual
       const interesMensual = saldoAnterior * tasaMensual;
 
       // IVA = 21% del interés
       const ivaMensual = interesMensual * 0.21;
 
-      // Amortización (capital) = Resto del pago disponible después de interés e IVA
+      // Amortización (capital) = Cuota base - Interés
       const capitalMensual = cuotaBase - interesMensual;
 
       // Cuota total que ve el usuario = cuotaBase + IVA
@@ -162,9 +181,6 @@ export class Step3OfertaComponent implements OnInit {
 
     // Guardar todas las cuotas totales calculadas
     this.cuotas = this.tablaAmortizacion.slice(1).map(fila => fila.cuota);
-
-    // Usar el valor mostrado en Step1 para la cuota mostrada
-    this.valorCuota = this.dataService.valorCuota;
   }
 
   private obtenerGastos(): any[] {
