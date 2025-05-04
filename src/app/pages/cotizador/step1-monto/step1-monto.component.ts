@@ -1,4 +1,4 @@
-// Actualización de step1-monto.component.ts
+// Modificación de step1-monto.component.ts - Método calcularCuotaPara
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -115,66 +115,82 @@ export class Step1MontoComponent implements OnInit {
     }
   }
 
- // Método para cargar plazos disponibles según los planes activos
-cargarPlazosDisponibles() {
-  // Planes a considerar
-  const planesSeleccionados = [this.planCuotasFijas, this.planUva].filter(plan => plan);
+  cargarPlazosDisponibles() {
+    // Planes a considerar
+    const planesSeleccionados = [this.planCuotasFijas, this.planUva].filter(plan => plan);
 
-  // Para cada plan seleccionado, vamos a obtener sus tasas
-  const observables = planesSeleccionados.map(plan => {
-    return this.planService.getTasasByPlanId(plan.id).pipe(
-      map(tasas => {
-        // Filtrar solo las tasas activas y extraer sus plazos
-        return tasas
-          .filter(tasa => tasa.activo) // Filtrar aquí por el campo activo
-          .map(tasa => tasa.plazo);
-      }),
-      catchError(error => {
-        console.error(`Error al obtener tasas para el plan ${plan.id}:`, error);
-        // En caso de error, usar los plazos definidos en el plan
-        return of(plan.cuotasAplicables || []);
-      })
-    );
-  });
+    // Para cada plan seleccionado, vamos a obtener sus tasas
+    const observables = planesSeleccionados.map(plan => {
+      return this.planService.getTasasByPlanId(plan.id).pipe(
+        map(tasas => {
+          // Filtrar por tasas activas y que tengan tasa válida para el grupo de antigüedad actual
+          return tasas
+            .filter(tasa => {
+              // Primero verificar que esté activo
+              if (!tasa.activo) return false;
 
-  // Combinar los resultados de todos los planes
-  forkJoin(observables).subscribe({
-    next: (resultados) => {
-      // Aplanar el array de arrays y eliminar duplicados
-      const todosPlazos = Array.from(new Set(resultados.flat()));
+              // Luego verificar que tenga tasa válida para el grupo de antigüedad
+              switch (this.antiguedadGrupo) {
+                case AntiguedadGrupo.A:
+                  return tasa.tasaA > 0;
+                case AntiguedadGrupo.B:
+                  return tasa.tasaB > 0;
+                case AntiguedadGrupo.C:
+                  return tasa.tasaC > 0;
+                default:
+                  return tasa.tasaA > 0;
+              }
+            })
+            .map(tasa => tasa.plazo);
+        }),
+        catchError(error => {
+          console.error(`Error al obtener tasas para el plan ${plan.id}:`, error);
+          // En caso de error, usar los plazos definidos en el plan
+          return of(plan.cuotasAplicables || []);
+        })
+      );
+    });
 
-      if (todosPlazos.length > 0) {
-        // Ordenar los plazos
-        this.plazosDisponibles = todosPlazos.sort((a, b) => a - b);
+    // Combinar los resultados de todos los planes
+    forkJoin(observables).subscribe({
+      next: (resultados) => {
+        // Aplanar el array de arrays y eliminar duplicados
+        const todosPlazos = Array.from(new Set(resultados.flat()));
 
-        // Preseleccionar el plazo más largo disponible
-        if (this.plazosDisponibles.includes(this.plazo)) {
-          // Si el plazo actual está disponible, mantenerlo
-        } else if (this.plazosDisponibles.length > 0) {
-          this.plazo = this.plazosDisponibles[this.plazosDisponibles.length - 1];
+        if (todosPlazos.length > 0) {
+          // Ordenar los plazos
+          this.plazosDisponibles = todosPlazos.sort((a, b) => a - b);
+
+          // Preseleccionar el plazo más largo disponible
+          if (this.plazosDisponibles.includes(this.plazo)) {
+            // Si el plazo actual está disponible, mantenerlo
+          } else if (this.plazosDisponibles.length > 0) {
+            this.plazo = this.plazosDisponibles[this.plazosDisponibles.length - 1];
+          }
+
+          // Preseleccionar un monto intermedio entre min y max
+          this.monto = Math.round((this.montoMinimo + this.montoMaximo) / 2);
+          this.montoFormateado = this.formatearMonto(this.monto);
+
+          // Mostrar en consola los plazos disponibles para debug
+          console.log(`Plazos disponibles para grupo ${this.antiguedadGrupo}:`, this.plazosDisponibles);
+        } else {
+          this.errorMensaje = "No se encontraron plazos disponibles para los planes seleccionados con la antigüedad del auto actual.";
+          // Usar plazos predeterminados
+          this.plazosDisponibles = [12, 24, 36, 48, 60];
         }
 
-        // Preseleccionar un monto intermedio entre min y max
-        this.monto = Math.round((this.montoMinimo + this.montoMaximo) / 2);
-        this.montoFormateado = this.formatearMonto(this.monto);
-      } else {
-        this.errorMensaje = "No se encontraron plazos disponibles para los planes seleccionados.";
-        // Usar plazos predeterminados
+        this.cargando = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar plazos disponibles:', error);
+        this.errorMensaje = "Error al cargar los plazos disponibles.";
+        // Usar plazos predeterminados en caso de error
         this.plazosDisponibles = [12, 24, 36, 48, 60];
+        this.cargando = false;
       }
-
-      this.cargando = false;
-    },
-    error: (error) => {
-      console.error('Error al cargar plazos disponibles:', error);
-      this.errorMensaje = "Error al cargar los plazos disponibles.";
-      // Usar plazos predeterminados en caso de error
-      this.plazosDisponibles = [12, 24, 36, 48, 60];
-      this.cargando = false;
-    }
-  });
-}
-
+    });
+  }
   // Método para cargar las tasas específicas por plazo y antigüedad
   cargarTasasPorPlazo() {
     // Verificar ambos planes y cargar sus tasas
@@ -211,27 +227,41 @@ cargarPlazosDisponibles() {
     });
   }
 
-  // Método para obtener la tasa específica según antigüedad y plazo
   obtenerTasaEspecifica(planId: number, plazo: number): number {
+    console.log(`Obteniendo tasa para planId=${planId}, plazo=${plazo}, antiguedadGrupo=${this.antiguedadGrupo}`);
+    console.log('Tasas disponibles:', this.tasasPorPlazo);
+
     // Si no tenemos las tasas específicas, usar la tasa general del plan
     if (!this.tasasPorPlazo[planId] || !this.tasasPorPlazo[planId][plazo]) {
-      const plan = planId === this.planCuotasFijasId ?
-                  this.planCuotasFijas : this.planUva;
+      const plan = planId === this.planCuotasFijasId ? this.planCuotasFijas : this.planUva;
+      console.log(`No se encontró tasa específica, usando tasa general del plan: ${plan?.tasa}%`);
       return plan ? plan.tasa : 0;
     }
 
     // Obtener la tasa según el grupo de antigüedad
     const tasasPlazo = this.tasasPorPlazo[planId][plazo];
+    let tasaSeleccionada = 0;
+
     switch (this.antiguedadGrupo) {
       case AntiguedadGrupo.A:
-        return tasasPlazo.tasaA;
+        tasaSeleccionada = tasasPlazo.tasaA;
+        console.log(`Usando tasaA: ${tasaSeleccionada}% para grupo A (0-10 años)`);
+        break;
       case AntiguedadGrupo.B:
-        return tasasPlazo.tasaB;
+        tasaSeleccionada = tasasPlazo.tasaB;
+        console.log(`Usando tasaB: ${tasaSeleccionada}% para grupo B (11-12 años)`);
+        break;
       case AntiguedadGrupo.C:
-        return tasasPlazo.tasaC;
+        tasaSeleccionada = tasasPlazo.tasaC;
+        console.log(`Usando tasaC: ${tasaSeleccionada}% para grupo C (13-15 años)`);
+        break;
       default:
-        return tasasPlazo.tasaA; // Por defecto, usar tasa A
+        tasaSeleccionada = tasasPlazo.tasaA;
+        console.log(`Usando tasaA por defecto: ${tasaSeleccionada}%`);
     }
+
+    console.log(`Tasa final seleccionada: ${tasaSeleccionada}%`);
+    return tasaSeleccionada;
   }
 
   esPlazoActivo(plazo: number): boolean {
@@ -249,8 +279,24 @@ cargarPlazosDisponibles() {
       return false;
     }
 
-    // Retornar el valor booleano de activo
-    return Boolean(this.tasasPorPlazo[planId][plazo].activo);
+    // Verificar que esté activo y tenga tasa válida para el grupo de antigüedad actual
+    const tasasPlazo = this.tasasPorPlazo[planId][plazo];
+
+    if (!tasasPlazo.activo) {
+      return false;
+    }
+
+    // Verificar que tenga tasa válida para el grupo de antigüedad
+    switch (this.antiguedadGrupo) {
+      case AntiguedadGrupo.A:
+        return tasasPlazo.tasaA > 0;
+      case AntiguedadGrupo.B:
+        return tasasPlazo.tasaB > 0;
+      case AntiguedadGrupo.C:
+        return tasasPlazo.tasaC > 0;
+      default:
+        return tasasPlazo.tasaA > 0;
+    }
   }
 
   toggleSidebar(): void {
@@ -320,8 +366,12 @@ cargarPlazosDisponibles() {
       }
     }
 
+    console.log(`Nuevo grupo de antigüedad: ${this.antiguedadGrupo}, Año del auto: ${this.autoYear}`);
+
+    // Recargar los plazos disponibles según la nueva antigüedad
+    this.cargarPlazosDisponibles();
+
     // Actualizar las cuotas disponibles al cambiar la antigüedad
-    // Ya que algunas tasas podrían no estar disponibles para ciertos grupos de antigüedad
     this.actualizarCuotas();
   }
 
@@ -401,20 +451,61 @@ cargarPlazosDisponibles() {
 
     try {
       // Obtener la tasa específica según antigüedad y plazo
-      const tasa = this.obtenerTasaEspecifica(planId, plazo);
+      const tasaAnual = this.obtenerTasaEspecifica(planId, plazo);
+      console.log(`Plan ID: ${planId}, Grupo antigüedad: ${this.antiguedadGrupo}, Tasa anual: ${tasaAnual}%`);
 
-      // Calcular la cuota con el servicio
-      return this.cotizadorService.calcularCuota(
-        this.monto,
-        plazo,
-        tasa,
-        this.canalGastos
-      );
+      // Verificar si usamos sistema alemán o francés
+      const esSistemaAleman = this.cotizadorService.esSistemaAleman(planId);
+
+      if (esSistemaAleman) {
+        // Usar el método original para sistema alemán
+        return this.cotizadorService.calcularCuota(
+          this.monto,
+          plazo,
+          tasaAnual,
+          this.canalGastos
+        );
+      } else {
+        // Porcentaje de gastos
+        const porcentajeGastos = this.canalGastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
+
+        // Monto con gastos
+        const montoConGastos = this.monto * (1 + porcentajeGastos / 100);
+
+        // Tasa mensual (TNA/12)
+        const tasaMensual = tasaAnual / 100 / 12;
+
+        // Fórmula de amortización francesa directa (sin separar numerador/denominador)
+        // C = P * [i(1+i)^n] / [(1+i)^n - 1]
+        const factor = Math.pow(1 + tasaMensual, plazo);
+        const cuotaPura = montoConGastos * (tasaMensual * factor) / (factor - 1);
+
+        // CORRECCIÓN: Ya no calculamos IVA separado para no distorsionar el resultado
+        // La TNA ya incluye todo
+        const cuotaFinal = cuotaPura;
+
+        // Logs para debugging
+        console.log(`1--- Cálculo cuota para plazo ${plazo} ---`);
+        console.log(`1Monto: $${this.monto.toLocaleString('es-AR')}`);
+        console.log(`1Porcentaje gastos: ${porcentajeGastos}%`);
+        console.log(`1Monto con gastos: $${montoConGastos.toLocaleString('es-AR')}`);
+        console.log(`1Tasa anual: ${tasaAnual}%`);
+        console.log(`1Tasa mensual: ${(tasaMensual * 100).toFixed(6)}%`);
+        console.log(`1Factor (1+i)^n: ${factor.toFixed(6)}`);
+        console.log(`1Fórmula: ${montoConGastos.toLocaleString('es-AR')} * (${tasaMensual} * ${factor.toFixed(6)}) / (${factor.toFixed(6)} - 1)`);
+        console.log(`1Cuota pura: $${cuotaPura.toFixed(2)}`);
+        console.log(`1CUOTA FINAL: $${Math.round(cuotaFinal).toLocaleString('es-AR')}`);
+        console.log(`---------------------------`);
+
+        // Redondear al valor entero más cercano
+        return Math.round(cuotaFinal);
+      }
     } catch (error) {
       console.error('Error al calcular la cuota:', error);
       return 0;
     }
   }
+
   private guardarDatosConCuotas(planId: number, tasa: number, cuotaInicial: number, cuotaPromedio: number) {
     // Guardar los datos en el servicio compartido
     this.dataService.guardarDatosPaso1({

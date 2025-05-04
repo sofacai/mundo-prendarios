@@ -569,6 +569,7 @@ export class WizardContainerComponent implements OnInit {
       codigoPostal: datos.codigoPostal,
       estadoCivil: datos.estadoCivil || "",
       dniConyuge: datos.dniConyuge || ""
+
     };
 
     // Guardar en servicio compartido
@@ -586,44 +587,89 @@ export class WizardContainerComponent implements OnInit {
       codigoPostal: datos.codigoPostal,
       estadoCivil: datos.estadoCivil,
       dniConyuge: datos.dniConyuge
+
     });
 
-    // MODIFICACIÓN: Verificar si estamos en modo simulación
-    if (this.dataService.modoSimulacion) {
-      // En modo simulación, establecemos valores predeterminados para BCRA
-      // y avanzamos directamente sin consultar APIs
-      this.dataService.situacionBcra = 1; // valor predeterminado "normal"
-      this.dataService.bcraPeriodo = "";
-      this.dataService.bcraFormatted = "1#"; // formato para Kommo
-      this.dataService.rechazadoPorBcra = false; // no rechazado
-
-      // Generar ID de cliente ficticio (solo para simulación)
-      this.wizardData.clienteId = -new Date().getTime(); // ID negativo para indicar que es simulado
-      this.dataService.clienteId = this.wizardData.clienteId;
-
-      // Avanzar directamente a obtener planes
-      this.obtenerPlanesYAvanzar();
-      return;
-    }
-
-    // Código original para consultar BCRA si no estamos en modo simulación
+    // 🚨 Consultar situación BCRA si tenemos CUIL
     if (cuilParaBcra) {
       this.BcraService.consultarSituacion(cuilParaBcra)
         .then(bcraResponse => {
-          // Resto del código original sin cambios...
+          // Guardamos la situación numérica
+          const situacionReal = bcraResponse.situacion ?? 0;
+          const periodoStr = bcraResponse.periodo || "";
+          this.dataService.situacionBcra = situacionReal;
+          this.dataService.bcraPeriodo = periodoStr;
 
-          // Código existente para guardar datos BCRA y crear cliente
-          // ...
+          // Determinar si es un caso a revisar (situaciones comprometidas con período reciente)
+          let esParaRevisar = false;
+          let rechazado = false;
+
+          // Solo evaluamos períodos si tenemos situaciones comprometidas (4, 5, 6)
+          if ([4, 5, 6].includes(situacionReal) && periodoStr) {
+            // Convertir período formato YYYYMM a Date
+            const periodoAno = parseInt(periodoStr.substring(0, 4), 10);
+            const periodoMes = parseInt(periodoStr.substring(4, 6), 10) - 1; // Meses en JS son 0-11
+            const fechaPeriodo = new Date(periodoAno, periodoMes);
+
+            // Obtener fecha actual y restar 4 meses
+            const fechaActual = new Date();
+            const cuatroMesesAtras = new Date();
+            cuatroMesesAtras.setMonth(fechaActual.getMonth() - 4);
+
+            // Si el período es más reciente que 4 meses atrás, es para revisar
+            if (fechaPeriodo >= cuatroMesesAtras) {
+              esParaRevisar = true;
+              rechazado = false; // No rechazamos, pero marcamos para revisar
+            } else {
+              // Período más antiguo que 4 meses: mantener rechazo
+              rechazado = true;
+            }
+          } else if ([4, 5, 6].includes(situacionReal)) {
+            // Si tiene situación comprometida pero no tiene período, rechazamos por defecto
+            rechazado = true;
+          }
+
+          // Formato final para Kommo
+          let formattedValue = `${situacionReal}#${periodoStr}`;
+          if (esParaRevisar) {
+            formattedValue += "#revisar";
+          }
+          this.dataService.bcraFormatted = formattedValue;
+
+          // Guardar estado de rechazo
+          this.dataService.rechazadoPorBcra = rechazado;
+
+          this.crearCliente(datos);
         })
         .catch((error: any) => {
-          // Manejo de errores existente sin cambios
-          // ...
+          console.error('Error al consultar BCRA:', error);
+
+          // Manejo específico de errores HTTP 500 o 404
+          if (error?.status === 500 || error?.status === 404) {
+            console.log('BCRA no disponible, continuando sin validación');
+
+            // Establecer valores por defecto para "sin BCRA"
+            this.dataService.situacionBcra = 0;
+            this.dataService.bcraFormatted = "sin bcra";
+            this.dataService.bcraPeriodo = "";
+
+            // IMPORTANTE: Forzar rechazadoPorBcra a false para asegurar que se marque como APTO CREDITO
+            this.dataService.rechazadoPorBcra = false;
+
+            // Continuar con el proceso
+            this.crearCliente(datos);
+          } else {
+            // Para otros errores, mostrar mensaje de error y detener carga
+            this.error = "Error al verificar situación crediticia. Intente nuevamente.";
+            this.cargando = false;
+          }
         });
     } else {
       this.error = "Falta información para consultar la situación crediticia.";
       this.cargando = false;
     }
   }
+
 
   private calcularCuil(dni: string | number, sexo: 'M' | 'F'): string {
     const dniStr = dni.toString().padStart(8, '0');
@@ -769,17 +815,24 @@ export class WizardContainerComponent implements OnInit {
     });
   }
 
-  private obtenerPlanesYAvanzar() {
+  obtenerPlanesYAvanzar() {
+    console.log('Obteniendo planes y avanzando a Step 3...');
+
     if (!this.subcanalSeleccionado || !this.wizardData.monto || !this.wizardData.plazo) {
       this.error = "Faltan datos para calcular planes disponibles.";
       this.cargando = false;
+      console.error('No se puede avanzar: faltan datos fundamentales');
       return;
     }
 
-    if (this.yaCreoLeadEnKommo) {
-      this.cargando = false;
-      return;
-    }
+    // Agregar un timeout de seguridad para avanzar al paso 3 en caso de que algo falle
+    const timeoutSeguridad = setTimeout(() => {
+      if (this.wizardData.paso !== 3) {
+        console.warn('Forzando avance a Step3 por timeout de seguridad');
+        this.wizardData.paso = 3;
+        this.cargando = false;
+      }
+    }, 15000); // 15 segundos máximo
 
     if (this.subcanalSeleccionadoInfo && this.subcanalSeleccionadoInfo.planesDisponibles) {
       // Filtrar planes por monto y plazo
@@ -792,6 +845,7 @@ export class WizardContainerComponent implements OnInit {
       if (planesAplicables.length === 0) {
         this.error = "No hay planes disponibles para el monto y plazo seleccionados.";
         this.cargando = false;
+        clearTimeout(timeoutSeguridad);
         return;
       }
 
@@ -864,22 +918,56 @@ export class WizardContainerComponent implements OnInit {
           const planIdSeleccionado = this.dataService.planId;
           const planSeleccionado = planesConCuotas.find(plan => plan.id === planIdSeleccionado) || planesConCuotas[0];
 
-          this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then(() => {
+          // IMPORTANTE: Aquí está la corrección, llamar a crearOperacion
+          this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then((operacionCreada) => {
+            console.log('Operación creada:', operacionCreada);
+
+            // Si tenemos datos del cliente, crear lead en Kommo
+            if (this.wizardData.clienteId) {
+              // Obtener datos del cliente
+              const clienteData = {
+                id: this.wizardData.clienteId,
+                nombre: this.wizardData.clienteNombre,
+                apellido: this.wizardData.clienteApellido,
+                whatsapp: this.wizardData.clienteWhatsapp,
+                email: this.wizardData.clienteEmail,
+                dni: this.wizardData.clienteDni,
+                cuil: this.wizardData.clienteCuil,
+                sexo: this.wizardData.clienteSexo,
+                ingresos: this.wizardData.ingresos,
+                auto: this.wizardData.auto,
+                codigoPostal: this.wizardData.codigoPostal,
+                estadoCivil: this.wizardData.estadoCivil,
+                dniConyuge: this.wizardData.dniConyuge
+              };
+
+              // Llamar a crearLeadEnKommo
+              this.crearLeadEnKommo(operacionCreada, clienteData);
+            }
+
+            // Avanzar al paso 3
             this.wizardData.paso = 3;
             this.cargando = false;
+            clearTimeout(timeoutSeguridad);
           }).catch(error => {
-            this.error = "Hubo un problema al crear la operación. Por favor, intenta nuevamente.";
+            console.error("Error al crear operación:", error);
+            // Avanzar de todas formas
+            this.wizardData.paso = 3;
             this.cargando = false;
+            clearTimeout(timeoutSeguridad);
           });
         },
         error: (error) => {
           this.error = "Error al calcular planes disponibles.";
+          console.error("Error en forkJoin de planes:", error);
           this.cargando = false;
+          clearTimeout(timeoutSeguridad);
         }
       });
     } else {
       this.error = "No se encontraron planes disponibles para el subcanal seleccionado.";
       this.cargando = false;
+      clearTimeout(timeoutSeguridad);
     }
   }
 

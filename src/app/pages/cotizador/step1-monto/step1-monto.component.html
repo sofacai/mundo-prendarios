@@ -102,28 +102,31 @@
         </div>
 
         <!-- Selección de plazo -->
-
-          <div class="form-group" *ngIf="!cargando">
-            <h3 class="term-heading">Elegí el plazo</h3>
-            <div class="term-options">
-              <button
-                *ngFor="let p of plazosOrdenados"
-                class="term-option"
-                [class.term-option-selected]="plazo === p"
-                [class.term-option-inactive]="!esPlazoActivo(p)"
-                (click)="seleccionarPlazo(p)">
-                <div class="option-left">
-                  <div class="radio" [class.radio-selected]="plazo === p">
-                    <div *ngIf="plazo === p" class="radio-inner"></div>
-                  </div>
-                  <span class="term-text">{{p}} Cuotas</span>
+        <div class="form-group" *ngIf="!cargando">
+          <h3 class="term-heading">Elegí el plazo</h3>
+          <div class="term-options">
+            <button
+              *ngFor="let p of plazosOrdenados"
+              class="term-option"
+              [class.term-option-selected]="plazo === p"
+              [class.term-option-inactive]="!esPlazoActivo(p)"
+              (click)="seleccionarPlazo(p)"
+              [disabled]="!esPlazoActivo(p)">
+              <div class="option-left">
+                <div class="radio" [class.radio-selected]="plazo === p">
+                  <div *ngIf="plazo === p" class="radio-inner"></div>
                 </div>
-                <span class="term-amount" [class.term-amount-selected]="plazo === p">
-                  $ {{calcularCuotaPara(p) | number:'1.0-0'}}
+                <span class="term-text">{{p}} Cuotas</span>
+                <span class="term-tasa" *ngIf="esPlazoActivo(p)">
+                  (TNA: {{obtenerTasaEspecifica(planSeleccionado === 'Cuotas Fijas' ? planCuotasFijasId : planUvaId, p)}}%)
                 </span>
-              </button>
-            </div>
+              </div>
+              <span class="term-amount" [class.term-amount-selected]="plazo === p">
+                $ {{calcularCuotaPara(p) | number:'1.0-0'}}
+              </span>
+            </button>
           </div>
+        </div>
         </div>
 
 

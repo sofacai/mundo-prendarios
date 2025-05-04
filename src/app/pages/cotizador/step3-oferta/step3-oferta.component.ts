@@ -84,19 +84,20 @@ export class Step3OfertaComponent implements OnInit {
         id: selectedPlanId,
         tasa: this.dataService.tasaAplicada || 0
       };
-
     }
+
     let planId = this.planSeleccionado.id;
     if (typeof planId === 'string') {
       planId = parseInt(planId, 10);
     }
 
-    this.mostrarTablaAmortizacion = this.cotizadorService.esSistemaAleman(planId);
+    this.mostrarTablaAmortizacion = true; // Mostrar siempre la tabla, ya sea sistema alemán o francés
 
     this.generarCuotas();
 
     const gastosCanal = this.obtenerGastos();
   }
+
   toggleSidebar(): void {
     this.sidebarStateService.toggleCotizadorSidebar();
   }
@@ -110,12 +111,19 @@ export class Step3OfertaComponent implements OnInit {
   }
 
   generarCuotas() {
-    if (this.mostrarTablaAmortizacion) {
-      const gastosCanal = this.obtenerGastos();
+    const gastosCanal = this.obtenerGastos();
+    const antiguedadGrupo = this.dataService.antiguedadGrupo || 'A';
+    const tasaAplicada = this.dataService.tasaAplicada || this.planSeleccionado.tasa;
+    const planId = this.planSeleccionado.id;
 
-      const antiguedadGrupo = this.dataService.antiguedadGrupo || 'A';
-      const tasaAplicada = this.dataService.tasaAplicada || this.planSeleccionado.tasa;
+    // Determinar si usamos sistema alemán o francés
+    const esSistemaAleman = this.cotizadorService.esSistemaAleman(planId);
 
+    console.log(`Generando cuotas para planId=${planId}, usando ${esSistemaAleman ? 'sistema alemán' : 'sistema francés'}`);
+    console.log(`Monto: $${this.monto}, Plazo: ${this.plazo} cuotas, Tasa: ${tasaAplicada}%`);
+
+    if (esSistemaAleman) {
+      // Sistema alemán (capital fijo)
       const porcentajeGastos = gastosCanal.reduce((total, gasto) => total + gasto.porcentaje, 0);
       const montoTotal = this.monto * (1 + porcentajeGastos / 100);
       const capitalMensual = Math.round(montoTotal / this.plazo);
@@ -154,14 +162,93 @@ export class Step3OfertaComponent implements OnInit {
       }
 
       this.cuotas = this.tablaAmortizacion.slice(1).map(fila => fila.cuota);
+    }
+    else {
+      // Sistema francés (cuota fija)
+      // Calculamos la tabla de amortización francesa
+      const porcentajeGastos = gastosCanal.reduce((total, gasto) => total + gasto.porcentaje, 0);
+      const montoTotal = this.monto * (1 + porcentajeGastos / 100);
 
-    } else {
-      this.cuotas = Array(this.plazo).fill(this.valorCuota);
+      console.log(`Porcentaje total de gastos: ${porcentajeGastos}%`);
+      console.log(`Monto total con gastos: $${montoTotal.toLocaleString('es-AR')}`);
+
+      // Tasa mensual (TNA/12)
+      const tasaMensual = tasaAplicada / 100 / 12;
+      console.log(`Tasa mensual (TNA/12): ${(tasaMensual * 100).toFixed(6)}%`);
+
+      // Calcular cuota fija (sin IVA) usando la fórmula francesa
+      // C = P * [i(1+i)^n] / [(1+i)^n - 1]
+      const tasaFactor = Math.pow(1 + tasaMensual, this.plazo);
+      const cuotaPura = montoTotal * (tasaMensual * tasaFactor) / (tasaFactor - 1);
+      console.log(`Cuota pura (sin IVA): $${cuotaPura.toFixed(2)}`);
+
+      // Agregar registro inicial
+      this.tablaAmortizacion = [
+        {
+          nroCuota: 0,
+          capital: 0,
+          interes: 0,
+          iva: 0,
+          gasto: 0,
+          cuota: 0,
+          saldo: montoTotal
+        }
+      ];
+
+      // Calcular cada cuota
+      let saldoAnterior = montoTotal;
+
+      for (let i = 1; i <= this.plazo; i++) {
+        // Interés de la cuota = Saldo anterior * tasa mensual
+        const interesMensual = saldoAnterior * tasaMensual;
+
+        // IVA = 21% del interés
+        const ivaMensual = interesMensual * 0.21;
+
+        // Capital = Cuota pura - Interés
+        const capitalMensual = cuotaPura - interesMensual;
+
+        // Cuota total = Cuota pura + IVA
+        const cuotaMensual = cuotaPura + ivaMensual;
+
+        // Nuevo saldo = Saldo anterior - Capital amortizado
+        const nuevoSaldo = saldoAnterior - capitalMensual;
+
+        // Agregar a la tabla (redondeando valores para evitar decimales)
+        this.tablaAmortizacion.push({
+          nroCuota: i,
+          capital: Math.round(capitalMensual),
+          interes: Math.round(interesMensual),
+          iva: Math.round(ivaMensual),
+          gasto: 0,
+          cuota: Math.round(cuotaMensual),
+          saldo: Math.round(nuevoSaldo)
+        });
+
+        // Actualizar saldo para el próximo cálculo
+        saldoAnterior = nuevoSaldo;
+      }
+
+      // Obtener las cuotas
+      this.cuotas = this.tablaAmortizacion.slice(1).map(fila => fila.cuota);
+
+      // Actualizar valorCuota con la primera cuota
+      if (this.tablaAmortizacion.length > 1) {
+        this.valorCuota = this.tablaAmortizacion[1].cuota;
+      }
+    }
+
+    // Impresión de la primera y última cuota para comparación
+    if (this.tablaAmortizacion.length > 1) {
+      console.log('Primera cuota:');
+      console.log(this.tablaAmortizacion[1]);
+
+      console.log('Última cuota:');
+      console.log(this.tablaAmortizacion[this.tablaAmortizacion.length - 1]);
     }
   }
 
   private obtenerGastos(): any[] {
-
     const subcanalInfoGastos = this.dataService.subcanalInfo?.gastos || [];
 
     if (subcanalInfoGastos.length === 0) {

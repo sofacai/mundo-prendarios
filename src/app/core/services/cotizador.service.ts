@@ -91,25 +91,113 @@ export class CotizadorService {
   }
 
   calcularCuota(monto: number, plazo: number, tasa: number, gastos: any[]): number {
+
+    const porcentajeGastos = gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
+
+    // Monto con gastos
+    const montoConGastos = monto * (1 + porcentajeGastos / 100);
+
+    // Tasa mensual (TNA/12)
+    const tasaMensual = tasa / 100 / 12;
+
+    // Cálculo usando la fórmula de amortización francesa
+    // C = P * [i(1+i)^n] / [(1+i)^n - 1]
+    const tasaFactor = Math.pow(1 + tasaMensual, plazo);
+    const numerador = tasaMensual * tasaFactor;
+    const denominador = tasaFactor - 1;
+    const cuotaPura = montoConGastos * (numerador / denominador);
+
+    // Verificar si hay IVA a aplicar (21% sobre intereses)
+    // Para esto, calculamos la primera cuota para saber los intereses
+    const primerInteres = montoConGastos * tasaMensual;
+    const ivaPrimerInteres = primerInteres * 0.21;
+
+    const cuotaFinal = Math.round(cuotaPura + ivaPrimerInteres);
+
+    return cuotaFinal;
+  }
+
+  calcularCuotaFrancesaPura(monto: number, plazo: number, tasaAnual: number, gastos: any[]): number {
+
     // Suma de porcentajes de gastos
     const porcentajeGastos = gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
 
     // Monto con gastos
     const montoConGastos = monto * (1 + porcentajeGastos / 100);
 
-    // Capital fijo mensual
-    const capitalMensual = Math.round(montoConGastos / plazo);
+    // Tasa mensual (TNA/12)
+    const tasaMensual = tasaAnual / 100 / 12;
 
-    // Interés para primera cuota = Monto con gastos * (TNA/360*30)
-    const interesMensual = Math.round(montoConGastos * ((tasa / 100) / 360 * 30));
+    const factor = Math.pow(1 + tasaMensual, plazo);
+    const cuota = montoConGastos * (tasaMensual * factor) / (factor - 1);
 
-    // IVA = 21% del interés
-    const ivaMensual = Math.round(interesMensual * 0.21);
+    return Math.round(cuota);
+  }
 
-    // Cuota primera = Capital + Interés + IVA
-    const cuota = capitalMensual + interesMensual + ivaMensual;
+  // Actualizar método calcularTablaAmortizacionFrancesa para usar el mismo cálculo preciso
+  calcularTablaAmortizacionFrancesa(monto: number, plazo: number, tasa: number, gastos: any[]): any[] {
 
-    return cuota;
+    const porcentajeGastos = gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
+
+    const prestamo = monto * (1 + porcentajeGastos / 100);
+
+    const tasaMensual = tasa / 100 / 12;
+
+    const factor = Math.pow(1 + tasaMensual, plazo);
+    const cuotaFija = prestamo * (tasaMensual * factor) / (factor - 1);
+
+    // Tabla de amortización
+    const tabla: any[] = [];
+
+    // Registro inicial (saldo inicial)
+    tabla.push({
+      nroCuota: 0,
+      capital: 0,
+      interes: 0,
+      iva: 0,
+      gasto: 0,
+      cuota: 0,
+      saldo: prestamo
+    });
+
+    // Calcular cada cuota
+    let saldoAnterior = prestamo;
+    let totalIntereses = 0;
+    let totalCapital = 0;
+
+    for (let i = 1; i <= plazo; i++) {
+      // Interés de la cuota = Saldo anterior * tasa mensual
+      const interesMensual = saldoAnterior * tasaMensual;
+      totalIntereses += interesMensual;
+
+      // Capital = Cuota fija - Interés
+      const capitalMensual = cuotaFija - interesMensual;
+      totalCapital += capitalMensual;
+
+      // Nuevo saldo = Saldo anterior - Capital amortizado
+      const nuevoSaldo = saldoAnterior - capitalMensual;
+
+      if (i === 1 || i === plazo) {
+
+      }
+
+      // Agregar a la tabla
+      tabla.push({
+        nroCuota: i,
+        capital: Math.round(capitalMensual),
+        interes: Math.round(interesMensual),
+        iva: 0, // Ya está incluido en la cuota
+        gasto: 0, // No hay gastos mensuales adicionales
+        cuota: Math.round(cuotaFija),
+        saldo: Math.round(nuevoSaldo)
+      });
+
+      // Actualizar saldo para el próximo cálculo
+      saldoAnterior = nuevoSaldo;
+    }
+
+
+    return tabla;
   }
 
   guardarCotizacion(datos: any): Observable<any> {
@@ -139,14 +227,14 @@ export class CotizadorService {
         }
 
         // Calcular tabla con la tasa seleccionada
-        return this.calcularTablaAmortizacion(monto, plazo, tasaAplicada, gastos);
+        return this.calcularTablaAmortizacionFrancesa(monto, plazo, tasaAplicada, gastos);
       }),
       catchError(error => {
         console.error('Error al obtener tasa para tabla de amortización:', error);
         // En caso de error, intentamos con la tasa general del plan
         return this.http.get<any>(`${this.apiUrl}/Plan/${planId}`).pipe(
           map(plan => {
-            return this.calcularTablaAmortizacion(monto, plazo, plan.tasa, gastos);
+            return this.calcularTablaAmortizacionFrancesa(monto, plazo, plan.tasa, gastos);
           }),
           catchError(err => {
             console.error('Error al obtener plan para tabla de amortización:', err);
@@ -157,6 +245,7 @@ export class CotizadorService {
     );
   }
 
+  // Implementación existente (sistema alemán)
   calcularTablaAmortizacion(monto: number, plazo: number, tasa: number, gastos: any[]): any[] {
     // Calcular el porcentaje total de gastos
     const porcentajeGastos = gastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
@@ -215,22 +304,25 @@ export class CotizadorService {
     return tabla;
   }
 
+
+
   esSistemaAleman(planId: number | undefined): boolean {
     // Si planId es undefined o no es un número, retornar false
     if (planId === undefined) {
-      console.log('SISTEMA ALEMÁN: planId inválido (undefined)');
       return false;
     }
 
     // Convertir a número si es string para asegurar la comparación
     const id = Number(planId);
     if (isNaN(id)) {
-      console.log('SISTEMA ALEMÁN: planId inválido (NaN)');
       return false;
     }
 
-
-    // El planId 1 usa sistema alemán, el resto no
+    // El planId 1 usa sistema alemán, el resto usa sistema francés
     return id === 1;
+  }
+
+  esSistemaFrances(planId: number | undefined): boolean {
+    return !this.esSistemaAleman(planId);
   }
 }
