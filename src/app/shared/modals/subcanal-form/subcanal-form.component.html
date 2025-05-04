@@ -79,7 +79,7 @@
           <div class="form-group full-width">
             <label>Administrador</label>
             <select class="form-control" formControlName="adminCanalId">
-              <option value="">Seleccione un administrador</option>
+              <option value="">Seleccione un administrador del canal</option>
               <option *ngFor="let admin of administradores" [value]="admin.id">
                 {{ admin.nombre }} {{ admin.apellido }} ({{ admin.email }})
               </option>

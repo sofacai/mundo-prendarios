@@ -117,9 +117,7 @@
                   <div *ngIf="plazo === p" class="radio-inner"></div>
                 </div>
                 <span class="term-text">{{p}} Cuotas</span>
-                <span class="term-tasa" *ngIf="esPlazoActivo(p)">
-                  (TNA: {{obtenerTasaEspecifica(planSeleccionado === 'Cuotas Fijas' ? planCuotasFijasId : planUvaId, p)}}%)
-                </span>
+
               </div>
               <span class="term-amount" [class.term-amount-selected]="plazo === p">
                 $ {{calcularCuotaPara(p) | number:'1.0-0'}}
