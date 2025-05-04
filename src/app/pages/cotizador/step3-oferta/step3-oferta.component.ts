@@ -82,7 +82,7 @@ export class Step3OfertaComponent implements OnInit {
     }
 
     // Mostrar la tabla para todos los planes
-    this.mostrarTablaAmortizacion = true;
+
 
     // Generar la tabla de amortización
     this.generarCuotas();
@@ -90,6 +90,7 @@ export class Step3OfertaComponent implements OnInit {
     // Si estamos en Plan ID 1, calcular y guardar la cuota promedio
     if (this.planSeleccionado.id === 1) {
       this.calcularYGuardarCuotaPromedio();
+      this.mostrarTablaAmortizacion = true;
     }
   }
 
