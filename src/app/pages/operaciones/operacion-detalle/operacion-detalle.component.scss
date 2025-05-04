@@ -350,8 +350,8 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  display:flex;
-  flex: justify-content;
+  display: flex;
+  justify-content: center; /* Changed from flex: justify-content to properly center */
   align-items: center;
   padding: 20px;
 }
@@ -366,6 +366,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  margin: 0 auto; /* Added to ensure horizontal centering */
 }
 
 .document-header {
@@ -473,12 +474,14 @@
   justify-content: center;
   align-items: center;
   background-color: #f5f5f5;
+  padding: 10px; /* Added padding to give some space around the document */
 }
 
 .document-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  margin: auto; /* Added to ensure the image is centered */
 }
 
 .document-frame {
