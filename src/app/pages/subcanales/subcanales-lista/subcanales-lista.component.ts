@@ -133,10 +133,29 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'No se pudieron cargar los subcanales. Por favor, intente nuevamente.';
+        // Si es error 403 (Forbidden) - simplemente muestra estado vacío
+        if (err.status === 403) {
+          this.subcanales = [];
+          this.applyFilters();
+          this.error = null; // Importante: No mostrar ningún error
+        } else {
+          this.error = 'No se pudieron cargar los subcanales. Por favor, intente nuevamente.';
+        }
         this.loading = false;
       }
     });
+  }
+
+  getEmptyStateMessage(): string {
+    if (this.error) {
+      return this.error;
+    } else if (this.authService.hasRole(RolType.OficialComercial)) {
+      return "No tiene subcanales asignados. Contacte a un administrador para la asignación de subcanales.";
+    } else if (this.authService.hasRole(RolType.AdminCanal)) {
+      return "No tiene subcanales asignados a su administración. Contacte a un administrador.";
+    } else {
+      return "No hay subcanales registrados en el sistema";
+    }
   }
 
   onSearchChange() {

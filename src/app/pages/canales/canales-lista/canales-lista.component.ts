@@ -112,6 +112,16 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
     });
   }
 
+  getEmptyStateMessage(): string {
+    if (this.esOficialComercial) {
+      return "No tiene canales asignados. Contacte a un administrador para la asignación de canales.";
+    } else if (this.usuarioActual?.rolId === RolType.AdminCanal) {
+      return "No tiene canales asignados a su administración. Contacte a un administrador.";
+    } else {
+      return "No hay canales registrados en el sistema";
+    }
+  }
+
   ngOnDestroy() {
     if (this.sidebarSubscription) {
       this.sidebarSubscription.unsubscribe();
@@ -151,8 +161,6 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
   loadCanales() {
     this.loading = true;
 
-    // Usamos el mismo endpoint para todos los usuarios
-    // El backend se encargará de filtrar según el rol del usuario
     this.canalService.getCanales().subscribe({
       next: (data) => {
         this.canales = data.map(canal => ({
@@ -164,11 +172,19 @@ export class CanalesListaComponent implements OnInit, OnDestroy {
         this.applyFilters();
         this.loading = false;
 
-        // Cargamos las operaciones liquidadas para cada canal
-        this.cargarOperacionesLiquidadas();
+        if (data.length > 0) {
+          this.cargarOperacionesLiquidadas();
+        }
       },
       error: (err) => {
-        this.error = 'No se pudieron cargar los canales. Por favor, intente nuevamente.';
+        // Check for the specific "No tienes canales asignados" error
+        if (err.error?.mensaje === "No tienes canales asignados.") {
+          this.canales = [];
+          this.applyFilters(); // This will trigger empty state display
+          this.error = null; // Don't show error message for this case
+        } else {
+          this.error = 'No se pudieron cargar los canales. Por favor, intente nuevamente.';
+        }
         this.loading = false;
       }
     });

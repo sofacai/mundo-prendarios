@@ -148,12 +148,10 @@
           <div *ngIf="filteredCanales.length === 0" class="text-center p-5">
             <div class="text-center">
               <i class="bi bi-grid-3x3-gap"></i>
-              <h4>No se encontraron canales</h4>
-              <p class="text-muted" *ngIf="searchTerm">
-                No hay resultados que coincidan con "{{ searchTerm }}"
-              </p>
+              <h4>No se encontraron canales asignados</h4>
+
               <p class="text-muted" *ngIf="!searchTerm">
-                No hay canales registrados en el sistema
+                {{ getEmptyStateMessage() }}
               </p>
             </div>
           </div>
