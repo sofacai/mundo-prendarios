@@ -1,4 +1,4 @@
-<!-- Modal wrapper con backdrop -->
+<!-- usuario-form.component.html -->
 <div *ngIf="isOpen" class="custom-modal-backdrop">
   <div class="custom-modal-content modal-container">
 
@@ -52,7 +52,8 @@
               (input)="onTelefonoInput($event)"
               (blur)="onTelefonoBlur($event)">
             <small class="text-danger" *ngIf="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched">
-              Campo requerido
+              <span *ngIf="usuarioForm.get('telefono')?.errors?.['required']">Campo requerido</span>
+              <span *ngIf="usuarioForm.get('telefono')?.errors?.['invalidLength']">El número debe tener 10 dígitos</span>
             </small>
           </div>
 
@@ -68,6 +69,27 @@
               Campo requerido
             </small>
           </div>
+
+          <!-- Campo de Subcanal (solo visible para Vendor) -->
+          <div class="form-group" *ngIf="showSubcanalField">
+            <label>Subcanal <span class="required">*</span></label>
+            <div *ngIf="loadingSubcanales" class="loading-spinner">
+              <div class="spinner-border spinner-border-sm" role="status"></div>
+              <span class="ms-2">Cargando subcanales...</span>
+            </div>
+            <select class="form-control" formControlName="subcanalId" *ngIf="!loadingSubcanales">
+              <option value="">Seleccione un subcanal</option>
+              <option *ngFor="let subcanal of subcanales" [value]="subcanal.id">
+                {{ subcanal.nombre }} ({{ subcanal.canalNombre }})
+              </option>
+            </select>
+            <small class="text-danger" *ngIf="usuarioForm.get('subcanalId')?.invalid && usuarioForm.get('subcanalId')?.touched">
+              Debe seleccionar un subcanal
+            </small>
+            <small *ngIf="subcanales.length === 0 && !loadingSubcanales" class="text-warning">
+              No hay subcanales disponibles. Debe crear un subcanal primero.
+            </small>
+          </div>
         </div>
 
         <div class="form-error" *ngIf="error">
@@ -76,7 +98,7 @@
 
         <div class="form-footer">
           <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary" [disabled]="loading || usuarioForm.invalid">
+          <button type="submit" class="btn btn-primary" [disabled]="loading || usuarioForm.invalid || (showSubcanalField && subcanales.length === 0)">
             <span *ngIf="!loading">Guardar</span>
             <div *ngIf="loading" class="spinner-border spinner-border-sm" role="status"></div>
           </button>

@@ -1,3 +1,4 @@
+// usuario-form.component.ts
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, Renderer2, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -5,6 +6,8 @@ import { IonicModule } from '@ionic/angular';
 import { UsuarioService, UsuarioCrearDto } from 'src/app/core/services/usuario.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { RolType } from 'src/app/core/models/usuario.model';
+import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
+import { forkJoin } from 'rxjs';
 
 interface Rol {
   id: number;
@@ -24,11 +27,13 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
   @Output() usuarioCreado = new EventEmitter<any>();
   @Input() rolIdPredeterminado?: number;
 
-
   usuarioForm: FormGroup;
   loading = false;
   error: string | null = null;
   creadorId: number;
+  showSubcanalField = false;
+  subcanales: Subcanal[] = [];
+  loadingSubcanales = false;
 
   private readonly phonePrefix = '+54 9 ';
 
@@ -45,7 +50,8 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
     private fb: FormBuilder,
     private usuarioService: UsuarioService,
     private authService: AuthService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private subcanalService: SubcanalService
   ) {
     this.creadorId = this.usuarioService.getLoggedInUserId();
 
@@ -53,10 +59,38 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      telefono: ['', Validators.required],
+      telefono: ['', [Validators.required, this.telefonoValidator.bind(this)]],
       password: ['', Validators.required],
-      rolId: ['', Validators.required]
+      rolId: ['', Validators.required],
+      subcanalId: ['']
     });
+
+    // Escuchar cambios en rolId para mostrar/ocultar campo de subcanal
+    this.usuarioForm.get('rolId')?.valueChanges.subscribe(rolId => {
+      if (parseInt(rolId) === RolType.Vendor) {
+        this.showSubcanalField = true;
+        this.usuarioForm.get('subcanalId')?.setValidators(Validators.required);
+        this.cargarSubcanales();
+      } else {
+        this.showSubcanalField = false;
+        this.usuarioForm.get('subcanalId')?.clearValidators();
+      }
+      this.usuarioForm.get('subcanalId')?.updateValueAndValidity();
+    });
+  }
+
+  telefonoValidator(control: any) {
+    if (!control.value) return null;
+
+    // Eliminar prefijo y espacios para contar solo dígitos
+    const value = control.value.replace(this.phonePrefix, '').replace(/\s/g, '');
+    const digitsOnly = value.replace(/\D/g, '');
+
+    if (digitsOnly.length !== 10) {
+      return { invalidLength: true };
+    }
+
+    return null;
   }
 
   ngOnInit(): void {
@@ -64,8 +98,6 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
 
     // Si hay un rol predeterminado
     if (this.rolIdPredeterminado) {
-      console.log('Rol predeterminado:', this.rolIdPredeterminado);
-
       // Filtrar sólo este rol
       this.roles = this.allRoles.filter(rol => rol.id === this.rolIdPredeterminado);
 
@@ -76,6 +108,52 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
       if (this.roles.length === 1) {
         this.usuarioForm.get('rolId')?.disable();
       }
+
+      // Si el rol predeterminado es Vendor, mostrar campo de subcanal
+      if (this.rolIdPredeterminado === RolType.Vendor) {
+        this.showSubcanalField = true;
+        this.usuarioForm.get('subcanalId')?.setValidators(Validators.required);
+        this.cargarSubcanales();
+      }
+    }
+  }
+
+  cargarSubcanales() {
+    this.loadingSubcanales = true;
+    const currentUser = this.authService.currentUserValue;
+
+    if (!currentUser) {
+      this.loadingSubcanales = false;
+      return;
+    }
+
+    // Dependiendo del rol, cargar los subcanales apropiados
+    if (currentUser.rolId === RolType.AdminCanal) {
+      // Admin Canal solo ve sus subcanales
+      this.subcanalService.getSubcanalesPorUsuario(currentUser.id).subscribe({
+        next: (subcanales) => {
+          this.subcanales = subcanales.filter(s => s.activo);
+          this.loadingSubcanales = false;
+        },
+        error: (err) => {
+          console.error('Error cargando subcanales:', err);
+          this.loadingSubcanales = false;
+        }
+      });
+    } else if (currentUser.rolId === RolType.OficialComercial || currentUser.rolId === RolType.Administrador) {
+      // Oficial Comercial ve todos los subcanales activos
+      this.subcanalService.getSubcanales().subscribe({
+        next: (subcanales) => {
+          this.subcanales = subcanales.filter(s => s.activo);
+          this.loadingSubcanales = false;
+        },
+        error: (err) => {
+          console.error('Error cargando subcanales:', err);
+          this.loadingSubcanales = false;
+        }
+      });
+    } else {
+      this.loadingSubcanales = false;
     }
   }
 
@@ -222,8 +300,6 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
     this.loading = true;
     const formValues = this.usuarioForm.getRawValue(); // Usa getRawValue() para incluir campos deshabilitados
 
-
-
     const usuarioDto: UsuarioCrearDto = {
       nombre: formValues.nombre,
       apellido: formValues.apellido,
@@ -234,12 +310,28 @@ export class UsuarioFormComponent implements OnChanges, OnDestroy, OnInit {
       creadorId: this.creadorId
     };
 
-
     this.usuarioService.createUsuario(usuarioDto).subscribe({
       next: (usuario) => {
-        this.loading = false;
-        this.usuarioCreado.emit(usuario);
-        this.cerrarModal();
+        // Si es un vendor, asignarlo al subcanal seleccionado
+        if (usuario.rolId === RolType.Vendor && formValues.subcanalId) {
+          const subcanalId = parseInt(formValues.subcanalId, 10);
+
+          this.subcanalService.asignarVendorASubcanal(subcanalId, usuario.id).subscribe({
+            next: () => {
+              this.loading = false;
+              this.usuarioCreado.emit(usuario);
+              this.cerrarModal();
+            },
+            error: (err) => {
+              this.loading = false;
+              this.error = err?.error?.message || 'Error al asignar el vendor al subcanal. El usuario fue creado, pero deberá asignarlo manualmente.';
+            }
+          });
+        } else {
+          this.loading = false;
+          this.usuarioCreado.emit(usuario);
+          this.cerrarModal();
+        }
       },
       error: (err) => {
         this.loading = false;
