@@ -65,7 +65,7 @@
 
         <!-- Ingresos (ancho completo) -->
         <div class="form-group full-width">
-          <label class="form-label">Ingresos mensuales</label>
+          <label class="form-label">Ingresos mensuales <span class="required">*</span></label>
           <div class="input-wrapper">
             <div class="currency-icon">$</div>
             <input
@@ -74,24 +74,27 @@
               formControlName="ingresos"
               (input)="onIngresosInput($event)">
           </div>
+          <small class="text-danger" *ngIf="ingresosInvalido">
+            Los ingresos mensuales son requeridos.
+          </small>
         </div>
 
         <!-- Código Postal y Estado Civil -->
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Código Postal</label>
+            <label class="form-label">Código Postal <span class="required">*</span></label>
             <input
               type="text"
               class="form-control"
               formControlName="codigoPostal"
               (input)="onCodigoPostalInput($event)">
             <small class="text-danger" *ngIf="codigoPostalInvalido">
-              El código postal debe contener 4 dígitos.
+              El código postal es requerido y debe contener 4 dígitos.
             </small>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Estado Civil</label>
+            <label class="form-label">Estado Civil <span class="required">*</span></label>
             <select class="form-control" formControlName="estadoCivil">
               <option value="">Seleccionar</option>
               <option value="Soltero/a">Soltero/a</option>
@@ -99,26 +102,32 @@
               <option value="Divorciado/a">Divorciado/a</option>
               <option value="Viudo/a">Viudo/a</option>
             </select>
+            <small class="text-danger" *ngIf="estadoCivilInvalido">
+              Debe seleccionar un estado civil.
+            </small>
           </div>
         </div>
 
         <div class="form-group" *ngIf="clienteForm.get('estadoCivil')?.value === 'Casado/a'">
-          <label class="form-label">DNI Cónyuge</label>
+          <label class="form-label">DNI Cónyuge <span class="required">*</span></label>
           <input
             type="text"
             class="form-control"
             formControlName="dniConyuge"
             (input)="onDniConyugeInput($event)">
           <small class="text-danger" *ngIf="dniConyugeInvalido">
-            El DNI del cónyuge debe contener entre 7 y 8 dígitos numéricos.
+            El DNI del cónyuge es requerido y debe contener entre 7 y 8 dígitos numéricos.
           </small>
         </div>
 
         <!-- Auto (ancho completo) -->
         <div class="form-group full-width">
-          <label class="form-label">Auto</label>
+          <label class="form-label">Auto <span class="required">*</span></label>
           <input type="text" class="form-control" formControlName="auto">
           <small class="form-hint">Ejemplo: Toyota Etios 1.5 xls 2017</small>
+          <small class="text-danger" *ngIf="autoInvalido">
+            La información del auto es requerida.
+          </small>
         </div>
 
    <!-- Tabs Documento -->
@@ -148,12 +157,11 @@
             formControlName="dni"
             (input)="onDniInput($event)">
           <small class="text-danger" *ngIf="dniInvalido">
-            El DNI debe contener entre 7 y 8 dígitos numéricos.
+            El DNI es requerido y debe contener entre 7 y 8 dígitos numéricos.
           </small>
         </div>
 
         <!-- Sexo -->
-<!-- Sexo -->
 <div class="form-group" *ngIf="tipoDocumento === 'DNI'">
   <label class="form-label">Sexo <span class="required">*</span></label>
   <div class="radio-group">
@@ -166,7 +174,7 @@
       </div>
       <input type="radio" id="masculino" formControlName="sexo" value="M" style="display: none;">
     </div>
-    <div class="option-item" (click)="clienteForm.get('sexo')?.setValue('F')">
+            <div class="option-item" (click)="clienteForm.get('sexo')?.setValue('F')">
       <div class="option-left">
         <div class="radio" [class.radio-selected]="clienteForm.get('sexo')?.value === 'F'">
           <div *ngIf="clienteForm.get('sexo')?.value === 'F'" class="radio-inner"></div>
@@ -188,7 +196,7 @@
             formControlName="cuil"
             (input)="onCuilInput($event)">
           <small class="text-danger" *ngIf="cuilInvalido">
-            El CUIL debe contener exactamente 11 dígitos numéricos.
+            El CUIL es requerido y debe contener exactamente 11 dígitos numéricos.
           </small>
         </div>
 

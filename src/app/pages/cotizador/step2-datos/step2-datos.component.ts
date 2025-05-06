@@ -28,15 +28,16 @@ export class Step2DatosComponent implements OnInit {
     public dataService: CotizadorDataService,
     private sidebarStateService: SidebarStateService
   ) {
+    // Initialize form with all fields as required
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellido: ['', [Validators.required, Validators.minLength(2)]],
       whatsapp: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      ingresos: [''],
-      auto: [''],
-      codigoPostal: [''],
-      estadoCivil: [''],
+      ingresos: ['', [Validators.required]],
+      auto: ['', [Validators.required]],
+      codigoPostal: ['', [Validators.required]],
+      estadoCivil: ['', [Validators.required]],
       dni: [''],
       cuil: [''],
       sexo: [''],
@@ -51,6 +52,7 @@ export class Step2DatosComponent implements OnInit {
     this.clienteForm.get('estadoCivil')?.valueChanges.subscribe(value => {
       if (value === 'Casado/a') {
         this.clienteForm.get('dniConyuge')?.setValidators([
+          Validators.required,
           this.validarDNI.bind(this)
         ]);
       } else {
@@ -78,7 +80,12 @@ export class Step2DatosComponent implements OnInit {
         email: data.clienteEmail || data.email || '',
         dni: data.clienteDni || data.dni || '',
         cuil: data.clienteCuil || data.cuil || '',
-        sexo: data.clienteSexo || data.sexo || ''
+        sexo: data.clienteSexo || data.sexo || '',
+        ingresos: data.ingresos || '',
+        auto: data.auto || '',
+        codigoPostal: data.codigoPostal || '',
+        estadoCivil: data.estadoCivil || '',
+        dniConyuge: data.dniConyuge || ''
       };
       this.populateFormWithData(datosCliente);
     }
@@ -107,7 +114,7 @@ export class Step2DatosComponent implements OnInit {
       return false;
     }
     const control = this.clienteForm.get('dniConyuge');
-    return !!(control?.touched && control.errors?.['dniInvalido']);
+    return !!(control?.touched && (control.errors?.['dniInvalido'] || control.errors?.['required']));
   }
 
 
@@ -145,7 +152,7 @@ export class Step2DatosComponent implements OnInit {
       dni: data.dni || '',
       cuil: data.cuil || '',
       sexo: data.sexo || '',
-       dniConyuge: data.dniConyuge || ''
+      dniConyuge: data.dniConyuge || ''
     });
   }
 
@@ -186,6 +193,7 @@ export class Step2DatosComponent implements OnInit {
     // Aplicar validadores al campo dniConyuge solo si el estado civil es 'Casado/a'
     if (this.clienteForm.get('estadoCivil')?.value === 'Casado/a') {
       this.clienteForm.get('dniConyuge')?.setValidators([
+        Validators.required,
         this.validarDNI.bind(this)
       ]);
     } else {
@@ -198,13 +206,20 @@ export class Step2DatosComponent implements OnInit {
     this.clienteForm.get('sexo')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('dniConyuge')?.updateValueAndValidity({ emitEvent: false });
     this.clienteForm.get('codigoPostal')?.setValidators([
+      Validators.required,
       this.validarCodigoPostal.bind(this)
     ]);
     this.clienteForm.get('codigoPostal')?.updateValueAndValidity({ emitEvent: false });
+
+    // Make sure ingresos and auto are validated
+    this.clienteForm.get('ingresos')?.setValidators([Validators.required]);
+    this.clienteForm.get('auto')?.setValidators([Validators.required]);
+    this.clienteForm.get('ingresos')?.updateValueAndValidity({ emitEvent: false });
+    this.clienteForm.get('auto')?.updateValueAndValidity({ emitEvent: false });
   }
 
   validarCodigoPostal(control: any) {
-    if (!control.value) return null; // No validar si está vacío
+    if (!control.value) return { required: true }; // Validar como requerido
     const limpio = (control.value || '').replace(/\D/g, '');
     return limpio.length === 4 ? null : { codigoPostalInvalido: true };
   }
@@ -235,11 +250,13 @@ export class Step2DatosComponent implements OnInit {
   }
 
   validarDNI(control: any) {
+    if (!control.value) return { required: true }; // Validar como requerido
     const limpio = (control.value || '').replace(/\D/g, '');
     return limpio.length >= 7 && limpio.length <= 8 ? null : { dniInvalido: true };
   }
 
   validarCUIL(control: any) {
+    if (!control.value) return { required: true }; // Validar como requerido
     const limpio = (control.value || '').replace(/\D/g, '');
     return limpio.length === 11 ? null : { cuilInvalido: true };
   }
@@ -361,21 +378,12 @@ export class Step2DatosComponent implements OnInit {
 
     this.updateValidatorsBasedOnDocType(false);
 
-    const nombreValido = this.clienteForm.get('nombre')?.valid;
-    const apellidoValido = this.clienteForm.get('apellido')?.valid;
-    const whatsappValido = this.clienteForm.get('whatsapp')?.valid;
-    const emailValido = this.clienteForm.get('email')?.valid;
+    // Marcar todos los campos como tocados para que se muestren los errores
+    Object.keys(this.clienteForm.controls).forEach(key => {
+      this.clienteForm.get(key)?.markAsTouched();
+    });
 
-    let documentoValido = false;
-    if (this.tipoDocumento === 'DNI') {
-      documentoValido = !!this.clienteForm.get('dni')?.valid && !!this.clienteForm.get('sexo')?.valid;
-    } else {
-      documentoValido = !!this.clienteForm.get('cuil')?.valid;
-    }
-
-    const formValido = nombreValido && apellidoValido && whatsappValido && emailValido && documentoValido;
-
-    if (formValido) {
+    if (this.clienteForm.valid) {
       const formData = { ...this.clienteForm.value };
 
       if (formData.whatsapp && formData.whatsapp.startsWith(this.prefix)) {
@@ -400,29 +408,9 @@ export class Step2DatosComponent implements OnInit {
       }
       if (formData.dniConyuge) {
         formData.dniConyuge = this.limpiarFormato(formData.dniConyuge);
-        console.log('DNI Conyuge after cleaning:', formData.dniConyuge); // Add this for debugging
-
       }
 
       this.continuar.emit(formData);
-    } else {
-      this.clienteForm.get('nombre')?.markAsTouched();
-      this.clienteForm.get('apellido')?.markAsTouched();
-      this.clienteForm.get('whatsapp')?.markAsTouched();
-      this.clienteForm.get('email')?.markAsTouched();
-      this.clienteForm.get('codigoPostal')?.markAsTouched();
-
-
-      if (this.tipoDocumento === 'DNI') {
-        this.clienteForm.get('dni')?.markAsTouched();
-        this.clienteForm.get('sexo')?.markAsTouched();
-      } else {
-        this.clienteForm.get('cuil')?.markAsTouched();
-      };
-      if (this.clienteForm.get('estadoCivil')?.value === 'Casado/a') {
-        this.clienteForm.get('dniConyuge')?.markAsTouched();
-      }
-
     }
   }
 
@@ -432,7 +420,7 @@ export class Step2DatosComponent implements OnInit {
 
   get codigoPostalInvalido(): boolean {
     const control = this.clienteForm.get('codigoPostal');
-    return !!(control?.touched && control.errors?.['codigoPostalInvalido']);
+    return !!(control?.touched && (control.errors?.['codigoPostalInvalido'] || control.errors?.['required']));
   }
 
   onVolver() {
@@ -441,13 +429,14 @@ export class Step2DatosComponent implements OnInit {
 
   get dniInvalido(): boolean {
     const control = this.clienteForm.get('dni');
-    return !!(control?.touched && control.errors?.['dniInvalido']);
+    return !!(control?.touched && (control.errors?.['dniInvalido'] || control.errors?.['required']));
   }
 
   get cuilInvalido(): boolean {
     const control = this.clienteForm.get('cuil');
-    return !!(control?.touched && control.errors?.['cuilInvalido']);
+    return !!(control?.touched && (control.errors?.['cuilInvalido'] || control.errors?.['required']));
   }
+
   get nombreInvalido(): boolean {
     const control = this.clienteForm.get('nombre');
     return !!(control?.touched && control.invalid);
@@ -479,4 +468,18 @@ export class Step2DatosComponent implements OnInit {
     return !!(control?.touched && control.invalid);
   }
 
+  get ingresosInvalido(): boolean {
+    const control = this.clienteForm.get('ingresos');
+    return !!(control?.touched && control.invalid);
+  }
+
+  get autoInvalido(): boolean {
+    const control = this.clienteForm.get('auto');
+    return !!(control?.touched && control.invalid);
+  }
+
+  get estadoCivilInvalido(): boolean {
+    const control = this.clienteForm.get('estadoCivil');
+    return !!(control?.touched && control.invalid);
+  }
 }
