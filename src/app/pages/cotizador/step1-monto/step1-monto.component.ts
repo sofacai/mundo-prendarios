@@ -26,8 +26,8 @@ export class Step1MontoComponent implements OnInit {
   @Output() continuar = new EventEmitter<{monto: number, plazo: number, antiguedadGrupo: string}>();
   @Output() volver = new EventEmitter<void>();
 
-  monto: number = 0;
-  montoFormateado: string = '';
+  monto: number = 1000000;
+  montoFormateado: string = '1000000';
   plazo: number = 60; // Predeterminado a 60 cuotas (se ajustará según disponibilidad)
   plazosDisponibles: number[] = [];
   get plazosOrdenados(): number[] {
@@ -169,8 +169,9 @@ export class Step1MontoComponent implements OnInit {
           }
 
           // Preseleccionar un monto intermedio entre min y max
-          this.monto = Math.round((this.montoMinimo + this.montoMaximo) / 2);
+          this.monto = 1000000;
           this.montoFormateado = this.formatearMonto(this.monto);
+
 
           // Mostrar en consola los plazos disponibles para debug
           console.log(`Plazos disponibles para grupo ${this.antiguedadGrupo}:`, this.plazosDisponibles);
@@ -265,6 +266,11 @@ export class Step1MontoComponent implements OnInit {
   }
 
   esPlazoActivo(plazo: number): boolean {
+    // Si el plazo es 60 y el auto NO es 2024 o 2025, debe ocultarse
+    if (plazo === 60 && (!this.isAuto0km && this.autoYear !== 2024 && this.autoYear !== 2025)) {
+      return false;
+    }
+
     const planId = this.planSeleccionado === 'Cuotas Fijas' ?
                   (this.planCuotasFijas?.id || this.planCuotasFijasId) :
                   (this.planUva?.id || this.planUvaId);
@@ -334,7 +340,6 @@ export class Step1MontoComponent implements OnInit {
     event.target.value = this.montoFormateado;
   }
 
-  // Método para manejar cambios en la antigüedad del auto
   onAutoAntiguedadChange() {
     const currentYear = this.currentYear;
 
@@ -371,10 +376,18 @@ export class Step1MontoComponent implements OnInit {
     // Recargar los plazos disponibles según la nueva antigüedad
     this.cargarPlazosDisponibles();
 
+    // Si el plazo actual es 60 y el auto no es 2024/2025 ni es 0km, seleccionar otro plazo
+    if (this.plazo === 60 && !this.isAuto0km && this.autoYear !== 2024 && this.autoYear !== 2025) {
+      // Buscar el plazo más largo disponible que no sea 60
+      const plazosDisponiblesOrdenados = [...this.plazosOrdenados].filter(p => p !== 60);
+      if (plazosDisponiblesOrdenados.length > 0) {
+        this.plazo = plazosDisponiblesOrdenados[0]; // Seleccionar el plazo más largo disponible
+      }
+    }
+
     // Actualizar las cuotas disponibles al cambiar la antigüedad
     this.actualizarCuotas();
   }
-
   // Actualizar las cuotas al cambiar el plan o la antigüedad
   actualizarCuotas() {
     // Obtener el planId actual según la pestaña seleccionada

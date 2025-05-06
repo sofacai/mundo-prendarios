@@ -165,9 +165,7 @@ export class WizardContainerComponent implements OnInit {
         this.vendors = usuarios.filter(u => u.activo);
         this.cargando = false;
 
-        if (this.vendors.length === 0) {
-          this.error = "No hay vendedores activos disponibles.";
-        }
+
       },
       error: (error) => {
         this.error = "Error al cargar la lista de vendedores.";

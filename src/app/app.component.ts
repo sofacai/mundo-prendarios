@@ -32,8 +32,11 @@ export class AppComponent {
       // Verificar si estamos en una página del cotizador
       this.isInCotizadorPage = event.url.startsWith('/cotizador');
 
-      // Verificar si estamos en una página de autenticación
+      // Verificar explícitamente si estamos en una página de autenticación
       this.isAuthPage = event.url.includes('/auth/');
+
+      // Para depuración - ver la URL actual en consola
+      console.log('URL actual:', event.url, 'isAuthPage:', this.isAuthPage);
 
       // Remover clase sidebar-open en páginas de auth
       if (this.isAuthPage) {
@@ -45,7 +48,12 @@ export class AppComponent {
   ngOnInit() {
     // Verificar la ruta inicial
     this.isInCotizadorPage = this.router.url.startsWith('/cotizador');
+
+    // Verificar explícitamente si estamos en una página de autenticación
     this.isAuthPage = this.router.url.includes('/auth/');
+
+    // Para depuración - ver la URL inicial en consola
+    console.log('URL inicial:', this.router.url, 'isAuthPage:', this.isAuthPage);
 
     // Remover clase sidebar-open en carga inicial si es página auth
     if (this.isAuthPage) {

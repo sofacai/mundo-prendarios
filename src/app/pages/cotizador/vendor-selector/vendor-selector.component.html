@@ -46,7 +46,7 @@
     </div>
 
     <!-- Buscador - Solo visible si no seleccionó crear operación propia -->
-    <div class="search-box" *ngIf="!crearOperacionPropia">
+    <div class="search-box" *ngIf="!crearOperacionPropia && vendors.length > 0">
       <input
         type="text"
         placeholder="Buscar vendedor..."

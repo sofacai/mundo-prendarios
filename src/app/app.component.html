@@ -10,7 +10,7 @@
     <router-outlet></router-outlet>
 
     <!-- Botón flotante de cotizador -->
-    <a *ngIf="userRole !== rolType.Administrador && !isInCotizadorPage && !isAuthPage"
+    <a *ngIf="!isAuthPage"
       class="floating-btn"
       (click)="navigateToCotizador()">
       <i class="bi bi-calculator"></i>
