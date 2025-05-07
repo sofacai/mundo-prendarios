@@ -24,7 +24,7 @@
             <th>Cliente</th>
             <th>Monto</th>
             <th>Meses</th>
-            <th>Tasa</th>
+
             <th>Fecha</th>
             <th>Estado</th>
           </tr>
@@ -39,7 +39,7 @@
             </td>
             <td>{{ formatearMonto(op.monto) }}</td>
             <td>{{ op.meses }}</td>
-            <td>{{ op.tasa }}%</td>
+
             <td>{{ op.fechaCreacion | date : "dd/MM/yyyy" }}</td>
             <td>
               <div class="badge" [ngClass]="getBadgeClass(op.estado || '')">

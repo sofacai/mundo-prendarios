@@ -38,6 +38,7 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   vendor: UsuarioDto | null = null;
   canal: Canal | null = null;
   subcanal: Subcanal | null = null;
+  showObservacionesModal = false;
 
   // Variable para controlar la visualización del documento
   showDocumentPreview = false;
@@ -229,16 +230,23 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   }
 
   // Mostrar observaciones en un popup
-  async mostrarObservaciones() {
-    const alert = await this.alertController.create({
-      header: 'Observaciones',
-      message: this.operacion.observaciones,
-      buttons: ['Cerrar']
-    });
-
-    await alert.present();
+  mostrarObservaciones() {
+    this.showObservacionesModal = true;
+    // Prevenir scroll en el body cuando el modal está abierto
+    document.body.style.overflow = 'hidden';
   }
 
+  cerrarModalObservaciones(event?: MouseEvent) {
+    // Si se hizo clic fuera del contenido del modal, cerrarlo
+    if (event && (event.target as HTMLElement).classList.contains('custom-modal-backdrop')) {
+      this.showObservacionesModal = false;
+      document.body.style.overflow = '';
+    } else if (!event) {
+      // Si se llamó sin evento (por ejemplo, al hacer clic en el botón de cerrar)
+      this.showObservacionesModal = false;
+      document.body.style.overflow = '';
+    }
+  }
   // Previsualizar documento
   verDocumento() {
     if (this.operacion.urlAprobadoDefinitivo) {

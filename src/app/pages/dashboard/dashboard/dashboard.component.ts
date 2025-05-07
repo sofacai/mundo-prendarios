@@ -79,6 +79,7 @@ export class DashboardWelcomeComponent implements OnInit {
   adminCanalStats: any[] = [];
   oficialComercialStats: any[] = [];
   planesStats: any[] = [];
+  montoPromedioLiquidadas: number = 0;
 
   // Charts
   operacionesChart: Chart | null = null;
@@ -487,11 +488,16 @@ export class DashboardWelcomeComponent implements OnInit {
     this.operacionesAprobadas = this.operacionesDelMesActual.filter(op =>
       ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
       .includes(op.estado)).length;
+// Monto promedio de operaciones liquidadas
+const operacionesLiquidadasArray = this.operacionesDelMesActual.filter(op => op.estado === 'LIQUIDADA');
+const totalMontoLiquidadas = operacionesLiquidadasArray.reduce((sum, op) => sum + op.monto, 0);
+this.montoPromedioLiquidadas = operacionesLiquidadasArray.length > 0 ?
+  totalMontoLiquidadas / operacionesLiquidadasArray.length : 0;
 
-    // Monto promedio por operación
-    const totalMonto = this.operacionesDelMesActual.reduce((sum, op) => sum + op.monto, 0);
-    this.montoPromedioPorOperacion = this.operacionesDelMesActual.length > 0 ?
-      totalMonto / this.operacionesDelMesActual.length : 0;
+// Monto promedio por operación (todas las ingresadas)
+const totalMonto = this.operacionesDelMesActual.reduce((sum, op) => sum + op.monto, 0);
+this.montoPromedioPorOperacion = this.operacionesDelMesActual.length > 0 ?
+  totalMonto / this.operacionesDelMesActual.length : 0;
   }
 
   calculateRoleSpecificStats(): void {

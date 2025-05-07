@@ -166,6 +166,7 @@
         </div>
       </div>
 
+      <!-- Modal para visualización de documentos -->
       <div *ngIf="showDocumentPreview" class="document-preview-overlay" (click)="cerrarModalAlClickearFuera($event)">
         <div class="document-preview-container">
           <div class="document-header">
@@ -186,6 +187,22 @@
                 <i class="bi bi-download"></i> Descargar documento
               </a>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal personalizado para observaciones -->
+      <div *ngIf="showObservacionesModal" class="custom-modal-backdrop" (click)="cerrarModalObservaciones($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Observaciones</h3>
+            <button class="btn-close" (click)="cerrarModalObservaciones()"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ operacion.observaciones }}</p>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-primary" (click)="cerrarModalObservaciones()">Cerrar</button>
           </div>
         </div>
       </div>

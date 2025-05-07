@@ -28,47 +28,49 @@
     <!-- Dashboard content when data is available -->
     <div *ngIf="!isLoading && hasData" class="dashboard-content">
       <!-- Stats summary cards -->
-      <div class="stats-summary">
-        <div class="stat-card">
-          <div class="stat-icon-box primary-light">
-            <i class="bi bi-clipboard-data"></i>
-          </div>
-          <div class="stat-content">
-            <h3 class="stat-value">{{totalOperaciones}}</h3>
-            <p class="stat-label">Operaciones ingresadas</p>
-          </div>
-        </div>
+   <!-- Stats summary cards -->
+<div class="stats-summary">
+  <div class="stat-card">
+    <div class="stat-icon-box primary-light">
+      <i class="bi bi-clipboard-data"></i>
+    </div>
+    <div class="stat-content">
+      <h3 class="stat-value">{{totalOperaciones}}</h3>
+      <p class="stat-label">Operaciones ingresadas</p>
+    </div>
+  </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-box success-light">
-            <i class="bi bi-check-circle"></i>
-          </div>
-          <div class="stat-content">
-            <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
-            <p class="stat-label">Operaciones liquidadas</p>
-          </div>
-        </div>
+  <div class="stat-card">
+    <div class="stat-icon-box warning-light">
+      <i class="bi bi-arrow-up-circle"></i>
+    </div>
+    <div class="stat-content">
+      <h3 class="stat-value">{{operacionesAprobadas}}</h3>
+      <p class="stat-label">Operaciones aprobadas</p>
+    </div>
+  </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-box warning-light">
-            <i class="bi bi-arrow-up-circle"></i>
-          </div>
-          <div class="stat-content">
-            <h3 class="stat-value">{{operacionesAprobadas}}</h3>
-            <p class="stat-label">Operaciones aprobadas</p>
-          </div>
-        </div>
+  <div class="stat-card">
+    <div class="stat-icon-box success-light">
+      <i class="bi bi-check-circle"></i>
+    </div>
+    <div class="stat-content">
+      <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
+      <p class="stat-label">Operaciones liquidadas</p>
+      <p class="stat-sublabel">Promedio: {{formatMoney(montoPromedioLiquidadas)}}</p>
+    </div>
+  </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-box info-light">
-            <i class="bi bi-cash"></i>
-          </div>
-          <div class="stat-content">
-            <h3 class="stat-value">{{formatMoney(montoPromedioPorOperacion)}}</h3>
-            <p class="stat-label">Monto promedio por operación</p>
-          </div>
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-icon-box info-light">
+      <i class="bi bi-cash"></i>
+    </div>
+    <div class="stat-content">
+      <h3 class="stat-value">{{formatMoney(montoPromedioPorOperacion)}}</h3>
+      <p class="stat-label">Monto promedio por operación</p>
+    </div>
+  </div>
+</div>
 
       <!-- Charts row -->
       <div class="charts-row">
