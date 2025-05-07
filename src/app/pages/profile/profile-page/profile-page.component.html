@@ -39,7 +39,7 @@
               <h2>{{ usuario.nombre }} {{ usuario.apellido }}</h2>
               <div class="user-badges">
                 <span class="badge" [ngClass]="{'badge-success': usuario.activo, 'badge-danger': !usuario.activo}">
-                  {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                  {{ usuario.activo ? "Activo" : "Inactivo" }}
                 </span>
                 <span class="badge badge-info ms-2">{{ usuario.rolNombre }}</span>
               </div>
@@ -55,6 +55,8 @@
                 Datos personales
               </div>
             </div>
+
+
             <div class="card-body">
               <div class="detail-section">
                 <div class="detail-row">
@@ -66,6 +68,22 @@
                   <div class="detail-value">{{ usuario.telefono || 'No especificado' }}</div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Tarjeta para instalar la app -->
+          <div class="card mt-4" *ngIf="isInstallable">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="bi bi-download me-2 text-primary"></i>
+                Instalar aplicación
+              </div>
+            </div>
+            <div class="card-body">
+              <p>Instala Mundo Prendario como aplicación para acceder más rápido desde tu dispositivo.</p>
+              <button class="btn btn-primary" (click)="installApp()">
+                <i class="bi bi-cloud-download"></i> Instalar aplicación
+              </button>
             </div>
           </div>
         </div>

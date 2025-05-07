@@ -3,7 +3,7 @@ import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
@@ -11,6 +11,8 @@ import { UsuarioFormComponent } from 'src/app/shared/modals/usuario-form/usuario
 import { ModalEditarUsuarioComponent } from 'src/app/shared/modals/modal-editar-usuario/modal-editar-usuario.component';
 import { ModalVerUsuarioComponent } from 'src/app/shared/modals/modal-ver-usuario/modal-ver-usuario.component';
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { Operacion } from 'src/app/core/services/operacion.service';
+import { OperacionService } from '../../../core/services/operacion.service';
 
 interface SortState {
   column: string;
@@ -45,6 +47,8 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
   usuarioIdEditar: number | null = null;
   usuarioIdVer: number | null = null;
   loadingUsuarios: Map<number, boolean> = new Map();
+  operaciones: Operacion[] = [];
+
 
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
@@ -64,7 +68,8 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     private usuarioService: UsuarioService,
     private router: Router,
     private renderer: Renderer2,
-    private sidebarStateService: SidebarStateService
+    private sidebarStateService: SidebarStateService,
+    private OperacionService: OperacionService
   ) { }
 
   ngOnInit() {
@@ -106,10 +111,14 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     this.error = null;
     this.sidebarLayoutLocked = true;
 
-    // Usar getUsuarios() en lugar de getUsuariosUnificados()
-    this.usuarioService.getUsuarios().subscribe({
+    // Cargar usuarios y operaciones en paralelo
+    forkJoin({
+      usuarios: this.usuarioService.getUsuarios(),
+      operaciones: this.OperacionService.getOperaciones()
+    }).subscribe({
       next: (data) => {
-        this.usuarios = data;
+        this.usuarios = data.usuarios;
+        this.operaciones = data.operaciones;
         this.applyFilters();
         this.loading = false;
         this.sidebarLayoutLocked = false;
@@ -120,6 +129,11 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
         this.sidebarLayoutLocked = false;
       }
     });
+  }
+
+  getOperacionesLiquidadas(usuarioId: number): number {
+    const operacionesUser = this.operaciones.filter(op => op.vendedorId === usuarioId);
+    return operacionesUser.filter(op => op.estado?.toLowerCase() === 'liquidada').length;
   }
 
   onSearchChange() {
@@ -188,7 +202,10 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
         return (a[column] === b[column] ? 0 : a[column] ? -1 : 1) * factor;
       }
       else if (column === 'cantidadOperaciones') {
-        return (a.cantidadOperaciones - b.cantidadOperaciones) * factor;
+        // Ordenar por operaciones liquidadas en lugar de cantidadOperaciones
+        const opLiqA = this.getOperacionesLiquidadas(a.id);
+        const opLiqB = this.getOperacionesLiquidadas(b.id);
+        return (opLiqA - opLiqB) * factor;
       }
 
       return 0;

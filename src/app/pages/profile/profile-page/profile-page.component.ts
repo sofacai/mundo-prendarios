@@ -10,7 +10,6 @@ import { UsuarioService, UsuarioDto, UsuarioCrearDto } from 'src/app/core/servic
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { Usuario } from 'src/app/core/models/usuario.model';
 
-
 @Component({
   selector: 'app-profile-page',
   standalone: true,
@@ -38,6 +37,9 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   error: string | null = null;
   editMode = false;
 
+  // Propiedades para instalar la PWA
+  deferredPrompt: any = null;
+  isInstallable: boolean = false;
 
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
@@ -47,8 +49,14 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     private usuarioService: UsuarioService,
     private router: Router,
     private sidebarStateService: SidebarStateService,
-
-  ) { }
+  ) {
+    // Escuchar el evento beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      this.isInstallable = true;
+    });
+  }
 
   ngOnInit() {
     this.currentUser = this.authService.currentUserValue;
@@ -67,11 +75,9 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
         this.adjustContentArea();
       }
     );
-
   }
 
   ngAfterViewInit() {
-
   }
 
   ngOnDestroy() {
@@ -169,9 +175,19 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  // Método para instalar la PWA
+  installApp() {
+    if (!this.deferredPrompt) return;
 
-
-
+    this.deferredPrompt.prompt();
+    this.deferredPrompt.userChoice.then((choiceResult: any) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('Usuario instaló la app');
+      }
+      this.deferredPrompt = null;
+      this.isInstallable = false;
+    });
+  }
 
   private generateRandomState(): string {
     const state = Math.random().toString(36).substring(2, 15);

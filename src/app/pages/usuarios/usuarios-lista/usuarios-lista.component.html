@@ -83,7 +83,7 @@
                   <i class="bi" [ngClass]="getSortIcon('rolId')"></i>
                 </th>
                 <th (click)="sortBy('cantidadOperaciones')" class="sortable-header">
-                  Cant. Operaciones
+                  Op. Liq
                   <i class="bi" [ngClass]="getSortIcon('cantidadOperaciones')"></i>
                 </th>
                 <th (click)="sortBy('activo')" class="sortable-header">
@@ -110,7 +110,7 @@
                 </td>
                 <td>
                   <span class="badge badge-light-primary">
-                    {{ usuario.cantidadOperaciones }}
+                    {{ getOperacionesLiquidadas(usuario.id) }}
                   </span>
                 </td>
                 <td>
