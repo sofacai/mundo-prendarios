@@ -110,7 +110,7 @@
           </div>
           <div class="chart-summary">
             <div class="summary-item">
-              <span class="summary-label">Total Operaciones:</span>
+              <span class="summary-label">Operaciones Ingresadas:</span>
               <span class="summary-value">{{ totalOperacionesEnRango }}</span>
             </div>
             <div class="summary-item">
@@ -153,7 +153,7 @@
           <div class="chart-summary" *ngIf="distribucionChartType === 'doughnut'">
             <div class="summary-item" *ngFor="let item of topEntitiesForDistribution; let i = index">
               <span class="summary-label" [style.color]="distribucionChartColors[i]">{{item.nombre}}:</span>
-              <span class="summary-value">{{item.totalOperaciones}} ({{formatPorcentaje(item.totalOperaciones, totalOperaciones)}}%)</span>
+              <span class="summary-value">{{item.totalOperaciones}}</span>
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@
         <div *ngIf="userRole === rolType.Administrador" class="top-lists">
           <div class="top-list-card">
             <div class="card-header">
-              <h4 style="color:black">Top Canales - Op. Ingresadas</h4>
+              <h4 style="color:black">Top Canales</h4>
             </div>
             <div class="card-body">
               <ul class="top-list">
