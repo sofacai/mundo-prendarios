@@ -106,7 +106,8 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     this.error = null;
     this.sidebarLayoutLocked = true;
 
-    this.usuarioService.getUsuariosUnificados().subscribe({
+    // Usar getUsuarios() en lugar de getUsuariosUnificados()
+    this.usuarioService.getUsuarios().subscribe({
       next: (data) => {
         this.usuarios = data;
         this.applyFilters();
