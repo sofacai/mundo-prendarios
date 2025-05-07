@@ -11,6 +11,7 @@ import { SubcanalFormComponent } from 'src/app/shared/modals/subcanal-form/subca
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { RolType } from 'src/app/core/models/usuario.model';
+import { OperacionService } from 'src/app/core/services/operacion.service';
 
 interface SortState {
   column: string;
@@ -60,7 +61,9 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
     private router: Router,
     private renderer: Renderer2,
     private sidebarStateService: SidebarStateService,
-    private authService: AuthService
+    private authService: AuthService,
+    private operacionService: OperacionService
+
   ) { }
 
   ngOnInit() {
@@ -129,15 +132,36 @@ export class SubcanalesListaComponent implements OnInit, OnDestroy {
     this.subcanalService.getSubcanales().subscribe({
       next: (data) => {
         this.subcanales = data;
-        this.applyFilters();
-        this.loading = false;
+
+        // Cargar operaciones liquidadas para cada subcanal
+        const promesas = this.subcanales.map(subcanal => {
+          return new Promise<void>((resolve) => {
+            this.operacionService.getOperacionesLiquidadasPorSubcanal(subcanal.id).subscribe({
+              next: (cantidad) => {
+                // Actualizar el número de operaciones liquidadas para este subcanal
+                subcanal.numeroOperaciones = cantidad;
+                resolve();
+              },
+              error: () => {
+                // Si hay error, dejamos el valor como está
+                resolve();
+              }
+            });
+          });
+        });
+
+        // Una vez que todas las promesas se completen, aplicar filtros
+        Promise.all(promesas).then(() => {
+          this.applyFilters();
+          this.loading = false;
+        });
       },
       error: (err) => {
-        // Si es error 403 (Forbidden) - simplemente muestra estado vacío
+        // Manejar errores como antes
         if (err.status === 403) {
           this.subcanales = [];
           this.applyFilters();
-          this.error = null; // Importante: No mostrar ningún error
+          this.error = null;
         } else {
           this.error = 'No se pudieron cargar los subcanales. Por favor, intente nuevamente.';
         }

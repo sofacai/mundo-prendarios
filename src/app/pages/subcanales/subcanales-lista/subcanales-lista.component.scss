@@ -3,6 +3,39 @@
   height: 100vh;
   background-color: #f5f8fa;
 }
+.badge-light-success {
+  background-color: #e8fff3;
+  color: #50cd89;
+  padding: 0.4rem 0.65rem;
+  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.badge-light-warning {
+  background-color: #fff8dd;
+  color: #ffc700;
+  padding: 0.4rem 0.65rem;
+  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+// Efecto hover para badges de operaciones
+.badge-light-success:hover {
+  background-color: #d6f9e9;
+  transition: all 0.2s ease;
+}
+
+// Mejora para alineación de columnas de operaciones
+.sortable-header.text-center {
+  min-width: 110px;
+}
+
+// Mejora para tooltips (opcional)
+[data-bs-toggle="tooltip"] {
+  cursor: help;
+}
 
 .content-area {
   flex: 1;

@@ -89,7 +89,7 @@
                   <i class="bi" [ngClass]="getSortIcon('gastos')"></i>
                 </th>
                 <th (click)="sortBy('operaciones')" class="sortable-header text-center">
-                  Operaciones
+                  Op. Liquidadas
                   <i class="bi" [ngClass]="getSortIcon('operaciones')"></i>
                 </th>
               </tr>
@@ -127,7 +127,7 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  <span class="badge badge-light-warning">
+                  <span class="badge badge-light-success">
                     {{ subcanal.numeroOperaciones || 0 }}
                   </span>
                 </td>

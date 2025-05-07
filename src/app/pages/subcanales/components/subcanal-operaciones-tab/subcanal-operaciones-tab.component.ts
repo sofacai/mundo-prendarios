@@ -44,6 +44,9 @@ export class SubcanalOperacionesTabComponent implements OnChanges {
   getBadgeClass(estado: string): string {
     return this.operacionService.getEstadoClass(estado);
   }
+  getEstadoColor(estado: string): string {
+    return this.operacionService.getEstadoColor(estado);
+  }
 
   formatearMonto(monto: number): string {
     return '$ ' + monto.toLocaleString('es-AR', {

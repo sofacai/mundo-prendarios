@@ -62,7 +62,90 @@
 }
 
 /* Badges */
+.badge {
+  padding: 0.4rem 0.65rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+  font-weight: 500;
+}
 
+/* Estilos específicos para cada estado */
+.badge-op-rechazado {
+  background-color: #fff5f8;
+  color: #f1416c;
+}
+
+.badge-op-liquidada {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.badge-op-firmas-docu {
+  background-color: #e1e9ff;
+  color: #3699ff;
+}
+
+.badge-op-completando-docu {
+  background-color: #e1f0ff;
+  color: #009ef7;
+}
+
+.badge-op-en-gestion {
+  background-color: #e1f0ff;
+  color: #009ef7;
+}
+
+.badge-op-en-analisis {
+  background-color: #fff5f8;
+  color: #f1416c;
+}
+
+.badge-op-analisis-bco {
+  background-color: #fff8dd;
+  color: #ffc700;
+}
+
+.badge-op-aprobado-def {
+  background-color: #e8fff3;
+  color: #50cd89;
+}
+
+.badge-op-enviada {
+  background-color: #fff8dd;
+  color: #ffc700;
+}
+
+.badge-op-en-proc-insc {
+  background-color: #e1e9ff;
+  color: #3699ff;
+}
+
+.badge-op-en-proc-liq {
+  background-color: #fff8dd;
+  color: #ffc700;
+}
+
+.badge-op-ingresada {
+  background-color: #e1f0ff;
+  color: #009ef7;
+}
+
+.badge-op-propuesta {
+  background-color: #e1f0ff;
+  color: #009ef7;
+}
+
+.badge-light {
+  background-color: #f5f8fa;
+  color: #7e8299;
+}
+
+/* Transición suave al pasar el mouse */
+.badge {
+  transition: all 0.2s ease;
+}
 /* Botones de acción */
 .btn-action {
   background: none;
