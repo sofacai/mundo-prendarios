@@ -183,3 +183,54 @@
     grid-template-columns: 1fr;
   }
 }
+.btn-light-primary {
+  background-color: rgba(0, 158, 247, 0.1);
+  color: #009ef7;
+  border: none;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  height: auto;
+  min-width: auto;
+
+  &:hover {
+    background-color: rgba(0, 158, 247, 0.2);
+  }
+}
+
+.btn-sm {
+  height: 32px;
+  padding: 4px 12px;
+  font-size: 13px;
+  min-width: auto;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.me-1 {
+  margin-right: 0.25rem;
+}
+
+/* Para asegurar compatibilidad con el ícono de Bootstrap */
+.bi-person-plus::before {
+  content: "\f4de";
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

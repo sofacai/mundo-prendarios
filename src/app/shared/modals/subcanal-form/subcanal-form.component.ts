@@ -7,11 +7,13 @@ import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
 import { UbicacionService, Provincia, Localidad } from 'src/app/core/services/ubicacion.service';
 import { Gasto, GastoCreate } from 'src/app/core/models/gasto.model';
+import { RolType } from 'src/app/core/models/usuario.model';
+import { UsuarioFormComponent } from 'src/app/shared/modals/usuario-form/usuario-form.component';
 
 @Component({
   selector: 'app-subcanal-form',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule, UsuarioFormComponent],
   templateUrl: './subcanal-form.component.html',
   styleUrls: ['./subcanal-form.component.scss']
 })
@@ -20,7 +22,7 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
   @Output() closeModal = new EventEmitter<boolean>();
   @Output() subcanalCreado = new EventEmitter<any>();
   @Input() canalId: number | null = null;
-@Input() canalPreseleccionado = false;
+  @Input() canalPreseleccionado = false;
 
   subcanalForm: FormGroup;
   loading = false;
@@ -32,6 +34,10 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
   provincias: Provincia[] = [];
   localidades: Localidad[] = [];
   provinciaSeleccionada: string | null = null;
+
+  // Variables para el modal de creación de admin
+  showCrearAdminModal = false;
+  rolAdminCanal = RolType.AdminCanal; // Rol para AdminCanal (2)
 
   constructor(
     private fb: FormBuilder,
@@ -228,6 +234,28 @@ export class SubcanalFormComponent implements OnInit, OnChanges, OnDestroy {
         this.loading = false;
         this.error = 'Error al crear el subcanal. Intente nuevamente.';
       }
+    });
+  }
+
+  // Métodos para la creación de un nuevo admin
+  crearNuevoAdmin(): void {
+    this.showCrearAdminModal = true;
+  }
+
+  closeCrearAdminModal(): void {
+    this.showCrearAdminModal = false;
+  }
+
+  onAdminCreado(admin: UsuarioDto): void {
+    // Cerrar el modal de creación de admin
+    this.showCrearAdminModal = false;
+
+    // Agregar el nuevo admin a la lista de administradores
+    this.administradores = [...this.administradores, admin];
+
+    // Seleccionar automáticamente el nuevo admin en el formulario
+    this.subcanalForm.patchValue({
+      adminCanalId: admin.id.toString()
     });
   }
 }
