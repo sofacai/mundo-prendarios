@@ -110,8 +110,11 @@ export class UsuarioHeaderComponent {
   }
 
   // Obtener cantidad de operaciones rechazadas
-  getOperacionesRechazadas(): number {
-    return this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'rechazada').length;
+  getOperacionesAprobadas(): number {
+    return this.operaciones.filter(op =>
+      ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
+      .includes(op.estado || '')
+    ).length;
   }
 
   // Obtener monto total de operaciones liquidadas

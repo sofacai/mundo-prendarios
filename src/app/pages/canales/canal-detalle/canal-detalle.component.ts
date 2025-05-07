@@ -71,6 +71,7 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
   planesInactivos = 0;
   totalOperaciones = 0;
   totalVendedores = 0;
+  operacionesAprobadas = 0;
 
 
   // Editar canal
@@ -197,6 +198,7 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         // Cargar oficiales comerciales
         this.cargarOficialesComerciales(this.canalId);
 
+
         // Obtener operaciones liquidadas
         this.operacionService.getOperaciones().subscribe({
           next: (operaciones) => {
@@ -204,10 +206,15 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
             this.operaciones = operaciones.filter(op => op.canalId === this.canalId);
             this.totalOperaciones = this.operaciones.length;
 
-
             // Contar operaciones liquidadas
-            this.operacionesLiquidadas = this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
+            this.operacionesLiquidadas = this.operaciones.filter(op =>
+              op.estado === 'LIQUIDADA').length;
 
+            // Contar operaciones aprobadas - asegurarse de usar el case correcto
+            this.operacionesAprobadas = this.operaciones.filter(op =>
+              ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
+              .includes(op.estado || '')
+            ).length;
 
             // Cargar datos adicionales en paralelo
             this.loadAdditionalData();

@@ -1,4 +1,3 @@
-// Archivo: src/app/pages/canales/components/canal-header/canal-header.component.ts
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Canal } from 'src/app/core/services/canal.service';
@@ -18,6 +17,7 @@ export class CanalHeaderComponent implements OnChanges {
   @Input() planesInactivos: number = 0;
   @Input() totalOperaciones: number = 0;
   @Input() operacionesLiquidadas: number = 0;
+  @Input() operacionesAprobadas: number = 0; // Nueva propiedad
 
   @Output() toggleEstado = new EventEmitter<void>();
 
@@ -27,8 +27,7 @@ export class CanalHeaderComponent implements OnChanges {
   constructor() { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Si canal-detalle.component.ts actualiza operacionesLiquidadas, no hacemos nada aquí
-    // Este componente solo recibe el valor ya calculado
+    // Este componente solo recibe valores ya calculados
   }
 
   onToggleEstado(): void {
@@ -39,7 +38,6 @@ export class CanalHeaderComponent implements OnChanges {
   onImageClick(): void {
     if (this.canal && this.canal.foto) {
       this.showImagePreview = true;
-      // Evitar scroll del body mientras el modal está abierto
       document.body.style.overflow = 'hidden';
     }
   }
@@ -47,7 +45,6 @@ export class CanalHeaderComponent implements OnChanges {
   // Método para cerrar la previsualización
   closeImagePreview(): void {
     this.showImagePreview = false;
-    // Restaurar scroll del body
     document.body.style.overflow = '';
   }
 }

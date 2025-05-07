@@ -197,6 +197,8 @@ export class OperacionService {
         return 'rgb(134, 192, 252)';
       case 'en analisis':
         return 'rgb(255, 200, 200)';
+      case 'analisis bco':
+        return 'rgb(255, 225, 147)'; // Tono amarillito para el nuevo estado
       case 'aprobado def':
         return 'rgb(144, 205, 176)';
       case 'enviada':
@@ -214,7 +216,6 @@ export class OperacionService {
     }
   }
 
-  // Método de utilidad para obtener la clase CSS del estado
   getEstadoClass(estado: string): string {
     const estadoLower = estado?.toLowerCase()?.trim() || '';
 
@@ -237,6 +238,8 @@ export class OperacionService {
         return 'badge-op-en-gestion';
       case 'en analisis':
         return 'badge-op-en-analisis';
+      case 'analisis bco':
+        return 'badge-op-analisis-bco'; // Nueva clase para el estado
       case 'aprobado def':
         return 'badge-op-aprobado-def';
       case 'enviada':

@@ -59,22 +59,22 @@
       </div>
 
       <div class="stat-item">
-        <div class="stat-icon bg-light-warning">
-          <i class="bi bi-list-check"></i>
+        <div class="stat-icon bg-light-primary">
+          <i class="bi bi-clipboard-data"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ planesActivos + planesInactivos }}</div>
-          <div class="stat-label">Planes</div>
+          <div class="stat-value">{{ totalOperaciones }}</div>
+          <div class="stat-label">Operaciones Ingresadas</div>
         </div>
       </div>
 
       <div class="stat-item">
-        <div class="stat-icon bg-light-info">
-          <i class="bi bi-cash"></i>
+        <div class="stat-icon bg-light-warning">
+          <i class="bi bi-arrow-up-circle"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ totalOperaciones }}</div>
-          <div class="stat-label">Operaciones Totales</div>
+          <div class="stat-value">{{ operacionesAprobadas }}</div>
+          <div class="stat-label">Operaciones Aprobadas</div>
         </div>
       </div>
 
@@ -84,7 +84,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-value">{{ operacionesLiquidadas }}</div>
-          <div class="stat-label">Op. Liquidadas</div>
+          <div class="stat-label">Operaciones Liquidadas</div>
         </div>
       </div>
     </div>

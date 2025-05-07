@@ -41,7 +41,10 @@ export class DashboardWelcomeComponent implements OnInit {
   totalOperaciones: number = 0;
   operacionesLiquidadas: number = 0;
   operacionesPendientes: number = 0;
+  operacionesAprobadas: number = 0;
+  montoPromedioPorOperacion: number = 0;
   totalMontosLiquidados: number = 0;
+  operacionesDelMesActual: any[] = [];
 
   // Chart configuration
   chartType: string = 'bar'; // 'bar' or 'line'
@@ -51,6 +54,7 @@ export class DashboardWelcomeComponent implements OnInit {
   chartEndMonth: number = 5;
   totalOperacionesEnRango: number = 0;
   operacionesLiquidadasEnRango: number = 0;
+  operacionesAprobadasEnRango: number = 0;
   distribucionChartColors: string[] = [
     'rgba(0, 158, 247, 0.8)',
     'rgba(80, 205, 137, 0.8)',
@@ -91,8 +95,9 @@ export class DashboardWelcomeComponent implements OnInit {
     meses: string[];
     totales: number[];
     liquidadas: number[];
-    fullData: { mes: string, total: number, liquidadas: number }[];
-  } = { meses: [], totales: [], liquidadas: [], fullData: [] };
+    aprobadas: number[];
+    fullData: { mes: string, total: number, liquidadas: number, aprobadas: number }[];
+  } = { meses: [], totales: [], liquidadas: [], aprobadas: [], fullData: [] };
 
 
   constructor(
@@ -178,6 +183,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Calculate summary stats for the filtered range
     this.totalOperacionesEnRango = filteredData.totales.reduce((sum, value) => sum + value, 0);
     this.operacionesLiquidadasEnRango = filteredData.liquidadas.reduce((sum, value) => sum + value, 0);
+    this.operacionesAprobadasEnRango = filteredData.aprobadas.reduce((sum, value) => sum + value, 0);
 
     // Recrear el gráfico con el nuevo tipo
     const canvas = this.operacionesChart.canvas;
@@ -191,10 +197,18 @@ export class DashboardWelcomeComponent implements OnInit {
       labels: filteredData.meses,
       datasets: [
         {
-          label: 'Total Operaciones',
+          label: 'Operaciones Ingresadas',
           data: filteredData.totales,
           backgroundColor: 'rgba(0, 158, 247, 0.7)',
           borderColor: 'rgba(0, 158, 247, 1)',
+          borderWidth: 2,
+          tension: 0.4
+        },
+        {
+          label: 'Operaciones Aprobadas',
+          data: filteredData.aprobadas,
+          backgroundColor: 'rgba(255, 199, 0, 0.7)',
+          borderColor: 'rgba(255, 199, 0, 1)',
           borderWidth: 2,
           tension: 0.4
         },
@@ -280,7 +294,7 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   // Helper method to get filtered data based on month selection
-  getFilteredChartData(): { meses: string[], totales: number[], liquidadas: number[] } {
+  getFilteredChartData(): { meses: string[], totales: number[], liquidadas: number[], aprobadas: number[] } {
     // Ensure start month is before end month
     const start = Math.min(this.chartStartMonth, this.chartEndMonth);
     const end = Math.max(this.chartStartMonth, this.chartEndMonth);
@@ -289,8 +303,9 @@ export class DashboardWelcomeComponent implements OnInit {
     const meses = this.operacionesPorMes.meses.slice(start, end + 1);
     const totales = this.operacionesPorMes.totales.slice(start, end + 1);
     const liquidadas = this.operacionesPorMes.liquidadas.slice(start, end + 1);
+    const aprobadas = this.operacionesPorMes.aprobadas.slice(start, end + 1);
 
-    return { meses, totales, liquidadas };
+    return { meses, totales, liquidadas, aprobadas };
   }
 
   // Percentage calculation helper
@@ -448,19 +463,35 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   calculateGeneralStats(): void {
-    // Total de operaciones
-    this.totalOperaciones = this.operaciones.length;
+    const fechaActual = new Date();
+    const mesActual = fechaActual.getMonth();
+    const anioActual = fechaActual.getFullYear();
 
-    // Operaciones liquidadas
-    this.operacionesLiquidadas = this.operaciones.filter(op => op.estado === 'LIQUIDADA').length;
+    // Filtrar operaciones del mes en curso
+    this.operacionesDelMesActual = this.operaciones.filter(op => {
+      if (op.fechaCreacion) {
+        const fecha = new Date(op.fechaCreacion);
+        return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+      }
+      return false;
+    });
 
-    // Operaciones pendientes
-    this.operacionesPendientes = this.operaciones.filter(op => op.estado !== 'LIQUIDADA' && op.estado !== 'Rechazada' && op.estado !== 'Cancelada').length;
+    // Total de operaciones (ahora "Operaciones Ingresadas")
+    this.totalOperaciones = this.operacionesDelMesActual.length;
 
-    // Total montos liquidados
-    this.totalMontosLiquidados = this.operaciones
-      .filter(op => op.estado === 'LIQUIDADA')
-      .reduce((total, op) => total + op.monto, 0);
+    // Operaciones liquidadas (solo LIQUIDADA)
+    this.operacionesLiquidadas = this.operacionesDelMesActual.filter(op =>
+      op.estado === 'LIQUIDADA').length;
+
+    // Operaciones aprobadas (suma de varios estados)
+    this.operacionesAprobadas = this.operacionesDelMesActual.filter(op =>
+      ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
+      .includes(op.estado)).length;
+
+    // Monto promedio por operación
+    const totalMonto = this.operacionesDelMesActual.reduce((sum, op) => sum + op.monto, 0);
+    this.montoPromedioPorOperacion = this.operacionesDelMesActual.length > 0 ?
+      totalMonto / this.operacionesDelMesActual.length : 0;
   }
 
   calculateRoleSpecificStats(): void {
@@ -664,6 +695,8 @@ export class DashboardWelcomeComponent implements OnInit {
       .reduce((sum, value) => sum + value, 0);
     this.operacionesLiquidadasEnRango = operacionesPorMesData.liquidadas.slice(this.chartStartMonth, this.chartEndMonth + 1)
       .reduce((sum, value) => sum + value, 0);
+    this.operacionesAprobadasEnRango = operacionesPorMesData.aprobadas.slice(this.chartStartMonth, this.chartEndMonth + 1)
+      .reduce((sum, value) => sum + value, 0);
 
     // Preparar datos para el gráfico de distribución
     this.prepareDistributionData();
@@ -720,10 +753,18 @@ export class DashboardWelcomeComponent implements OnInit {
         labels: filteredData.meses,
         datasets: [
           {
-            label: 'Total Operaciones',
+            label: 'Operaciones Ingresadas',
             data: filteredData.totales,
             backgroundColor: 'rgba(0, 158, 247, 0.7)',
             borderColor: 'rgba(0, 158, 247, 1)',
+            borderWidth: 2,
+            tension: 0.4
+          },
+          {
+            label: 'Operaciones Aprobadas',
+            data: filteredData.aprobadas,
+            backgroundColor: 'rgba(255, 199, 0, 0.7)',
+            borderColor: 'rgba(255, 199, 0, 1)',
             borderWidth: 2,
             tension: 0.4
           },
@@ -801,16 +842,18 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   // Helper methods
-  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[], fullData: any[]} {
+  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[], aprobadas: number[], fullData: any[]} {
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const operacionesPorMes = new Map();
     const operacionesLiquidadasPorMes = new Map();
+    const operacionesAprobadasPorMes = new Map();
     const fullData: any[] = [];
 
     // Inicializar todos los meses con 0
     meses.forEach(mes => {
       operacionesPorMes.set(mes, 0);
       operacionesLiquidadasPorMes.set(mes, 0);
+      operacionesAprobadasPorMes.set(mes, 0);
     });
 
     // Si no hay operaciones, devolver datos de muestra
@@ -819,10 +862,12 @@ export class DashboardWelcomeComponent implements OnInit {
         meses: meses,
         totales: Array(12).fill(0),
         liquidadas: Array(12).fill(0),
+        aprobadas: Array(12).fill(0),
         fullData: meses.map(mes => ({
           mes,
           total: 0,
-          liquidadas: 0
+          liquidadas: 0,
+          aprobadas: 0
         }))
       };
     }
@@ -840,22 +885,29 @@ export class DashboardWelcomeComponent implements OnInit {
         if (op.estado === 'LIQUIDADA') {
           operacionesLiquidadasPorMes.set(mes, (operacionesLiquidadasPorMes.get(mes) || 0) + 1);
         }
+
+        // Incrementar operaciones aprobadas si aplica
+        if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado)) {
+          operacionesAprobadasPorMes.set(mes, (operacionesAprobadasPorMes.get(mes) || 0) + 1);
+        }
       }
     });
 
     // Crear array completo de datos
     const totales = meses.map(mes => operacionesPorMes.get(mes) || 0);
     const liquidadas = meses.map(mes => operacionesLiquidadasPorMes.get(mes) || 0);
+    const aprobadas = meses.map(mes => operacionesAprobadasPorMes.get(mes) || 0);
 
     meses.forEach((mes, index) => {
       fullData.push({
         mes,
         total: totales[index],
-        liquidadas: liquidadas[index]
+        liquidadas: liquidadas[index],
+        aprobadas: aprobadas[index]
       });
     });
 
-    return { meses, totales, liquidadas, fullData };
+    return { meses, totales, liquidadas, aprobadas, fullData };
   }
 
   agruparOperacionesPorMes(operaciones: any[]): { [key: string]: any[] } {

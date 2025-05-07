@@ -30,15 +30,15 @@
   </div>
   <div class="card-body">
     <!-- Operaciones Totales vs Liquidadas -->
-    <div class="performance-item">
-      <div class="performance-label">Operaciones Totales vs Liquidadas</div>
-      <div class="performance-data">
-        <div class="performance-value">
-          {{ operaciones.length }} / {{ getOperacionesLiquidadas() }}
-          <span class="performance-subtext">({{ getOperacionesLiquidadasPorcentaje() }}%)</span>
-        </div>
-      </div>
+<div class="performance-item">
+  <div class="performance-label">Operaciones (Ingresadas / Aprobadas / Liquidadas)</div>
+  <div class="performance-data">
+    <div class="performance-value">
+      {{ operaciones.length }} / {{ getOperacionesAprobadas() }} / {{ getOperacionesLiquidadas() }}
+      <span class="performance-subtext">({{ getOperacionesLiquidadasPorcentaje() }}% liquidadas)</span>
     </div>
+  </div>
+</div>
 
     <!-- Monto Promedio -->
     <div class="performance-item">

@@ -69,27 +69,30 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
     }
 
     this.operacionesChart = new Chart(ctx, {
-      type: 'line',
+      type: 'bar', // Cambiado de 'line' a 'bar'
       data: {
         labels: operacionesPorMes.map(item => item.mes),
         datasets: [
           {
-            label: 'Operaciones Totales',
+            label: 'Operaciones Ingresadas',
             data: operacionesPorMes.map(item => item.cantidad),
-            backgroundColor: 'rgba(0, 158, 247, 0.2)',
+            backgroundColor: 'rgba(0, 158, 247, 0.7)',
             borderColor: 'rgba(0, 158, 247, 1)',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
+            borderWidth: 1
+          },
+          {
+            label: 'Operaciones Aprobadas',
+            data: operacionesPorMes.map(item => item.aprobadas),
+            backgroundColor: 'rgba(255, 199, 0, 0.7)',
+            borderColor: 'rgba(255, 199, 0, 1)',
+            borderWidth: 1
           },
           {
             label: 'Operaciones Liquidadas',
             data: operacionesPorMes.map(item => item.liquidadas),
-            backgroundColor: 'rgba(80, 205, 137, 0.2)',
+            backgroundColor: 'rgba(80, 205, 137, 0.7)',
             borderColor: 'rgba(80, 205, 137, 1)',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
+            borderWidth: 1
           }
         ]
       },
@@ -316,23 +319,25 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
     // Si no hay operaciones, devolver datos de muestra
     if (!this.operaciones || this.operaciones.length === 0) {
       return [
-        { mes: 'Ene', cantidad: 0, liquidadas: 0 },
-        { mes: 'Feb', cantidad: 0, liquidadas: 0 },
-        { mes: 'Mar', cantidad: 0, liquidadas: 0 },
-        { mes: 'Abr', cantidad: 0, liquidadas: 0 },
-        { mes: 'May', cantidad: 0, liquidadas: 0 },
-        { mes: 'Jun', cantidad: 0, liquidadas: 0 }
+        { mes: 'Ene', cantidad: 0, liquidadas: 0, aprobadas: 0 },
+        { mes: 'Feb', cantidad: 0, liquidadas: 0, aprobadas: 0 },
+        { mes: 'Mar', cantidad: 0, liquidadas: 0, aprobadas: 0 },
+        { mes: 'Abr', cantidad: 0, liquidadas: 0, aprobadas: 0 },
+        { mes: 'May', cantidad: 0, liquidadas: 0, aprobadas: 0 },
+        { mes: 'Jun', cantidad: 0, liquidadas: 0, aprobadas: 0 }
       ];
     }
 
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const operacionesPorMes = new Map();
     const liquidadasPorMes = new Map();
+    const aprobadasPorMes = new Map();
 
     // Inicializar todos los meses con 0
     meses.forEach(mes => {
       operacionesPorMes.set(mes, 0);
       liquidadasPorMes.set(mes, 0);
+      aprobadasPorMes.set(mes, 0);
     });
 
     // Agrupar operaciones por mes
@@ -345,8 +350,13 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
         operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
 
         // Operaciones liquidadas
-        if (op.estado && op.estado.toLowerCase() === 'liquidada') {
+        if (op.estado === 'LIQUIDADA') {
           liquidadasPorMes.set(mes, (liquidadasPorMes.get(mes) || 0) + 1);
+        }
+
+        // Operaciones aprobadas
+        if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado || '')) {
+          aprobadasPorMes.set(mes, (aprobadasPorMes.get(mes) || 0) + 1);
         }
       }
     });
@@ -356,7 +366,8 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
       .map(([mes, cantidad]) => ({
         mes,
         cantidad,
-        liquidadas: liquidadasPorMes.get(mes) || 0
+        liquidadas: liquidadasPorMes.get(mes) || 0,
+        aprobadas: aprobadasPorMes.get(mes) || 0
       }))
       .slice(0, 6); // Mostrar los primeros 6 meses para simplicidad
   }

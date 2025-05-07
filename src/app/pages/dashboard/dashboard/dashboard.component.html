@@ -35,7 +35,7 @@
           </div>
           <div class="stat-content">
             <h3 class="stat-value">{{totalOperaciones}}</h3>
-            <p class="stat-label">Total operaciones</p>
+            <p class="stat-label">Operaciones ingresadas</p>
           </div>
         </div>
 
@@ -50,12 +50,22 @@
         </div>
 
         <div class="stat-card">
+          <div class="stat-icon-box warning-light">
+            <i class="bi bi-arrow-up-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{operacionesAprobadas}}</h3>
+            <p class="stat-label">Operaciones aprobadas</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
           <div class="stat-icon-box info-light">
             <i class="bi bi-cash"></i>
           </div>
           <div class="stat-content">
-            <h3 class="stat-value">{{formatMoney(totalMontosLiquidados)}}</h3>
-            <p class="stat-label">Montos liquidados</p>
+            <h3 class="stat-value">{{formatMoney(montoPromedioPorOperacion)}}</h3>
+            <p class="stat-label">Monto promedio por operación</p>
           </div>
         </div>
       </div>
@@ -102,6 +112,10 @@
             <div class="summary-item">
               <span class="summary-label">Total Operaciones:</span>
               <span class="summary-value">{{ totalOperacionesEnRango }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Operaciones Aprobadas:</span>
+              <span class="summary-value">{{ operacionesAprobadasEnRango }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Operaciones Liquidadas:</span>
@@ -153,7 +167,7 @@
         <div *ngIf="userRole === rolType.Administrador" class="top-lists">
           <div class="top-list-card">
             <div class="card-header">
-              <h4 style="color:black">Top Canales</h4>
+              <h4 style="color:black">Top Canales - Op. Ingresadas</h4>
             </div>
             <div class="card-body">
               <ul class="top-list">

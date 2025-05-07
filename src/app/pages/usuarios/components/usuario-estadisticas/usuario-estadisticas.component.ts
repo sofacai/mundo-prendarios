@@ -39,11 +39,12 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
   ultimasOperaciones: Operacion[] = [];
   hasSufficientData: boolean = false;
   chartInitialized: boolean = false;
-
+  operacionesAprobadas: number = 0;
   // Tendencias (en porcentaje, + o -)
   trendMensual: number = 0;
   trendMonto: number = 0;
   trendClientes: number = 0;
+
 
   // Datos específicos por rol
   canalMasActivo: string = '';
@@ -266,7 +267,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       return;
     }
 
-    const { labels, dataTotales, dataLiquidadas } = this.prepareOperacionesChartData();
+    const { labels, dataTotales, dataLiquidadas, dataAprobadas } = this.prepareOperacionesChartData();
 
     if (this.operacionesChart) {
       this.operacionesChart.destroy();
@@ -278,10 +279,17 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         labels,
         datasets: [
           {
-            label: 'Operaciones Totales',
+            label: 'Operaciones Ingresadas',
             data: dataTotales,
             backgroundColor: 'rgba(0, 158, 247, 0.5)',
             borderColor: 'rgba(0, 158, 247, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Operaciones Aprobadas',
+            data: dataAprobadas,
+            backgroundColor: 'rgba(255, 199, 0, 0.5)',
+            borderColor: 'rgba(255, 199, 0, 1)',
             borderWidth: 1
           },
           {
@@ -312,7 +320,6 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
         }
       }
     });
-
   }
 
   inicializarGraficoCanales() {
@@ -559,12 +566,13 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
     return `$${amount}`;
   }
 
-  prepareOperacionesChartData(): { labels: string[], dataTotales: number[], dataLiquidadas: number[] } {
+  prepareOperacionesChartData(): { labels: string[], dataTotales: number[], dataLiquidadas: number[], dataAprobadas: number[] } {
     const operacionesPorMes = this.agruparOperacionesPorMes(this.operaciones);
     const today = new Date();
     const labels: string[] = [];
     const dataTotales: number[] = [];
     const dataLiquidadas: number[] = [];
+    const dataAprobadas: number[] = [];
 
     for (let i = 11; i >= 0; i--) {
       const date = new Date(today);
@@ -579,11 +587,17 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       const operacionesMes = operacionesPorMes[key] || [];
       dataTotales.push(operacionesMes.length);
 
-      const operacionesLiquidadas = operacionesMes.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada');
+      const operacionesLiquidadas = operacionesMes.filter(op => op.estado === 'LIQUIDADA');
       dataLiquidadas.push(operacionesLiquidadas.length);
+
+      const operacionesAprobadas = operacionesMes.filter(op =>
+        ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
+        .includes(op.estado || '')
+      );
+      dataAprobadas.push(operacionesAprobadas.length);
     }
 
-    return { labels, dataTotales, dataLiquidadas };
+    return { labels, dataTotales, dataLiquidadas, dataAprobadas };
   }
 
   prepareChartData(): { labels: string[], data: number[] } {
@@ -695,13 +709,18 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Métodos para estadísticas de operaciones liquidadas
   getOperacionesLiquidadas(): number {
-    return this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
+    return this.operaciones.filter(op => op.estado === 'LIQUIDADA').length;
   }
   getOperacionesLiquidadasPorcentaje(): number {
     if (this.operaciones.length === 0) return 0;
     return Math.round((this.getOperacionesLiquidadas() / this.operaciones.length) * 100);
   }
-
+  getOperacionesAprobadas(): number {
+    return this.operaciones.filter(op =>
+      ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
+      .includes(op.estado || '')
+    ).length;
+  }
   // Método para calcular monto total de operaciones liquidadas
   getMontoTotalLiquidadas(): number {
     return this.operaciones

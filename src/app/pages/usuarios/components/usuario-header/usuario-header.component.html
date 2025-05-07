@@ -85,7 +85,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-value">{{ operaciones?.length || 0 }}</div>
-          <div class="stat-label">Operaciones Totales</div>
+          <div class="stat-label">Op. Ingresadas</div>
         </div>
       </div>
 
@@ -95,17 +95,17 @@
         </div>
         <div class="stat-content">
           <div class="stat-value">{{ getOperacionesLiquidadas() }}</div>
-          <div class="stat-label">Operaciones Liquidadas</div>
+          <div class="stat-label">Op. Liquidadas</div>
         </div>
       </div>
 
       <div class="stat-item">
-        <div class="stat-icon bg-light-danger">
-          <i class="bi bi-x-circle"></i>
+        <div class="stat-icon bg-light-warning">
+          <i class="bi bi-arrow-up-circle"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ getOperacionesRechazadas() }}</div>
-          <div class="stat-label">Operaciones Rechazadas</div>
+          <div class="stat-value">{{ getOperacionesAprobadas() }}</div>
+          <div class="stat-label">Op. Aprobadas</div>
         </div>
       </div>
 
