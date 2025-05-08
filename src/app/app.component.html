@@ -1,16 +1,12 @@
 <div class="app-container">
-  <!-- Sidebar solo si no estamos en páginas de auth -->
   <app-sidebar *ngIf="!isAuthPage" (sidebarStateChanged)="onSidebarStateChanged($event)"></app-sidebar>
 
-  <!-- Overlay para dispositivos móviles -->
   <div class="sidebar-overlay"></div>
 
-  <!-- Contenido principal -->
   <div class="main-content">
     <router-outlet></router-outlet>
 
-    <!-- Botón flotante de cotizador -->
-    <a *ngIf="!isAuthPage"
+    <a *ngIf="!isAuthPage && !isInCotizadorPage"
       class="floating-btn"
       (click)="navigateToCotizador()">
       <i class="bi bi-calculator"></i>

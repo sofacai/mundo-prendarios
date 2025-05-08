@@ -25,20 +25,12 @@ export class AppComponent {
     private router: Router,
     private renderer: Renderer2
   ) {
-    // Suscribirse a cambios de ruta
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      // Verificar si estamos en una página del cotizador
       this.isInCotizadorPage = event.url.startsWith('/cotizador');
-
-      // Verificar explícitamente si estamos en una página de autenticación
       this.isAuthPage = event.url.includes('/auth/');
 
-      // Para depuración - ver la URL actual en consola
-      console.log('URL actual:', event.url, 'isAuthPage:', this.isAuthPage);
-
-      // Remover clase sidebar-open en páginas de auth
       if (this.isAuthPage) {
         this.renderer.removeClass(document.body, 'sidebar-open');
       }
@@ -46,21 +38,13 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    // Verificar la ruta inicial
     this.isInCotizadorPage = this.router.url.startsWith('/cotizador');
-
-    // Verificar explícitamente si estamos en una página de autenticación
     this.isAuthPage = this.router.url.includes('/auth/');
 
-    // Para depuración - ver la URL inicial en consola
-    console.log('URL inicial:', this.router.url, 'isAuthPage:', this.isAuthPage);
-
-    // Remover clase sidebar-open en carga inicial si es página auth
     if (this.isAuthPage) {
       this.renderer.removeClass(document.body, 'sidebar-open');
     }
 
-    // Suscribirse a los cambios del usuario actual
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.userRole = user.rolId;
@@ -70,17 +54,13 @@ export class AppComponent {
     });
 
     this.authService.logoutEvent.subscribe(() => {
-      // Cuando se hace logout, establecer isAuthPage a true inmediatamente
       this.isAuthPage = true;
-      // Asegurarse de que se remueve la clase
       this.renderer.removeClass(document.body, 'sidebar-open');
-      // Resetear el rol de usuario
       this.userRole = null;
     });
   }
 
   onSidebarStateChanged(isCollapsed: boolean) {
-    // Solo aplicar cambios de clase si no estamos en páginas de auth
     if (!this.isAuthPage) {
       if (isCollapsed) {
         this.renderer.removeClass(document.body, 'sidebar-open');

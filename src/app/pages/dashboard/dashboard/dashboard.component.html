@@ -36,7 +36,7 @@
     </div>
     <div class="stat-content">
       <h3 class="stat-value">{{totalOperaciones}}</h3>
-      <p class="stat-label">Operaciones ingresadas</p>
+      <p class="stat-label">Op. Ingresadas</p>
     </div>
   </div>
 
@@ -46,7 +46,7 @@
     </div>
     <div class="stat-content">
       <h3 class="stat-value">{{operacionesAprobadas}}</h3>
-      <p class="stat-label">Operaciones aprobadas</p>
+      <p class="stat-label">Op. Aprobadas</p>
     </div>
   </div>
 
@@ -56,7 +56,7 @@
     </div>
     <div class="stat-content">
       <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
-      <p class="stat-label">Operaciones liquidadas</p>
+      <p class="stat-label">Op. Liquidadas</p>
       <p class="stat-sublabel">Promedio: {{formatMoney(montoPromedioLiquidadas)}}</p>
     </div>
   </div>
@@ -66,8 +66,8 @@
       <i class="bi bi-cash"></i>
     </div>
     <div class="stat-content">
-      <h3 class="stat-value">{{formatMoney(montoPromedioPorOperacion)}}</h3>
-      <p class="stat-label">Monto promedio por operación</p>
+      <h3 class="stat-value">{{formatLargeNumber(totalMontosLiquidados)}}</h3>
+      <p class="stat-label">Monto total Op. Liquidadas</p>
     </div>
   </div>
 </div>
