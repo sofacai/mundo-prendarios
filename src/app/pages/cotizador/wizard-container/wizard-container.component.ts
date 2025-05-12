@@ -639,29 +639,23 @@ export class WizardContainerComponent implements OnInit {
 
           this.crearCliente(datos);
         })
-        .catch((error: any) => {
-          console.error('Error al consultar BCRA:', error);
+   .catch((error: any) => {
+  console.error('Error al consultar BCRA:', error);
 
-          // Manejo específico de errores HTTP 500 o 404
-          if (error?.status === 500 || error?.status === 404) {
-            console.log('BCRA no disponible, continuando sin validación');
+  // Para cualquier tipo de error, continuamos sin validación
+  console.log('BCRA no disponible, continuando sin validación');
 
-            // Establecer valores por defecto para "sin BCRA"
-            this.dataService.situacionBcra = 0;
-            this.dataService.bcraFormatted = "sin bcra";
-            this.dataService.bcraPeriodo = "";
+  // Establecer valores por defecto para "sin BCRA"
+  this.dataService.situacionBcra = 0;
+  this.dataService.bcraFormatted = "sin bcra";
+  this.dataService.bcraPeriodo = "";
 
-            // IMPORTANTE: Forzar rechazadoPorBcra a false para asegurar que se marque como APTO CREDITO
-            this.dataService.rechazadoPorBcra = false;
+  // IMPORTANTE: Forzar rechazadoPorBcra a false para asegurar que se marque como APTO CREDITO
+  this.dataService.rechazadoPorBcra = false;
 
-            // Continuar con el proceso
-            this.crearCliente(datos);
-          } else {
-            // Para otros errores, mostrar mensaje de error y detener carga
-            this.error = "Error al verificar situación crediticia. Intente nuevamente.";
-            this.cargando = false;
-          }
-        });
+  // Continuar con el proceso
+  this.crearCliente(datos);
+});
     } else {
       this.error = "Falta información para consultar la situación crediticia.";
       this.cargando = false;
