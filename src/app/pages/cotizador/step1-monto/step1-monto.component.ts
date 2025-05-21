@@ -27,7 +27,7 @@ export class Step1MontoComponent implements OnInit {
   @Output() volver = new EventEmitter<void>();
 
   monto: number = 1000000;
-  montoFormateado: string = '1000000';
+  montoFormateado: string = '1.000.000';
   plazo: number = 60; // Predeterminado a 60 cuotas (se ajustará según disponibilidad)
   plazosDisponibles: number[] = [];
   get plazosOrdenados(): number[] {
@@ -115,83 +115,82 @@ export class Step1MontoComponent implements OnInit {
     }
   }
 
-  cargarPlazosDisponibles() {
-    // Planes a considerar
-    const planesSeleccionados = [this.planCuotasFijas, this.planUva].filter(plan => plan);
+cargarPlazosDisponibles() {
+  // Planes a considerar
+  const planesSeleccionados = [this.planCuotasFijas, this.planUva].filter(plan => plan);
 
-    // Para cada plan seleccionado, vamos a obtener sus tasas
-    const observables = planesSeleccionados.map(plan => {
-      return this.planService.getTasasByPlanId(plan.id).pipe(
-        map(tasas => {
-          // Filtrar por tasas activas y que tengan tasa válida para el grupo de antigüedad actual
-          return tasas
-            .filter(tasa => {
-              // Primero verificar que esté activo
-              if (!tasa.activo) return false;
+  // Para cada plan seleccionado, vamos a obtener sus tasas
+  const observables = planesSeleccionados.map(plan => {
+    return this.planService.getTasasByPlanId(plan.id).pipe(
+      map(tasas => {
+        // Filtrar por tasas activas y que tengan tasa válida para el grupo de antigüedad actual
+        return tasas
+          .filter(tasa => {
+            // Primero verificar que esté activo
+            if (!tasa.activo) return false;
 
-              // Luego verificar que tenga tasa válida para el grupo de antigüedad
-              switch (this.antiguedadGrupo) {
-                case AntiguedadGrupo.A:
-                  return tasa.tasaA > 0;
-                case AntiguedadGrupo.B:
-                  return tasa.tasaB > 0;
-                case AntiguedadGrupo.C:
-                  return tasa.tasaC > 0;
-                default:
-                  return tasa.tasaA > 0;
-              }
-            })
-            .map(tasa => tasa.plazo);
-        }),
-        catchError(error => {
-          console.error(`Error al obtener tasas para el plan ${plan.id}:`, error);
-          // En caso de error, usar los plazos definidos en el plan
-          return of(plan.cuotasAplicables || []);
-        })
-      );
-    });
+            // Luego verificar que tenga tasa válida para el grupo de antigüedad
+            switch (this.antiguedadGrupo) {
+              case AntiguedadGrupo.A:
+                return tasa.tasaA > 0;
+              case AntiguedadGrupo.B:
+                return tasa.tasaB > 0;
+              case AntiguedadGrupo.C:
+                return tasa.tasaC > 0;
+              default:
+                return tasa.tasaA > 0;
+            }
+          })
+          .map(tasa => tasa.plazo);
+      }),
+      catchError(error => {
+        console.error(`Error al obtener tasas para el plan ${plan.id}:`, error);
+        // En caso de error, usar los plazos definidos en el plan
+        return of(plan.cuotasAplicables || []);
+      })
+    );
+  });
 
-    // Combinar los resultados de todos los planes
-    forkJoin(observables).subscribe({
-      next: (resultados) => {
-        // Aplanar el array de arrays y eliminar duplicados
-        const todosPlazos = Array.from(new Set(resultados.flat()));
+  // Combinar los resultados de todos los planes
+  forkJoin(observables).subscribe({
+    next: (resultados) => {
+      // Aplanar el array de arrays y eliminar duplicados
+      const todosPlazos = Array.from(new Set(resultados.flat()));
 
-        if (todosPlazos.length > 0) {
-          // Ordenar los plazos
-          this.plazosDisponibles = todosPlazos.sort((a, b) => a - b);
+      if (todosPlazos.length > 0) {
+        // Ordenar los plazos
+        this.plazosDisponibles = todosPlazos.sort((a, b) => a - b);
 
-          // Preseleccionar el plazo más largo disponible
-          if (this.plazosDisponibles.includes(this.plazo)) {
-            // Si el plazo actual está disponible, mantenerlo
-          } else if (this.plazosDisponibles.length > 0) {
-            this.plazo = this.plazosDisponibles[this.plazosDisponibles.length - 1];
-          }
-
-          // Preseleccionar un monto intermedio entre min y max
-          this.monto = 1000000;
-          this.montoFormateado = this.formatearMonto(this.monto);
-
-
-          // Mostrar en consola los plazos disponibles para debug
-          console.log(`Plazos disponibles para grupo ${this.antiguedadGrupo}:`, this.plazosDisponibles);
-        } else {
-          this.errorMensaje = "No se encontraron plazos disponibles para los planes seleccionados con la antigüedad del auto actual.";
-          // Usar plazos predeterminados
-          this.plazosDisponibles = [12, 24, 36, 48, 60];
+        // Preseleccionar el plazo más largo disponible
+        if (this.plazosDisponibles.includes(this.plazo)) {
+          // Si el plazo actual está disponible, mantenerlo
+        } else if (this.plazosDisponibles.length > 0) {
+          this.plazo = this.plazosDisponibles[this.plazosDisponibles.length - 1];
         }
 
-        this.cargando = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar plazos disponibles:', error);
-        this.errorMensaje = "Error al cargar los plazos disponibles.";
-        // Usar plazos predeterminados en caso de error
+        // ELIMINADO: Ya no reiniciamos el monto cada vez que cambia la antigüedad
+        // this.monto = 1000000;
+        // this.montoFormateado = this.formatearMonto(this.monto);
+
+        // Mostrar en consola los plazos disponibles para debug
+        console.log(`Plazos disponibles para grupo ${this.antiguedadGrupo}:`, this.plazosDisponibles);
+      } else {
+        this.errorMensaje = "No se encontraron plazos disponibles para los planes seleccionados con la antigüedad del auto actual.";
+        // Usar plazos predeterminados
         this.plazosDisponibles = [12, 24, 36, 48, 60];
-        this.cargando = false;
       }
-    });
-  }
+
+      this.cargando = false;
+    },
+    error: (error) => {
+      console.error('Error al cargar plazos disponibles:', error);
+      this.errorMensaje = "Error al cargar los plazos disponibles.";
+      // Usar plazos predeterminados en caso de error
+      this.plazosDisponibles = [12, 24, 36, 48, 60];
+      this.cargando = false;
+    }
+  });
+}
   // Método para cargar las tasas específicas por plazo y antigüedad
   cargarTasasPorPlazo() {
     // Verificar ambos planes y cargar sus tasas

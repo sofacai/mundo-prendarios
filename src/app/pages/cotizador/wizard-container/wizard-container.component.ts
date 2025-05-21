@@ -1214,175 +1214,176 @@ export class WizardContainerComponent implements OnInit {
 
 
 
-  private continuarCreacionLead(operacionCreada: any, cliente: any, nombrePlan: string): void {
-    const nombre = (cliente?.nombre || this.wizardData.clienteNombre || '').toString();
-    const apellido = (cliente?.apellido || this.wizardData.clienteApellido || '').toString();
-    const telefono = cliente.telefono || this.wizardData.clienteWhatsapp || '+5491100000000';
-    const email = cliente.email || this.wizardData.clienteEmail || 'sin-email@mundo.com';
-    const codigoPostal = cliente.codigoPostal?.toString() || this.wizardData.codigoPostal?.toString() || '';
-    const estadoCivil = cliente.estadoCivil || this.wizardData.estadoCivil || '';
-    const ingresos = cliente.ingresos || this.wizardData.ingresos || 0;
-    const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
-    const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
-    const auto = (cliente.auto || this.wizardData.auto || '').toString();
-    const dniConyuge = cliente.dniConyuge || this.wizardData.dniConyuge || '';
+private continuarCreacionLead(operacionCreada: any, cliente: any, nombrePlan: string): void {
+  const nombre = (cliente?.nombre || this.wizardData.clienteNombre || '').toString();
+  const apellido = (cliente?.apellido || this.wizardData.clienteApellido || '').toString();
+  const telefonoCliente = cliente.telefono || this.wizardData.clienteWhatsapp || '+5491100000000';
+  const email = cliente.email || this.wizardData.clienteEmail || 'sin-email@mundo.com';
+  const codigoPostal = cliente.codigoPostal?.toString() || this.wizardData.codigoPostal?.toString() || '';
+  const estadoCivil = cliente.estadoCivil || this.wizardData.estadoCivil || '';
+  const ingresos = cliente.ingresos || this.wizardData.ingresos || 0;
+  const cuitODni = cliente.cuil || this.wizardData.clienteDni || '';
+  const sexo = cliente.sexo || this.wizardData.clienteSexo || '';
+  const auto = (cliente.auto || this.wizardData.auto || '').toString();
+  const dniConyuge = cliente.dniConyuge || this.wizardData.dniConyuge || '';
 
-    // Definimos el valor de sexo como string, no como número
-    let sexoValue: string | undefined;
-    if (sexo && sexo.toUpperCase() === 'F') sexoValue = "F";
-    if (sexo && sexo.toUpperCase() === 'M') sexoValue = "M";
+  // Definimos el valor de sexo como string, no como número
+  let sexoValue: string | undefined;
+  if (sexo && sexo.toUpperCase() === 'F') sexoValue = "F";
+  if (sexo && sexo.toUpperCase() === 'M') sexoValue = "M";
 
-    this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
-      try {
-        // Obtener datos del creador o vendedor según corresponda
-        const usuarioId = operacionCompleta.vendedorId || this.authService.currentUserValue?.id;
-        let usuarioData: any = {};
+  this.obtenerDatosComplementarios(operacionCreada).then(async operacionCompleta => {
+    try {
+      // Obtener datos del creador o vendedor según corresponda
+      const usuarioId = operacionCompleta.vendedorId || this.authService.currentUserValue?.id;
+      let usuarioData: any = {};
 
-        if (usuarioId) {
-          usuarioData = await firstValueFrom(this.usuarioService.getUsuario(usuarioId));
-        }
-
-        const nombreLimpio = (nombre || '').toString().trim();
-        const apellidoLimpio = (apellido || '').toString().trim();
-        const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
-
-        // Crear array para los custom_fields_values
-        const contactCustomFields = [
-          { field_id: 500552, values: [{ value: telefono }] }, // Teléfono
-          { field_id: 500554, values: [{ value: email }] },    // Email
-          { field_id: 650694, values: [{ value: codigoPostal }] }, // CP
-          { field_id: 964686, values: [{ value: estadoCivil }] },  // Estado civil
-          { field_id: 973550, values: [{ value: ingresos }] },     // Ingresos (ID actualizado)
-          { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
-          { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
-          { field_id: 969444, values: [{ value: this.dataService.bcraFormatted }] } // Campo BCRA
-        ];
-
-        // Agregar el campo de sexo si existe
-        if (sexoValue) {
-          contactCustomFields.push({
-            field_id: 973566,
-            values: [{ value: sexoValue }]
-          });
-        }
-
-        if (dniConyuge && dniConyuge.trim() !== '') {
-          // Limpiar cualquier carácter no numérico y convertir a entero
-          const dniConyugeNumerico = parseInt(dniConyuge.replace(/\D/g, ''), 10);
-
-          // Solo agregar si tenemos un número válido
-          if (!isNaN(dniConyugeNumerico) && dniConyugeNumerico > 0) {
-            contactCustomFields.push({
-              field_id: 973572,
-              values: [{ value: dniConyugeNumerico }]
-            });
-          }
-        }
-
-        // Crear contacto
-        const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto([{
-          first_name: nombre,
-          last_name: apellido,
-          custom_fields_values: contactCustomFields
-        }]));
-
-        const contactId = contactoRes._embedded?.contacts?.[0]?.id;
-        if (!contactId) throw new Error('No se pudo obtener el ID del contacto');
-
-        // Crear compañía
-        const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
-          name: operacionCompleta.canalNombre || 'Canal',
-          custom_fields_values: [
-            { field_id: 500552, values: [{ value: usuarioData.telefono || '+5491100000000' }] },
-            { field_id: 962818, values: [{ value: usuarioData.nombre && usuarioData.apellido ?
-              `${usuarioData.nombre} ${usuarioData.apellido}` : 'Usuario del sistema' }] },
-            { field_id: 963284, values: [{ value: operacionCompleta.subcanalNombre || 'Subcanal' }] }
-          ]
-        }]));
-
-        const companyId = companiaRes._embedded?.companies?.[0]?.id;
-        if (!companyId) throw new Error('No se pudo obtener el ID de la compañía');
-
-        // Determinar etiquetas según estado BCRA
-        let etiquetas;
-
-        if (this.dataService.bcraFormatted === "sin bcra") {
-          etiquetas = [{ name: 'Sin BCRA', id: 54267 }, { name: 'Enviar a Banco', id: 35522 }];
-        } else if (this.dataService.rechazadoPorBcra) {
-          etiquetas = [{ name: 'Rechazado BCRA', id: 54266 }];
-        } else if (this.dataService.bcraFormatted.includes("#revisar")) {
-          etiquetas = [
-            { name: 'Revisar BCRA', id: 54268 },
-            { name: 'Enviar a Banco', id: 35522 }
-          ];
-        } else {
-          etiquetas = [{ name: 'Enviar a Banco', id: 35522 }];
-        }
-
-        // Crear array para los campos del lead
-        const leadCustomFields = [
-          { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
-          { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto.toString()) || 0 }] },
-          { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa.toString()) || 0 }] },
-          { field_id: 965126, values: [{ value: auto }] }, // Auto como estaba antes
-          { field_id: 962344, values: [{ value: nombrePlan }] }, // Nombre del plan
-          { field_id: 973570, values: [{ value: parseInt(operacionCompleta.meses.toString()) || 0 }] }, // Número de meses del préstamo
-        ];
-
-        leadCustomFields.push({
-          field_id: 973552,
-          values: [{ value: parseInt(this.dataService.valorCuota?.toString()) || 0 }]
-        });
-
-        leadCustomFields.push({
-          field_id: 973554,
-          values: [{ value: this.dataService.planId === 1 ?
-            parseInt(this.dataService.cuotaPromedio?.toString()) || 0 : 0 }]
-        });
-        if (this.dataService.planId === 1) {
-          // Si hay un valor calculado en cuotaPromedio, usarlo
-          if (this.dataService.cuotaPromedio > 0) {
-            leadCustomFields.push({
-              field_id: 973554,
-              values: [{ value: parseInt(this.dataService.cuotaPromedio.toString()) || 0 }]
-            });
-          }
-          // Si no hay un valor calculado, usar el mismo valor que la cuota inicial
-          else {
-            leadCustomFields.push({
-              field_id: 973554,
-              values: [{ value: parseInt(this.dataService.valorCuota.toString()) || 0 }]
-            });
-          }
-        }
-
-        // Agregar plazo aprobado si existe
-        if (operacionCompleta.mesesAprobados) {
-          leadCustomFields.push({
-            field_id: 973562,
-            values: [{ value: parseInt(operacionCompleta.mesesAprobados.toString()) || 0 }]
-          });
-        }
-
-        // Crear lead final
-        const lead = [{
-          name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
-          custom_fields_values: leadCustomFields,
-          _embedded: {
-            contacts: [{ id: contactId }],
-            companies: [{ id: companyId }],
-            tags: etiquetas
-          }
-        }];
-
-        console.log('🚀 Payload FINAL a enviar a Kommo:', JSON.stringify(lead, null, 2));
-
-        this.kommoLeadService.crearLeadComplejo(lead).subscribe();
-      } catch (error) {
-        console.error('❌ Error en crearLeadEnKommo:', error);
+      if (usuarioId) {
+        usuarioData = await firstValueFrom(this.usuarioService.getUsuario(usuarioId));
       }
-    });
-  }
+
+      // Obtener el teléfono del vendedor o creador para usar como teléfono principal en Kommo
+      const telefonoVendedor = usuarioData.telefono || '+5491100000000';
+
+      const nombreLimpio = (nombre || '').toString().trim();
+      const apellidoLimpio = (apellido || '').toString().trim();
+      const nombreLead = `#${operacionCompleta.id || 'Nuevo'} - ${nombreLimpio} ${apellidoLimpio}`.trim();
+
+      // Crear array para los custom_fields_values
+      const contactCustomFields = [
+        // Ahora enviamos el teléfono del vendedor como teléfono principal
+        { field_id: 500552, values: [{ value: telefonoVendedor }] }, // Campo de teléfono principal ahora con teléfono del vendedor
+        // Enviamos el teléfono del cliente al nuevo campo
+        { field_id: 979490, values: [{ value: telefonoCliente }] }, // Nuevo campo para teléfono del cliente
+        { field_id: 500554, values: [{ value: email }] },    // Email
+        { field_id: 650694, values: [{ value: codigoPostal }] }, // CP
+        { field_id: 964686, values: [{ value: estadoCivil }] },  // Estado civil
+        { field_id: 973550, values: [{ value: ingresos }] },     // Ingresos (ID actualizado)
+        { field_id: 964712, values: [{ value: parseInt(cuitODni.toString(), 10) }] }, // CUIT
+        { field_id: 965120, values: [{ value: parseInt(cliente.dni || this.wizardData.clienteDni || '', 10) }] }, // DNI
+        { field_id: 969444, values: [{ value: this.dataService.bcraFormatted }] } // Campo BCRA
+      ];
+
+      // Agregar el campo de sexo si existe
+      if (sexoValue) {
+        contactCustomFields.push({
+          field_id: 973566,
+          values: [{ value: sexoValue }]
+        });
+      }
+
+      if (dniConyuge && dniConyuge.trim() !== '') {
+        // Limpiar cualquier carácter no numérico y convertir a entero
+        const dniConyugeNumerico = parseInt(dniConyuge.replace(/\D/g, ''), 10);
+
+        // Solo agregar si tenemos un número válido
+        if (!isNaN(dniConyugeNumerico) && dniConyugeNumerico > 0) {
+          contactCustomFields.push({
+            field_id: 973572,
+            values: [{ value: dniConyugeNumerico }]
+          });
+        }
+      }
+
+      // Crear contacto
+      const contactoRes: any = await firstValueFrom(this.KommoService.crearContacto([{
+        first_name: nombre,
+        last_name: apellido,
+        custom_fields_values: contactCustomFields
+      }]));
+
+      const contactId = contactoRes._embedded?.contacts?.[0]?.id;
+      if (!contactId) throw new Error('No se pudo obtener el ID del contacto');
+
+      // Crear compañía
+      const companiaRes: any = await firstValueFrom(this.KommoService.crearCompania([{
+        name: operacionCompleta.canalNombre || 'Canal',
+        custom_fields_values: [
+          { field_id: 500552, values: [{ value: usuarioData.telefono || '+5491100000000' }] },
+          { field_id: 962818, values: [{ value: usuarioData.nombre && usuarioData.apellido ?
+            `${usuarioData.nombre} ${usuarioData.apellido}` : 'Usuario del sistema' }] },
+          { field_id: 963284, values: [{ value: operacionCompleta.subcanalNombre || 'Subcanal' }] }
+        ]
+      }]));
+
+      const companyId = companiaRes._embedded?.companies?.[0]?.id;
+      if (!companyId) throw new Error('No se pudo obtener el ID de la compañía');
+
+      // Determinar etiquetas según estado BCRA
+      let etiquetas;
+
+      if (this.dataService.bcraFormatted === "sin bcra") {
+        etiquetas = [{ name: 'Sin BCRA', id: 54267 }, { name: 'Enviar a Banco', id: 35522 }];
+      } else if (this.dataService.rechazadoPorBcra) {
+        etiquetas = [{ name: 'Rechazado BCRA', id: 54266 }];
+      } else if (this.dataService.bcraFormatted.includes("#revisar")) {
+        etiquetas = [
+          { name: 'Revisar BCRA', id: 54268 },
+          { name: 'Enviar a Banco', id: 35522 }
+        ];
+      } else {
+        etiquetas = [{ name: 'Enviar a Banco', id: 35522 }];
+      }
+
+      // Crear array para los campos del lead
+      const leadCustomFields = [
+        { field_id: 500886, values: [{ value: operacionCompleta.id?.toString() || '' }] },
+        { field_id: 500892, values: [{ value: parseFloat(operacionCompleta.monto.toString()) || 0 }] },
+        { field_id: 500996, values: [{ value: parseFloat(operacionCompleta.tasa.toString()) || 0 }] },
+        { field_id: 965126, values: [{ value: auto }] }, // Auto como estaba antes
+        { field_id: 962344, values: [{ value: nombrePlan }] }, // Nombre del plan
+        { field_id: 973570, values: [{ value: parseInt(operacionCompleta.meses.toString()) || 0 }] }, // Número de meses del préstamo
+      ];
+
+      leadCustomFields.push({
+        field_id: 973552,
+        values: [{ value: parseInt(this.dataService.valorCuota?.toString()) || 0 }]
+      });
+
+      if (this.dataService.planId === 1) {
+        // Si hay un valor calculado en cuotaPromedio, usarlo
+        if (this.dataService.cuotaPromedio > 0) {
+          leadCustomFields.push({
+            field_id: 973554,
+            values: [{ value: parseInt(this.dataService.cuotaPromedio.toString()) || 0 }]
+          });
+        }
+        // Si no hay un valor calculado, usar el mismo valor que la cuota inicial
+        else {
+          leadCustomFields.push({
+            field_id: 973554,
+            values: [{ value: parseInt(this.dataService.valorCuota.toString()) || 0 }]
+          });
+        }
+      }
+
+      // Agregar plazo aprobado si existe
+      if (operacionCompleta.mesesAprobados) {
+        leadCustomFields.push({
+          field_id: 973562,
+          values: [{ value: parseInt(operacionCompleta.mesesAprobados.toString()) || 0 }]
+        });
+      }
+
+      // Crear lead final
+      const lead = [{
+        name: `#${operacionCompleta.id || 'Nuevo'} - ${nombre} ${apellido}`,
+        custom_fields_values: leadCustomFields,
+        _embedded: {
+          contacts: [{ id: contactId }],
+          companies: [{ id: companyId }],
+          tags: etiquetas
+        }
+      }];
+
+      console.log('🚀 Payload FINAL a enviar a Kommo:', JSON.stringify(lead, null, 2));
+
+      this.kommoLeadService.crearLeadComplejo(lead).subscribe();
+    } catch (error) {
+      console.error('❌ Error en crearLeadEnKommo:', error);
+    }
+  });
+}
 
 
 
@@ -1391,7 +1392,6 @@ export class WizardContainerComponent implements OnInit {
 
 
 
-  // Método para obtener datos complementarios para Kommo
 private async obtenerDatosComplementarios(operacion: any): Promise<any> {
   // Crear copia de la operación para no modificar el original
   const operacionCompleta = { ...operacion };
@@ -1405,6 +1405,7 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
           operacionCompleta.planNombre = plan.nombre;
         }
       } catch (err) {
+        // Manejamos error silenciosamente
       }
     }
 
@@ -1423,15 +1424,17 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
                 operacionCompleta.canalNombre = canal.nombreFantasia;
               }
             } catch (err) {
+              // Manejamos error silenciosamente
             }
           }
         }
       } catch (err) {
+        // Manejamos error silenciosamente
       }
     }
 
-    // 4. Y para vendedorNombre
-    if (!operacionCompleta.vendedorNombre && operacionCompleta.vendedorId) {
+    // 4. Y para vendedorNombre y vendedorTelefono
+    if (operacionCompleta.vendedorId) {
       try {
         const vendedor = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.vendedorId));
         if (vendedor) {
@@ -1440,11 +1443,42 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
           operacionCompleta.vendedorEmail = vendedor.email || '';
         }
       } catch (err) {
+        // Manejamos error silenciosamente
+      }
+    }
+    // 5. Si no hay vendedor, obtener información del creador
+    else if (!operacionCompleta.usuarioCreadorNombre && operacionCompleta.usuarioCreadorId) {
+      try {
+        const creador = await firstValueFrom(this.usuarioService.getUsuario(operacionCompleta.usuarioCreadorId));
+        if (creador) {
+          operacionCompleta.usuarioCreadorNombre = `${creador.nombre} ${creador.apellido}`;
+          operacionCompleta.usuarioCreadorTelefono = creador.telefono || '';
+          operacionCompleta.usuarioCreadorEmail = creador.email || '';
+        }
+      } catch (err) {
+        // Manejamos error silenciosamente
+      }
+    }
+    // 6. Si no hay vendedor ni creador, usar usuario actual como último recurso
+    else if (!operacionCompleta.vendedorId && !operacionCompleta.usuarioCreadorId) {
+      const usuarioActual = this.authService.currentUserValue;
+      if (usuarioActual) {
+        try {
+          const usuario = await firstValueFrom(this.usuarioService.getUsuario(usuarioActual.id));
+          if (usuario) {
+            operacionCompleta.usuarioActualNombre = `${usuario.nombre} ${usuario.apellido}`;
+            operacionCompleta.usuarioActualTelefono = usuario.telefono || '';
+            operacionCompleta.usuarioActualEmail = usuario.email || '';
+          }
+        } catch (err) {
+          // Manejamos error silenciosamente
+        }
       }
     }
 
     return operacionCompleta;
   } catch (error) {
+    console.error('Error al obtener datos complementarios:', error);
     return operacion; // Devolver la operación original en caso de error
   }
 }
