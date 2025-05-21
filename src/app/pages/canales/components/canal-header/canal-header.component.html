@@ -14,8 +14,8 @@
       </div>
     </div>
 
-    <!-- Titulo y badge -->
-    <div class="title-container">
+    <!-- Título y badge - Modo visualización -->
+    <div class="title-container" *ngIf="!isEditingTitular">
       <div class="title-badge-wrapper">
         <h2 class="canal-title">{{ canal.nombreFantasia }}</h2>
         <span
@@ -26,11 +26,29 @@
           {{ canal.activo ? "Activo" : "Inactivo" }}
         </span>
       </div>
+
+      <!-- Botón editar -->
+      <button class="btn-edit titular-edit-button" (click)="toggleEditTitular()">
+        <i class="bi bi-pencil"></i>
+      </button>
+    </div>
+
+    <!-- Título - Modo edición -->
+    <div class="title-edit-container" *ngIf="isEditingTitular">
+      <div class="form-group title-edit-form">
+        <label>Nombre del Canal</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="titularForm.nombreFantasia"
+          placeholder="Nombre del canal"
+        >
+      </div>
     </div>
   </div>
 
-  <!-- Información contacto -->
-  <div class="owner-contact-info">
+  <!-- Información contacto - Modo visualización -->
+  <div class="owner-contact-info" *ngIf="!isEditingTitular">
     <div class="contact-item">
       <i class="bi bi-person"></i>
       <span>{{ canal.titularNombreCompleto || "No especificado" }}</span>
@@ -42,6 +60,47 @@
     <div class="contact-item">
       <i class="bi bi-envelope"></i>
       <span>{{ canal.titularEmail || "No especificado" }}</span>
+    </div>
+  </div>
+
+  <!-- Información contacto - Modo edición -->
+  <div class="owner-contact-info edit-mode" *ngIf="isEditingTitular">
+    <div class="contact-edit-row">
+      <div class="contact-edit-item">
+        <label><i class="bi bi-person"></i> Nombre completo</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="titularForm.titularNombreCompleto"
+          placeholder="Nombre completo"
+        >
+      </div>
+      <div class="contact-edit-item">
+        <label><i class="bi bi-telephone"></i> Teléfono</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="titularForm.titularTelefono"
+          placeholder="Teléfono"
+        >
+      </div>
+      <div class="contact-edit-item">
+        <label><i class="bi bi-envelope"></i> Email</label>
+        <input
+          type="email"
+          class="form-control"
+          [(ngModel)]="titularForm.titularEmail"
+          placeholder="Email"
+        >
+      </div>
+    </div>
+    <div class="action-buttons mt-3">
+      <button class="btn-action btn-save me-2" (click)="saveTitular()">
+        <i class="bi bi-check"></i>
+      </button>
+      <button class="btn-action btn-cancel" (click)="cancelEditTitular()">
+        <i class="bi bi-x"></i>
+      </button>
     </div>
   </div>
 

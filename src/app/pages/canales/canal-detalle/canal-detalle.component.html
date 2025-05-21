@@ -29,17 +29,18 @@
     <!-- Canal Content -->
     <div *ngIf="canal && !loading && !error" class="canal-detail">
       <!-- Header del Canal -->
-      <app-canal-header
-      [canal]="canal"
-      [subcanalesActivos]="subcanalesActivos"
-      [subcanalesInactivos]="subcanalesInactivos"
-      [planesActivos]="planesActivos"
-      [planesInactivos]="planesInactivos"
-      [totalOperaciones]="totalOperaciones"
-      [operacionesLiquidadas]="operacionesLiquidadas"
-      [operacionesAprobadas]="operacionesAprobadas"
-      (toggleEstado)="toggleCanalEstado()"
-    ></app-canal-header>
+   <app-canal-header
+  [canal]="canal"
+  [subcanalesActivos]="subcanalesActivos"
+  [subcanalesInactivos]="subcanalesInactivos"
+  [planesActivos]="planesActivos"
+  [planesInactivos]="planesInactivos"
+  [totalOperaciones]="totalOperaciones"
+  [operacionesLiquidadas]="operacionesLiquidadas"
+  [operacionesAprobadas]="operacionesAprobadas"
+  (toggleEstado)="toggleCanalEstado()"
+  (saveTitularData)="onSaveTitularData($event)"
+></app-canal-header>
 
       <!-- Tabs Navigation -->
       <app-canal-tabs-navigation

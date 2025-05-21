@@ -234,6 +234,38 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
+  onSaveTitularData(titularData: any): void {
+  if (!this.canal) return;
+
+  this.loading = true;
+
+  // Crear un objeto que combine los datos actuales del canal con los nuevos datos
+  const updateData: any = {
+    ...this.canal,
+    nombreFantasia: titularData.nombreFantasia,
+    titularNombreCompleto: titularData.titularNombreCompleto,
+    titularTelefono: titularData.titularTelefono,
+    titularEmail: titularData.titularEmail
+  };
+
+  // Aseguramos que no se envíen propiedades complejas
+  delete updateData.oficialesComerciales;
+  delete updateData.subcanales;
+  delete updateData.planesCanal;
+
+  this.canalService.updateCanal(this.canal.id, updateData).subscribe({
+    next: (canal) => {
+      this.canal = canal;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error al actualizar los datos del canal:', err);
+      this.error = 'No se pudieron actualizar los datos del canal';
+      this.loading = false;
+    }
+  });
+}
+
   cargarOficialesComerciales(canalId: number) {
     this.loadingOficiales = true;
     this.errorOficiales = null;

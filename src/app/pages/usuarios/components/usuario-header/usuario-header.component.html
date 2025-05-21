@@ -42,14 +42,19 @@
       </div>
     </div>
 
-    <!-- Botón de cambiar contraseña -->
-    <button class="btn-password-change" (click)="onChangePassword()" title="Cambiar Contraseña">
-      <i class="bi bi-key"></i>
-    </button>
+    <!-- Botones de acción en el header -->
+    <div class="action-buttons">
+      <button class="btn-edit-user" (click)="toggleEditingUsuario()">
+        <i class="bi bi-pencil"></i>
+      </button>
+      <button class="btn-password-change" (click)="onChangePassword()">
+        <i class="bi bi-key"></i>
+      </button>
+    </div>
   </div>
 
-  <!-- Información contacto -->
-  <div class="contact-info">
+  <!-- Información contacto en modo visualización -->
+  <div class="contact-info" *ngIf="!isEditingUsuario">
     <div class="contact-item">
       <i class="bi bi-envelope"></i>
       <span>{{ usuario.email || "No especificado" }}</span>
@@ -76,6 +81,56 @@
       </span>
     </div>
   </div>
+
+<!-- Información contacto en modo edición -->
+<div class="contact-info edit-mode" *ngIf="isEditingUsuario">
+  <div class="edit-form-row">
+    <div class="form-group col-md-6">
+      <label>Nombre</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="usuarioForm.nombre"
+        placeholder="Nombre"
+      >
+    </div>
+    <div class="form-group col-md-6">
+      <label>Apellido</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="usuarioForm.apellido"
+        placeholder="Apellido"
+      >
+    </div>
+    <div class="form-group col-md-6">
+      <label>Email</label>
+      <input
+        type="email"
+        class="form-control"
+        [(ngModel)]="usuarioForm.email"
+        placeholder="Email"
+      >
+    </div>
+    <div class="form-group col-md-6">
+      <label>Teléfono</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="usuarioForm.telefono"
+        placeholder="Teléfono"
+      >
+    </div>
+  </div>
+  <div class="action-buttons">
+    <button class="btn-action btn-save me-2" (click)="saveUsuario()">
+      <i class="bi bi-check"></i>
+    </button>
+    <button class="btn-action btn-cancel" (click)="cancelEditingUsuario()">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+</div>
 
   <div class="stats-container" *ngIf="usuario.rolId === 3">
     <div class="stats-row">

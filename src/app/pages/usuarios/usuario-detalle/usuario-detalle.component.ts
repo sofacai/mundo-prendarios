@@ -249,6 +249,45 @@ export class UsuarioDetalleComponent implements OnInit, OnDestroy {
       }
     });
   }
+onSaveUsuarioData(usuarioData: any) {
+  if (!this.usuario) return;
+
+  this.loading = true;
+
+  // Guardar una copia completa del usuario original
+  const usuarioCompleto = { ...this.usuario };
+
+  const updateData: any = {
+    nombre: usuarioData.nombre,
+    apellido: usuarioData.apellido,
+    email: usuarioData.email,
+    telefono: usuarioData.telefono,
+    password: '',
+    rolId: usuarioCompleto.rolId,
+    creadorId: usuarioCompleto.creadorId || this.usuarioService.getLoggedInUserId()
+  };
+
+  this.usuarioService.updateUsuario(this.usuarioId, updateData).subscribe({
+    next: (response) => {
+      // Recargar el usuario completo para obtener todos los datos actualizados
+      this.usuarioService.getUsuario(this.usuarioId).subscribe({
+        next: (usuarioActualizado) => {
+          this.usuario = usuarioActualizado;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error al obtener el usuario actualizado:', err);
+          this.loading = false;
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Error al actualizar los datos del usuario:', err);
+      this.error = 'No se pudieron actualizar los datos del usuario';
+      this.loading = false;
+    }
+  });
+}
 
   loadAdminCanalData() {
     this.loadingSubcanales = true;

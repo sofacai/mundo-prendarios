@@ -29,17 +29,18 @@
     <!-- Usuario Content -->
     <div *ngIf="usuario && !loading && !error" class="usuario-detail">
       <!-- Header del Usuario -->
-      <app-usuario-header
-        [usuario]="usuario"
-        [estadisticas]="estadisticas"
-        [clientes]="clientes"
-        [operaciones]="operaciones"
-        [operacionesActivas]="operacionesActivas"
-        [montoTotal]="montoTotal"
-        [subcanales]="subcanales"
-        (toggleEstado)="toggleUsuarioEstado()"
-        (changePassword)="openPasswordModal()"
-      ></app-usuario-header>
+    <app-usuario-header
+  [usuario]="usuario"
+  [estadisticas]="estadisticas"
+  [clientes]="clientes"
+  [operaciones]="operaciones"
+  [operacionesActivas]="operacionesActivas"
+  [montoTotal]="montoTotal"
+  [subcanales]="subcanales"
+  (toggleEstado)="toggleUsuarioEstado()"
+  (changePassword)="openPasswordModal()"
+  (saveUsuarioData)="onSaveUsuarioData($event)"
+></app-usuario-header>
 
       <!-- Tabs Navigation -->
       <app-usuario-tabs-navigation

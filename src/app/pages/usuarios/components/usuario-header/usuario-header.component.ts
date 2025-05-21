@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioDto, VendorEstadisticasDto } from 'src/app/core/services/usuario.service';
 import { RolType } from 'src/app/core/models/usuario.model';
@@ -10,7 +11,7 @@ import { Subcanal } from 'src/app/core/services/subcanal.service';
 @Component({
   selector: 'app-usuario-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './usuario-header.component.html',
   styleUrls: ['./usuario-header.component.scss']
 })
@@ -25,6 +26,7 @@ export class UsuarioHeaderComponent {
 
   @Output() toggleEstado = new EventEmitter<void>();
   @Output() changePassword = new EventEmitter<void>();
+  @Output() saveUsuarioData = new EventEmitter<any>();
 
   // Constantes para mapear el tipo de rol a un nombre legible
   readonly ROL_NAMES = {
@@ -34,7 +36,27 @@ export class UsuarioHeaderComponent {
     4: 'Oficial Comercial'
   };
 
+  // Control de edición
+  isEditingUsuario: boolean = false;
+  usuarioForm: any = {
+    nombre: '',
+    apellido: '',
+    email: '',
+    telefono: ''
+  };
+
   constructor(private router: Router) { }
+
+  ngOnChanges() {
+    if (this.usuario) {
+      this.usuarioForm = {
+        nombre: this.usuario.nombre || '',
+        apellido: this.usuario.apellido || '',
+        email: this.usuario.email || '',
+        telefono: this.usuario.telefono || ''
+      };
+    }
+  }
 
   onToggleEstado(): void {
     this.toggleEstado.emit();
@@ -42,6 +64,27 @@ export class UsuarioHeaderComponent {
 
   onChangePassword(): void {
     this.changePassword.emit();
+  }
+
+  // Métodos para edición del usuario
+  toggleEditingUsuario(): void {
+    this.isEditingUsuario = true;
+  }
+
+  saveUsuario(): void {
+    this.saveUsuarioData.emit(this.usuarioForm);
+    this.isEditingUsuario = false;
+  }
+
+  cancelEditingUsuario(): void {
+    // Restaurar valores originales
+    this.usuarioForm = {
+      nombre: this.usuario.nombre || '',
+      apellido: this.usuario.apellido || '',
+      email: this.usuario.email || '',
+      telefono: this.usuario.telefono || ''
+    };
+    this.isEditingUsuario = false;
   }
 
   // Obtener iniciales del nombre para el avatar
@@ -60,8 +103,6 @@ export class UsuarioHeaderComponent {
     const d = new Date(date);
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
   }
-
-
 
   // Método para obtener el rol como texto
   getRolName(): string {
@@ -104,12 +145,12 @@ export class UsuarioHeaderComponent {
     this.router.navigate(['/subcanales', subcanalId]);
   }
 
-   // Obtener cantidad de operaciones liquidadas
-   getOperacionesLiquidadas(): number {
+  // Obtener cantidad de operaciones liquidadas
+  getOperacionesLiquidadas(): number {
     return this.operaciones.filter(op => op.estado && op.estado.toLowerCase() === 'liquidada').length;
   }
 
-  // Obtener cantidad de operaciones rechazadas
+  // Obtener cantidad de operaciones aprobadas
   getOperacionesAprobadas(): number {
     return this.operaciones.filter(op =>
       ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
