@@ -106,9 +106,6 @@ export class AuthService {
   }
 
 
-  isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
 
   isAdmin(): boolean {
   return this.hasRole(RolType.Administrador);
@@ -143,11 +140,78 @@ export class AuthService {
 
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
-    this.logoutEvent.emit(); // Añadido aquí
+
+
+  isTokenExpired(): boolean {
+  const token = this.getToken();
+  if (!token) return true;
+
+  try {
+    // Decodificar el JWT para verificar la expiración
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    // Verificar si el token ha expirado (exp está en segundos)
+    return payload.exp < currentTime;
+  } catch (error) {
+    console.error('Error al decodificar token:', error);
+    return true; // Si no se puede decodificar, considerarlo expirado
+  }
+}
+
+// Método mejorado de autenticación que verifica expiración
+isAuthenticated(): boolean {
+  const hasToken = !!this.getToken();
+  const isNotExpired = !this.isTokenExpired();
+
+  // Si hay token pero está expirado, hacer logout automáticamente
+  if (hasToken && !isNotExpired) {
+    console.log('🔒 Token expirado detectado en isAuthenticated');
+    this.logout();
+    return false;
+  }
+
+  return hasToken && isNotExpired;
+}
+
+// Método para validar token antes de cada operación crítica
+validateTokenBeforeOperation(): boolean {
+  if (!this.isAuthenticated()) {
+    this.logout();
+    return false;
+  }
+  return true;
+}
+
+// Mejorar el método logout para ser más robusto
+logout(): void {
+  console.log('🚪 Cerrando sesión...');
+
+  // Limpiar almacenamiento
+  localStorage.removeItem('token');
+  localStorage.removeItem('currentUser');
+
+  // Actualizar estado
+  this.currentUserSubject.next(null);
+
+  // Emitir evento de logout
+  this.logoutEvent.emit();
+
+  // Navegar al login solo si no estamos ya ahí
+  const currentUrl = this.router.url;
+  if (!currentUrl.includes('/auth/login')) {
     this.router.navigate(['/auth/login']);
   }
+}
+
+// Método opcional para verificar token periódicamente
+startTokenValidation(): void {
+  // Verificar cada 30 segundos si el token sigue siendo válido
+  setInterval(() => {
+    if (this.currentUserValue && this.isTokenExpired()) {
+      console.log('🔒 Token expirado detectado en verificación periódica');
+      this.logout();
+    }
+  }, 30000); // 30 segundos
+}
 }

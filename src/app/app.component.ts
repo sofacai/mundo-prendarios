@@ -45,9 +45,16 @@ export class AppComponent {
       this.renderer.removeClass(document.body, 'sidebar-open');
     }
 
+    // Verificar token al iniciar la aplicación
+    if (!this.isAuthPage && !this.authService.isAuthenticated()) {
+      this.router.navigate(['/auth/login']);
+    }
+
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.userRole = user.rolId;
+        // Iniciar validación periódica de token solo si hay usuario logueado
+        this.authService.startTokenValidation();
       } else {
         this.userRole = null;
       }

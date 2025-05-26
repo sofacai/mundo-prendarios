@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { RolType } from '../models/usuario.model';
 
@@ -7,25 +7,26 @@ import { RolType } from '../models/usuario.model';
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean {
-    // Verificar si el usuario está autenticado
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    // Verificar autenticación incluyendo expiración de token
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login']);
       return false;
     }
 
-    // Verificar si la ruta tiene restricciones de rol
-    const roles = route.data['roles'] as RolType[];
-    if (roles && roles.length > 0) {
-      const user = this.authService.currentUserValue;
-      if (!user || !roles.includes(user.rolId)) {
-        console.warn(`Acceso denegado a ruta ${state.url}. Usuario con rol ${user?.rolId} intenta acceder a ruta para roles ${roles}`);
-        this.router.navigate(['/dashboard']);
+    // Verificar roles si están definidos en la ruta
+    const requiredRoles = route.data?.['roles'] as RolType[];
+    if (requiredRoles && requiredRoles.length > 0) {
+      const userRole = this.authService.currentUserValue?.rolId;
+
+      if (!userRole || !requiredRoles.includes(userRole)) {
+        this.router.navigate(['/dashboard']); // o a una página de acceso denegado
         return false;
       }
     }
