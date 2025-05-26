@@ -111,6 +111,9 @@
                   Estado
                   <i class="bi" [ngClass]="getSortIcon('estado')"></i>
                 </th>
+                <th *ngIf="isAdmin" style="width: 60px; text-align: center;">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -137,6 +140,14 @@
                   <div class="badge" [ngClass]="getEstadoClass(operacion.estado)">
                     {{ operacion.estado }}
                   </div>
+                </td>
+                <td *ngIf="isAdmin" class="text-center">
+                  <button
+                    class="btn-delete"
+                    (click)="eliminarOperacion(operacion.id, $event)"
+                    title="Eliminar operación">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -197,3 +208,30 @@
   [operacionId]="operacionIdSeleccionada"
   (closeModal)="cerrarModalVerOperacion()">
 </app-modal-ver-operacion>
+
+<!-- Modal de confirmación para eliminar -->
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="cancelarEliminacion()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar eliminación</h5>
+        <button type="button" class="btn-close" (click)="cancelarEliminacion()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro que deseas eliminar la operación <strong>#{{ operacionAEliminar?.id }}</strong>?</p>
+        <p class="text-muted">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelarEliminacion()">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmarEliminacion()" [disabled]="eliminandoOperacion">
+          <span *ngIf="eliminandoOperacion" class="spinner-border spinner-border-sm me-2"></span>
+          {{ eliminandoOperacion ? 'Eliminando...' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

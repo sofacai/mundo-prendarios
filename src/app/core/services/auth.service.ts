@@ -110,6 +110,10 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  isAdmin(): boolean {
+  return this.hasRole(RolType.Administrador);
+}
+
   hasRole(rolId: RolType): boolean {
     const user = this.currentUserValue;
     return user ? user.rolId === rolId : false;

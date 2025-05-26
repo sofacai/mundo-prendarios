@@ -258,4 +258,9 @@ export class OperacionService {
         return 'badge-light';
     }
   }
+
+  eliminarOperacion(id: number): Observable<any> {
+  const headers = this.getAuthHeaders();
+  return this.http.delete(`${this.apiUrl}/Operacion/${id}`, { headers });
+}
 }

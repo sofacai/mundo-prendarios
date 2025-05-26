@@ -10,6 +10,7 @@ import { of } from 'rxjs';
 import { OperacionService } from 'src/app/core/services/operacion.service';
 import { ModalVerOperacionComponent } from "../../../shared/modals/modal-ver-operaciones/modal-ver-operaciones.component";
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 export interface OperacionDto {
   id: number;
@@ -66,14 +67,22 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   operacionIdSeleccionada: number | null = null;
   modalVerOperacionOpen = false;
 
+  showDeleteModal = false;
+operacionAEliminar: OperacionDto | null = null;
+eliminandoOperacion = false;
+isAdmin = false;
+
   constructor(
     private router: Router,
     private operacionService: OperacionService,
+    private authService: AuthService,
     private renderer: Renderer2,
     private sidebarStateService: SidebarStateService
   ) { }
 
   ngOnInit() {
+      this.isAdmin = this.authService.isAdmin();
+
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
       collapsed => {
@@ -398,4 +407,53 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+  eliminarOperacion(operacionId: number, event: Event): void {
+  event.stopPropagation(); // Evitar que se active el click de la fila
+
+  const operacion = this.paginatedOperaciones.find(op => op.id === operacionId);
+  if (operacion) {
+    this.operacionAEliminar = operacion;
+    this.showDeleteModal = true;
+    this.manejarAperturaModal();
+  }
+}
+
+cancelarEliminacion(): void {
+  this.showDeleteModal = false;
+  this.operacionAEliminar = null;
+  this.manejarCierreModal();
+}
+
+confirmarEliminacion(): void {
+  if (!this.operacionAEliminar) return;
+
+  this.eliminandoOperacion = true;
+
+  this.operacionService.eliminarOperacion(this.operacionAEliminar.id)
+    .pipe(
+      catchError(error => {
+        console.error('Error al eliminar operación:', error);
+        this.error = 'No se pudo eliminar la operación. Por favor, intente nuevamente.';
+        return of(null);
+      }),
+      finalize(() => {
+        this.eliminandoOperacion = false;
+      })
+    )
+    .subscribe(response => {
+      if (response !== null) {
+        // Eliminación exitosa
+        this.showDeleteModal = false;
+        this.operacionAEliminar = null;
+        this.manejarCierreModal();
+
+        // Recargar la lista de operaciones
+        this.loadOperaciones();
+
+        // Opcional: mostrar mensaje de éxito
+        console.log('Operación eliminada correctamente');
+      }
+    });
+}
 }
