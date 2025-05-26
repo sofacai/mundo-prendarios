@@ -433,7 +433,6 @@ confirmarEliminacion(): void {
   this.operacionService.eliminarOperacion(this.operacionAEliminar.id)
     .pipe(
       catchError(error => {
-        console.error('Error al eliminar operación:', error);
         this.error = 'No se pudo eliminar la operación. Por favor, intente nuevamente.';
         return of(null);
       }),
@@ -452,7 +451,6 @@ confirmarEliminacion(): void {
         this.loadOperaciones();
 
         // Opcional: mostrar mensaje de éxito
-        console.log('Operación eliminada correctamente');
       }
     });
 }

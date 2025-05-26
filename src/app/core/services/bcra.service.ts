@@ -55,7 +55,6 @@ export class BcraService {
         formatted: formatted
       };
     } catch (error) {
-      console.error('Error al consultar BCRA:', error);
       // Propagamos el error para manejarlo en el componente
       throw error;
     }

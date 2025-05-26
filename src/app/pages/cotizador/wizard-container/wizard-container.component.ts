@@ -483,7 +483,6 @@ export class WizardContainerComponent implements OnInit {
       // Si es string, convertimos a array de números
       return cuotasStr.split(',').map((c: string) => parseInt(c.trim(), 10)).filter((n: number) => !isNaN(n));
     } catch (e) {
-      console.error('Error al parsear cuotas aplicables:', e);
       return [];
     }
   }
@@ -640,10 +639,8 @@ export class WizardContainerComponent implements OnInit {
           this.crearCliente(datos);
         })
    .catch((error: any) => {
-  console.error('Error al consultar BCRA:', error);
 
   // Para cualquier tipo de error, continuamos sin validación
-  console.log('BCRA no disponible, continuando sin validación');
 
   // Establecer valores por defecto para "sin BCRA"
   this.dataService.situacionBcra = 0;
@@ -808,19 +805,16 @@ export class WizardContainerComponent implements OnInit {
   }
 
   obtenerPlanesYAvanzar() {
-    console.log('Obteniendo planes y avanzando a Step 3...');
 
     if (!this.subcanalSeleccionado || !this.wizardData.monto || !this.wizardData.plazo) {
       this.error = "Faltan datos para calcular planes disponibles.";
       this.cargando = false;
-      console.error('No se puede avanzar: faltan datos fundamentales');
       return;
     }
 
     // Agregar un timeout de seguridad para avanzar al paso 3 en caso de que algo falle
     const timeoutSeguridad = setTimeout(() => {
       if (this.wizardData.paso !== 3) {
-        console.warn('Forzando avance a Step3 por timeout de seguridad');
         this.wizardData.paso = 3;
         this.cargando = false;
       }
@@ -879,7 +873,6 @@ export class WizardContainerComponent implements OnInit {
             };
           }),
           catchError(error => {
-            console.error(`Error al obtener tasa para plan ${plan.id}:`, error);
             // Si hay error, usar la tasa general del plan
             const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
             let cuota = this.cotizadorService.calcularCuota(
@@ -912,7 +905,6 @@ export class WizardContainerComponent implements OnInit {
 
           // IMPORTANTE: Aquí está la corrección, llamar a crearOperacion
           this.crearOperacion(planSeleccionado.id, planSeleccionado.tasa).then((operacionCreada) => {
-            console.log('Operación creada:', operacionCreada);
 
             // Si tenemos datos del cliente, crear lead en Kommo
             if (this.wizardData.clienteId) {
@@ -940,7 +932,6 @@ export class WizardContainerComponent implements OnInit {
             this.cargando = false;
             clearTimeout(timeoutSeguridad);
           }).catch(error => {
-            console.error("Error al crear operación:", error);
             // Avanzar de todas formas
             this.wizardData.paso = 3;
             this.cargando = false;
@@ -949,7 +940,6 @@ export class WizardContainerComponent implements OnInit {
         },
         error: (error) => {
           this.error = "Error al calcular planes disponibles.";
-          console.error("Error en forkJoin de planes:", error);
           this.cargando = false;
           clearTimeout(timeoutSeguridad);
         }
@@ -1147,7 +1137,6 @@ export class WizardContainerComponent implements OnInit {
   private crearLeadEnKommo(operacionCreada: any, cliente: any): void {
 
     if (this.dataService.modoSimulacion) {
-      console.log('SIMULACIÓN: Se simuló la creación de un lead en Kommo');
       return; // No hacer nada en modo simulación
     }
     if (!this.KommoService.isAuthenticated()) return;
@@ -1175,7 +1164,6 @@ export class WizardContainerComponent implements OnInit {
       const planEncontrado = this.subcanalSeleccionadoInfo.planesDisponibles.find(plan => plan.id === planId);
       if (planEncontrado) {
         nombreRealPlan = planEncontrado.nombre;
-        console.log('Kommo - Nombre real del plan encontrado:', nombreRealPlan);
       }
     }
 
@@ -1186,21 +1174,17 @@ export class WizardContainerComponent implements OnInit {
         next: (plan) => {
           if (plan && plan.nombre) {
             nombreRealPlan = plan.nombre;
-            console.log('Kommo - Nombre real del plan obtenido del servicio:', nombreRealPlan);
           } else {
             // Si no se encuentra, usamos el nombre del tipo seleccionado como fallback
             nombreRealPlan = this.dataService.planTipo || 'UVA';
-            console.log('Kommo - Usando nombre del tipo como fallback:', nombreRealPlan);
           }
 
           // Continuamos con el proceso después de obtener el nombre del plan
           this.continuarCreacionLead(operacionCreada, cliente, nombreRealPlan);
         },
         error: (error) => {
-          console.error('Error al obtener plan:', error);
           // Si hay error, usamos el nombre del tipo seleccionado como fallback
           nombreRealPlan = this.dataService.planTipo || 'UVA';
-          console.log('Kommo - Usando nombre del tipo como fallback por error:', nombreRealPlan);
 
           // Continuamos con el proceso después de obtener el nombre del plan
           this.continuarCreacionLead(operacionCreada, cliente, nombreRealPlan);
@@ -1376,11 +1360,9 @@ private continuarCreacionLead(operacionCreada: any, cliente: any, nombrePlan: st
         }
       }];
 
-      console.log('🚀 Payload FINAL a enviar a Kommo:', JSON.stringify(lead, null, 2));
 
       this.kommoLeadService.crearLeadComplejo(lead).subscribe();
     } catch (error) {
-      console.error('❌ Error en crearLeadEnKommo:', error);
     }
   });
 }
@@ -1478,7 +1460,6 @@ private async obtenerDatosComplementarios(operacion: any): Promise<any> {
 
     return operacionCompleta;
   } catch (error) {
-    console.error('Error al obtener datos complementarios:', error);
     return operacion; // Devolver la operación original en caso de error
   }
 }
@@ -1504,7 +1485,6 @@ enviarOfertaPorWhatsApp(plan: any) {
 
   // Make sure we have a valid phone number
   if (telefono.length < 10) {
-    console.error('Número de teléfono inválido:', telefono);
     return;
   }
 
@@ -1619,7 +1599,6 @@ cargarSubcanalesUsuarioActual() {
       // Usar getSubcanales para obtener todos los subcanales
       this.subcanalService.getSubcanales().pipe(
         catchError(error => {
-          console.error('Error al cargar subcanales completos:', error);
           return of([]);
         }),
         finalize(() => this.cargando = false)
@@ -1633,7 +1612,6 @@ cargarSubcanalesUsuarioActual() {
       // Usar getSubcanalesPorUsuario para obtener solo los asignados al usuario
       this.subcanalService.getSubcanalesPorUsuario(usuario.id).pipe(
         catchError(error => {
-          console.error('Error al cargar subcanales del usuario:', error);
           return of([]);
         }),
         finalize(() => this.cargando = false)
@@ -1648,7 +1626,6 @@ convertirSubcanalesAFormatoWizard(subcanales: Subcanal[]) {
   // Obtener planes activos una sola vez para todos los subcanales
   this.planService.getPlanesActivos().pipe(
     catchError(error => {
-      console.error('Error al obtener planes activos:', error);
       return of([]);
     })
   ).subscribe(planes => {

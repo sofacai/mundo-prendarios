@@ -90,12 +90,10 @@ export class Step1MontoComponent implements OnInit {
       // Si no se encuentran los planes específicos, usar los primeros disponibles
       if (!this.planCuotasFijas && planes.length > 0) {
         this.planCuotasFijas = planes[0];
-        console.warn(`Plan para Cuotas Fijas (ID: ${this.planCuotasFijasId}) no encontrado. Usando plan alternativo ID: ${this.planCuotasFijas.id}`);
       }
 
       if (!this.planUva && planes.length > 0) {
         this.planUva = planes.length > 1 ? planes[1] : planes[0];
-        console.warn(`Plan para UVA (ID: ${this.planUvaId}) no encontrado. Usando plan alternativo ID: ${this.planUva.id}`);
       }
 
       // Cargar los plazos disponibles de los dos planes específicos
@@ -144,7 +142,6 @@ cargarPlazosDisponibles() {
           .map(tasa => tasa.plazo);
       }),
       catchError(error => {
-        console.error(`Error al obtener tasas para el plan ${plan.id}:`, error);
         // En caso de error, usar los plazos definidos en el plan
         return of(plan.cuotasAplicables || []);
       })
@@ -173,7 +170,6 @@ cargarPlazosDisponibles() {
         // this.montoFormateado = this.formatearMonto(this.monto);
 
         // Mostrar en consola los plazos disponibles para debug
-        console.log(`Plazos disponibles para grupo ${this.antiguedadGrupo}:`, this.plazosDisponibles);
       } else {
         this.errorMensaje = "No se encontraron plazos disponibles para los planes seleccionados con la antigüedad del auto actual.";
         // Usar plazos predeterminados
@@ -183,7 +179,6 @@ cargarPlazosDisponibles() {
       this.cargando = false;
     },
     error: (error) => {
-      console.error('Error al cargar plazos disponibles:', error);
       this.errorMensaje = "Error al cargar los plazos disponibles.";
       // Usar plazos predeterminados en caso de error
       this.plazosDisponibles = [12, 24, 36, 48, 60];
@@ -221,20 +216,17 @@ cargarPlazosDisponibles() {
           });
         },
         error: (error) => {
-          console.error(`Error al obtener tasas para el plan ${planId}:`, error);
         }
       });
     });
   }
 
   obtenerTasaEspecifica(planId: number, plazo: number): number {
-    console.log(`Obteniendo tasa para planId=${planId}, plazo=${plazo}, antiguedadGrupo=${this.antiguedadGrupo}`);
-    console.log('Tasas disponibles:', this.tasasPorPlazo);
+
 
     // Si no tenemos las tasas específicas, usar la tasa general del plan
     if (!this.tasasPorPlazo[planId] || !this.tasasPorPlazo[planId][plazo]) {
       const plan = planId === this.planCuotasFijasId ? this.planCuotasFijas : this.planUva;
-      console.log(`No se encontró tasa específica, usando tasa general del plan: ${plan?.tasa}%`);
       return plan ? plan.tasa : 0;
     }
 
@@ -245,22 +237,17 @@ cargarPlazosDisponibles() {
     switch (this.antiguedadGrupo) {
       case AntiguedadGrupo.A:
         tasaSeleccionada = tasasPlazo.tasaA;
-        console.log(`Usando tasaA: ${tasaSeleccionada}% para grupo A (0-10 años)`);
         break;
       case AntiguedadGrupo.B:
         tasaSeleccionada = tasasPlazo.tasaB;
-        console.log(`Usando tasaB: ${tasaSeleccionada}% para grupo B (11-12 años)`);
         break;
       case AntiguedadGrupo.C:
         tasaSeleccionada = tasasPlazo.tasaC;
-        console.log(`Usando tasaC: ${tasaSeleccionada}% para grupo C (13-15 años)`);
         break;
       default:
         tasaSeleccionada = tasasPlazo.tasaA;
-        console.log(`Usando tasaA por defecto: ${tasaSeleccionada}%`);
     }
 
-    console.log(`Tasa final seleccionada: ${tasaSeleccionada}%`);
     return tasaSeleccionada;
   }
 
@@ -370,7 +357,6 @@ cargarPlazosDisponibles() {
       }
     }
 
-    console.log(`Nuevo grupo de antigüedad: ${this.antiguedadGrupo}, Año del auto: ${this.autoYear}`);
 
     // Recargar los plazos disponibles según la nueva antigüedad
     this.cargarPlazosDisponibles();
@@ -457,14 +443,12 @@ cargarPlazosDisponibles() {
                   (this.planUva?.id || this.planUvaId);
 
     if (!planActivo) {
-      console.error('No se encontró un plan activo para calcular la cuota');
       return 0;
     }
 
     try {
       // Obtener la tasa específica según antigüedad y plazo
       const tasaAnual = this.obtenerTasaEspecifica(planId, plazo);
-      console.log(`Plan ID: ${planId}, Grupo antigüedad: ${this.antiguedadGrupo}, Tasa anual: ${tasaAnual}%`);
 
       // Verificar si usamos sistema alemán o francés
       const esSistemaAleman = this.cotizadorService.esSistemaAleman(planId);
@@ -496,24 +480,12 @@ cargarPlazosDisponibles() {
         // La TNA ya incluye todo
         const cuotaFinal = cuotaPura;
 
-        // Logs para debugging
-        console.log(`1--- Cálculo cuota para plazo ${plazo} ---`);
-        console.log(`1Monto: $${this.monto.toLocaleString('es-AR')}`);
-        console.log(`1Porcentaje gastos: ${porcentajeGastos}%`);
-        console.log(`1Monto con gastos: $${montoConGastos.toLocaleString('es-AR')}`);
-        console.log(`1Tasa anual: ${tasaAnual}%`);
-        console.log(`1Tasa mensual: ${(tasaMensual * 100).toFixed(6)}%`);
-        console.log(`1Factor (1+i)^n: ${factor.toFixed(6)}`);
-        console.log(`1Fórmula: ${montoConGastos.toLocaleString('es-AR')} * (${tasaMensual} * ${factor.toFixed(6)}) / (${factor.toFixed(6)} - 1)`);
-        console.log(`1Cuota pura: $${cuotaPura.toFixed(2)}`);
-        console.log(`1CUOTA FINAL: $${Math.round(cuotaFinal).toLocaleString('es-AR')}`);
-        console.log(`---------------------------`);
+
 
         // Redondear al valor entero más cercano
         return Math.round(cuotaFinal);
       }
     } catch (error) {
-      console.error('Error al calcular la cuota:', error);
       return 0;
     }
   }
@@ -643,13 +615,10 @@ cargarPlazosDisponibles() {
             }
           },
           error => {
-            console.error('Error al calcular tabla de amortización:', error);
-            // No mostrar error al usuario, ya que el flujo continuó
+
           }
         );
       } catch (error) {
-        console.error('Error al intentar calcular tabla de amortización:', error);
-        // No detener el flujo por este error, ya que los datos básicos ya se guardaron
       }
     }
   }

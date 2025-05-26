@@ -220,7 +220,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
             this.loadAdditionalData();
           },
           error: (err) => {
-            console.error('Error al cargar operaciones:', err);
             // Seguir con la carga de datos adicionales aunque falle la carga de operaciones
             this.loadAdditionalData();
           }
@@ -228,7 +227,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error = 'Error al cargar los datos del canal.';
-        console.error('Error cargando canal:', err);
         this.loading = false;
       }
     });
@@ -259,7 +257,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
       this.loading = false;
     },
     error: (err) => {
-      console.error('Error al actualizar los datos del canal:', err);
       this.error = 'No se pudieron actualizar los datos del canal';
       this.loading = false;
     }
@@ -276,7 +273,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         this.loadingOficiales = false;
       },
       error: (err) => {
-        console.error('Error al cargar oficiales comerciales:', err);
         this.errorOficiales = 'No se pudieron cargar los oficiales comerciales';
         this.loadingOficiales = false;
       }
@@ -315,7 +311,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando datos adicionales:', err);
         // Mostramos error pero no bloqueamos la vista
         this.loading = false;
       }
@@ -426,7 +421,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         this.loadCanalData();
       },
       error: (err) => {
-        console.error('Error al actualizar el canal:', err);
         this.loading = false;
       }
     });
@@ -493,7 +487,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error al cambiar estado del canal:', err);
         this.error = 'No se pudo cambiar el estado del canal. Intente nuevamente.';
         this.loading = false;
       }
@@ -520,7 +513,6 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
         this.loadingOficiales = false;
       },
       error: (err) => {
-        console.error('Error al cambiar estado del oficial:', err);
         this.errorOficiales = 'No se pudo cambiar el estado del oficial.';
         this.loadingOficiales = false;
       }
@@ -542,7 +534,6 @@ onOficialAsignado(oficialId: number): void {
       this.loadingOficiales = false;
     },
     error: (err) => {
-      console.error('Error al recargar oficiales comerciales:', err);
       this.errorOficiales = 'No se pudieron cargar los oficiales comerciales';
       this.loadingOficiales = false;
     }
@@ -556,13 +547,11 @@ onOficialAsignado(oficialId: number): void {
     );
   }
   onVendedorAsignado(vendorId: number): void {
-    console.log(`Vendedor ${vendorId} asignado correctamente al canal ${this.canalId}`);
     // Opcional: actualizar estadísticas
     this.totalVendedores = this.vendedores.length;
   }
 
   onVendedorDesasignado(vendorId: number): void {
-    console.log(`Vendedor ${vendorId} desasignado correctamente del canal ${this.canalId}`);
     // Opcional: actualizar estadísticas
     this.totalVendedores = this.vendedores.length;
   }
@@ -592,13 +581,11 @@ onOficialAsignado(oficialId: number): void {
             this.loadingSubcanales.set(subcanalId, false);
           },
           error: (err) => {
-            console.error('Error al obtener detalles actualizados del subcanal:', err);
             this.loadingSubcanales.set(subcanalId, false);
           }
         });
       },
       error: (err) => {
-        console.error('Error al cambiar estado del subcanal:', err);
         this.loadingSubcanales.set(subcanalId, false);
       }
     });
@@ -630,13 +617,11 @@ onOficialAsignado(oficialId: number): void {
             this.loadingVendedores.set(vendorId, false);
           },
           error: (err) => {
-            console.error('Error al obtener detalles actualizados del vendedor:', err);
             this.loadingVendedores.set(vendorId, false);
           }
         });
       },
       error: (err) => {
-        console.error('Error al cambiar estado del vendedor:', err);
         this.loadingVendedores.set(vendorId, false);
       }
     });

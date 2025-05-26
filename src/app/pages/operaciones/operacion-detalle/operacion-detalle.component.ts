@@ -134,7 +134,6 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.error('Error cargando operación:', err);
         this.error = 'No se pudo cargar la información de la operación';
         this.loading = false;
       }
@@ -148,7 +147,6 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
         this.checkLoadingComplete();
       },
       error: (err) => {
-        console.error('Error cargando cliente:', err);
         this.checkLoadingComplete();
       }
     });
@@ -161,7 +159,6 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
         this.checkLoadingComplete();
       },
       error: (err) => {
-        console.error('Error cargando vendor:', err);
         this.checkLoadingComplete();
       }
     });
@@ -174,7 +171,6 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
         this.checkLoadingComplete();
       },
       error: (err) => {
-        console.error('Error cargando canal:', err);
         this.checkLoadingComplete();
       }
     });
@@ -187,14 +183,12 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
         this.checkLoadingComplete();
       },
       error: (err) => {
-        console.error('Error cargando subcanal:', err);
         this.checkLoadingComplete();
       }
     });
   }
 
   checkLoadingComplete() {
-    // Todos los datos relacionados han sido intentados cargar
     this.loading = false;
   }
 

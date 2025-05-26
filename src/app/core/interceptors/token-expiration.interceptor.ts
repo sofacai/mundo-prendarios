@@ -18,7 +18,6 @@ export class TokenExpirationInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         // Verificar si es un error 401 (Unauthorized) que indica token expirado
         if (error.status === 401) {
-          console.log('🔒 Token expirado detectado. Cerrando sesión...');
 
           // Verificar que el usuario esté logueado antes de hacer logout
           if (this.authService.isAuthenticated()) {
@@ -39,6 +38,5 @@ export class TokenExpirationInterceptor implements HttpInterceptor {
   // Método opcional para mostrar un mensaje al usuario
   private showTokenExpiredMessage(): void {
     // Puedes implementar aquí una notificación toast o modal
-    console.warn('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
   }
 }

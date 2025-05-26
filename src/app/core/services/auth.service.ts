@@ -60,7 +60,6 @@ export class AuthService {
       case 'OficialComercial':
           return RolType.OficialComercial;
       default:
-        console.warn(`Rol desconocido: ${rolName}, usando Vendor como predeterminado`);
         return RolType.Vendor;
     }
   }
@@ -95,7 +94,6 @@ export class AuthService {
           }
         }),
         catchError(error => {
-          console.error('Error en login:', error);
           return throwError(() => new Error('Credenciales incorrectas. Por favor, inténtelo de nuevo.'));
         })
       );
@@ -134,7 +132,6 @@ export class AuthService {
 
       return user;
     } catch (e) {
-      console.error('Error al parsear el usuario del storage:', e);
       return null;
     }
 
@@ -154,7 +151,6 @@ export class AuthService {
     // Verificar si el token ha expirado (exp está en segundos)
     return payload.exp < currentTime;
   } catch (error) {
-    console.error('Error al decodificar token:', error);
     return true; // Si no se puede decodificar, considerarlo expirado
   }
 }
@@ -166,7 +162,6 @@ isAuthenticated(): boolean {
 
   // Si hay token pero está expirado, hacer logout automáticamente
   if (hasToken && !isNotExpired) {
-    console.log('🔒 Token expirado detectado en isAuthenticated');
     this.logout();
     return false;
   }
@@ -185,7 +180,6 @@ validateTokenBeforeOperation(): boolean {
 
 // Mejorar el método logout para ser más robusto
 logout(): void {
-  console.log('🚪 Cerrando sesión...');
 
   // Limpiar almacenamiento
   localStorage.removeItem('token');
@@ -209,7 +203,6 @@ startTokenValidation(): void {
   // Verificar cada 30 segundos si el token sigue siendo válido
   setInterval(() => {
     if (this.currentUserValue && this.isTokenExpired()) {
-      console.log('🔒 Token expirado detectado en verificación periódica');
       this.logout();
     }
   }, 30000); // 30 segundos

@@ -117,7 +117,6 @@ export class PlanesListaComponent implements OnInit, OnDestroy {
       this.sidebarLayoutLocked = false;
     },
     error: (err) => {
-      console.error('Error al cargar xxx:', err);
       this.error = 'No se pudieron cargar los xxx. Por favor, intente nuevamente.';
       this.loading = false;
       // Unlock sidebar when done
@@ -365,7 +364,6 @@ export class PlanesListaComponent implements OnInit, OnDestroy {
         // this.toastService.showSuccess(`Plan ${nuevoEstado ? 'activado' : 'desactivado'} correctamente`);
       },
       error: (err) => {
-        console.error(`Error al ${nuevoEstado ? 'activar' : 'desactivar'} el plan:`, err);
         this.error = `No se pudo ${nuevoEstado ? 'activar' : 'desactivar'} el plan. Por favor, intente nuevamente.`;
         this.loading = false;
 

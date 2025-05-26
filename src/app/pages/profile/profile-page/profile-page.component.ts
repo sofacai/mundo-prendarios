@@ -182,7 +182,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     this.deferredPrompt.prompt();
     this.deferredPrompt.userChoice.then((choiceResult: any) => {
       if (choiceResult.outcome === 'accepted') {
-        console.log('Usuario instaló la app');
       }
       this.deferredPrompt = null;
       this.isInstallable = false;

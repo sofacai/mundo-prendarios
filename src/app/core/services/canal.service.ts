@@ -189,7 +189,6 @@ export class CanalService {
             const desactivacionObservables = subcanalesToDesactivar.map(subcanalId =>
               this.subcanalService.desactivarSubcanal(subcanalId).pipe(
                 catchError(error => {
-                  console.error(`Error al desactivar subcanal ${subcanalId}:`, error);
                   // Devolvemos un observable que no falla para continuar con el proceso
                   return of(null);
                 })

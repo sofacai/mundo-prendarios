@@ -134,7 +134,6 @@ export class PlanService {
     return this.http.get<PlanTasa>(`${this.apiUrlTasa}/plan/${planId}/plazo/${plazo}`, { headers })
       .pipe(
         catchError(error => {
-          console.error(`Error al obtener tasa para plan ${planId} y plazo ${plazo}:`, error);
           // Devolver un objeto con valores por defecto para evitar que la app se rompa
           return of({
             id: 0,

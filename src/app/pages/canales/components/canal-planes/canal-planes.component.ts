@@ -40,7 +40,6 @@ export class CanalPlanesComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando planes disponibles:', err);
         this.error = 'No se pudieron cargar los planes disponibles.';
         this.loading = false;
       }
@@ -67,7 +66,6 @@ export class CanalPlanesComponent implements OnInit {
         this.loadingAction = false;
       },
       error: (err) => {
-        console.error('Error al cambiar estado del plan:', err);
         this.error = 'No se pudo cambiar el estado del plan. Intente nuevamente.';
         this.loadingAction = false;
       }
@@ -106,7 +104,6 @@ export class CanalPlanesComponent implements OnInit {
         this.loadingAction = false;
       },
       error: (err) => {
-        console.error('Error al asignar plan:', err);
         this.error = 'No se pudo asignar el plan. Intente nuevamente.';
         this.loadingAction = false;
       }
@@ -134,7 +131,6 @@ export class CanalPlanesComponent implements OnInit {
         this.loadingAction = false;
       },
       error: (err) => {
-        console.error('Error al eliminar plan del canal:', err);
         this.error = 'No se pudo eliminar el plan. Intente nuevamente.';
         this.loadingAction = false;
       }

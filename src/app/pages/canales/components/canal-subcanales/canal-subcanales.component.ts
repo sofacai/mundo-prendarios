@@ -45,7 +45,6 @@ modalFormOpen = false;
               this.operacionesLiquidadasMap.set(subcanal.id, total);
             },
             error: (err) => {
-              console.error(`Error al cargar operaciones para subcanal ${subcanal.id}:`, err);
               this.operacionesLiquidadasMap.set(subcanal.id, 0); // Valor por defecto en caso de error
             }
           });

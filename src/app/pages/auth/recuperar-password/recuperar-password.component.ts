@@ -67,7 +67,6 @@ export class RecuperarPasswordComponent implements OnInit {
       this.submitted = false;
     } catch (err) {
       this.error = 'No se pudo abrir WhatsApp. Por favor, contacte al administrador directamente.';
-      console.error('Error al abrir WhatsApp:', err);
     }
 
     this.loading = false;

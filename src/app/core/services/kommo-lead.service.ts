@@ -14,7 +14,6 @@ export class KommoLeadService {
     return this.kommoService.crearLead(leadData).pipe(
       tap(res => console.log('✅ Lead creado:', res)),
       catchError(error => {
-        console.error('❌ Error al crear lead en Kommo:', error);
         return throwError(() => error);
       })
     );
@@ -24,7 +23,6 @@ export class KommoLeadService {
     return this.kommoService.crearLead(payload).pipe(
       tap(res => console.log('✅ Lead complejo creado:', res)),
       catchError(error => {
-        console.error('❌ Error al crear lead complejo:', error);
         return throwError(() => error);
       })
     );
@@ -65,7 +63,6 @@ export class KommoLeadService {
     return this.kommoService.linkearContactoACompania(contactId, leadId).pipe(
       tap(res => console.log(`🔗 Contacto ${contactId} vinculado al lead ${leadId}`, res)),
       catchError(error => {
-        console.error('❌ Error al vincular contacto con lead:', error);
         return of({ error });
       })
     );

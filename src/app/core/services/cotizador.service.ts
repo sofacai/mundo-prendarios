@@ -230,14 +230,12 @@ export class CotizadorService {
         return this.calcularTablaAmortizacionFrancesa(monto, plazo, tasaAplicada, gastos);
       }),
       catchError(error => {
-        console.error('Error al obtener tasa para tabla de amortización:', error);
         // En caso de error, intentamos con la tasa general del plan
         return this.http.get<any>(`${this.apiUrl}/Plan/${planId}`).pipe(
           map(plan => {
             return this.calcularTablaAmortizacionFrancesa(monto, plazo, plan.tasa, gastos);
           }),
           catchError(err => {
-            console.error('Error al obtener plan para tabla de amortización:', err);
             return of([]); // Retornar array vacío en caso de error total
           })
         );

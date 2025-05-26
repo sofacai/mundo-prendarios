@@ -90,7 +90,6 @@ export class CanalOficialesComponent implements OnInit, OnChanges {
               resolve();
             },
             error: (err) => {
-              console.error(`Error al verificar estado del oficial ${oficialId}:`, err);
               resolve(); // Resolver incluso en caso de error
             }
           });
@@ -245,7 +244,6 @@ export class CanalOficialesComponent implements OnInit, OnChanges {
             this.oficialAsignado.emit(oficial.id);
           },
           error: (error) => {
-            console.error("Error al asignar el oficial recién creado:", error);
           }
         });
     }
@@ -272,7 +270,6 @@ export class CanalOficialesComponent implements OnInit, OnChanges {
         },
         error: (error) => {
           this.loadingOficiales.delete(oficialId);
-          console.error("Error al desasignar oficial:", error);
         }
       });
   }

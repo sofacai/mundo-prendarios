@@ -40,7 +40,6 @@ export class CanalVendedoresComponent implements OnInit {
             this.operacionesLiquidadasMap.set(vendedor.id, operacionesLiquidadas);
           },
           error: (err) => {
-            console.error(`Error al cargar operaciones para vendedor ${vendedor.id}:`, err);
             this.operacionesLiquidadasMap.set(vendedor.id, 0);
           }
         });

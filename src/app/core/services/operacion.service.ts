@@ -254,7 +254,6 @@ export class OperacionService {
         return 'badge-op-propuesta';
       default:
         // Imprimir el estado no reconocido para depuración
-        console.log('Estado no reconocido:', estado);
         return 'badge-light';
     }
   }
