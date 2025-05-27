@@ -37,9 +37,11 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
   error: string | null = null;
   editMode = false;
 
-  // Propiedades para instalar la PWA
+  // PWA Install
   deferredPrompt: any = null;
   isInstallable: boolean = false;
+  isInstalled: boolean = false;
+  showInstallCard: boolean = true;
 
   isSidebarCollapsed = false;
   private sidebarSubscription: Subscription | null = null;
@@ -49,17 +51,12 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     private usuarioService: UsuarioService,
     private router: Router,
     private sidebarStateService: SidebarStateService,
-  ) {
-    // Escuchar el evento beforeinstallprompt
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      this.deferredPrompt = e;
-      this.isInstallable = true;
-    });
-  }
+  ) {}
 
   ngOnInit() {
     this.currentUser = this.authService.currentUserValue;
+    this.setupPWAListeners();
+    this.checkIfInstalled();
 
     if (this.currentUser) {
       this.loadUserDetails(this.currentUser.id);
@@ -77,13 +74,53 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  ngAfterViewInit() {
-  }
+  ngAfterViewInit() {}
 
   ngOnDestroy() {
     if (this.sidebarSubscription) {
       this.sidebarSubscription.unsubscribe();
     }
+  }
+
+  private setupPWAListeners() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      this.isInstallable = true;
+    });
+
+    window.addEventListener('appinstalled', (e) => {
+      this.isInstalled = true;
+      this.isInstallable = false;
+      this.showInstallCard = false;
+      this.deferredPrompt = null;
+    });
+  }
+
+  private checkIfInstalled() {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      this.isInstalled = true;
+      this.showInstallCard = false;
+    }
+  }
+
+  async installApp() {
+    if (this.deferredPrompt) {
+      const choiceResult = await this.deferredPrompt.prompt();
+
+      if (choiceResult.outcome === 'accepted') {
+        this.isInstalled = true;
+        this.showInstallCard = false;
+      }
+
+      this.deferredPrompt = null;
+      this.isInstallable = false;
+    }
+  }
+
+  dismissInstallCard() {
+    this.showInstallCard = false;
+    localStorage.setItem('pwa-install-dismissed', 'true');
   }
 
   private adjustContentArea() {
@@ -173,24 +210,5 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.usuario) {
       this.loadUserDetails(this.usuario.id);
     }
-  }
-
-  // Método para instalar la PWA
-  installApp() {
-    if (!this.deferredPrompt) return;
-
-    this.deferredPrompt.prompt();
-    this.deferredPrompt.userChoice.then((choiceResult: any) => {
-      if (choiceResult.outcome === 'accepted') {
-      }
-      this.deferredPrompt = null;
-      this.isInstallable = false;
-    });
-  }
-
-  private generateRandomState(): string {
-    const state = Math.random().toString(36).substring(2, 15);
-    localStorage.setItem('kommo_state', state);
-    return state;
   }
 }

@@ -56,7 +56,6 @@
               </div>
             </div>
 
-
             <div class="card-body">
               <div class="detail-section">
                 <div class="detail-row">
@@ -72,36 +71,43 @@
           </div>
 
           <!-- Tarjeta para instalar la app -->
-          <div class="card mt-4" *ngIf="isInstallable">
+          <div class="card mt-4" *ngIf="showInstallCard && !isInstalled && isInstallable">
             <div class="card-header">
               <div class="card-title">
-                <i class="bi bi-download me-2 text-primary"></i>
-                Instalar aplicación
+                <i class="bi bi-phone me-2 text-primary"></i>
+                Descargar aplicación
               </div>
+              <button class="btn btn-sm btn-light" (click)="dismissInstallCard()" title="Cerrar">
+                <i class="bi bi-x"></i>
+              </button>
             </div>
             <div class="card-body">
-              <p>Instala Mundo Prendario como aplicación para acceder más rápido desde tu dispositivo.</p>
-              <button class="btn btn-primary" (click)="installApp()">
-                <i class="bi bi-cloud-download"></i> Instalar aplicación
-              </button>
+              <p>¿Querés descargar la app a tu dispositivo para acceder más rápido?</p>
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary" (click)="installApp()">
+                  <i class="bi bi-download me-1"></i>
+                  Instalar ahora
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" style="margin-left:10px" (click)="dismissInstallCard()">
+                  Ahora no
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje cuando ya está instalada -->
+          <div class="card mt-4" *ngIf="isInstalled">
+            <div class="card-body text-center">
+              <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+              <h6 class="mt-2 mb-1">¡App instalada correctamente!</h6>
+              <small class="text-muted">Ya podés acceder desde tu dispositivo</small>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Modo edición -->
-      <div *ngIf="editMode" class="profile-header-card">
-        <div class="header-main-section">
-          <div class="profile-info">
-            <div class="avatar">{{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}</div>
-            <div class="user-details">
-              <h2>Editar Perfil</h2>
-            </div>
-          </div>
-        </div>
-
-        <!-- Modo edición -->
-        <div *ngIf="editMode && usuarioForm" class="profile-header-card">
+     <div *ngIf="editMode && usuarioForm" class="profile-header-card">
           <div class="d-flex align-items-center mb-4">
             <div class="avatar me-3">{{ usuario?.nombre?.charAt(0) || '' }}{{ usuario?.apellido?.charAt(0) || '' }}</div>
             <h2>Editar Perfil</h2>
@@ -142,7 +148,6 @@
             <button class="btn btn-primary" (click)="saveProfile()">Guardar Cambios</button>
           </div>
         </div>
-      </div>
     </div>
   </div>
 </div>
