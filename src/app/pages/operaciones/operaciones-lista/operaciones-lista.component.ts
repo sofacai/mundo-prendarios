@@ -8,6 +8,7 @@ import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { OperacionService } from 'src/app/core/services/operacion.service';
+import { CanalService } from 'src/app/core/services/canal.service';
 import { ModalVerOperacionComponent } from "../../../shared/modals/modal-ver-operaciones/modal-ver-operaciones.component";
 import { SidebarStateService } from 'src/app/core/services/sidebar-state.service';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -29,6 +30,12 @@ export interface OperacionDto {
 interface SortState {
   column: string;
   direction: 'asc' | 'desc';
+}
+
+interface CanalOption {
+  id: number;
+  nombre: string;
+  selected: boolean;
 }
 
 @Component({
@@ -59,6 +66,11 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   filterActive: string = 'all';
   sortState: SortState = { column: '', direction: 'asc' };
 
+  // Filtro de canales
+  canalesOptions: CanalOption[] = [];
+  canalesDropdownOpen = false;
+  selectedCanalesCount = 0;
+
   paginaActual: number = 1;
   itemsPorPagina: number = 10;
   totalOperaciones: number = 0;
@@ -68,20 +80,21 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   modalVerOperacionOpen = false;
 
   showDeleteModal = false;
-operacionAEliminar: OperacionDto | null = null;
-eliminandoOperacion = false;
-isAdmin = false;
+  operacionAEliminar: OperacionDto | null = null;
+  eliminandoOperacion = false;
+  isAdmin = false;
 
   constructor(
     private router: Router,
     private operacionService: OperacionService,
+    private canalService: CanalService,
     private authService: AuthService,
     private renderer: Renderer2,
     private sidebarStateService: SidebarStateService
   ) { }
 
   ngOnInit() {
-      this.isAdmin = this.authService.isAdmin();
+    this.isAdmin = this.authService.isAdmin();
 
     this.isSidebarCollapsed = this.sidebarStateService.getInitialState();
     this.sidebarSubscription = this.sidebarStateService.collapsed$.subscribe(
@@ -91,6 +104,7 @@ isAdmin = false;
       }
     );
 
+    this.loadCanales();
     this.loadOperaciones();
   }
 
@@ -109,6 +123,23 @@ isAdmin = false;
         contentArea.style.marginLeft = '260px';
       }
     }
+  }
+
+  loadCanales() {
+    this.canalService.getCanales()
+      .pipe(
+        catchError(error => {
+          console.error('Error cargando canales:', error);
+          return of([]);
+        })
+      )
+      .subscribe(canales => {
+        this.canalesOptions = canales.map(canal => ({
+          id: canal.id,
+          nombre: canal.nombreFantasia || canal.razonSocial,
+          selected: false
+        }));
+      });
   }
 
   loadOperaciones() {
@@ -174,6 +205,47 @@ isAdmin = false;
       });
   }
 
+  // Métodos para el filtro de canales
+  toggleCanalesDropdown(event: Event) {
+    event.stopPropagation();
+    this.canalesDropdownOpen = !this.canalesDropdownOpen;
+  }
+
+  closeCanalesDropdown() {
+    this.canalesDropdownOpen = false;
+  }
+
+  toggleCanalSelection(canal: CanalOption, event: Event) {
+    event.stopPropagation();
+    canal.selected = !canal.selected;
+    this.updateSelectedCanalesCount();
+    this.paginaActual = 1;
+    this.applyFilters();
+  }
+
+  selectAllCanales() {
+    const allSelected = this.canalesOptions.every(canal => canal.selected);
+    this.canalesOptions.forEach(canal => canal.selected = !allSelected);
+    this.updateSelectedCanalesCount();
+    this.paginaActual = 1;
+    this.applyFilters();
+  }
+
+  private updateSelectedCanalesCount() {
+    this.selectedCanalesCount = this.canalesOptions.filter(canal => canal.selected).length;
+  }
+
+  getCanalesFilterText(): string {
+    if (this.selectedCanalesCount === 0) {
+      return 'Todos los canales';
+    } else if (this.selectedCanalesCount === 1) {
+      const selectedCanal = this.canalesOptions.find(canal => canal.selected);
+      return selectedCanal ? selectedCanal.nombre : 'Canal seleccionado';
+    } else {
+      return `${this.selectedCanalesCount} canales seleccionados`;
+    }
+  }
+
   onSearchChange() {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
@@ -188,10 +260,10 @@ isAdmin = false;
     this.applyFilters();
   }
 
-
   applyFilters() {
     let result = [...this.operaciones];
 
+    // Filtro por término de búsqueda
     if (this.searchTerm && this.searchTerm.length >= 3) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(operacion =>
@@ -202,13 +274,24 @@ isAdmin = false;
       );
     }
 
+    // Filtro por estado
     if (this.filterActive !== 'all') {
-      // Asegurar que la comparación no sea sensible a mayúsculas/minúsculas
       const filtroLower = this.filterActive.toLowerCase();
       result = result.filter(operacion => {
         const estadoLower = operacion.estado?.toLowerCase() || '';
         return estadoLower === filtroLower;
       });
+    }
+
+    // Filtro por canales seleccionados
+    if (this.selectedCanalesCount > 0) {
+      const selectedCanalIds = this.canalesOptions
+        .filter(canal => canal.selected)
+        .map(canal => canal.id);
+
+      result = result.filter(operacion =>
+        operacion.canalId && selectedCanalIds.includes(operacion.canalId)
+      );
     }
 
     if (this.sortState.column) {
@@ -409,49 +492,44 @@ isAdmin = false;
   }
 
   eliminarOperacion(operacionId: number, event: Event): void {
-  event.stopPropagation(); // Evitar que se active el click de la fila
+    event.stopPropagation();
 
-  const operacion = this.paginatedOperaciones.find(op => op.id === operacionId);
-  if (operacion) {
-    this.operacionAEliminar = operacion;
-    this.showDeleteModal = true;
-    this.manejarAperturaModal();
+    const operacion = this.paginatedOperaciones.find(op => op.id === operacionId);
+    if (operacion) {
+      this.operacionAEliminar = operacion;
+      this.showDeleteModal = true;
+      this.manejarAperturaModal();
+    }
   }
-}
 
-cancelarEliminacion(): void {
-  this.showDeleteModal = false;
-  this.operacionAEliminar = null;
-  this.manejarCierreModal();
-}
+  cancelarEliminacion(): void {
+    this.showDeleteModal = false;
+    this.operacionAEliminar = null;
+    this.manejarCierreModal();
+  }
 
-confirmarEliminacion(): void {
-  if (!this.operacionAEliminar) return;
+  confirmarEliminacion(): void {
+    if (!this.operacionAEliminar) return;
 
-  this.eliminandoOperacion = true;
+    this.eliminandoOperacion = true;
 
-  this.operacionService.eliminarOperacion(this.operacionAEliminar.id)
-    .pipe(
-      catchError(error => {
-        this.error = 'No se pudo eliminar la operación. Por favor, intente nuevamente.';
-        return of(null);
-      }),
-      finalize(() => {
-        this.eliminandoOperacion = false;
-      })
-    )
-    .subscribe(response => {
-      if (response !== null) {
-        // Eliminación exitosa
-        this.showDeleteModal = false;
-        this.operacionAEliminar = null;
-        this.manejarCierreModal();
-
-        // Recargar la lista de operaciones
-        this.loadOperaciones();
-
-        // Opcional: mostrar mensaje de éxito
-      }
-    });
-}
+    this.operacionService.eliminarOperacion(this.operacionAEliminar.id)
+      .pipe(
+        catchError(error => {
+          this.error = 'No se pudo eliminar la operación. Por favor, intente nuevamente.';
+          return of(null);
+        }),
+        finalize(() => {
+          this.eliminandoOperacion = false;
+        })
+      )
+      .subscribe(response => {
+        if (response !== null) {
+          this.showDeleteModal = false;
+          this.operacionAEliminar = null;
+          this.manejarCierreModal();
+          this.loadOperaciones();
+        }
+      });
+  }
 }

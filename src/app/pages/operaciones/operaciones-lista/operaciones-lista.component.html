@@ -1,4 +1,4 @@
-<div class="canales-container">
+<div class="canales-container" (click)="closeCanalesDropdown()">
   <!-- Sidebar -->
   <app-sidebar></app-sidebar>
 
@@ -18,42 +18,77 @@
     <div class="card">
       <!-- Card Header with Search -->
       <div class="card-header">
-        <div class="search-container">
-          <div class="search-box">
-            <i class="bi bi-search search-icon"></i>
-            <input
-              type="text"
-              class="form-control search-input"
-              placeholder="Buscar por cliente o plan..."
-              [(ngModel)]="searchTerm"
-              (input)="onSearchChange()">
-            <button
-              *ngIf="searchTerm"
-              class="btn-clear"
-              (click)="clearSearch()">
-              <i class="bi bi-x"></i>
-            </button>
-          </div>
+     <div class="search-container">
+ <div class="search-box">
+   <i class="bi bi-search search-icon"></i>
+   <input
+     type="text"
+     class="form-control search-input"
+     placeholder="Buscar por cliente o plan..."
+     [(ngModel)]="searchTerm"
+     (input)="onSearchChange()">
+   <button
+     *ngIf="searchTerm"
+     class="btn-clear"
+     (click)="clearSearch()">
+     <i class="bi bi-x"></i>
+   </button>
+ </div>
 
-          <div class="filter-container">
-            <span class="filter-label">Estado:</span>
-            <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
-              <option value="all">Todos los estados</option>
-              <option value="rechazado">Rechazado</option>
-              <option value="liquidada">Liquidada</option>
-              <option value="firmar docum">Firmar Docum</option>
-              <option value="completando docu">Completando Docu</option>
-              <option value="en gestion">En Gestión</option>
-              <option value="en analisis">En Análisis</option>
-              <option value="aprobado def">Aprobado Def</option>
-              <option value="enviada">Enviada</option>
-              <option value="en proc.insc.">En Proc. Insc.</option>
-              <option value="en proc.liq.">En Proc. Liq.</option>
-              <option value="ingresada">Ingresada</option>
-              <option value="propuesta">Propuesta</option>
-            </select>
-          </div>
-        </div>
+ <div class="filters-row">
+   <!-- Filtro por Canal (Multi-selección) -->
+   <div class="filter-container">
+     <span class="filter-label">Canal:</span>
+     <div class="dropdown-multiselect" (click)="toggleCanalesDropdown($event)">
+       <div class="dropdown-trigger">
+         <span class="dropdown-text">{{ getCanalesFilterText() }}</span>
+         <i class="bi bi-chevron-down dropdown-arrow" [class.rotate]="canalesDropdownOpen"></i>
+       </div>
+
+       <div class="dropdown-menu" [class.show]="canalesDropdownOpen" (click)="$event.stopPropagation()">
+         <div class="dropdown-header">
+           <button type="button" class="btn-select-all" (click)="selectAllCanales()">
+             {{ (selectedCanalesCount === canalesOptions.length) ? 'Deseleccionar todo' : 'Seleccionar todo' }}
+           </button>
+         </div>
+
+         <div class="dropdown-options">
+           <label
+             *ngFor="let canal of canalesOptions"
+             class="dropdown-option"
+             (click)="toggleCanalSelection(canal, $event)">
+             <input
+               type="checkbox"
+               [checked]="canal.selected"
+               (click)="$event.stopPropagation()">
+             <span class="option-text">{{ canal.nombre }}</span>
+           </label>
+         </div>
+       </div>
+     </div>
+   </div>
+
+   <!-- Filtro por Estado -->
+   <div class="filter-container">
+     <span class="filter-label">Estado:</span>
+     <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
+       <option value="all">Todos los estados</option>
+       <option value="rechazado">Rechazado</option>
+       <option value="liquidada">Liquidada</option>
+       <option value="firmar docum">Firmar Docum</option>
+       <option value="completando docu">Completando Docu</option>
+       <option value="en gestion">En Gestión</option>
+       <option value="en analisis">En Análisis</option>
+       <option value="aprobado def">Aprobado Def</option>
+       <option value="enviada">Enviada</option>
+       <option value="en proc.insc.">En Proc. Insc.</option>
+       <option value="en proc.liq.">En Proc. Liq.</option>
+       <option value="ingresada">Ingresada</option>
+       <option value="propuesta">Propuesta</option>
+     </select>
+   </div>
+ </div>
+</div>
       </div>
 
       <!-- Card Body with Table -->
