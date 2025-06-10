@@ -3,24 +3,40 @@
   height: 100vh;
   background-color: #f5f8fa;
   // Estilos para encabezado de bienvenida
-  .welcome-header {
-    margin-bottom: 2rem;
+.welcome-header {
+  margin-bottom: 2rem;
 
-    .welcome-title {
-      h1 {
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: #181C32;
-      }
+  .welcome-title {
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
 
-      .welcome-subtitle {
-        font-size: 1rem;
-        color: #7E8299;
-        margin: 0;
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
       }
     }
+
+    .title-content {
+      flex: 1;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #181C32;
+    }
+
+    .welcome-subtitle {
+      font-size: 1rem;
+      color: #7E8299;
+      margin: 0;
+    }
   }
+}
 
 // Additional styles for enhanced charts
 .chart-header-content {
@@ -126,6 +142,52 @@
     }
   }
 }
+.header-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  @media (max-width: 768px) {
+    justify-content: stretch;
+    margin-top: 1rem;
+  }
+}
+
+
+.btn-reporte {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 158, 247, 0.15);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 158, 247, 0.25);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.875rem 1.25rem;
+  }
+}
+
 
 // Responsive adjustments for chart filters
 @media (max-width: 576px) {

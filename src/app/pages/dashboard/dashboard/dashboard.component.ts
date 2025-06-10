@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Chart, ChartOptions, ChartType, registerables } from 'chart.js';
+import { Chart, registerables } from 'chart.js';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { OperacionService } from 'src/app/core/services/operacion.service';
 import { CanalService } from 'src/app/core/services/canal.service';
@@ -9,10 +9,11 @@ import { SubcanalService } from 'src/app/core/services/subcanal.service';
 import { UsuarioService } from 'src/app/core/services/usuario.service';
 import { PlanService } from 'src/app/core/services/plan.service';
 import { RolType } from 'src/app/core/models/usuario.model';
-import { forkJoin, Observable, of, Subscription } from 'rxjs';
-import { catchError, finalize, map } from 'rxjs/operators';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { SidebarComponent } from 'src/app/layout/sidebar/sidebar.component';
 import { SidebarStateService } from '../../../core/services/sidebar-state.service';
+import { ReporteOperacionesComponent } from '../repote-operaciones/repote-operaciones.component';
 
 // Registrar los componentes de Chart.js
 Chart.register(...registerables);
@@ -20,13 +21,13 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, ReporteOperacionesComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardWelcomeComponent implements OnInit {
   private sidebarSubscription: Subscription | null = null;
-
+  mostrarModalReporte = false;
   // User info
   userRole: RolType | null = null;
   userName: string = '';
@@ -133,6 +134,8 @@ export class DashboardWelcomeComponent implements OnInit {
     // Cargar datos según el rol del usuario
     this.loadDataBasedOnRole();
   }
+
+
 
   initializeAvailableMonths(): void {
     const fechaActual = new Date();
@@ -396,6 +399,16 @@ export class DashboardWelcomeComponent implements OnInit {
       data: data,
       options: options
     });
+  }
+     abrirModalReporte() {
+    if (this.userRole === RolType.Administrador) {
+      this.mostrarModalReporte = true;
+    }
+  }
+
+  // 5. Método para cerrar el modal de reportes
+  cerrarModalReporte() {
+    this.mostrarModalReporte = false;
   }
 
   updateDistribucionChart(): void {

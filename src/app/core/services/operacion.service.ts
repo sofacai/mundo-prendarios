@@ -41,8 +41,13 @@ export interface Operacion {
   autoAprobado?: string;
   urlAprobadoDefinitivo?: string;
   observaciones?: string;
-}
 
+  // *** NUEVOS CAMPOS AGREGADOS ***
+  gastoInicial?: number;
+  gastoAprobado?: number;
+  bancoInicial?: string;
+  bancoAprobado?: string;
+}
 @Injectable({
   providedIn: 'root'
 })

@@ -1019,120 +1019,144 @@ export class WizardContainerComponent implements OnInit {
   }
 
 
-  private crearOperacion(planId: number, tasa: number): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.dataService.modoSimulacion) {
-        const operacionIdSimulado = -new Date().getTime();
-        this.wizardData.operacionId = operacionIdSimulado;
-        this.dataService.guardarOperacionId(operacionIdSimulado);
-        resolve({
-          id: operacionIdSimulado,
-          simulado: true,
-          monto: this.wizardData.monto!,
-          meses: this.wizardData.plazo!,
-          tasa: tasa,
-          planId: planId
-        });
-        return;
-      }
-
-      if (this.wizardData.operacionId) {
-        this.dataService.guardarOperacionId(this.wizardData.operacionId);
-        resolve({ id: this.wizardData.operacionId });
-        return;
-      }
-
-      const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
-      const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'ENVIADA';
-
-      const cuotaInicial = this.dataService.valorCuota;
-      let cuotaPromedio = this.dataService.valorCuota;
-
-      if (planId === 1 && this.dataService.cuotaPromedio > 0) {
-        cuotaPromedio = this.dataService.cuotaPromedio;
-      }
-
-      const operacionData = {
+private crearOperacion(planId: number, tasa: number): Promise<any> {
+  return new Promise((resolve, reject) => {
+    if (this.dataService.modoSimulacion) {
+      const operacionIdSimulado = -new Date().getTime();
+      this.wizardData.operacionId = operacionIdSimulado;
+      this.dataService.guardarOperacionId(operacionIdSimulado);
+      resolve({
+        id: operacionIdSimulado,
+        simulado: true,
         monto: this.wizardData.monto!,
         meses: this.wizardData.plazo!,
         tasa: tasa,
-        planId: planId,
-        subcanalId: this.subcanalSeleccionado!,
-        canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
-        vendedorId: this.vendorSeleccionado ?? undefined,
-        usuarioCreadorId: usuarioCreadorId,
-        estado: estadoOperacion,
-        cuotaInicial: cuotaInicial,
-        cuotaPromedio: cuotaPromedio,
-        autoInicial: this.dataService.auto || this.wizardData.auto,
-        observaciones: this.dataService.observaciones || ''
+        planId: planId
+      });
+      return;
+    }
+
+    if (this.wizardData.operacionId) {
+      this.dataService.guardarOperacionId(this.wizardData.operacionId);
+      resolve({ id: this.wizardData.operacionId });
+      return;
+    }
+
+    const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
+    const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'ENVIADA';
+
+    const cuotaInicial = this.dataService.valorCuota;
+    let cuotaPromedio = this.dataService.valorCuota;
+
+    if (planId === 1 && this.dataService.cuotaPromedio > 0) {
+      cuotaPromedio = this.dataService.cuotaPromedio;
+    }
+
+    // *** CALCULAR EL GASTO INICIAL DEL SUBCANAL ***
+    let gastoInicial = 0;
+
+    // Usar gastosSeleccionados que ya tiene los datos correctos
+    if (this.gastosSeleccionados && this.gastosSeleccionados.length > 0) {
+      gastoInicial = this.gastosSeleccionados.reduce((total, gasto) => total + (gasto.porcentaje || 0), 0);
+      console.log('✅ Gastos desde gastosSeleccionados:', this.gastosSeleccionados, 'Total:', gastoInicial);
+    }
+    // Fallback: usar comisión del subcanal
+    else if (this.subcanalSeleccionadoInfo?.subcanalComision) {
+      gastoInicial = this.subcanalSeleccionadoInfo.subcanalComision;
+      console.log('⚠️ Usando comisión del subcanal como fallback:', gastoInicial);
+    }
+    // Último recurso: buscar en subcanalInfo.gastos
+    else if (this.subcanalSeleccionadoInfo?.gastos && this.subcanalSeleccionadoInfo.gastos.length > 0) {
+      gastoInicial = this.subcanalSeleccionadoInfo.gastos.reduce((total, gasto) => total + (gasto.porcentaje || 0), 0);
+      console.log('⚠️ Gastos desde subcanalSeleccionadoInfo:', this.subcanalSeleccionadoInfo.gastos, 'Total:', gastoInicial);
+    }
+
+    console.log('🎯 GastoInicial final a guardar:', gastoInicial);
+
+    const operacionData = {
+      monto: this.wizardData.monto!,
+      meses: this.wizardData.plazo!,
+      tasa: tasa,
+      planId: planId,
+      subcanalId: this.subcanalSeleccionado!,
+      canalId: this.subcanalSeleccionadoInfo?.canalId || 0,
+      vendedorId: this.vendorSeleccionado ?? undefined,
+      usuarioCreadorId: usuarioCreadorId,
+      estado: estadoOperacion,
+      cuotaInicial: cuotaInicial,
+      cuotaPromedio: cuotaPromedio,
+      autoInicial: this.dataService.auto || this.wizardData.auto,
+      observaciones: this.dataService.observaciones || '',
+      // *** NUEVO CAMPO AGREGADO ***
+      gastoInicial: gastoInicial
+    };
+
+    console.log('Datos de operación a enviar:', operacionData);
+
+    const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
+      if (!this.yaCreoLeadEnKommo) {
+        this.yaCreoLeadEnKommo = true;
+        this.crearLeadEnKommo(op, cliente);
+      }
+    };
+
+    if (!this.wizardData.clienteId) {
+      const clienteData = {
+        nombre: this.wizardData.clienteNombre || "",
+        apellido: this.wizardData.clienteApellido || "",
+        whatsapp: this.wizardData.clienteWhatsapp || "",
+        telefono: this.wizardData.clienteWhatsapp || "",
+        email: this.wizardData.clienteEmail || "",
+        dni: this.wizardData.clienteDni || "",
+        cuil: this.wizardData.clienteCuil || "",
+        sexo: this.wizardData.clienteSexo || "",
+        provincia: "",
+        estadoCivil: this.wizardData.estadoCivil || ""
       };
 
-      const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
-        if (!this.yaCreoLeadEnKommo) {
-          this.yaCreoLeadEnKommo = true;
-          this.crearLeadEnKommo(op, cliente);
+      this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
+        next: (opCreada) => {
+          if (opCreada?.id) {
+            this.wizardData.operacionId = opCreada.id;
+            this.dataService.guardarOperacionId(opCreada.id);
+            ejecutarKommoSiNoFue(opCreada, clienteData);
+          }
+          resolve(opCreada);
+        },
+        error: (err) => {
+          resolve({ dummy: true });
         }
-      };
+      });
+    }
+    else {
+      this.clienteService.getClienteById(this.wizardData.clienteId).subscribe({
+        next: (cliente) => {
+          const operacion: Operacion = {
+            ...operacionData,
+            clienteId: cliente.id,
+          };
 
-      if (!this.wizardData.clienteId) {
-        const clienteData = {
-          nombre: this.wizardData.clienteNombre || "",
-          apellido: this.wizardData.clienteApellido || "",
-          whatsapp: this.wizardData.clienteWhatsapp || "",
-          telefono: this.wizardData.clienteWhatsapp || "",
-          email: this.wizardData.clienteEmail || "",
-          dni: this.wizardData.clienteDni || "",
-          cuil: this.wizardData.clienteCuil || "",
-          sexo: this.wizardData.clienteSexo || "",
-          provincia: "",
-          estadoCivil: this.wizardData.estadoCivil || ""
-        };
-
-        this.operacionService.crearClienteYOperacion(clienteData, operacionData).subscribe({
-          next: (opCreada) => {
-            if (opCreada?.id) {
-              this.wizardData.operacionId = opCreada.id;
-              this.dataService.guardarOperacionId(opCreada.id);
-              ejecutarKommoSiNoFue(opCreada, clienteData);
-            }
-            resolve(opCreada);
-          },
-          error: (err) => {
-            resolve({ dummy: true });
-          }
-        });
-      }
-      else {
-        this.clienteService.getClienteById(this.wizardData.clienteId).subscribe({
-          next: (cliente) => {
-            const operacion: Operacion = {
-              ...operacionData,
-              clienteId: cliente.id,
-            };
-
-            this.operacionService.crearOperacion(operacion).subscribe({
-              next: (opCreada) => {
-                if (opCreada?.id) {
-                  this.wizardData.operacionId = opCreada.id;
-                  this.dataService.guardarOperacionId(opCreada.id);
-                  ejecutarKommoSiNoFue(opCreada, cliente);
-                }
-                resolve(opCreada);
-              },
-              error: (err) => {
-                resolve({ dummy: true });
+          this.operacionService.crearOperacion(operacion).subscribe({
+            next: (opCreada) => {
+              if (opCreada?.id) {
+                this.wizardData.operacionId = opCreada.id;
+                this.dataService.guardarOperacionId(opCreada.id);
+                ejecutarKommoSiNoFue(opCreada, cliente);
               }
-            });
-          },
-          error: (err) => {
-            resolve({ dummy: true });
-          }
-        });
-      }
-    });
-  }
-
+              resolve(opCreada);
+            },
+            error: (err) => {
+              resolve({ dummy: true });
+            }
+          });
+        },
+        error: (err) => {
+          resolve({ dummy: true });
+        }
+      });
+    }
+  });
+}
 
   private crearLeadEnKommo(operacionCreada: any, cliente: any): void {
 

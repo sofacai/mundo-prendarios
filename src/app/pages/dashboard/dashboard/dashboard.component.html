@@ -2,12 +2,24 @@
   <app-sidebar></app-sidebar>
   <div class="content-area">
     <!-- Header with greeting -->
-    <div class="welcome-header">
-      <div class="welcome-title">
+<div class="welcome-header">
+  <div class="welcome-title">
+    <div class="title-row">
+      <div class="title-content">
         <h1>Bienvenido, {{userName}}</h1>
         <p class="welcome-subtitle">Panel de control y estadísticas</p>
       </div>
+      <!-- Botón de reportes - Solo visible para administradores -->
+      <div class="header-actions" *ngIf="userRole === rolType.Administrador">
+        <button class="btn btn-primary btn-reporte" (click)="abrirModalReporte()">
+          <i class="bi bi-file-earmark-excel"></i>
+          Generar Reporte
+        </button>
+      </div>
     </div>
+  </div>
+</div>
+
 
     <!-- Loading indicator -->
     <div *ngIf="isLoading" class="loading-container">
@@ -311,3 +323,9 @@
     </div>
   </div>
 </div>
+
+
+<app-reporte-operaciones
+  *ngIf="mostrarModalReporte"
+  (onCerrarModal)="cerrarModalReporte()">
+</app-reporte-operaciones>
