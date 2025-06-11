@@ -53,13 +53,14 @@
          </div>
 
          <div class="dropdown-options">
-           <label
+     <label
              *ngFor="let canal of canalesOptions"
              class="dropdown-option"
              (click)="toggleCanalSelection(canal, $event)">
              <input
                type="checkbox"
                [checked]="canal.selected"
+               (change)="onCheckboxChange(canal, $event)"
                (click)="$event.stopPropagation()">
              <span class="option-text">{{ canal.nombre }}</span>
            </label>

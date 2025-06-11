@@ -701,6 +701,7 @@ export class ReporteOperacionesComponent implements OnInit {
 
         // Operación inicial
         'Monto Inicial': op.monto || 0,
+        'Gasto Inicial': op.gastoInicial || 0,
         'Plazo Inicial (meses)': op.meses || 0,
         'Tasa Inicial (%)': op.tasa || 0,
         'Cuota Inicial': op.cuotaInicial || '',

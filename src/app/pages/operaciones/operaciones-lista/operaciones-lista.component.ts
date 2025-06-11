@@ -216,13 +216,22 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
   }
 
   toggleCanalSelection(canal: CanalOption, event: Event) {
-    event.stopPropagation();
+  event.stopPropagation();
+    event.preventDefault();
     canal.selected = !canal.selected;
     this.updateSelectedCanalesCount();
     this.paginaActual = 1;
     this.applyFilters();
   }
 
+   onCheckboxChange(canal: CanalOption, event: Event) {
+    event.stopPropagation();
+    const checkbox = event.target as HTMLInputElement;
+    canal.selected = checkbox.checked;
+    this.updateSelectedCanalesCount();
+    this.paginaActual = 1;
+    this.applyFilters();
+  }
   selectAllCanales() {
     const allSelected = this.canalesOptions.every(canal => canal.selected);
     this.canalesOptions.forEach(canal => canal.selected = !allSelected);
