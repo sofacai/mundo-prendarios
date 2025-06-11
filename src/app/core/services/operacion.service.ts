@@ -91,7 +91,8 @@ export class OperacionService {
       cuotaPromedio: operacion.cuotaPromedio,
       autoInicial: operacion.autoInicial,
       observaciones: operacion.observaciones,
-      urlAprobadoDefinitivo: operacion.urlAprobadoDefinitivo
+      urlAprobadoDefinitivo: operacion.urlAprobadoDefinitivo,
+         gastoInicial: operacion.gastoInicial,
     };
 
     return this.http.post<Operacion>(`${this.apiUrl}/Operacion`, operacionDto, { headers });
@@ -128,7 +129,8 @@ export class OperacionService {
         cuotaPromedio: operacionData.cuotaPromedio,
         autoInicial: operacionData.autoInicial,
         observaciones: operacionData.observaciones,
-        urlAprobadoDefinitivo: operacionData.urlAprobadoDefinitivo
+        urlAprobadoDefinitivo: operacionData.urlAprobadoDefinitivo,
+         gastoInicial: operacionData.gastoInicial
       }
     };
 

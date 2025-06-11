@@ -951,49 +951,54 @@ export class WizardContainerComponent implements OnInit {
     }
   }
 
-  seleccionarSubcanal(subcanalId: number) {
-    // Verificar que el subcanal esté activo
-    const subcanalInfo = this.datosWizard?.subcanales?.find(s => s.subcanalId === subcanalId);
+seleccionarSubcanal(subcanalId: number) {
 
-    if (!subcanalInfo) {
-      this.error = "No se encontró información del subcanal seleccionado.";
-      return;
-    }
+  // Verificar que el subcanal esté activo
+  const subcanalInfo = this.datosWizard?.subcanales?.find(s => s.subcanalId === subcanalId);
 
-    if (!subcanalInfo.subcanalActivo) {
-      this.error = "El subcanal seleccionado no está activo.";
-      return;
-    }
-
-    this.seleccionarSubcanalPorId(subcanalId);
-    this.necesitaSeleccionarSubcanal = false;
-
-    // Si estamos en creación propia, asegurarnos que vendorId sea undefined
-    if (this.vendorSeleccionado === null) {
-      this.wizardData.vendorId = undefined;
-    }
+  if (!subcanalInfo) {
+    this.error = "No se encontró información del subcanal seleccionado.";
+    return;
   }
 
-  seleccionarSubcanalPorId(subcanalId: number) {
-    if (!this.datosWizard || !this.datosWizard.subcanales) {
-      return;
-    }
-
-    // Buscar el subcanal completo por su ID
-    const subcanalInfo = this.datosWizard.subcanales.find(
-      subcanal => subcanal.subcanalId === subcanalId
-    );
-
-    if (subcanalInfo) {
-      this.subcanalSeleccionado = subcanalId;
-      this.subcanalSeleccionadoInfo = subcanalInfo;
-      this.gastosSeleccionados = subcanalInfo.gastos || [];
-
-      // Guardar la información en el dataService para que esté disponible en step3
-      this.dataService.guardarSubcanalInfo(subcanalInfo);
-    } else {
-    }
+  if (!subcanalInfo.subcanalActivo) {
+    this.error = "El subcanal seleccionado no está activo.";
+    return;
   }
+
+
+  this.seleccionarSubcanalPorId(subcanalId);
+  this.necesitaSeleccionarSubcanal = false;
+
+  // Si estamos en creación propia, asegurarnos que vendorId sea undefined
+  if (this.vendorSeleccionado === null) {
+    this.wizardData.vendorId = undefined;
+  }
+
+}
+
+seleccionarSubcanalPorId(subcanalId: number) {
+  if (!this.datosWizard || !this.datosWizard.subcanales) {
+    return;
+  }
+
+  // Buscar el subcanal completo por su ID
+  const subcanalInfo = this.datosWizard.subcanales.find(
+    subcanal => subcanal.subcanalId === subcanalId
+  );
+
+  if (subcanalInfo) {
+    this.subcanalSeleccionado = subcanalId;
+    this.subcanalSeleccionadoInfo = subcanalInfo;
+
+    // *** IMPORTANTE: Asegurar que gastosSeleccionados esté poblado ***
+    this.gastosSeleccionados = subcanalInfo.gastos || [];
+
+
+    // Guardar la información en el dataService para que esté disponible en step3
+    this.dataService.guardarSubcanalInfo(subcanalInfo);
+  }
+}
 
   seleccionarPlan(planId: number) {
     this.cargando = true;
@@ -1017,7 +1022,6 @@ export class WizardContainerComponent implements OnInit {
     this.enviarOfertaPorWhatsApp(planSeleccionado);
     this.cargando = false;
   }
-
 
 private crearOperacion(planId: number, tasa: number): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -1052,26 +1056,38 @@ private crearOperacion(planId: number, tasa: number): Promise<any> {
       cuotaPromedio = this.dataService.cuotaPromedio;
     }
 
-    // *** CALCULAR EL GASTO INICIAL DEL SUBCANAL ***
+    // *** CÁLCULO CORREGIDO DEL GASTO INICIAL ***
     let gastoInicial = 0;
 
-    // Usar gastosSeleccionados que ya tiene los datos correctos
-    if (this.gastosSeleccionados && this.gastosSeleccionados.length > 0) {
-      gastoInicial = this.gastosSeleccionados.reduce((total, gasto) => total + (gasto.porcentaje || 0), 0);
-      console.log('✅ Gastos desde gastosSeleccionados:', this.gastosSeleccionados, 'Total:', gastoInicial);
+
+
+    // Prioridad 1: usar gastos del subcanalSeleccionadoInfo (más confiable)
+    if (this.subcanalSeleccionadoInfo?.gastos && this.subcanalSeleccionadoInfo.gastos.length > 0) {
+      gastoInicial = this.subcanalSeleccionadoInfo.gastos.reduce((total, gasto) => {
+        return total + (gasto.porcentaje || 0);
+      }, 0);
     }
-    // Fallback: usar comisión del subcanal
-    else if (this.subcanalSeleccionadoInfo?.subcanalComision) {
+    // Prioridad 2: usar gastosSeleccionados como fallback
+    else if (this.gastosSeleccionados && this.gastosSeleccionados.length > 0) {
+      gastoInicial = this.gastosSeleccionados.reduce((total, gasto) => {
+        return total + (gasto.porcentaje || 0);
+      }, 0);
+    }
+    // Prioridad 3: usar comisión del subcanal
+    else if (this.subcanalSeleccionadoInfo?.subcanalComision && this.subcanalSeleccionadoInfo.subcanalComision > 0) {
       gastoInicial = this.subcanalSeleccionadoInfo.subcanalComision;
-      console.log('⚠️ Usando comisión del subcanal como fallback:', gastoInicial);
     }
-    // Último recurso: buscar en subcanalInfo.gastos
-    else if (this.subcanalSeleccionadoInfo?.gastos && this.subcanalSeleccionadoInfo.gastos.length > 0) {
-      gastoInicial = this.subcanalSeleccionadoInfo.gastos.reduce((total, gasto) => total + (gasto.porcentaje || 0), 0);
-      console.log('⚠️ Gastos desde subcanalSeleccionadoInfo:', this.subcanalSeleccionadoInfo.gastos, 'Total:', gastoInicial);
+    // Prioridad 4: buscar en datosWizard como último recurso
+    else if (this.datosWizard?.subcanales) {
+      const subcanalEncontrado = this.datosWizard.subcanales.find(s => s.subcanalId === this.subcanalSeleccionado);
+      if (subcanalEncontrado?.gastos && subcanalEncontrado.gastos.length > 0) {
+        gastoInicial = subcanalEncontrado.gastos.reduce((total, gasto) => {
+          return total + (gasto.porcentaje || 0);
+        }, 0);
+      }
     }
 
-    console.log('🎯 GastoInicial final a guardar:', gastoInicial);
+
 
     const operacionData = {
       monto: this.wizardData.monto!,
@@ -1087,11 +1103,10 @@ private crearOperacion(planId: number, tasa: number): Promise<any> {
       cuotaPromedio: cuotaPromedio,
       autoInicial: this.dataService.auto || this.wizardData.auto,
       observaciones: this.dataService.observaciones || '',
-      // *** NUEVO CAMPO AGREGADO ***
+      // *** CAMPO CORREGIDO ***
       gastoInicial: gastoInicial
     };
 
-    console.log('Datos de operación a enviar:', operacionData);
 
     const ejecutarKommoSiNoFue = (op: any, cliente: any) => {
       if (!this.yaCreoLeadEnKommo) {
@@ -1157,6 +1172,8 @@ private crearOperacion(planId: number, tasa: number): Promise<any> {
     }
   });
 }
+
+
 
   private crearLeadEnKommo(operacionCreada: any, cliente: any): void {
 
