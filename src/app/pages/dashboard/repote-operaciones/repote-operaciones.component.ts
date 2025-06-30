@@ -120,10 +120,6 @@ interface OperacionCompleta extends Operacion {
                 <span class="stat-label">Monto total:</span>
                 <span class="stat-value">{{ formatMoney(getTotalMonto()) }}</span>
               </div>
-              <div class="stat-item">
-                <span class="stat-label">Operaciones liquidadas:</span>
-                <span class="stat-value">{{ getOperacionesLiquidadas() }}</span>
-              </div>
             </div>
           </div>
 
@@ -664,42 +660,29 @@ export class ReporteOperacionesComponent implements OnInit {
     this.mensajeCarga = 'Generando archivo Excel...';
 
     try {
-      // Preparar datos para Excel
+      // Preparar datos para Excel (fechas como objetos Date, sin columna 'Liquidada')
       const datosExcel = this.operacionesFiltradas.map(op => ({
-        // Datos básicos de operación
         'ID Operación': op.id,
-        'Fecha Creación': this.formatDateForExcel(op.fechaCreacion),
+        'Fecha Creación': op.fechaCreacion ? new Date(op.fechaCreacion) : '',
         'Estado': op.estado || 'Sin estado',
-        'Fecha Aprobación': this.formatDateForExcel(op.fechaAprobacion),
-        'Fecha Liquidación': this.formatDateForExcel(op.fechaLiquidacion),
-        'Liquidada': op.liquidada ? 'Sí' : 'No',
-
-        // Cliente
+        'Fecha Aprobación': op.fechaAprobacion ? new Date(op.fechaAprobacion) : '',
+        'Fecha Liquidación': op.fechaLiquidacion ? new Date(op.fechaLiquidacion) : '',
+        // 'Liquidada' columna eliminada
         'Cliente': op.cliente ? `${op.cliente.nombre} ${op.cliente.apellido}` : op.clienteNombre || '',
         'Cliente Teléfono': op.cliente?.telefono || '',
         'Cliente Email': op.cliente?.email || '',
         'Cliente CUIL': op.cliente?.cuil || '',
-
-        // Canal y Subcanal
         'Canal': op.canal?.nombreFantasia || op.canalNombre || '',
         'Subcanal': op.subcanal?.nombre || op.subcanalNombre || '',
         'Subcanal Provincia': op.subcanal?.provincia || '',
         'Subcanal Localidad': op.subcanal?.localidad || '',
-
-        // Vendor
         'Vendor ID': op.vendor?.id || op.vendedorId || '',
         'Vendor': op.vendor ? `${op.vendor.nombre} ${op.vendor.apellido}` : op.vendedorNombre || '',
         'Vendor Email': op.vendor?.email || '',
-
-        // Plan
         'Plan': op.plan?.nombre || op.planNombre || '',
-
-        // Usuario creador
         'Usuario Creador ID': op.usuarioCreador?.id || op.usuarioCreadorId || '',
         'Usuario Creador': op.usuarioCreador ? `${op.usuarioCreador.nombre} ${op.usuarioCreador.apellido}` : '',
         'Usuario Creador Email': op.usuarioCreador?.email || '',
-
-        // Operación inicial
         'Monto Inicial': op.monto || 0,
         'Gasto Inicial': op.gastoInicial || 0,
         'Plazo Inicial (meses)': op.meses || 0,
@@ -707,8 +690,6 @@ export class ReporteOperacionesComponent implements OnInit {
         'Cuota Inicial': op.cuotaInicial || '',
         'Cuota Promedio Inicial': op.cuotaPromedio || '',
         'Auto Inicial': op.autoInicial || '',
-
-        // Operación aprobada
         'Monto Aprobado': op.montoAprobado || '',
         'Plazo Aprobado (meses)': op.mesesAprobados || '',
         'Tasa Aprobada (%)': op.tasaAprobada || '',
@@ -722,6 +703,21 @@ export class ReporteOperacionesComponent implements OnInit {
 
       // Crear workbook
       const ws = XLSX.utils.json_to_sheet(datosExcel);
+
+      // Aplicar formato de fecha a las columnas de fecha
+      const dateCols = ['Fecha Creación', 'Fecha Aprobación', 'Fecha Liquidación'];
+      dateCols.forEach(col => {
+        const colIdx = Object.keys(datosExcel[0]).indexOf(col);
+        if (colIdx === -1) return;
+        for (let row = 2; row <= datosExcel.length + 1; row++) { // +1 por encabezado
+          const cellRef = XLSX.utils.encode_cell({ c: colIdx, r: row - 1 });
+          const cell = ws[cellRef];
+          if (cell && cell.v instanceof Date) {
+            cell.t = 'd'; // tipo date
+            cell.z = 'yyyy-mm-dd'; // formato ISO
+          }
+        }
+      });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Operaciones');
 
@@ -754,17 +750,15 @@ export class ReporteOperacionesComponent implements OnInit {
   }
 
   // Métodos auxiliares
+  // formatDateForExcel ya no es necesario para exportar fechas como Date
   formatDateForExcel(date: Date | string | undefined): string {
     if (!date) return '';
-
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
-
-    return d.toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
   }
 
   formatMoney(amount: number): string {
@@ -781,7 +775,8 @@ export class ReporteOperacionesComponent implements OnInit {
   }
 
   getOperacionesLiquidadas(): number {
-    return this.operacionesFiltradas.filter(op => op.estado === 'LIQUIDADA').length;
+    // Considera como liquidadas solo las que tienen estado 'LIQUIDADA' y fechaLiquidacion válida
+    return this.operacionesFiltradas.filter(op => (op.estado || '').toUpperCase() === 'LIQUIDADA' && !!op.fechaLiquidacion).length;
   }
 
   cerrarModal(event: MouseEvent) {

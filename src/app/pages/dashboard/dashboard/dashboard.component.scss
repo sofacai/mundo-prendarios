@@ -568,3 +568,83 @@
     }
   }
 }
+
+/* ===============================
+   ESTILOS PARA FILTROS DE TOP RENDIMIENTO
+   =============================== */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .section-title {
+    margin-bottom: 0;
+  }
+
+  .top-stats-filters {
+    // Reutilizar estilos existentes de chart-filters
+    .date-filter {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        label {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #5E6278;
+        }
+
+        select {
+          padding: 0.5rem;
+          border: 1px solid #E4E6EA;
+          border-radius: 4px;
+          background-color: white;
+          font-size: 0.875rem;
+          min-width: 120px;
+
+          &:focus {
+            outline: none;
+            border-color: #009ef7;
+            box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .top-stats-filters {
+      .date-filter {
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .form-group {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+
+          label {
+            min-width: 60px;
+          }
+
+          select {
+            flex: 1;
+            min-width: auto;
+          }
+        }
+      }
+    }
+  }
+}

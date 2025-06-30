@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AlertController, ModalController } from '@ionic/angular';
@@ -11,6 +12,8 @@ import { ClienteService, Cliente } from 'src/app/core/services/cliente.service';
 import { UsuarioService, UsuarioDto } from 'src/app/core/services/usuario.service';
 import { CanalService, Canal } from 'src/app/core/services/canal.service';
 import { SubcanalService, Subcanal } from 'src/app/core/services/subcanal.service';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { RolType } from 'src/app/core/models/usuario.model';
 import { Subscription } from 'rxjs';
 import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -22,6 +25,7 @@ import { SafePipe } from 'src/app/shared/pipes/safe.pipe';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     IonicModule,
     SidebarComponent,
     SafePipe
@@ -39,6 +43,12 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   canal: Canal | null = null;
   subcanal: Subcanal | null = null;
   showObservacionesModal = false;
+  
+  // Modals de fecha
+  showEditarFechaAprobacionModal = false;
+  showEditarFechaLiquidacionModal = false;
+  fechaAprobacionInput = '';
+  fechaLiquidacionInput = '';
 
   // Variable para controlar la visualización del documento
   showDocumentPreview = false;
@@ -61,7 +71,8 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     private subcanalService: SubcanalService,
     private sidebarStateService: SidebarStateService,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -269,5 +280,156 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
 
   cerrarVistaDocumento() {
     this.showDocumentPreview = false;
+  }
+
+  // Verificar si el usuario es admin
+  isAdmin(): boolean {
+    return this.authService.hasRole(RolType.Administrador);
+  }
+
+  // Editar fecha de aprobación
+  editarFechaAprobacion() {
+    this.fechaAprobacionInput = this.operacion.fechaAprobacion ? this.formatDateForInput(this.operacion.fechaAprobacion) : '';
+    this.showEditarFechaAprobacionModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Editar fecha de liquidación
+  editarFechaLiquidacion() {
+    this.fechaLiquidacionInput = this.operacion.fechaLiquidacion ? this.formatDateForInput(this.operacion.fechaLiquidacion) : '';
+    this.showEditarFechaLiquidacionModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Quitar fecha de aprobación
+  async quitarFechaAprobacion() {
+    const alert = await this.alertController.create({
+      header: 'Confirmar',
+      message: '¿Está seguro que desea quitar la fecha de aprobación?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Quitar',
+          handler: () => {
+            this.actualizarFechaAprobacion(null);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Quitar fecha de liquidación
+  async quitarFechaLiquidacion() {
+    const alert = await this.alertController.create({
+      header: 'Confirmar',
+      message: '¿Está seguro que desea quitar la fecha de liquidación?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Quitar',
+          handler: () => {
+            this.actualizarFechaLiquidacion(null);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Cerrar modals de fecha
+  cerrarModalFechaAprobacion(event?: MouseEvent) {
+    if (event && (event.target as HTMLElement).classList.contains('custom-modal-backdrop')) {
+      this.showEditarFechaAprobacionModal = false;
+      document.body.style.overflow = '';
+    } else if (!event) {
+      this.showEditarFechaAprobacionModal = false;
+      document.body.style.overflow = '';
+    }
+  }
+
+  cerrarModalFechaLiquidacion(event?: MouseEvent) {
+    if (event && (event.target as HTMLElement).classList.contains('custom-modal-backdrop')) {
+      this.showEditarFechaLiquidacionModal = false;
+      document.body.style.overflow = '';
+    } else if (!event) {
+      this.showEditarFechaLiquidacionModal = false;
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Guardar fechas
+  guardarFechaAprobacion() {
+    if (this.fechaAprobacionInput) {
+      this.actualizarFechaAprobacion(new Date(this.fechaAprobacionInput));
+    }
+    this.cerrarModalFechaAprobacion();
+  }
+
+  guardarFechaLiquidacion() {
+    if (this.fechaLiquidacionInput) {
+      this.actualizarFechaLiquidacion(new Date(this.fechaLiquidacionInput));
+    }
+    this.cerrarModalFechaLiquidacion();
+  }
+
+  // Actualizar fecha de aprobación
+  private actualizarFechaAprobacion(fecha: Date | null) {
+    this.operacionService.actualizarFechaAprobacion(this.operacionId, fecha).subscribe({
+      next: (operacion) => {
+        this.operacion = operacion;
+        this.mostrarMensajeExito('Fecha de aprobación actualizada correctamente');
+      },
+      error: (err) => {
+        this.mostrarMensajeError('Error al actualizar la fecha de aprobación');
+      }
+    });
+  }
+
+  // Actualizar fecha de liquidación
+  private actualizarFechaLiquidacion(fecha: Date | null) {
+    this.operacionService.actualizarFechaLiquidacion(this.operacionId, fecha).subscribe({
+      next: (operacion) => {
+        this.operacion = operacion;
+        this.mostrarMensajeExito('Fecha de liquidación actualizada correctamente');
+      },
+      error: (err) => {
+        this.mostrarMensajeError('Error al actualizar la fecha de liquidación');
+      }
+    });
+  }
+
+  // Formatear fecha para input datetime-local
+  private formatDateForInput(date: Date | string): string {
+    const d = new Date(date);
+    return d.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+  }
+
+  // Mostrar mensaje de éxito
+  private async mostrarMensajeExito(mensaje: string) {
+    const alert = await this.alertController.create({
+      header: 'Éxito',
+      message: mensaje,
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+
+  // Mostrar mensaje de error
+  private async mostrarMensajeError(mensaje: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: mensaje,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 }

@@ -276,7 +276,7 @@
   color: #181c32;
   font-size: 1rem;
   text-align: right;
-  flex: 2; /* Tomar más espacio para valores */
+
   word-break: break-word; /* Evitar overflow de texto */
 
   @media (max-width: 767.98px) {
@@ -596,4 +596,126 @@
 
 .btn-primary:hover {
   background-color: #008bd9;
+}
+
+/* ===============================
+   BOTONES DE ACCIÓN ADMINISTRATIVOS
+   =============================== */
+
+// Solo las filas con admin-actions usan flex
+.detail-value-with-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// El contenedor de acciones se mantiene a la derecha
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+// Botones de acción pequeños (estilo consistente con subcanales)
+.btn-action {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  // Icono centrado
+  i {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  // Hover general
+  &:hover {
+    background-color: #f5f8fa;
+  }
+}
+
+// Botón de editar (lápiz)
+.btn-action.btn-edit {
+  color: #ffa800; // Color naranja para editar
+
+  &:hover {
+    color: #ffa800;
+    background-color: rgba(255, 168, 0, 0.1);
+  }
+}
+
+// Botón de eliminar/quitar (X)
+.btn-action.btn-remove {
+  color: #f1416c; // Color rojo para eliminar
+
+  &:hover {
+    color: #f1416c;
+    background-color: rgba(241, 65, 108, 0.1);
+  }
+}
+
+/* ===============================
+   ESTILOS PARA MODALS DE FECHA
+   =============================== */
+
+// Elementos de formulario en modals
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #3f4254;
+  font-size: 14px;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #3f4254;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #e4e6ea;
+  border-radius: 6px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus {
+    color: #3f4254;
+    background-color: #ffffff;
+    border-color: #009ef7;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+  }
+
+  &::placeholder {
+    color: #a1a5b7;
+    opacity: 1;
+  }
+}
+
+// Botón secundario para cancelar
+.btn-secondary {
+  background-color: #f5f8fa;
+  color: #7e8299;
+  border: 1px solid #e4e6ea;
+
+  &:hover {
+    background-color: #e4e6ea;
+    color: #5e6278;
+    border-color: #d4d4d4;
+  }
 }

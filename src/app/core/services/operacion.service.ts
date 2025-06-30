@@ -269,4 +269,22 @@ export class OperacionService {
   const headers = this.getAuthHeaders();
   return this.http.delete(`${this.apiUrl}/Operacion/${id}`, { headers });
 }
+
+  // Actualizar fecha de aprobación
+  actualizarFechaAprobacion(id: number, fechaAprobacion: Date | null): Observable<Operacion> {
+    const headers = this.getAuthHeaders();
+    const body = {
+      fechaAprobacion: fechaAprobacion
+    };
+    return this.http.patch<Operacion>(`${this.apiUrl}/Operacion/${id}/fecha-aprobacion`, body, { headers });
+  }
+
+  // Actualizar fecha de liquidación
+  actualizarFechaLiquidacion(id: number, fechaLiquidacion: Date | null): Observable<Operacion> {
+    const headers = this.getAuthHeaders();
+    const body = {
+      fechaLiquidacion: fechaLiquidacion
+    };
+    return this.http.patch<Operacion>(`${this.apiUrl}/Operacion/${id}/fecha-liquidacion`, body, { headers });
+  }
 }

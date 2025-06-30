@@ -82,6 +82,10 @@ export class DashboardWelcomeComponent implements OnInit {
   planesStats: any[] = [];
   montoPromedioLiquidadas: number = 0;
 
+  // Filtros para estadísticas de Top Rendimiento
+  topStatsStartMonth: number = 0;
+  topStatsEndMonth: number = 11; // Por defecto todo el año
+
   // Charts
   operacionesChart: Chart | null = null;
   distribucionChart: Chart | null = null;
@@ -617,12 +621,22 @@ export class DashboardWelcomeComponent implements OnInit {
     });
   }
 
+  updateTopStats(): void {
+    // Validar que el mes de inicio no sea mayor que el de fin
+    if (this.topStatsStartMonth > this.topStatsEndMonth) {
+      this.topStatsEndMonth = this.topStatsStartMonth;
+    }
+
+    // Recalcular estadísticas específicas del rol
+    this.calculateRoleSpecificStats();
+  }
+
   calculateGeneralStats(): void {
     const fechaActual = new Date();
     const mesActual = fechaActual.getMonth();
     const anioActual = fechaActual.getFullYear();
 
-    // Filtrar operaciones del mes en curso
+    // Filtrar operaciones INGRESADAS del mes en curso (mantener por fechaCreacion)
     this.operacionesDelMesActual = this.operaciones.filter(op => {
       if (op.fechaCreacion) {
         const fecha = new Date(op.fechaCreacion);
@@ -631,30 +645,74 @@ export class DashboardWelcomeComponent implements OnInit {
       return false;
     });
 
-    // Total de operaciones (ahora "Operaciones Ingresadas")
+    // Total de operaciones ingresadas del mes
     this.totalOperaciones = this.operacionesDelMesActual.length;
 
-    // Operaciones liquidadas (solo LIQUIDADA)
-    this.operacionesLiquidadas = this.operacionesDelMesActual.filter(op =>
-      op.estado === 'LIQUIDADA').length;
+    // Operaciones APROBADAS del mes (usar fechaAprobacion)
+    this.operacionesAprobadas = this.operaciones.filter(op => {
+      if (op.fechaAprobacion) {
+        const fecha = new Date(op.fechaAprobacion);
+        return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+      }
+      return false;
+    }).length;
 
-    // Operaciones aprobadas (suma de varios estados)
-    this.operacionesAprobadas = this.operacionesDelMesActual.filter(op =>
-      ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
-      .includes(op.estado)).length;
+    // Operaciones LIQUIDADAS del mes (usar fechaLiquidacion)
+    const operacionesLiquidadasDelMes = this.operaciones.filter(op => {
+      if (op.fechaLiquidacion) {
+        const fecha = new Date(op.fechaLiquidacion);
+        return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+      }
+      return false;
+    });
 
-    // Monto total de operaciones liquidadas del mes en curso
-    const operacionesLiquidadasArray = this.operacionesDelMesActual.filter(op => op.estado === 'LIQUIDADA');
-    this.totalMontosLiquidados = operacionesLiquidadasArray.reduce((sum, op) => sum + (op.monto || 0), 0);
+    this.operacionesLiquidadas = operacionesLiquidadasDelMes.length;
 
-    // Monto promedio de operaciones liquidadas (mantener este cálculo para otras partes que puedan usarlo)
-    this.montoPromedioLiquidadas = operacionesLiquidadasArray.length > 0 ?
-      this.totalMontosLiquidados / operacionesLiquidadasArray.length : 0;
+    // Monto total de operaciones liquidadas del mes (usar las liquidadas del mes)
+    this.totalMontosLiquidados = operacionesLiquidadasDelMes.reduce((sum, op) => {
+      // Usar montoAprobado si existe, sino monto original
+      const monto = op.montoAprobado || op.monto || 0;
+      return sum + monto;
+    }, 0);
 
-    // Monto promedio por operación (todas las ingresadas)
+    // Monto promedio de operaciones liquidadas del mes
+    this.montoPromedioLiquidadas = operacionesLiquidadasDelMes.length > 0 ?
+      this.totalMontosLiquidados / operacionesLiquidadasDelMes.length : 0;
+
+    // Monto promedio por operación (todas las ingresadas del mes)
     const totalMonto = this.operacionesDelMesActual.reduce((sum, op) => sum + (op.monto || 0), 0);
     this.montoPromedioPorOperacion = this.operacionesDelMesActual.length > 0 ?
       totalMonto / this.operacionesDelMesActual.length : 0;
+  }
+
+  // Método auxiliar para filtrar operaciones por fechas específicas en un rango
+  private isOperacionInDateRange(operacion: any, fechaField: string, startMonth: number, endMonth: number): boolean {
+    if (!operacion[fechaField]) return false;
+
+    const fecha = new Date(operacion[fechaField]);
+    const mesOperacion = fecha.getMonth();
+
+    // Si el rango no cruza el año, comparación simple
+    if (startMonth <= endMonth) {
+      return mesOperacion >= startMonth && mesOperacion <= endMonth;
+    } else {
+      // Si cruza el año (ej: de Oct a Mar)
+      return mesOperacion >= startMonth || mesOperacion <= endMonth;
+    }
+  }
+
+  // Método auxiliar para filtrar operaciones liquidadas en rango
+  private filterOperacionesLiquidadasInRange(operaciones: any[]): any[] {
+    return operaciones.filter(op =>
+      this.isOperacionInDateRange(op, 'fechaLiquidacion', this.topStatsStartMonth, this.topStatsEndMonth)
+    );
+  }
+
+  // Método auxiliar para filtrar operaciones aprobadas en rango
+  private filterOperacionesAprobadasInRange(operaciones: any[]): any[] {
+    return operaciones.filter(op =>
+      this.isOperacionInDateRange(op, 'fechaAprobacion', this.topStatsStartMonth, this.topStatsEndMonth)
+    );
   }
 
   calculateRoleSpecificStats(): void {
@@ -677,31 +735,38 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   calculateAdminSpecificStats(): void {
-    // Estadísticas por canal
+    // Estadísticas por canal (usando fechas específicas para el filtro)
     this.canalStats = this.canales.map(canal => {
       const operacionesCanal = this.operaciones.filter(op => op.canalId === canal.id);
-      const operacionesLiquidadas = operacionesCanal.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = this.filterOperacionesLiquidadasInRange(operacionesCanal);
 
       return {
         nombre: canal.nombreFantasia,
         totalOperaciones: operacionesCanal.length,
         operacionesLiquidadas: operacionesLiquidadas.length,
         montoTotal: operacionesCanal.reduce((total, op) => total + op.monto, 0),
-        montoLiquidado: operacionesLiquidadas.reduce((total, op) => total + op.monto, 0)
+        montoLiquidado: operacionesLiquidadas.reduce((total, op) => {
+          // Usar montoAprobado si existe, sino monto original
+          const monto = op.montoAprobado || op.monto || 0;
+          return total + monto;
+        }, 0)
       };
     }).sort((a, b) => b.totalOperaciones - a.totalOperaciones);
 
-    // Estadísticas por plan
+    // Estadísticas por plan (usando fechas específicas)
     this.planesStats = this.planes.map(plan => {
       const operacionesPlan = this.operaciones.filter(op => op.planId === plan.id);
-      const operacionesLiquidadas = operacionesPlan.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = this.filterOperacionesLiquidadasInRange(operacionesPlan);
 
       return {
         nombre: plan.nombre,
         totalOperaciones: operacionesPlan.length,
         operacionesLiquidadas: operacionesLiquidadas.length,
         montoTotal: operacionesPlan.reduce((total, op) => total + op.monto, 0),
-        montoLiquidado: operacionesLiquidadas.reduce((total, op) => total + op.monto, 0)
+        montoLiquidado: operacionesLiquidadas.reduce((total, op) => {
+          const monto = op.montoAprobado || op.monto || 0;
+          return total + monto;
+        }, 0)
       };
     }).sort((a, b) => b.totalOperaciones - a.totalOperaciones);
 
@@ -941,57 +1006,40 @@ export class DashboardWelcomeComponent implements OnInit {
   groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[], aprobadas: number[], fullData: any[]} {
     // Arreglo con todos los meses
     const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    // Obtener fecha actual
     const fechaActual = new Date();
     const mesActual = fechaActual.getMonth();
     const anioActual = fechaActual.getFullYear();
-
-    // Fecha de inicio de la aplicación: Abril 2025
     const mesInicial = 3; // Abril (índice 3)
-    const anioInicial = 2025; // Año 2025
+    const anioInicial = 2025;
 
-    // Arrays para almacenar los datos
     const mesesMostrados: string[] = [];
     const totales: number[] = [];
     const liquidadas: number[] = [];
     const aprobadas: number[] = [];
     const fullData: any[] = [];
 
+    // Helper para contar operaciones por mes y año usando un campo de fecha
+    const contarPorMes = (operaciones: any[], campoFecha: string, mes: number, anio: number, filtroEstado?: (op: any) => boolean) => {
+      return operaciones.filter(op => {
+        if (!op[campoFecha]) return false;
+        const fecha = new Date(op[campoFecha]);
+        if (fecha.getMonth() !== mes || fecha.getFullYear() !== anio) return false;
+        if (filtroEstado && !filtroEstado(op)) return false;
+        return true;
+      }).length;
+    };
+
     // Generar datos solo para los meses entre abril 2025 y el mes actual
-    // Si estamos en 2025 (año inicial)
     if (anioActual === anioInicial) {
-      // Solo mostrar desde abril hasta el mes actual
       for (let mes = mesInicial; mes <= mesActual; mes++) {
-        // Etiqueta del mes sin año para el año actual
         const etiquetaMes = nombresMeses[mes];
-
-        // Acumular operaciones para este mes
-        let totalOperaciones = 0;
-        let operacionesLiquidadas = 0;
-        let operacionesAprobadas = 0;
-
-        this.operaciones.forEach(op => {
-          if (op.fechaCreacion) {
-            const fechaOp = new Date(op.fechaCreacion);
-            if (fechaOp.getMonth() === mes && fechaOp.getFullYear() === anioActual) {
-              totalOperaciones++;
-
-              if (op.estado === 'LIQUIDADA') {
-                operacionesLiquidadas++;
-              }
-
-              if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado)) {
-                operacionesAprobadas++;
-              }
-            }
-          }
-        });
-
+        const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioActual);
+        const operacionesLiquidadas = contarPorMes(this.operaciones, 'fechaLiquidacion', mes, anioActual);
+        const operacionesAprobadas = contarPorMes(this.operaciones, 'fechaAprobacion', mes, anioActual);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
         aprobadas.push(operacionesAprobadas);
-
         fullData.push({
           mes: etiquetaMes,
           total: totalOperaciones,
@@ -999,40 +1047,17 @@ export class DashboardWelcomeComponent implements OnInit {
           aprobadas: operacionesAprobadas
         });
       }
-    }
-    // Si estamos en años posteriores
-    else {
-      // 1. Añadir meses del año inicial (2025) desde abril hasta diciembre
+    } else {
+      // 1. Meses de 2025 (desde abril)
       for (let mes = mesInicial; mes < 12; mes++) {
         const etiquetaMes = `${nombresMeses[mes]} '25`;
-
-        // Acumular operaciones para este mes
-        let totalOperaciones = 0;
-        let operacionesLiquidadas = 0;
-        let operacionesAprobadas = 0;
-
-        this.operaciones.forEach(op => {
-          if (op.fechaCreacion) {
-            const fechaOp = new Date(op.fechaCreacion);
-            if (fechaOp.getMonth() === mes && fechaOp.getFullYear() === anioInicial) {
-              totalOperaciones++;
-
-              if (op.estado === 'LIQUIDADA') {
-                operacionesLiquidadas++;
-              }
-
-              if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado)) {
-                operacionesAprobadas++;
-              }
-            }
-          }
-        });
-
+        const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioInicial);
+        const operacionesLiquidadas = contarPorMes(this.operaciones, 'fechaLiquidacion', mes, anioInicial);
+        const operacionesAprobadas = contarPorMes(this.operaciones, 'fechaAprobacion', mes, anioInicial);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
         aprobadas.push(operacionesAprobadas);
-
         fullData.push({
           mes: etiquetaMes,
           total: totalOperaciones,
@@ -1040,39 +1065,17 @@ export class DashboardWelcomeComponent implements OnInit {
           aprobadas: operacionesAprobadas
         });
       }
-
-      // 2. Añadir meses de años intermedios (si aplica)
+      // 2. Años completos intermedios
       for (let anio = anioInicial + 1; anio < anioActual; anio++) {
         for (let mes = 0; mes < 12; mes++) {
           const etiquetaMes = `${nombresMeses[mes]} '${anio.toString().slice(-2)}`;
-
-          // Acumular operaciones para este mes
-          let totalOperaciones = 0;
-          let operacionesLiquidadas = 0;
-          let operacionesAprobadas = 0;
-
-          this.operaciones.forEach(op => {
-            if (op.fechaCreacion) {
-              const fechaOp = new Date(op.fechaCreacion);
-              if (fechaOp.getMonth() === mes && fechaOp.getFullYear() === anio) {
-                totalOperaciones++;
-
-                if (op.estado === 'LIQUIDADA') {
-                  operacionesLiquidadas++;
-                }
-
-                if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado)) {
-                  operacionesAprobadas++;
-                }
-              }
-            }
-          });
-
+          const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anio);
+          const operacionesLiquidadas = contarPorMes(this.operaciones, 'fechaLiquidacion', mes, anio);
+          const operacionesAprobadas = contarPorMes(this.operaciones, 'fechaAprobacion', mes, anio);
           mesesMostrados.push(etiquetaMes);
           totales.push(totalOperaciones);
           liquidadas.push(operacionesLiquidadas);
           aprobadas.push(operacionesAprobadas);
-
           fullData.push({
             mes: etiquetaMes,
             total: totalOperaciones,
@@ -1081,39 +1084,16 @@ export class DashboardWelcomeComponent implements OnInit {
           });
         }
       }
-
-      // 3. Añadir meses del año actual hasta el mes actual
+      // 3. Meses del año actual hasta el mes actual
       for (let mes = 0; mes <= mesActual; mes++) {
-        // Para el año actual no se muestra el año en la etiqueta
         const etiquetaMes = nombresMeses[mes];
-
-        // Acumular operaciones para este mes
-        let totalOperaciones = 0;
-        let operacionesLiquidadas = 0;
-        let operacionesAprobadas = 0;
-
-        this.operaciones.forEach(op => {
-          if (op.fechaCreacion) {
-            const fechaOp = new Date(op.fechaCreacion);
-            if (fechaOp.getMonth() === mes && fechaOp.getFullYear() === anioActual) {
-              totalOperaciones++;
-
-              if (op.estado === 'LIQUIDADA') {
-                operacionesLiquidadas++;
-              }
-
-              if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado)) {
-                operacionesAprobadas++;
-              }
-            }
-          }
-        });
-
+        const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioActual);
+        const operacionesLiquidadas = contarPorMes(this.operaciones, 'fechaLiquidacion', mes, anioActual);
+        const operacionesAprobadas = contarPorMes(this.operaciones, 'fechaAprobacion', mes, anioActual);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
         aprobadas.push(operacionesAprobadas);
-
         fullData.push({
           mes: etiquetaMes,
           total: totalOperaciones,
@@ -1125,14 +1105,12 @@ export class DashboardWelcomeComponent implements OnInit {
 
     // Si no hay datos, asegurar que al menos tengamos abril y mayo del año actual
     if (mesesMostrados.length === 0) {
-      // Si estamos en 2025 (año inicial)
       if (anioActual === anioInicial) {
         for (let mes = mesInicial; mes <= mesActual; mes++) {
           mesesMostrados.push(nombresMeses[mes]);
           totales.push(0);
           liquidadas.push(0);
           aprobadas.push(0);
-
           fullData.push({
             mes: nombresMeses[mes],
             total: 0,
@@ -1141,15 +1119,12 @@ export class DashboardWelcomeComponent implements OnInit {
           });
         }
       } else {
-        // Si estamos en años posteriores, añadir todos los meses desde abril 2025
-        // Meses de 2025 (desde abril)
         for (let mes = mesInicial; mes < 12; mes++) {
           const etiquetaMes = `${nombresMeses[mes]} '25`;
           mesesMostrados.push(etiquetaMes);
           totales.push(0);
           liquidadas.push(0);
           aprobadas.push(0);
-
           fullData.push({
             mes: etiquetaMes,
             total: 0,
@@ -1157,8 +1132,6 @@ export class DashboardWelcomeComponent implements OnInit {
             aprobadas: 0
           });
         }
-
-        // Años completos intermedios
         for (let anio = anioInicial + 1; anio < anioActual; anio++) {
           for (let mes = 0; mes < 12; mes++) {
             const etiquetaMes = `${nombresMeses[mes]} '${anio.toString().slice(-2)}`;
@@ -1166,7 +1139,6 @@ export class DashboardWelcomeComponent implements OnInit {
             totales.push(0);
             liquidadas.push(0);
             aprobadas.push(0);
-
             fullData.push({
               mes: etiquetaMes,
               total: 0,
@@ -1175,14 +1147,11 @@ export class DashboardWelcomeComponent implements OnInit {
             });
           }
         }
-
-        // Meses del año actual
         for (let mes = 0; mes <= mesActual; mes++) {
           mesesMostrados.push(nombresMeses[mes]);
           totales.push(0);
           liquidadas.push(0);
           aprobadas.push(0);
-
           fullData.push({
             mes: nombresMeses[mes],
             total: 0,
