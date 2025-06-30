@@ -11,6 +11,7 @@ import { ClienteService, Cliente } from '../../../core/services/cliente.service'
 import { CanalService, Canal } from '../../../core/services/canal.service';
 import { SubcanalService, Subcanal } from '../../../core/services/subcanal.service';
 import { UsuarioService, UsuarioDto } from '../../../core/services/usuario.service';
+import { RolType } from '../../../core/models/usuario.model';
 import { PlanService, Plan } from '../../../core/services/plan.service';
 
 interface FiltrosReporte {
@@ -70,7 +71,6 @@ interface OperacionCompleta extends Operacion {
                 <label for="estado">Estado:</label>
                 <select id="estado" [(ngModel)]="filtros.estado" class="form-control">
                   <option value="">Todos los estados</option>
-                  <option value="INGRESADA">Ingresada</option>
                   <option value="EN ANALISIS">En análisis</option>
                   <option value="ANALISIS BCO">Análisis BCO</option>
                   <option value="APROBADO DEF">Aprobado definitivo</option>
@@ -461,7 +461,7 @@ export class ReporteOperacionesComponent implements OnInit {
 
     forkJoin({
       canales: this.canalService.getCanales().pipe(catchError(() => of([]))),
-      vendors: this.usuarioService.getUsuariosPorRol(4).pipe(catchError(() => of([]))), // RolType.Vendor = 4
+      vendors: this.usuarioService.getUsuariosPorRol(RolType.Vendor).pipe(catchError(() => of([]))),
       planes: this.planService.getPlanes().pipe(catchError(() => of([])))
     }).pipe(
       finalize(() => {
@@ -482,7 +482,7 @@ export class ReporteOperacionesComponent implements OnInit {
 
   buscarOperaciones() {
     this.cargando = true;
-    this.mensajeCarga = 'Buscando operaciones...';
+    this.mensajeCarga = 'Cargando reporte...';
     this.error = null;
     this.operacionesFiltradas = [];
 
@@ -506,6 +506,7 @@ export class ReporteOperacionesComponent implements OnInit {
 
     if (operacionesFiltradas.length === 0) {
       this.operacionesFiltradas = [];
+      this.error = 'No se encontraron operaciones, probar otros filtros';
       return;
     }
 
@@ -519,17 +520,21 @@ export class ReporteOperacionesComponent implements OnInit {
   aplicarFiltros(operacion: Operacion): boolean {
     // Filtro por fecha
     if (this.filtros.fechaDesde || this.filtros.fechaHasta) {
-      const fechaOp = new Date(operacion.fechaCreacion || '');
+      if (!operacion.fechaCreacion) return false;
+      
+      // Crear una fecha en timezone local y extraer solo la parte de fecha
+      const fechaOp = new Date(operacion.fechaCreacion);
+      const year = fechaOp.getFullYear();
+      const month = String(fechaOp.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaOp.getDate()).padStart(2, '0');
+      const fechaOpStr = `${year}-${month}-${day}`;
 
       if (this.filtros.fechaDesde) {
-        const fechaDesde = new Date(this.filtros.fechaDesde);
-        if (fechaOp < fechaDesde) return false;
+        if (fechaOpStr < this.filtros.fechaDesde) return false;
       }
 
       if (this.filtros.fechaHasta) {
-        const fechaHasta = new Date(this.filtros.fechaHasta);
-        fechaHasta.setHours(23, 59, 59, 999); // Final del día
-        if (fechaOp > fechaHasta) return false;
+        if (fechaOpStr > this.filtros.fechaHasta) return false;
       }
     }
 
@@ -538,13 +543,13 @@ export class ReporteOperacionesComponent implements OnInit {
       return false;
     }
 
-    // Filtro por canal
-    if (this.filtros.canalId && operacion.canalId !== this.filtros.canalId) {
+    // Filtro por canal - convertir a número para comparación
+    if (this.filtros.canalId && Number(operacion.canalId) !== Number(this.filtros.canalId)) {
       return false;
     }
 
-    // Filtro por vendor
-    if (this.filtros.vendorId && operacion.vendedorId !== this.filtros.vendorId) {
+    // Filtro por vendor - usar vendedorId, no vendorId
+    if (this.filtros.vendorId && Number(operacion.vendedorId) !== Number(this.filtros.vendorId)) {
       return false;
     }
 

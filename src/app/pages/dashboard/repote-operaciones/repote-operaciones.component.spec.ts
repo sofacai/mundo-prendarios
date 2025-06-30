@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { RepoteOperacionesComponent } from './repote-operaciones.component';
+import { ReporteOperacionesComponent } from './repote-operaciones.component';
 
 describe('RepoteOperacionesComponent', () => {
-  let component: RepoteOperacionesComponent;
-  let fixture: ComponentFixture<RepoteOperacionesComponent>;
+  let component: ReporteOperacionesComponent;
+  let fixture: ComponentFixture<ReporteOperacionesComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [RepoteOperacionesComponent],
+      imports: [ReporteOperacionesComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RepoteOperacionesComponent);
+    fixture = TestBed.createComponent(ReporteOperacionesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
