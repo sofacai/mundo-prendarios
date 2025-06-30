@@ -164,20 +164,20 @@
                     <span *ngIf="!operacion.urlAprobadoDefinitivo">Pendiente</span>
                   </div>
                 </div>
-                
+
                 <!-- Fechas administrativas - Solo para admin -->
                 <div *ngIf="isAdmin()" class="detail-row">
                   <div class="detail-label">Fecha aprobación:</div>
                   <div class="detail-value detail-value-with-actions">
                     <span>{{ operacion.fechaAprobacion ? formatDate(operacion.fechaAprobacion) : 'No establecida' }}</span>
                     <div class="admin-actions">
-                      <button class="btn-action btn-edit me-1" 
-                              title="Editar fecha de aprobación" 
+                      <button class="btn-action btn-edit me-1"
+                              title="Editar fecha de aprobación"
                               (click)="editarFechaAprobacion()">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button *ngIf="operacion.fechaAprobacion" 
-                              class="btn-action btn-remove" 
+                      <button *ngIf="operacion.fechaAprobacion"
+                              class="btn-action btn-remove"
                               title="Quitar fecha de aprobación"
                               (click)="quitarFechaAprobacion()">
                         <i class="bi bi-x"></i>
@@ -185,19 +185,19 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div *ngIf="isAdmin()" class="detail-row">
                   <div class="detail-label">Fecha liquidación:</div>
                   <div class="detail-value detail-value-with-actions">
                     <span>{{ operacion.fechaLiquidacion ? formatDate(operacion.fechaLiquidacion) : 'No establecida' }}</span>
                     <div class="admin-actions">
-                      <button class="btn-action btn-edit me-1" 
-                              title="Editar fecha de liquidación" 
+                      <button class="btn-action btn-edit me-1"
+                              title="Editar fecha de liquidación"
                               (click)="editarFechaLiquidacion()">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button *ngIf="operacion.fechaLiquidacion" 
-                              class="btn-action btn-remove" 
+                      <button *ngIf="operacion.fechaLiquidacion"
+                              class="btn-action btn-remove"
                               title="Quitar fecha de liquidación"
                               (click)="quitarFechaLiquidacion()">
                         <i class="bi bi-x"></i>
@@ -262,10 +262,10 @@
           <div class="modal-body">
             <div class="form-group">
               <label for="fechaAprobacion" class="form-label">Seleccionar fecha y hora:</label>
-              <input 
-                type="datetime-local" 
+              <input
+                type="datetime-local"
                 id="fechaAprobacion"
-                class="form-control" 
+                class="form-control"
                 [(ngModel)]="fechaAprobacionInput"
                 placeholder="Seleccionar fecha y hora">
             </div>
@@ -287,10 +287,10 @@
           <div class="modal-body">
             <div class="form-group">
               <label for="fechaLiquidacion" class="form-label">Seleccionar fecha y hora:</label>
-              <input 
-                type="datetime-local" 
+              <input
+                type="datetime-local"
                 id="fechaLiquidacion"
-                class="form-control" 
+                class="form-control"
                 [(ngModel)]="fechaLiquidacionInput"
                 placeholder="Seleccionar fecha y hora">
             </div>
@@ -298,6 +298,72 @@
           <div class="form-footer">
             <button type="button" class="btn btn-secondary me-2" (click)="cerrarModalFechaLiquidacion()">Cancelar</button>
             <button type="button" class="btn btn-primary" (click)="guardarFechaLiquidacion()">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal personalizado para mensaje de éxito -->
+      <div *ngIf="showMensajeExito" class="custom-modal-backdrop" (click)="cerrarModalMensajeExito($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Éxito</h3>
+            <button class="btn-close" (click)="cerrarModalMensajeExito()"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ mensajeExito }}</p>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-primary" (click)="cerrarModalMensajeExito()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal personalizado para mensaje de error -->
+      <div *ngIf="showMensajeError" class="custom-modal-backdrop" (click)="cerrarModalMensajeError($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Error</h3>
+            <button class="btn-close" (click)="cerrarModalMensajeError()"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ mensajeError }}</p>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-primary" (click)="cerrarModalMensajeError()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal personalizado para confirmar quitar fecha de aprobación -->
+      <div *ngIf="showConfirmarQuitarFechaAprobacion" class="custom-modal-backdrop" (click)="cerrarModalConfirmarQuitarFechaAprobacion($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Confirmar</h3>
+            <button class="btn-close" (click)="cerrarModalConfirmarQuitarFechaAprobacion()"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Está seguro que desea quitar la fecha de aprobación?</p>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary me-2" (click)="cerrarModalConfirmarQuitarFechaAprobacion()">Cancelar</button>
+            <button type="button" class="btn btn-danger" (click)="confirmarQuitarFechaAprobacion()">Quitar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal personalizado para confirmar quitar fecha de liquidación -->
+      <div *ngIf="showConfirmarQuitarFechaLiquidacion" class="custom-modal-backdrop" (click)="cerrarModalConfirmarQuitarFechaLiquidacion($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Confirmar</h3>
+            <button class="btn-close" (click)="cerrarModalConfirmarQuitarFechaLiquidacion()"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Está seguro que desea quitar la fecha de liquidación?</p>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary me-2" (click)="cerrarModalConfirmarQuitarFechaLiquidacion()">Cancelar</button>
+            <button type="button" class="btn btn-danger" (click)="confirmarQuitarFechaLiquidacion()">Quitar</button>
           </div>
         </div>
       </div>

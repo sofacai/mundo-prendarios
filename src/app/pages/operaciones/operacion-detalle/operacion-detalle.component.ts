@@ -43,7 +43,7 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   canal: Canal | null = null;
   subcanal: Subcanal | null = null;
   showObservacionesModal = false;
-  
+
   // Modals de fecha
   showEditarFechaAprobacionModal = false;
   showEditarFechaLiquidacionModal = false;
@@ -60,6 +60,14 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
 
   loading = true;
   error: string | null = null;
+
+  // --- MODALES PERSONALIZADOS ---
+  showMensajeExito = false;
+  showMensajeError = false;
+  showConfirmarQuitarFechaAprobacion = false;
+  showConfirmarQuitarFechaLiquidacion = false;
+  mensajeExito = '';
+  mensajeError = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -302,47 +310,33 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   }
 
   // Quitar fecha de aprobación
-  async quitarFechaAprobacion() {
-    const alert = await this.alertController.create({
-      header: 'Confirmar',
-      message: '¿Está seguro que desea quitar la fecha de aprobación?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Quitar',
-          handler: () => {
-            this.actualizarFechaAprobacion(null);
-          }
-        }
-      ]
-    });
+  quitarFechaAprobacion() {
+    this.abrirModalConfirmarQuitarFechaAprobacion();
+  }
 
-    await alert.present();
+  // Lógica original de quitar fecha de aprobación (solo ejecutar tras confirmar)
+  private ejecutarQuitarFechaAprobacion() {
+    this.actualizarFechaAprobacion(null);
   }
 
   // Quitar fecha de liquidación
-  async quitarFechaLiquidacion() {
-    const alert = await this.alertController.create({
-      header: 'Confirmar',
-      message: '¿Está seguro que desea quitar la fecha de liquidación?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Quitar',
-          handler: () => {
-            this.actualizarFechaLiquidacion(null);
-          }
-        }
-      ]
-    });
+  quitarFechaLiquidacion() {
+    this.abrirModalConfirmarQuitarFechaLiquidacion();
+  }
 
-    await alert.present();
+  // Confirmar quitar fecha de liquidación (llamado desde el modal personalizado)
+  confirmarQuitarFechaLiquidacion() {
+    this.showConfirmarQuitarFechaLiquidacion = false;
+    this.ejecutarQuitarFechaLiquidacion();
+  }
+
+  abrirModalConfirmarQuitarFechaLiquidacion() {
+    this.showConfirmarQuitarFechaLiquidacion = true;
+  }
+  cerrarModalConfirmarQuitarFechaLiquidacion(event?: MouseEvent) {
+    if (!event || event.target === event.currentTarget) {
+      this.showConfirmarQuitarFechaLiquidacion = false;
+    }
   }
 
   // Cerrar modals de fecha
@@ -386,10 +380,10 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     this.operacionService.actualizarFechaAprobacion(this.operacionId, fecha).subscribe({
       next: (operacion) => {
         this.operacion = operacion;
-        this.mostrarMensajeExito('Fecha de aprobación actualizada correctamente');
+        this.mostrarmensajeExito('Fecha de aprobación actualizada correctamente');
       },
       error: (err) => {
-        this.mostrarMensajeError('Error al actualizar la fecha de aprobación');
+        this.mostrarmensajeError('Error al actualizar la fecha de aprobación');
       }
     });
   }
@@ -399,10 +393,10 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     this.operacionService.actualizarFechaLiquidacion(this.operacionId, fecha).subscribe({
       next: (operacion) => {
         this.operacion = operacion;
-        this.mostrarMensajeExito('Fecha de liquidación actualizada correctamente');
+        this.mostrarmensajeExito('Fecha de liquidación actualizada correctamente');
       },
       error: (err) => {
-        this.mostrarMensajeError('Error al actualizar la fecha de liquidación');
+        this.mostrarmensajeError('Error al actualizar la fecha de liquidación');
       }
     });
   }
@@ -431,5 +425,45 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
       buttons: ['OK']
     });
     await alert.present();
+  }
+
+  mostrarmensajeExito(mensaje: string) {
+    this.mensajeExito = mensaje;
+    this.showMensajeExito = true;
+  }
+
+  mostrarmensajeError(mensaje: string) {
+    this.mensajeError = mensaje;
+    this.showMensajeError = true;
+  }
+
+  cerrarModalMensajeExito(event?: MouseEvent) {
+    if (!event || event.target === event.currentTarget) {
+      this.showMensajeExito = false;
+    }
+  }
+  cerrarModalMensajeError(event?: MouseEvent) {
+    if (!event || event.target === event.currentTarget) {
+      this.showMensajeError = false;
+    }
+  }
+
+  // Confirmar quitar fecha de aprobación
+  abrirModalConfirmarQuitarFechaAprobacion() {
+    this.showConfirmarQuitarFechaAprobacion = true;
+  }
+  cerrarModalConfirmarQuitarFechaAprobacion(event?: MouseEvent) {
+    if (!event || event.target === event.currentTarget) {
+      this.showConfirmarQuitarFechaAprobacion = false;
+    }
+  }
+  confirmarQuitarFechaAprobacion() {
+    this.showConfirmarQuitarFechaAprobacion = false;
+    this.ejecutarQuitarFechaAprobacion();
+  }
+
+  // Corregir llamada a this.ejecutarQuitarFechaLiquidacion (asegurar que exista)
+  private ejecutarQuitarFechaLiquidacion() {
+    this.actualizarFechaLiquidacion(null);
   }
 }

@@ -523,79 +523,134 @@
   opacity: 1;
 }
 
+/* MODALES PERSONALIZADOS (estilos unificados para editar y confirmar) */
 .custom-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
   z-index: 1000;
   display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  padding: 20px;
 }
-
-.custom-modal-content {
+.custom-modal-content.modal-container {
   background: #fff;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  min-width: 320px;
+  max-width: 95vw;
+  z-index: 1010;
+  text-align: center;
+  position: relative;
 }
-
-.modal-header {
+.custom-modal-content .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eef0f2;
+  justify-content: center;
+  position: relative;
 }
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
+.custom-modal-content .modal-header h3 {
+  margin: 0 auto 1.2rem auto;
+  font-size: 1.35rem;
   font-weight: 600;
 }
-
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-  flex-grow: 1;
-}
-
-.form-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid #eef0f2;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 500;
-  min-width: 100px;
+.custom-modal-content .modal-header .btn-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #888;
   cursor: pointer;
 }
-
-.btn-primary {
-  background-color: #009ef7;
-  color: white;
+.custom-modal-content .modal-header .btn-close:hover {
+  color: #e74c3c;
+}
+.custom-modal-content .modal-body {
+  margin-bottom: 1.5rem;
+}
+.custom-modal-content .modal-body p {
+  color: #333;
+  margin-bottom: 0;
+}
+.custom-modal-content .form-footer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+.custom-modal-content .btn {
+  min-width: 100px;
+  border-radius: 8px;
   border: none;
+  padding: 0.7rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.custom-modal-content .btn-primary {
+  background: #00aaff;
+  color: #fff;
+}
+.custom-modal-content .btn-primary:hover {
+  background: #0077b6;
+}
+.custom-modal-content .btn-secondary {
+  background: #f5f6fa;
+  color: #4a4a4a;
+  border: 1px solid #e0e0e0;
+}
+.custom-modal-content .btn-secondary:hover {
+  background: #ececec;
+}
+.custom-modal-content .btn-danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.custom-modal-content .btn-danger:hover {
+  background: #c0392b;
+}
+.custom-modal-content .form-group {
+  margin-bottom: 1.2rem;
+}
+.custom-modal-content .form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
 }
 
-.btn-primary:hover {
-  background-color: #008bd9;
+// Unificar estilos de .form-control para evitar duplicidad y conflictos
+.custom-modal-content .form-control,
+.form-control {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #3f4254;
+  background-color: #ffffff;
+  background-image: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.custom-modal-content .form-control:focus,
+.form-control:focus {
+  color: #3f4254;
+  background-color: #ffffff;
+  border-color: #009ef7;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.15);
+}
+.custom-modal-content .form-control::placeholder,
+.form-control::placeholder {
+  color: #a1a5b7;
+  opacity: 1;
 }
 
 /* ===============================
