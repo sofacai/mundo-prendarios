@@ -10,8 +10,9 @@
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
-  overflow-y: auto; /* Agregar esta línea para permitir scroll */
-  max-height: 100vh; /* Limitar altura a la ventana visible */
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .full-width {
@@ -23,6 +24,10 @@
   border-radius: 1rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -91,11 +96,8 @@
   padding: 0.5rem 1.25rem 1.5rem 1.25rem;
   position: relative;
   z-index: 10;
-
-  @media (max-width: 991.98px) {
-    margin-bottom:190px
-  }
-
+  flex: 1;
+  overflow-y: auto;
 }
 
 .title {
@@ -213,10 +215,15 @@
 }
 
 /* Botones */
-.button-group {
+/* Estilos para botones fijos en la parte inferior */
+.form-footer {
   display: flex;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  background-color: white;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .btn {

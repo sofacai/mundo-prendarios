@@ -42,7 +42,7 @@ export class Step1MontoComponent implements OnInit {
   isAuto0km: boolean = true;
   autoYear: number = new Date().getFullYear(); // Año actual por defecto
   currentYear: number = new Date().getFullYear(); // Para limitar el input de año
-  antiguedadGrupo: AntiguedadGrupo = AntiguedadGrupo.A; // Por defecto grupo A (0km-10 años)
+  antiguedadGrupo: AntiguedadGrupo = AntiguedadGrupo.A; // Por defecto grupo A (0km-8 años)
 
   // Planes fijos para las pestañas
   planCuotasFijasId: number = 1;
@@ -252,8 +252,8 @@ cargarPlazosDisponibles() {
   }
 
   esPlazoActivo(plazo: number): boolean {
-    // Si el plazo es 60 y el auto NO es 2024 o 2025, debe ocultarse
-    if (plazo === 60 && (!this.isAuto0km && this.autoYear !== 2024 && this.autoYear !== 2025)) {
+    // Si el plazo es 60 y el auto NO está en el grupo A (0km-8 años), debe ocultarse
+    if (plazo === 60 && this.antiguedadGrupo !== AntiguedadGrupo.A) {
       return false;
     }
 
@@ -348,11 +348,11 @@ cargarPlazosDisponibles() {
       const antiguedadAnios = currentYear - this.autoYear;
 
       // Asignar grupo según la antigüedad
-      if (antiguedadAnios <= 10) { // 0-10 años (2015-2025)
+      if (antiguedadAnios <= 8) { // 0-8 años (2017-2025)
         this.antiguedadGrupo = AntiguedadGrupo.A;
-      } else if (antiguedadAnios <= 12) { // 11-12 años (2013-2014)
+      } else if (antiguedadAnios <= 10) { // 9-10 años (2015-2016)
         this.antiguedadGrupo = AntiguedadGrupo.B;
-      } else if (antiguedadAnios <= 15) { // 13-15 años (2010-2012)
+      } else if (antiguedadAnios <= 15) { // 11-15 años (2010-2014)
         this.antiguedadGrupo = AntiguedadGrupo.C;
       }
     }
@@ -361,8 +361,8 @@ cargarPlazosDisponibles() {
     // Recargar los plazos disponibles según la nueva antigüedad
     this.cargarPlazosDisponibles();
 
-    // Si el plazo actual es 60 y el auto no es 2024/2025 ni es 0km, seleccionar otro plazo
-    if (this.plazo === 60 && !this.isAuto0km && this.autoYear !== 2024 && this.autoYear !== 2025) {
+    // Si el plazo actual es 60 y el auto no está en el grupo A, seleccionar otro plazo
+    if (this.plazo === 60 && this.antiguedadGrupo !== AntiguedadGrupo.A) {
       // Buscar el plazo más largo disponible que no sea 60
       const plazosDisponiblesOrdenados = [...this.plazosOrdenados].filter(p => p !== 60);
       if (plazosDisponiblesOrdenados.length > 0) {
@@ -450,41 +450,13 @@ cargarPlazosDisponibles() {
       // Obtener la tasa específica según antigüedad y plazo
       const tasaAnual = this.obtenerTasaEspecifica(planId, plazo);
 
-      // Verificar si usamos sistema alemán o francés
-      const esSistemaAleman = this.cotizadorService.esSistemaAleman(planId);
-
-      if (esSistemaAleman) {
-        // Usar el método original para sistema alemán
-        return this.cotizadorService.calcularCuota(
-          this.monto,
-          plazo,
-          tasaAnual,
-          this.canalGastos
-        );
-      } else {
-        // Porcentaje de gastos
-        const porcentajeGastos = this.canalGastos.reduce((total, gasto) => total + gasto.porcentaje, 0);
-
-        // Monto con gastos
-        const montoConGastos = this.monto * (1 + porcentajeGastos / 100);
-
-        // Tasa mensual (TNA/12)
-        const tasaMensual = tasaAnual / 100 / 12;
-
-        // Fórmula de amortización francesa directa (sin separar numerador/denominador)
-        // C = P * [i(1+i)^n] / [(1+i)^n - 1]
-        const factor = Math.pow(1 + tasaMensual, plazo);
-        const cuotaPura = montoConGastos * (tasaMensual * factor) / (factor - 1);
-
-        // CORRECCIÓN: Ya no calculamos IVA separado para no distorsionar el resultado
-        // La TNA ya incluye todo
-        const cuotaFinal = cuotaPura;
-
-
-
-        // Redondear al valor entero más cercano
-        return Math.round(cuotaFinal);
-      }
+      // USAR EXACTAMENTE EL MISMO MÉTODO PARA AMBOS PLANES
+      return this.cotizadorService.calcularCuota(
+        this.monto,
+        plazo,
+        tasaAnual,
+        this.canalGastos
+      );
     } catch (error) {
       return 0;
     }

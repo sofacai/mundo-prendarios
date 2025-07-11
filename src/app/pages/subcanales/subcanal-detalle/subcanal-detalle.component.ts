@@ -219,10 +219,8 @@ errorAdminCanal: string | null = null;
 
         // Cargar el admin del canal solo si existe adminCanalId y es mayor que 0
         if (subcanal.adminCanalId && subcanal.adminCanalId > 0) {
-          console.log('Cargando adminCanal con ID:', subcanal.adminCanalId);
           this.cargarAdminCanal(subcanal.adminCanalId);
         } else {
-          console.log('No hay adminCanal asignado');
           this.adminCanal = null;
           this.loadingAdminCanal = false;
         }

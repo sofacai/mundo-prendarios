@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { SubcanalInfo } from './cotizador.service';
 
 export enum AntiguedadGrupo {
-  A = 'A', // 0km a 10 años
-  B = 'B', // 11 a 12 años
-  C = 'C'  // 13 a 15 años
+  A = 'A', // 0km a 8 años
+  B = 'B', // 9 a 10 años
+  C = 'C'  // 11 a 15 años
 }
 
 @Injectable({

@@ -791,7 +791,6 @@ export class ReporteOperacionesComponent implements OnInit {
   }
 
   cerrar() {
-    console.log('Emitiendo evento de cierre...'); // Para debug
     // Resetear datos antes de cerrar
     this.operacionesFiltradas = [];
     this.error = null;

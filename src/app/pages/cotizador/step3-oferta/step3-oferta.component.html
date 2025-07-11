@@ -94,24 +94,20 @@
           </div>
         </div>
 
-        <!-- Acciones -->
-        <div class="actions">
-          <button class="btn-whatsapp" (click)="enviarPorWhatsapp()">
-            <ion-icon name="logo-whatsapp"></ion-icon>
-            <span>Enviar por WhatsApp</span>
-          </button>
-
-          <div class="secondary-actions">
-            <button class="btn-secondary" (click)="reiniciarCotizador()">Nueva oferta</button>
-          </div>
-        </div>
-
         <!-- Disclaimer -->
         <div class="disclaimer">
           <p>*Los montos son estimativos y están sujetos a evaluación crediticia.</p>
           <p>**Las cuotas no incluyen el seguro del auto.</p>
         </div>
       </div>
+
+    <!-- Botones fijos en la parte inferior -->
+    <div class="form-footer">
+      <button class="btn btn-secondary" (click)="reiniciarCotizador()">Nueva oferta</button>
+      <button class="btn btn-primary" (click)="enviarPorWhatsapp()">
+        <ion-icon name="logo-whatsapp"></ion-icon>
+        <span>Enviar por WhatsApp</span>
+      </button>
     </div>
   </div>
 </div>

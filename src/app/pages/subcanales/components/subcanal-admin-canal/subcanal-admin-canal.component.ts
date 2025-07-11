@@ -78,7 +78,6 @@ export class SubcanalAdminCanalComponent implements OnInit {
     this.errorMessage = null;
   }
   toggleAdminEstado(): void {
-    console.log('Click en toggle, adminCanal:', this.adminCanal);
 
     if (!this.isAdmin || !this.adminCanal) return;
 

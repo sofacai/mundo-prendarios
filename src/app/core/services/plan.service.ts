@@ -8,9 +8,9 @@ export interface PlanTasa {
   id: number;
   planId: number;
   plazo: number;
-  tasaA: number; // Para autos 0-10 años
-  tasaB: number; // Para autos 11-12 años
-  tasaC: number; // Para autos 13+ años
+  tasaA: number; // Para autos 0-8 años
+  tasaB: number; // Para autos 9-10 años
+  tasaC: number; // Para autos 11+ años
   activo: boolean; // Nuevo campo para activar/desactivar plazos
 }
 

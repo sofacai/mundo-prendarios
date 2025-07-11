@@ -22,7 +22,7 @@
     <div class="content">
       <h2 class="title">Datos del Cliente</h2>
 
-      <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
+      <form id="clientForm" [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
         <!-- Nombre y Apellido -->
         <div class="form-row">
           <div class="form-group">
@@ -213,12 +213,13 @@
           </div>
         </div>
 
-        <!-- Botones -->
-        <div class="button-group">
-          <button type="button" class="btn btn-secondary" (click)="onVolver()">VOLVER</button>
-          <button type="submit" class="btn btn-primary">CONTINUAR</button>
-        </div>
       </form>
+    </div>
+
+    <!-- Botones fijos en la parte inferior -->
+    <div class="form-footer">
+      <button type="button" class="btn btn-secondary" (click)="onVolver()">VOLVER</button>
+      <button type="submit" class="btn btn-primary" form="clientForm">CONTINUAR</button>
     </div>
   </div>
 </div>

@@ -848,14 +848,21 @@ export class WizardContainerComponent implements OnInit {
               tasaAplicada = tasa.tasaC;
             }
 
-            // Calcular cuota con la tasa específica
+            // Calcular cuota con la tasa específica usando el mismo método que step1
+            const porcentajeGastos = this.gastosSeleccionados.reduce((total: number, gasto: any) => total + gasto.porcentaje, 0);
+            const montoConGastos = this.wizardData.monto! * (1 + porcentajeGastos / 100);
+            const tasaMensual = tasaAplicada / 100 / 12;
+            
+            // Fórmula francesa pura
+            const factor = Math.pow(1 + tasaMensual, this.wizardData.plazo!);
+            const cuotaBase = montoConGastos * (tasaMensual * factor) / (factor - 1);
+            
+            // IVA sobre el primer interés
+            const primerInteres = montoConGastos * tasaMensual;
+            const ivaPrimerInteres = primerInteres * 0.21;
+            let cuota = Math.round(cuotaBase + ivaPrimerInteres);
+            
             const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
-            let cuota = this.cotizadorService.calcularCuota(
-              this.wizardData.monto!,
-              this.wizardData.plazo!,
-              tasaAplicada,
-              this.gastosSeleccionados
-            );
 
             if (comisionSubcanal > 0) {
               cuota = Math.round(cuota * (1 + comisionSubcanal / 100));
@@ -873,14 +880,21 @@ export class WizardContainerComponent implements OnInit {
             };
           }),
           catchError(error => {
-            // Si hay error, usar la tasa general del plan
+            // Si hay error, usar la tasa general del plan con el mismo método de cálculo
+            const porcentajeGastos = this.gastosSeleccionados.reduce((total: number, gasto: any) => total + gasto.porcentaje, 0);
+            const montoConGastos = this.wizardData.monto! * (1 + porcentajeGastos / 100);
+            const tasaMensual = plan.tasa / 100 / 12;
+            
+            // Fórmula francesa pura
+            const factor = Math.pow(1 + tasaMensual, this.wizardData.plazo!);
+            const cuotaBase = montoConGastos * (tasaMensual * factor) / (factor - 1);
+            
+            // IVA sobre el primer interés
+            const primerInteres = montoConGastos * tasaMensual;
+            const ivaPrimerInteres = primerInteres * 0.21;
+            let cuota = Math.round(cuotaBase + ivaPrimerInteres);
+            
             const comisionSubcanal = this.subcanalSeleccionadoInfo?.subcanalComision || 0;
-            let cuota = this.cotizadorService.calcularCuota(
-              this.wizardData.monto!,
-              this.wizardData.plazo!,
-              plan.tasa,
-              this.gastosSeleccionados
-            );
 
             if (comisionSubcanal > 0) {
               cuota = Math.round(cuota * (1 + comisionSubcanal / 100));

@@ -1,6 +1,7 @@
 <!-- Modificación de vendor-selector.component.html -->
-<div class="vendor-selector-container">
-  <div class="header">
+<div class="vendor-form">
+  <div class="card">
+    <div class="header">
     <div class="header-top">
       <div class="logo">
         <img src="assets/logo.webp" alt="Logo" class="logo-image">
@@ -78,13 +79,15 @@
       </div>
     </div>
 
-    <div class="form-footer">
-      <button class="btn btn-secondary" (click)="onVolver()">Volver</button>
-      <button class="btn btn-primary"
-              [disabled]="!crearOperacionPropia && !vendorId"
-              (click)="onSeleccionarVendor()">
-        Continuar
-      </button>
-    </div>
+  </div>
+
+  <!-- Botones fijos en la parte inferior -->
+  <div class="form-footer">
+    <button class="btn btn-secondary" (click)="onVolver()">Volver</button>
+    <button class="btn btn-primary"
+            [disabled]="!crearOperacionPropia && !vendorId"
+            (click)="onSeleccionarVendor()">
+      Continuar
+    </button>
   </div>
 </div>
