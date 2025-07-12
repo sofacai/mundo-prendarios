@@ -10,9 +10,11 @@
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
-  max-height: 100vh;
+  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 
@@ -22,9 +24,9 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .header {
@@ -101,6 +103,9 @@
   z-index: 10;
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tabs {
@@ -371,7 +376,7 @@
   :host {
     display: block;
     position: relative;
-    z-index: 1; /* Menor que el sidebar pero visible */
+    z-index: 1;
   }
 
   .loan-form {
@@ -381,6 +386,8 @@
     position: relative;
     z-index: 1;
     transition: transform 0.3s ease;
+    height: 100vh;
+    min-height: 100vh;
   }
 
   /* Evitar que el componente se "caiga" cuando el sidebar está abierto */
@@ -395,7 +402,35 @@
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     position: relative;
-    z-index: 2; /* Asegurar que está sobre el overlay */
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-bottom: 150px;
+  }
+
+  .form-footer {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+  }
+
+  /* Asegurar checkbox con fondo blanco en mobile */
+  .compact-checkbox input[type="checkbox"] {
+    background-color: white !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+  }
+  
+  .compact-checkbox input[type="checkbox"]:checked {
+    background-color: #3378f6 !important;
   }
 }
 /* Estilos para el checkbox compacto */
@@ -415,6 +450,27 @@
   margin-right: 0.5rem;
   cursor: pointer;
   accent-color: #3378f6;
+  background-color: white !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  position: relative;
+}
+
+.compact-checkbox input[type="checkbox"]:checked {
+  background-color: #3378f6 !important;
+  border-color: #3378f6 !important;
+}
+
+.compact-checkbox input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
 }
 
 .compact-checkbox label {
@@ -628,4 +684,7 @@
   border-top: 1px solid #e5e7eb;
   flex-shrink: 0;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
 }

@@ -5,6 +5,11 @@
   max-width: 900px;
   margin: 0 auto;
   background-color: var(--background-color);
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 /* Estilos para los pasos del wizard */
@@ -420,5 +425,53 @@ ion-button[fill="outline"] {
   border-radius: 4px;
   font-size: 12px;
   color: #666;
+}
+
+/* Ajustes responsive para mobile */
+@media (max-width: 991px) {
+  .wizard-container {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+    height: 100vh;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .step-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .step-container .content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-bottom: 150px;
+  }
+
+  .button-container {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+    z-index: 100;
+  }
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+    z-index: 100;
+  }
 }
 
