@@ -23,8 +23,11 @@ export interface OperacionDto {
   monto: number;
   estado: string;
   fechaCreacion?: string;
+  fechaLiquidacion?: string;
   canalId?: number;
   canalNombre?: string;
+  montoAprobado?: number;
+  montoAprobadoBanco?: number;
 }
 
 interface SortState {
@@ -183,6 +186,20 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
             }
           }
 
+          let fechaLiquidacion = '';
+          if (op.fechaLiquidacion) {
+            try {
+              const fecha = new Date(op.fechaLiquidacion);
+              fechaLiquidacion = fecha.toLocaleDateString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              });
+            } catch (e) {
+              fechaLiquidacion = '';
+            }
+          }
+
           return {
             id: op.id || 0,
             nombreCliente: op.clienteNombre || nombre,
@@ -193,8 +210,11 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
             monto: op.monto || 0,
             estado: estado,
             fechaCreacion: fechaCreacion,
+            fechaLiquidacion: fechaLiquidacion,
             canalNombre: op.canalNombre || 'Sin canal',
             canalId: op.canalId,
+            montoAprobado: op.montoAprobado,
+            montoAprobadoBanco: op.montoAprobadoBanco,
           };
         });
 
@@ -406,9 +426,27 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
         return (a.monto - b.monto) * factor;
       }
 
+      if (column === 'montoAprobado') {
+        const montoA = a.montoAprobado || 0;
+        const montoB = b.montoAprobado || 0;
+        return (montoA - montoB) * factor;
+      }
+
+      if (column === 'montoAprobadoBanco') {
+        const montoA = a.montoAprobadoBanco || 0;
+        const montoB = b.montoAprobadoBanco || 0;
+        return (montoA - montoB) * factor;
+      }
+
       if (column === 'fechaCreacion') {
         const dateA = a.fechaCreacion ? new Date(a.fechaCreacion.split('/').reverse().join('-')) : new Date(0);
         const dateB = b.fechaCreacion ? new Date(b.fechaCreacion.split('/').reverse().join('-')) : new Date(0);
+        return (dateA.getTime() - dateB.getTime()) * factor;
+      }
+
+      if (column === 'fechaLiquidacion') {
+        const dateA = a.fechaLiquidacion ? new Date(a.fechaLiquidacion.split('/').reverse().join('-')) : new Date(0);
+        const dateB = b.fechaLiquidacion ? new Date(b.fechaLiquidacion.split('/').reverse().join('-')) : new Date(0);
         return (dateA.getTime() - dateB.getTime()) * factor;
       }
 
@@ -474,8 +512,18 @@ export class OperacionesListaComponent implements OnInit, OnDestroy {
     return this.operacionService.getEstadoClass(estado);
   }
 
-  formatNumber(value: number): string {
+  formatNumber(value: number | null | undefined): string {
+    if (value == null || value === undefined) {
+      return '-';
+    }
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  formatFechaLiquidacion(fecha: string | null | undefined): string {
+    if (!fecha || fecha === '') {
+      return '-';
+    }
+    return fecha;
   }
 
   private manejarAperturaModal() {

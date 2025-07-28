@@ -81,6 +81,8 @@ export class DashboardWelcomeComponent implements OnInit {
   oficialComercialStats: any[] = [];
   planesStats: any[] = [];
   montoPromedioLiquidadas: number = 0;
+  montoPromedioBancoLiquidadas: number = 0;
+  totalMontoBancoLiquidados: number = 0;
 
   // Filtros para estadísticas de Top Rendimiento
   topStatsStartMonth: number = 0;
@@ -636,48 +638,56 @@ export class DashboardWelcomeComponent implements OnInit {
     const mesActual = fechaActual.getMonth();
     const anioActual = fechaActual.getFullYear();
 
-    // Filtrar operaciones INGRESADAS del mes en curso (mantener por fechaCreacion)
-    this.operacionesDelMesActual = this.operaciones.filter(op => {
+    // 1. Op. Ingresadas: TODAS las operaciones que ingresaron en el mes (sin importar estado actual)
+    const operacionesIngresas = this.operaciones.filter(op => {
       if (op.fechaCreacion) {
         const fecha = new Date(op.fechaCreacion);
         return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
       }
       return false;
     });
+    this.totalOperaciones = operacionesIngresas.length;
 
-    // Total de operaciones ingresadas del mes
-    this.totalOperaciones = this.operacionesDelMesActual.length;
-
-    // Operaciones APROBADAS del mes (usar fechaAprobacion)
-    this.operacionesAprobadas = this.operaciones.filter(op => {
-      if (op.fechaAprobacion) {
-        const fecha = new Date(op.fechaAprobacion);
+    // 2. Op. Aprobadas: estadoDashboard = 'APROBADA' con fechaCreacion del mes actual
+    const operacionesAprobadasDelMes = this.operaciones.filter(op => {
+      if (op.estadoDashboard === 'APROBADA' && op.fechaCreacion) {
+        const fecha = new Date(op.fechaCreacion);
         return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
       }
       return false;
-    }).length;
+    });
+    this.operacionesAprobadas = operacionesAprobadasDelMes.length;
 
-    // Operaciones LIQUIDADAS del mes (usar fechaLiquidacion)
+    // 3. Op. Liquidadas: estadoDashboard = 'LIQUIDADA' con fechaLiquidacion del mes actual
     const operacionesLiquidadasDelMes = this.operaciones.filter(op => {
-      if (op.fechaLiquidacion) {
+      if (op.estadoDashboard === 'LIQUIDADA' && op.fechaLiquidacion) {
         const fecha = new Date(op.fechaLiquidacion);
         return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
       }
       return false;
     });
-
     this.operacionesLiquidadas = operacionesLiquidadasDelMes.length;
 
-    // Monto total de operaciones liquidadas del mes (usar las liquidadas del mes)
+    // 4. Monto total Op. Liquidadas: suma total de montoAprobado de las liquidadas del mes
     this.totalMontosLiquidados = operacionesLiquidadasDelMes.reduce((sum, op) => {
-      // Usar montoAprobado si existe, sino monto original
-      const monto = op.montoAprobado || op.monto || 0;
+      const monto = op.montoAprobado || 0;
       return sum + monto;
     }, 0);
 
-    // Monto promedio de operaciones liquidadas del mes
+    // Monto promedio de operaciones liquidadas del mes (montoAprobado)
     this.montoPromedioLiquidadas = operacionesLiquidadasDelMes.length > 0 ?
       this.totalMontosLiquidados / operacionesLiquidadasDelMes.length : 0;
+
+    // 5. Total y promedio de montoAprobadoBanco de operaciones liquidadas del mes
+    this.totalMontoBancoLiquidados = operacionesLiquidadasDelMes.reduce((sum, op) => {
+      const monto = op.montoAprobadoBanco || 0;
+      return sum + monto;
+    }, 0);
+    this.montoPromedioBancoLiquidadas = operacionesLiquidadasDelMes.length > 0 ?
+      this.totalMontoBancoLiquidados / operacionesLiquidadasDelMes.length : 0;
+
+    // Mantener para compatibilidad - operaciones del mes actual por fechaCreacion
+    this.operacionesDelMesActual = operacionesIngresas;
 
     // Monto promedio por operación (todas las ingresadas del mes)
     const totalMonto = this.operacionesDelMesActual.reduce((sum, op) => sum + (op.monto || 0), 0);
@@ -784,7 +794,7 @@ export class DashboardWelcomeComponent implements OnInit {
         return op.adminCanalId === admin.id;
       });
 
-      const operacionesLiquidadas = operacionesAdmin.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesAdmin.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
       return {
         nombre: `${admin.nombre} ${admin.apellido}`,
@@ -798,7 +808,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Vendor stats
     this.vendorStats = vendors.map(vendor => {
       const operacionesVendor = this.operaciones.filter(op => op.vendedorId === vendor.id);
-      const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesVendor.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
       return {
         nombre: `${vendor.nombre} ${vendor.apellido}`,
@@ -817,7 +827,7 @@ export class DashboardWelcomeComponent implements OnInit {
         return op.oficialComercialId === oficial.id;
       });
 
-      const operacionesLiquidadas = operacionesOficial.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesOficial.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
       return {
         nombre: `${oficial.nombre} ${oficial.apellido}`,
@@ -834,7 +844,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas por canal
     this.canalStats = this.canales.map(canal => {
       const operacionesCanal = this.operaciones.filter(op => op.canalId === canal.id);
-      const operacionesLiquidadas = operacionesCanal.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesCanal.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
       return {
         nombre: canal.nombreFantasia,
@@ -855,7 +865,7 @@ export class DashboardWelcomeComponent implements OnInit {
           return op.adminCanalId === admin.id;
         });
 
-        const operacionesLiquidadas = operacionesAdmin.filter(op => op.estado === 'LIQUIDADA');
+        const operacionesLiquidadas = operacionesAdmin.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
         return {
           nombre: `${admin.nombre} ${admin.apellido}`,
@@ -871,7 +881,7 @@ export class DashboardWelcomeComponent implements OnInit {
       .filter(u => u.rolId === RolType.Vendor)
       .map(vendor => {
         const operacionesVendor = this.operaciones.filter(op => op.vendedorId === vendor.id);
-        const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'LIQUIDADA');
+        const operacionesLiquidadas = operacionesVendor.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
         return {
           nombre: `${vendor.nombre} ${vendor.apellido}`,
@@ -887,7 +897,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas por subcanal
     this.subcanalStats = this.subcanales.map(subcanal => {
       const operacionesSubcanal = this.operaciones.filter(op => op.subcanalId === subcanal.id);
-      const operacionesLiquidadas = operacionesSubcanal.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesSubcanal.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
       return {
         nombre: subcanal.nombre,
@@ -901,7 +911,7 @@ export class DashboardWelcomeComponent implements OnInit {
     // Estadísticas de vendors en estos subcanales
     this.vendorStats = this.vendors.map(vendor => {
       const operacionesVendor = this.operaciones.filter(op => op.vendedorId === vendor.id);
-      const operacionesLiquidadas = operacionesVendor.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesVendor.filter(op => op.estadoDashboard === 'LIQUIDADA');
 
       return {
         nombre: `${vendor.nombre} ${vendor.apellido}`,
@@ -939,10 +949,10 @@ export class DashboardWelcomeComponent implements OnInit {
     } else if (this.userRole === RolType.AdminCanal) {
       this.topEntitiesForDistribution = this.subcanalStats.slice(0, 5);
     } else {
-      // Para Vendor, mostrar por estado
+      // Para Vendor, mostrar por estado dashboard
       const operacionesPorEstado: Map<string, number> = new Map();
       this.operaciones.forEach(op => {
-        const estado = op.estado || 'Sin estado';
+        const estado = op.estadoDashboard || 'Sin estado';
         operacionesPorEstado.set(estado, (operacionesPorEstado.get(estado) || 0) + 1);
       });
 
@@ -1018,24 +1028,32 @@ export class DashboardWelcomeComponent implements OnInit {
     const aprobadas: number[] = [];
     const fullData: any[] = [];
 
-    // Helper para contar operaciones por mes y año usando un campo de fecha
-    const contarPorMes = (operaciones: any[], campoFecha: string, mes: number, anio: number, filtroEstado?: (op: any) => boolean) => {
+    // Helper para contar operaciones por mes y año usando estadoDashboard
+    const contarPorMesConEstado = (estadoDashboard: string, campoFecha: string, mes: number, anio: number) => {
+      return this.operaciones.filter(op => {
+        if (op.estadoDashboard !== estadoDashboard) return false;
+        if (!op[campoFecha]) return false;
+        const fecha = new Date(op[campoFecha]);
+        return fecha.getMonth() === mes && fecha.getFullYear() === anio;
+      }).length;
+    };
+
+    // Helper function to count operations by month and year for a given date field
+    function contarPorMes(operaciones: any[], campoFecha: string, mes: number, anio: number): number {
       return operaciones.filter(op => {
         if (!op[campoFecha]) return false;
         const fecha = new Date(op[campoFecha]);
-        if (fecha.getMonth() !== mes || fecha.getFullYear() !== anio) return false;
-        if (filtroEstado && !filtroEstado(op)) return false;
-        return true;
+        return fecha.getMonth() === mes && fecha.getFullYear() === anio;
       }).length;
-    };
+    }
 
     // Generar datos solo para los meses entre abril 2025 y el mes actual
     if (anioActual === anioInicial) {
       for (let mes = mesInicial; mes <= mesActual; mes++) {
         const etiquetaMes = nombresMeses[mes];
         const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioActual);
-        const operacionesLiquidadas = contarPorMes(this.operaciones, 'fechaLiquidacion', mes, anioActual);
-        const operacionesAprobadas = contarPorMes(this.operaciones, 'fechaAprobacion', mes, anioActual);
+        const operacionesLiquidadas = contarPorMesConEstado('LIQUIDADA', 'fechaLiquidacion', mes, anioActual);
+        const operacionesAprobadas = contarPorMesConEstado('APROBADA', 'fechaCreacion', mes, anioActual);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
@@ -1088,8 +1106,8 @@ export class DashboardWelcomeComponent implements OnInit {
       for (let mes = 0; mes <= mesActual; mes++) {
         const etiquetaMes = nombresMeses[mes];
         const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioActual);
-        const operacionesLiquidadas = contarPorMes(this.operaciones, 'fechaLiquidacion', mes, anioActual);
-        const operacionesAprobadas = contarPorMes(this.operaciones, 'fechaAprobacion', mes, anioActual);
+        const operacionesLiquidadas = contarPorMesConEstado('LIQUIDADA', 'fechaLiquidacion', mes, anioActual);
+        const operacionesAprobadas = contarPorMesConEstado('APROBADA', 'fechaCreacion', mes, anioActual);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
@@ -1208,5 +1226,9 @@ export class DashboardWelcomeComponent implements OnInit {
       default:
         return 'Distribución';
     }
+  }
+
+  isAdmin(): boolean {
+    return this.userRole === RolType.Administrador;
   }
 }

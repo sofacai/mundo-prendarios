@@ -71,16 +71,13 @@ interface OperacionCompleta extends Operacion {
                 <label for="estado">Estado:</label>
                 <select id="estado" [(ngModel)]="filtros.estado" class="form-control">
                   <option value="">Todos los estados</option>
-                  <option value="EN ANALISIS">En análisis</option>
-                  <option value="ANALISIS BCO">Análisis BCO</option>
-                  <option value="APROBADO DEF">Aprobado definitivo</option>
-                  <option value="FIRMAR DOCUM">Firmar documentos</option>
-                  <option value="EN GESTION">En gestión</option>
-                  <option value="COMPLETANDO DOCU">Completando documentos</option>
-                  <option value="EN PROC.INSC.">En proceso inscripción</option>
-                  <option value="EN PROC.LIQ.">En proceso liquidación</option>
-                  <option value="LIQUIDADA">Liquidada</option>
-                  <option value="RECHAZADO">Rechazado</option>
+                  <option value="enviada mp">ENVIADA MP</option>
+                  <option value="rechazado">RECHAZADA</option>
+                  <option value="aprobado prov.">APROBADO PROV.</option>
+                  <option value="aprobado def">APROBADO DEF.</option>
+                  <option value="confec. prenda">CONFEC. PRENDA</option>
+                  <option value="en proc. liq.">EN PROC. LIQ.</option>
+                  <option value="liquidada">LIQUIDADA</option>
                 </select>
               </div>
 
@@ -539,7 +536,7 @@ export class ReporteOperacionesComponent implements OnInit {
     }
 
     // Filtro por estado
-    if (this.filtros.estado && operacion.estado !== this.filtros.estado) {
+    if (this.filtros.estado && operacion.estado?.toLowerCase() !== this.filtros.estado.toLowerCase()) {
       return false;
     }
 
@@ -695,7 +692,9 @@ export class ReporteOperacionesComponent implements OnInit {
         'Cuota Inicial': op.cuotaInicial || '',
         'Cuota Promedio Inicial': op.cuotaPromedio || '',
         'Auto Inicial': op.autoInicial || '',
-        'Monto Aprobado': op.montoAprobado || '',
+        'Monto Aprobado Canal': op.montoAprobado || '',
+        'Monto Aprobado Banco': op.montoAprobadoBanco || '',
+        'Banco Aprobado': op.bancoAprobado || '',
         'Plazo Aprobado (meses)': op.mesesAprobados || '',
         'Tasa Aprobada (%)': op.tasaAprobada || '',
         'Plan Aprobado': op.planAprobadoNombre || '',
@@ -781,7 +780,7 @@ export class ReporteOperacionesComponent implements OnInit {
 
   getOperacionesLiquidadas(): number {
     // Considera como liquidadas solo las que tienen estado 'LIQUIDADA' y fechaLiquidacion válida
-    return this.operacionesFiltradas.filter(op => (op.estado || '').toUpperCase() === 'LIQUIDADA' && !!op.fechaLiquidacion).length;
+    return this.operacionesFiltradas.filter(op => (op.estadoDashboard || '').toUpperCase() === 'LIQUIDADA' && !!op.fechaLiquidacion).length;
   }
 
   cerrarModal(event: MouseEvent) {

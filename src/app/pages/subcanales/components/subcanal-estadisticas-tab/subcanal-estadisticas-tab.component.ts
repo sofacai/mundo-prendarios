@@ -350,12 +350,12 @@ export class SubcanalEstadisticasTabComponent implements AfterViewInit, OnChange
         operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
 
         // Operaciones liquidadas
-        if (op.estado === 'LIQUIDADA') {
+        if (op.estadoDashboard === 'LIQUIDADA') {
           liquidadasPorMes.set(mes, (liquidadasPorMes.get(mes) || 0) + 1);
         }
 
         // Operaciones aprobadas
-        if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado || '')) {
+        if (op.estadoDashboard === 'APROBADA') {
           aprobadasPorMes.set(mes, (aprobadasPorMes.get(mes) || 0) + 1);
         }
       }

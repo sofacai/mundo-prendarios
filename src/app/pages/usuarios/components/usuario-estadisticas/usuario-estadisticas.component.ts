@@ -587,13 +587,10 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
       const operacionesMes = operacionesPorMes[key] || [];
       dataTotales.push(operacionesMes.length);
 
-      const operacionesLiquidadas = operacionesMes.filter(op => op.estado === 'LIQUIDADA');
+      const operacionesLiquidadas = operacionesMes.filter(op => op.estadoDashboard === 'LIQUIDADA');
       dataLiquidadas.push(operacionesLiquidadas.length);
 
-      const operacionesAprobadas = operacionesMes.filter(op =>
-        ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
-        .includes(op.estado || '')
-      );
+      const operacionesAprobadas = operacionesMes.filter(op => op.estadoDashboard === 'APROBADA');
       dataAprobadas.push(operacionesAprobadas.length);
     }
 
@@ -709,7 +706,7 @@ export class UsuarioEstadisticasComponent implements OnInit, OnChanges, AfterVie
 
   // Métodos para estadísticas de operaciones liquidadas
   getOperacionesLiquidadas(): number {
-    return this.operaciones.filter(op => op.estado === 'LIQUIDADA').length;
+    return this.operaciones.filter(op => op.estadoDashboard === 'LIQUIDADA').length;
   }
   getOperacionesLiquidadasPorcentaje(): number {
     if (this.operaciones.length === 0) return 0;

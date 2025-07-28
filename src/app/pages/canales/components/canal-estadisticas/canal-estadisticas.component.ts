@@ -374,12 +374,12 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
         operacionesPorMes.set(mes, (operacionesPorMes.get(mes) || 0) + 1);
 
         // Incrementar operaciones liquidadas si aplica
-        if (op.estado === 'LIQUIDADA') {
+        if (op.estadoDashboard === 'LIQUIDADA') {
           operacionesLiquidadasPorMes.set(mes, (operacionesLiquidadasPorMes.get(mes) || 0) + 1);
         }
 
         // Incrementar operaciones aprobadas si aplica
-        if (['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado || '')) {
+        if (op.estadoDashboard === 'APROBADA') {
           operacionesAprobadasPorMes.set(mes, (operacionesAprobadasPorMes.get(mes) || 0) + 1);
         }
       }
@@ -437,7 +437,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       .map(subcanal => {
         const operacionesDelSubcanal = this.operaciones.filter(op => op.subcanalId === subcanal.id);
         const operacionesCount = operacionesDelSubcanal.length;
-        const operacionesLiquidadasCount = operacionesDelSubcanal.filter(op => op.estado === 'LIQUIDADA').length;
+        const operacionesLiquidadasCount = operacionesDelSubcanal.filter(op => op.estadoDashboard === 'LIQUIDADA').length;
         const operacionesAprobadasCount = operacionesDelSubcanal.filter(op =>
           ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado || '')
         ).length;
@@ -468,7 +468,7 @@ export class CanalEstadisticasComponent implements OnInit, OnDestroy, AfterViewI
       .map(vendor => {
         const operacionesDelVendedor = this.operaciones.filter(op => op.vendedorId === vendor.id);
         const operacionesCount = operacionesDelVendedor.length;
-        const operacionesLiquidadasCount = operacionesDelVendedor.filter(op => op.estado === 'LIQUIDADA').length;
+        const operacionesLiquidadasCount = operacionesDelVendedor.filter(op => op.estadoDashboard === 'LIQUIDADA').length;
         const operacionesAprobadasCount = operacionesDelVendedor.filter(op =>
           ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF'].includes(op.estado || '')
         ).length;

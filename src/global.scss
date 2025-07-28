@@ -258,7 +258,73 @@ body {
     color:#363B44;
   }
 
+  // ===== NUEVOS ESTILOS DE ESTADO =====
+  
+  // Celeste para ENVIADA MP
+  &.badge-estado-enviada-mp {
+    border-color: rgb(173, 216, 230);
+    background-color: rgba(173, 216, 230, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
 
+  // Verde claro para APROBADO DEF
+  &.badge-estado-aprobado-def {
+    border-color: rgb(144, 205, 176);
+    background-color: rgba(144, 205, 176, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
+
+  // Violeta para APROBADO PROV.
+  &.badge-estado-aprobado-prov {
+    border-color: rgb(186, 85, 211);
+    background-color: rgba(186, 85, 211, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
+
+  // Amarillo para CONFEC. PRENDA
+  &.badge-estado-confec-prenda {
+    border-color: rgb(255, 223, 0);
+    background-color: rgba(255, 223, 0, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
+
+  // Naranja para EN PROC. LIQ.
+  &.badge-estado-en-proc-liq {
+    border-color: rgb(255, 165, 0);
+    background-color: rgba(255, 165, 0, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
+
+  // Verde para LIQUIDADO
+  &.badge-estado-liquidado {
+    border-color: rgb(34, 139, 34);
+    background-color: rgba(34, 139, 34, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
+
+  // Rojo para RECHAZADO
+  &.badge-estado-rechazado {
+    border-color: rgb(220, 20, 60);
+    background-color: rgba(220, 20, 60, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
+
+  // Azul claro para estados heredados (EN GESTION, PROPUESTA, INGRESADA)
+  &.badge-estado-en-gestion,
+  &.badge-estado-propuesta,
+  &.badge-estado-ingresada {
+    border-color: rgb(134, 192, 252);
+    background-color: rgba(134, 192, 252, 0.3);
+    border: 1px solid;
+    color: #363B44;
+  }
 
 }
 

@@ -26,6 +26,7 @@ export interface Operacion {
 
   // Campos existentes
   montoAprobado?: number;
+  montoAprobadoBanco?: number;
   mesesAprobados?: number;
   tasaAprobada?: number;
   planAprobadoId?: number;
@@ -47,6 +48,7 @@ export interface Operacion {
   gastoAprobado?: number;
   bancoInicial?: string;
   bancoAprobado?: string;
+  estadoDashboard?: string;
 }
 @Injectable({
   providedIn: 'root'
@@ -148,7 +150,7 @@ export class OperacionService {
     const headers = this.getAuthHeaders();
     return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/canal/${canalId}`, { headers })
       .pipe(
-        map(operaciones => operaciones.filter(op => op.estado === 'LIQUIDADA').length)
+        map(operaciones => operaciones.filter(op => op.estadoDashboard === 'LIQUIDADA').length)
       );
   }
 
@@ -170,7 +172,7 @@ export class OperacionService {
     const headers = this.getAuthHeaders();
     return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/subcanal/${subcanalId}`, { headers })
       .pipe(
-        map(operaciones => operaciones.filter(op => op.estado === 'LIQUIDADA').length)
+        map(operaciones => operaciones.filter(op => op.estadoDashboard === 'LIQUIDADA').length)
       );
   }
 
@@ -184,7 +186,7 @@ export class OperacionService {
     const headers = this.getAuthHeaders();
     return this.http.get<Operacion[]>(`${this.apiUrl}/Operacion/cliente/${clienteId}`, { headers })
       .pipe(
-        map(operaciones => operaciones.filter(op => op.estado === 'LIQUIDADA').length)
+        map(operaciones => operaciones.filter(op => op.estadoDashboard === 'LIQUIDADA').length)
       );
   }
 
@@ -192,76 +194,104 @@ export class OperacionService {
     const estadoLower = estado?.toLowerCase() || '';
 
     switch (estadoLower) {
-      case 'rechazado':
-        return 'rgb(255, 225, 147)';
-      case 'liquidada':
-        return 'rgb(144, 205, 176)';
-      case 'firmar docum':
-        return 'rgb(134, 153, 218)';
-      case 'en gestion':
-        return 'rgb(134, 192, 252)';
-      case 'completando docu':
-        return 'rgb(134, 192, 252)';
-      case 'en analisis':
-        return 'rgb(255, 200, 200)';
-      case 'analisis bco':
-        return 'rgb(255, 225, 147)'; // Tono amarillito para el nuevo estado
+      // Estados nuevos con colores específicos
+      case 'enviada mp':
+        return 'rgb(173, 216, 230)'; // Celeste
       case 'aprobado def':
-        return 'rgb(144, 205, 176)';
-      case 'enviada':
-        return 'rgb(255, 225, 147)';
-      case 'en proc.insc.':
-        return 'rgb(16, 89, 157)';
-      case 'en proc.liq.':
-        return 'rgb(131, 33, 97)';
-      case 'ingresada':
-        return 'rgb(134, 192, 252)';
+        return 'rgb(144, 205, 176)'; // Verde claro
+      case 'aprobado prov.':
+        return 'rgb(186, 85, 211)'; // Violeta
+      case 'confec. prenda':
+        return 'rgb(255, 223, 0)'; // Amarillo
+      case 'en proc. liq.':
+        return 'rgb(255, 165, 0)'; // Naranja
+      case 'liquidado':
+        return 'rgb(34, 139, 34)'; // Verde
+      case 'rechazado':
+        return 'rgb(220, 20, 60)'; // Rojo
+
+      // Estados heredados
+      case 'en gestion':
+        return 'rgb(134, 192, 252)'; // Azul claro
       case 'propuesta':
-        return 'rgb(134, 192, 252)';
+        return 'rgb(134, 192, 252)'; // Azul claro
+      case 'ingresada':
+        return 'rgb(134, 192, 252)'; // Azul claro
+
+      // Estados legacy (mantener compatibilidad)
+      case 'liquidada':
+        return 'rgb(34, 139, 34)'; // Verde (mapea a liquidado)
+      case 'firmar docum':
+        return 'rgb(255, 223, 0)'; // Amarillo (mapea a confec. prenda)
+      case 'completando docu':
+        return 'rgb(255, 223, 0)'; // Amarillo (mapea a confec. prenda)
+      case 'en analisis':
+        return 'rgb(173, 216, 230)'; // Celeste (mapea a enviada mp)
+      case 'analisis bco':
+        return 'rgb(173, 216, 230)'; // Celeste (mapea a enviada mp)
+      case 'enviada':
+        return 'rgb(173, 216, 230)'; // Celeste (mapea a enviada mp)
+      case 'en proc.insc.':
+        return 'rgb(255, 223, 0)'; // Amarillo (mapea a confec. prenda)
+      case 'en proc.liq.':
+        return 'rgb(255, 165, 0)'; // Naranja
+
       default:
-        return 'rgb(222, 226, 230)';
+        return 'rgb(222, 226, 230)'; // Gris por defecto
     }
   }
 
   getEstadoClass(estado: string): string {
     const estadoLower = estado?.toLowerCase()?.trim() || '';
 
-    // Usar una regex para hacer coincidir "apto credito" con variantes
-    if (/apto\s*cr[eé]dito/.test(estadoLower)) {
-      return 'badge-op-apto-credito';
-    }
-
-    // Para el resto de los estados
+    // Para los nuevos estados
     switch (estadoLower) {
-      case 'rechazado':
-        return 'badge-op-rechazado';
-      case 'liquidada':
-        return 'badge-op-liquidada';
-      case 'firmar docum':
-        return 'badge-op-firmas-docu';
-      case 'completando docu':
-        return 'badge-op-completando-docu';
-      case 'en gestion':
-        return 'badge-op-en-gestion';
-      case 'en analisis':
-        return 'badge-op-en-analisis';
-      case 'analisis bco':
-        return 'badge-op-analisis-bco'; // Nueva clase para el estado
+      // Estados nuevos
+      case 'enviada mp':
+        return 'badge-estado-enviada-mp'; // Celeste
       case 'aprobado def':
-        return 'badge-op-aprobado-def';
-      case 'enviada':
-        return 'badge-op-enviada';
-      case 'en proc.insc.':
-        return 'badge-op-en-proc-insc';
-      case 'en proc.liq.':
-        return 'badge-op-en-proc-liq';
-      case 'ingresada':
-        return 'badge-op-ingresada';
+        return 'badge-estado-aprobado-def'; // Verde claro
+      case 'aprobado prov.':
+        return 'badge-estado-aprobado-prov'; // Violeta
+      case 'confec. prenda':
+        return 'badge-estado-confec-prenda'; // Amarillo
+      case 'en proc. liq.':
+        return 'badge-estado-en-proc-liq'; // Naranja
+      case 'liquidado':
+        return 'badge-estado-liquidado'; // Verde
+      case 'rechazado':
+        return 'badge-estado-rechazado'; // Rojo
+
+      // Estados heredados
+      case 'en gestion':
+        return 'badge-estado-en-gestion'; // Azul claro
       case 'propuesta':
-        return 'badge-op-propuesta';
+        return 'badge-estado-propuesta'; // Azul claro
+      case 'ingresada':
+        return 'badge-estado-ingresada'; // Azul claro
+
+      // Estados legacy (compatibilidad hacia atrás)
+      case 'liquidada':
+        return 'badge-estado-liquidado'; // Mapea a liquidado
+      case 'firmar docum':
+        return 'badge-estado-confec-prenda'; // Mapea a confec. prenda
+      case 'completando docu':
+        return 'badge-estado-confec-prenda'; // Mapea a confec. prenda
+      case 'en analisis':
+        return 'badge-estado-enviada-mp'; // Mapea a enviada mp
+      case 'analisis bco':
+        return 'badge-estado-enviada-mp'; // Mapea a enviada mp
+      case 'enviada':
+        return 'badge-estado-enviada-mp'; // Mapea a enviada mp
+      case 'en proc.insc.':
+        return 'badge-estado-confec-prenda'; // Mapea a confec. prenda
+
+      // Fallback para apto credito (regex)
       default:
-        // Imprimir el estado no reconocido para depuración
-        return 'badge-light';
+        if (/apto\s*cr[eé]dito/.test(estadoLower)) {
+          return 'badge-estado-aprobado-def';
+        }
+        return 'badge-light'; // Estado no reconocido
     }
   }
 

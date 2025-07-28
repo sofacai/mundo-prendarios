@@ -69,7 +69,8 @@
     <div class="stat-content">
       <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
       <p class="stat-label">Op. Liquidadas</p>
-      <p class="stat-sublabel">Promedio: {{formatMoney(montoPromedioLiquidadas)}}</p>
+      <p class="stat-sublabel">Prom. Canal: {{formatMoney(montoPromedioLiquidadas)}}</p>
+      <p class="stat-sublabel" *ngIf="isAdmin()">Prom. Banco: {{formatMoney(montoPromedioBancoLiquidadas)}}</p>
     </div>
   </div>
 
@@ -79,7 +80,17 @@
     </div>
     <div class="stat-content">
       <h3 class="stat-value">{{formatLargeNumber(totalMontosLiquidados)}}</h3>
-      <p class="stat-label">Monto total Op. Liquidadas</p>
+      <p class="stat-label">Monto total liquidado canal</p>
+    </div>
+  </div>
+
+  <div class="stat-card" *ngIf="isAdmin()">
+    <div class="stat-icon-box warning-light">
+      <i class="bi bi-bank"></i>
+    </div>
+    <div class="stat-content">
+      <h3 class="stat-value">{{formatLargeNumber(totalMontoBancoLiquidados)}}</h3>
+      <p class="stat-label">Monto total liquidado banco</p>
     </div>
   </div>
 </div>

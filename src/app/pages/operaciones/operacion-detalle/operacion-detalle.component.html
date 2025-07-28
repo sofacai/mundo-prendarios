@@ -105,7 +105,7 @@
                   <div class="detail-label">Auto:</div>
                   <div class="detail-value">{{ operacion.autoInicial || 'No especificado' }}</div>
                 </div>
-                <div class="detail-row">
+                <div *ngIf="isAdmin()" class="detail-row">
                   <div class="detail-label">Gasto canal:</div>
                   <div class="detail-value">{{ operacion.gastoInicial}}%</div>
                 </div>
@@ -126,8 +126,16 @@
             <div class="details-grid">
               <div class="detail-section">
                 <div class="detail-row">
-                  <div class="detail-label">Monto:</div>
-                  <div class="detail-value fw-bold">{{ operacion.montoAprobado ? formatMonto(operacion.montoAprobado) : 'Pendiente' }}</div>
+                  <div class="detail-label">Monto aprobado canal:</div>
+                  <div class="detail-value">{{ operacion.montoAprobado ? formatMonto(operacion.montoAprobado) : 'Pendiente' }}</div>
+                </div>
+                <div *ngIf="isAdmin()" class="detail-row">
+                  <div class="detail-label">Monto aprobado banco:</div>
+                  <div class="detail-value">{{ operacion.montoAprobadoBanco ? formatMonto(operacion.montoAprobadoBanco) : 'Pendiente' }}</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Banco:</div>
+                  <div class="detail-value">{{ operacion.bancoAprobado || 'Pendiente' }}</div>
                 </div>
                 <div class="detail-row">
                   <div class="detail-label">Plazo:</div>

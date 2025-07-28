@@ -1061,7 +1061,7 @@ private crearOperacion(planId: number, tasa: number): Promise<any> {
     }
 
     const usuarioCreadorId = this.authService.currentUserValue?.id || 0;
-    const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'ENVIADA';
+    const estadoOperacion = this.dataService.rechazadoPorBcra ? 'RECHAZADO' : 'ENVIADA MP';
 
     const cuotaInicial = this.dataService.valorCuota;
     let cuotaPromedio = this.dataService.valorCuota;

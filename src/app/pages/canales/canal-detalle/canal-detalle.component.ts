@@ -208,12 +208,11 @@ export class CanalDetalleComponent implements OnInit, OnDestroy {
 
             // Contar operaciones liquidadas
             this.operacionesLiquidadas = this.operaciones.filter(op =>
-              op.estado === 'LIQUIDADA').length;
+              op.estadoDashboard === 'LIQUIDADA').length;
 
-            // Contar operaciones aprobadas - asegurarse de usar el case correcto
+            // Contar operaciones aprobadas
             this.operacionesAprobadas = this.operaciones.filter(op =>
-              ['EN PROC.LIQ.', 'EN PROC.INSC.', 'FIRMAR DOCUM', 'EN GESTION', 'APROBADO DEF']
-              .includes(op.estado || '')
+              op.estadoDashboard === 'APROBADA'
             ).length;
 
             // Cargar datos adicionales en paralelo

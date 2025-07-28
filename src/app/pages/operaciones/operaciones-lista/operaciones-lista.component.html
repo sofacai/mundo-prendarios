@@ -74,18 +74,13 @@
      <span class="filter-label">Estado:</span>
      <select class="form-select" [(ngModel)]="filterActive" (change)="applyFilters()">
        <option value="all">Todos los estados</option>
-       <option value="rechazado">Rechazado</option>
-       <option value="liquidada">Liquidada</option>
-       <option value="firmar docum">Firmar Docum</option>
-       <option value="completando docu">Completando Docu</option>
-       <option value="en gestion">En Gestión</option>
-       <option value="en analisis">En Análisis</option>
-       <option value="aprobado def">Aprobado Def</option>
-       <option value="enviada">Enviada</option>
-       <option value="en proc.insc.">En Proc. Insc.</option>
-       <option value="en proc.liq.">En Proc. Liq.</option>
-       <option value="ingresada">Ingresada</option>
-       <option value="propuesta">Propuesta</option>
+       <option value="enviada mp">ENVIADA MP</option>
+       <option value="rechazado">RECHAZADA</option>
+       <option value="aprobado prov.">APROBADO PROV.</option>
+       <option value="aprobado def">APROBADO DEF.</option>
+       <option value="confec. prenda">CONFEC. PRENDA</option>
+       <option value="en proc. liq.">EN PROC. LIQ.</option>
+       <option value="liquidada">LIQUIDADA</option>
      </select>
    </div>
  </div>
@@ -135,9 +130,21 @@
                   Monto
                   <i class="bi" [ngClass]="getSortIcon('monto')"></i>
                 </th>
+                <th (click)="sortBy('montoAprobado')" class="sortable-header" style="min-width: 110px;">
+                  M. Canal
+                  <i class="bi" [ngClass]="getSortIcon('montoAprobado')"></i>
+                </th>
+                <th (click)="sortBy('montoAprobadoBanco')" class="sortable-header" style="min-width: 110px;">
+                  M. Banco
+                  <i class="bi" [ngClass]="getSortIcon('montoAprobadoBanco')"></i>
+                </th>
                 <th (click)="sortBy('fechaCreacion')" class="sortable-header">
-                  Fecha
+                  F.ING
                   <i class="bi" [ngClass]="getSortIcon('fechaCreacion')"></i>
+                </th>
+                <th (click)="sortBy('fechaLiquidacion')" class="sortable-header">
+                  F.LIQ
+                  <i class="bi" [ngClass]="getSortIcon('fechaLiquidacion')"></i>
                 </th>
                 <th (click)="sortBy('canalNombre')" class="sortable-header">
                   Canal
@@ -166,7 +173,10 @@
                 <td>{{ operacion.meses }}</td>
                 <td>{{ operacion.gasto}} %</td>
                 <td>${{ formatNumber(operacion.monto) }}</td>
+                <td>${{ formatNumber(operacion.montoAprobado) }}</td>
+                <td>${{ formatNumber(operacion.montoAprobadoBanco) }}</td>
                 <td>{{ operacion.fechaCreacion }}</td>
+                <td>{{ formatFechaLiquidacion(operacion.fechaLiquidacion) }}</td>
                 <td>
                   <a class="text-dark fw-bold text-hover-primary cursor-pointer" (click)="verDetalleCanal(operacion.canalId || 0)">
                     {{ operacion.canalNombre }}
