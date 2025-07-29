@@ -72,6 +72,16 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
         this.adjustContentArea();
       }
     );
+
+    // Simular el prompt para desarrollo local
+    if (window.location.hostname === 'localhost') {
+      setTimeout(() => {
+        if (!this.deferredPrompt) {
+          console.log('Simulando beforeinstallprompt para desarrollo local');
+          // No tenemos el evento real, pero al menos podemos mostrar el botón
+        }
+      }, 2000);
+    }
   }
 
   ngAfterViewInit() {}
@@ -84,43 +94,117 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setupPWAListeners() {
     window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('beforeinstallprompt triggered');
       e.preventDefault();
       this.deferredPrompt = e;
       this.isInstallable = true;
+      
+      // Verificar si el usuario ya descartó la instalación
+      const dismissed = localStorage.getItem('pwa-install-dismissed');
+      if (!dismissed) {
+        this.showInstallCard = true;
+      }
     });
 
     window.addEventListener('appinstalled', (e) => {
+      console.log('App installed successfully');
       this.isInstalled = true;
       this.isInstallable = false;
       this.showInstallCard = false;
       this.deferredPrompt = null;
+      localStorage.removeItem('pwa-install-dismissed');
     });
   }
 
   private checkIfInstalled() {
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Verificar si ya está instalada
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        (window.navigator as any).standalone === true) {
       this.isInstalled = true;
+      this.showInstallCard = false;
+      return;
+    }
+
+    // Verificar si es una app instalada en Android
+    if (window.matchMedia('(display-mode: minimal-ui)').matches) {
+      this.isInstalled = true;
+      this.showInstallCard = false;
+      return;
+    }
+
+    // Si no está instalada, verificar si fue descartada
+    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    if (dismissed) {
       this.showInstallCard = false;
     }
   }
 
   async installApp() {
     if (this.deferredPrompt) {
-      const choiceResult = await this.deferredPrompt.prompt();
+      try {
+        const choiceResult = await this.deferredPrompt.prompt();
+        console.log('User choice:', choiceResult.outcome);
 
-      if (choiceResult.outcome === 'accepted') {
-        this.isInstalled = true;
-        this.showInstallCard = false;
+        if (choiceResult.outcome === 'accepted') {
+          this.isInstalled = true;
+          this.showInstallCard = false;
+        }
+
+        this.deferredPrompt = null;
+        this.isInstallable = false;
+      } catch (error) {
+        console.error('Error al mostrar el prompt de instalación:', error);
       }
-
-      this.deferredPrompt = null;
-      this.isInstallable = false;
+    } else {
+      // Mostrar instrucciones si no hay prompt disponible
+      this.showManualInstallInstructions();
     }
+  }
+
+  private showManualInstallInstructions() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let instructions = '';
+
+    if (userAgent.includes('chrome') || userAgent.includes('edge')) {
+      instructions = 'Busca el ícono de instalación (+) en la barra de direcciones del navegador.';
+    } else if (userAgent.includes('firefox')) {
+      instructions = 'Ve al menú del navegador y selecciona "Instalar esta aplicación".';
+    } else if (userAgent.includes('safari')) {
+      instructions = 'Toca el botón "Compartir" y selecciona "Añadir a la pantalla de inicio".';
+    } else {
+      instructions = 'Busca la opción de instalación en el menú de tu navegador.';
+    }
+
+    alert(`Para instalar MundoPrendarios:\n\n${instructions}`);
   }
 
   dismissInstallCard() {
     this.showInstallCard = false;
     localStorage.setItem('pwa-install-dismissed', 'true');
+  }
+
+  // Método para mostrar manualmente la tarjeta de instalación (para debugging)
+  showInstallCardManually() {
+    this.showInstallCard = true;
+    localStorage.removeItem('pwa-install-dismissed');
+  }
+
+  // Método para verificar si PWA es compatible
+  isPWASupported(): boolean {
+    return 'serviceWorker' in navigator && 'PushManager' in window;
+  }
+
+  // Métodos de detección de dispositivo
+  isIOS(): boolean {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  }
+
+  isAndroid(): boolean {
+    return /Android/.test(navigator.userAgent);
+  }
+
+  isDesktop(): boolean {
+    return !this.isIOS() && !this.isAndroid();
   }
 
   private adjustContentArea() {

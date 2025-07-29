@@ -70,39 +70,81 @@
             </div>
           </div>
 
-          <!-- Tarjeta para instalar la app -->
-          <div class="card mt-4" *ngIf="showInstallCard && !isInstalled && isInstallable">
+          <!-- Tarjeta de instalación de PWA - SIEMPRE VISIBLE -->
+          <div class="card mt-4">
             <div class="card-header">
               <div class="card-title">
-                <i class="bi bi-phone me-2 text-primary"></i>
+                <i class="bi bi-download me-2 text-primary"></i>
                 Descargar aplicación
               </div>
-              <button class="btn btn-sm btn-light" (click)="dismissInstallCard()" title="Cerrar">
-                <i class="bi bi-x"></i>
-              </button>
             </div>
             <div class="card-body">
-              <p>¿Querés descargar la app a tu dispositivo para acceder más rápido?</p>
-              <div class="d-flex gap-2">
-                <button class="btn btn-primary" (click)="installApp()">
-                  <i class="bi bi-download me-1"></i>
-                  Instalar ahora
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" style="margin-left:10px" (click)="dismissInstallCard()">
-                  Ahora no
-                </button>
+              <!-- Si ya está instalada -->
+              <div *ngIf="isInstalled" class="text-center">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 2rem;"></i>
+                <h6 class="mt-2 mb-1">¡MundoPrendarios instalado correctamente!</h6>
+                <small class="text-muted">Ya podés acceder desde tu dispositivo</small>
+              </div>
+
+              <!-- Si no está instalada -->
+              <div *ngIf="!isInstalled">
+                <p class="mb-3">Descargá MundoPrendarios para acceder más rápido desde tu dispositivo.</p>
+
+                <!-- Botón principal de instalación -->
+                <div class="install-section" style="margin-bottom: 50px;">
+                  <button
+                    class="btn btn-primary btn-install"
+                    (click)="installApp()">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Instalar MundoPrendarios
+                  </button>
+
+                  <!-- Instrucciones específicas por dispositivo -->
+                  <div class="install-instructions mt-3">
+                    <div class="instruction-item" *ngIf="isDesktop()">
+                      <div class="instruction-header">
+                        <i class="bi bi-laptop text-primary me-2"></i>
+                        <strong>Escritorio (Chrome/Edge):</strong>
+                      </div>
+                      <small>Usá el botón arriba o buscá el ícono parecido a <i class="bi bi-box-arrow-down"></i> en la barra de direcciones, del lado derecho (suele estar al lado de la estrellita de favoritos) y luego click en instalar</small>
+                    </div>
+
+                    <div class="instruction-item" *ngIf="isDesktop()">
+                      <div class="instruction-header">
+                        <i class="bi bi-firefox-browser text-warning me-2"></i>
+                        <strong>Firefox:</strong>
+                      </div>
+                      <small>Menú → "Instalar esta aplicación"</small>
+                    </div>
+
+                    <div class="instruction-item ios-instruction">
+                      <div class="instruction-header">
+                        <i class="bi bi-phone text-info me-2"></i>
+                        <strong>iPhone/iPad:</strong>
+                      </div>
+                      <div class="ios-steps">
+                        <small>
+                          1. Tocá el botón <strong>Compartir</strong>
+                          <i class="bi bi-box-arrow-up share-icon"></i>
+                          que está en la barra de direcciones<br>
+                          2. Deslizá para abajo en el menú que se abre y buscá<strong>"Añadir a la pantalla de inicio"</strong>
+                        </small>
+                      </div>
+                    </div>
+
+                    <div class="instruction-item">
+                      <div class="instruction-header">
+                        <i class="bi bi-android2 text-success me-2"></i>
+                        <strong>Android:</strong>
+                      </div>
+                      <small>Usá el botón arriba o menú → "Instalar aplicación"</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Mensaje cuando ya está instalada -->
-          <div class="card mt-4" *ngIf="isInstalled">
-            <div class="card-body text-center">
-              <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-              <h6 class="mt-2 mb-1">¡App instalada correctamente!</h6>
-              <small class="text-muted">Ya podés acceder desde tu dispositivo</small>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -151,3 +193,4 @@
     </div>
   </div>
 </div>
+

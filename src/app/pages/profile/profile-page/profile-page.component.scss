@@ -487,12 +487,12 @@ hr {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
@@ -515,8 +515,14 @@ hr {
 .app-icon {
   width: 48px;
   height: 48px;
+  background: linear-gradient(135deg, #009ef7, #0095e8);
   border-radius: 8px;
-  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  flex-shrink: 0;
 }
 
 .app-info h3 {
@@ -559,6 +565,27 @@ hr {
 
 .btn-install:hover {
   background-color: #0056b3;
+}
+
+.btn-install-modal {
+  background: linear-gradient(135deg, #009ef7, #0095e8);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: linear-gradient(135deg, #0095e8, #008bd9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 158, 247, 0.3);
+  }
 }
 
 .btn-cancel {
@@ -764,5 +791,145 @@ hr {
 
   .install-content {
     gap: 0.75rem;
+  }
+}
+
+/* ===============================
+   ESTILOS PARA INSTALACIÓN PWA
+   =============================== */
+.install-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-install {
+  background: linear-gradient(135deg, #009ef7, #0095e8);
+  border: none;
+  color: white;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 158, 247, 0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0095e8, #008bd9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 158, 247, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 767.98px) {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+  }
+}
+
+.install-instructions {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.instruction-item {
+  margin-bottom: 0.75rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.instruction-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.ios-instruction {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 6px;
+  padding: 0.75rem;
+  border-left: 3px solid #17a2b8;
+}
+
+.ios-steps {
+  margin-top: 0.5rem;
+  
+  small {
+    line-height: 1.5;
+    display: block;
+  }
+}
+
+.share-icon {
+  color: #007bff;
+  font-size: 1.1em;
+  margin: 0 2px;
+  padding: 1px 3px;
+  background: rgba(0, 123, 255, 0.1);
+  border-radius: 3px;
+}
+
+/* Iconos específicos por plataforma */
+.bi-laptop { color: #6c757d; }
+.bi-firefox-browser { color: #ff9500; }
+.bi-phone { color: #007bff; }
+.bi-android2 { color: #3ddc84; }
+
+/* Mejoras para alertas */
+.alert-info {
+  background-color: #e7f3ff;
+  border-color: #b8daff;
+  color: #004085;
+  border-radius: 6px;
+  border: 1px solid #b8daff;
+
+  small {
+    line-height: 1.4;
+  }
+}
+
+/* Animaciones suaves */
+@keyframes pulse {
+  0% { box-shadow: 0 2px 8px rgba(0, 158, 247, 0.2); }
+  50% { box-shadow: 0 4px 12px rgba(0, 158, 247, 0.4); }
+  100% { box-shadow: 0 2px 8px rgba(0, 158, 247, 0.2); }
+}
+
+.btn-install:focus {
+  animation: pulse 1s ease-in-out;
+  outline: none;
+}
+
+/* Responsive para instrucciones */
+@media (max-width: 575.98px) {
+  .install-instructions {
+    padding: 0.75rem;
+  }
+
+  .instruction-header {
+    font-size: 0.9rem;
+  }
+
+  .ios-instruction {
+    padding: 0.5rem;
   }
 }

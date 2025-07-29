@@ -1,7 +1,7 @@
 {
   "name": "Mundo Prendario",
   "short_name": "MP",
-  "description": "Mundo Prendario - Gestión integral",
+  "description": "Mundo Prendario - Gestión integral de préstamos prendarios",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -12,23 +12,60 @@
   "categories": ["business", "finance"],
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "assets/logo_acoplado.webp",
-      "type": "image/webp",
-      "sizes": "192x192"
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "id": "/",
+  "dir": "ltr",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {},
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Cotizador",
+      "short_name": "Cotizar",
+      "url": "/cotizador",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }
