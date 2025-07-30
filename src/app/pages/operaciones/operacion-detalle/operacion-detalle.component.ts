@@ -46,8 +46,10 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
 
   // Modals de fecha
   showEditarFechaAprobacionModal = false;
+  showEditarFechaProcLiqModal = false;
   showEditarFechaLiquidacionModal = false;
   fechaAprobacionInput = '';
+  fechaProcLiqInput = '';
   fechaLiquidacionInput = '';
 
   // Variable para controlar la visualización del documento
@@ -65,6 +67,7 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
   showMensajeExito = false;
   showMensajeError = false;
   showConfirmarQuitarFechaAprobacion = false;
+  showConfirmarQuitarFechaProcLiq = false;
   showConfirmarQuitarFechaLiquidacion = false;
   mensajeExito = '';
   mensajeError = '';
@@ -302,6 +305,13 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
   }
 
+  // Editar fecha de proceso de liquidación
+  editarFechaProcLiq() {
+    this.fechaProcLiqInput = this.operacion.fechaProcLiq ? this.formatDateForInput(this.operacion.fechaProcLiq) : '';
+    this.showEditarFechaProcLiqModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
   // Editar fecha de liquidación
   editarFechaLiquidacion() {
     this.fechaLiquidacionInput = this.operacion.fechaLiquidacion ? this.formatDateForInput(this.operacion.fechaLiquidacion) : '';
@@ -319,9 +329,35 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     this.actualizarFechaAprobacion(null);
   }
 
+  // Quitar fecha de proceso de liquidación
+  quitarFechaProcLiq() {
+    this.abrirModalConfirmarQuitarFechaProcLiq();
+  }
+
+  // Lógica para quitar fecha de proceso de liquidación
+  private ejecutarQuitarFechaProcLiq() {
+    this.actualizarFechaProcLiq(null);
+  }
+
   // Quitar fecha de liquidación
   quitarFechaLiquidacion() {
     this.abrirModalConfirmarQuitarFechaLiquidacion();
+  }
+
+  // Confirmar quitar fecha de proceso de liquidación
+  confirmarQuitarFechaProcLiq() {
+    this.showConfirmarQuitarFechaProcLiq = false;
+    this.ejecutarQuitarFechaProcLiq();
+  }
+
+  abrirModalConfirmarQuitarFechaProcLiq() {
+    this.showConfirmarQuitarFechaProcLiq = true;
+  }
+
+  cerrarModalConfirmarQuitarFechaProcLiq(event?: MouseEvent) {
+    if (!event || event.target === event.currentTarget) {
+      this.showConfirmarQuitarFechaProcLiq = false;
+    }
   }
 
   // Confirmar quitar fecha de liquidación (llamado desde el modal personalizado)
@@ -350,6 +386,16 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     }
   }
 
+  cerrarModalFechaProcLiq(event?: MouseEvent) {
+    if (event && (event.target as HTMLElement).classList.contains('custom-modal-backdrop')) {
+      this.showEditarFechaProcLiqModal = false;
+      document.body.style.overflow = '';
+    } else if (!event) {
+      this.showEditarFechaProcLiqModal = false;
+      document.body.style.overflow = '';
+    }
+  }
+
   cerrarModalFechaLiquidacion(event?: MouseEvent) {
     if (event && (event.target as HTMLElement).classList.contains('custom-modal-backdrop')) {
       this.showEditarFechaLiquidacionModal = false;
@@ -368,6 +414,13 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
     this.cerrarModalFechaAprobacion();
   }
 
+  guardarFechaProcLiq() {
+    if (this.fechaProcLiqInput) {
+      this.actualizarFechaProcLiq(new Date(this.fechaProcLiqInput));
+    }
+    this.cerrarModalFechaProcLiq();
+  }
+
   guardarFechaLiquidacion() {
     if (this.fechaLiquidacionInput) {
       this.actualizarFechaLiquidacion(new Date(this.fechaLiquidacionInput));
@@ -384,6 +437,19 @@ export class OperacionDetalleComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.mostrarmensajeError('Error al actualizar la fecha de aprobación');
+      }
+    });
+  }
+
+  // Actualizar fecha de proceso de liquidación
+  private actualizarFechaProcLiq(fecha: Date | null) {
+    this.operacionService.actualizarFechaProcLiq(this.operacionId, fecha).subscribe({
+      next: (operacion) => {
+        this.operacion = operacion;
+        this.mostrarmensajeExito('Fecha de proceso de liquidación actualizada correctamente');
+      },
+      error: (err) => {
+        this.mostrarmensajeError('Error al actualizar la fecha de proceso de liquidación');
       }
     });
   }

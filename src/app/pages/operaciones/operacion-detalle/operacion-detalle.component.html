@@ -195,6 +195,26 @@
                 </div>
 
                 <div *ngIf="isAdmin()" class="detail-row">
+                  <div class="detail-label">Fecha proceso liquidación:</div>
+                  <div class="detail-value detail-value-with-actions">
+                    <span>{{ operacion.fechaProcLiq ? formatDate(operacion.fechaProcLiq) : 'No establecida' }}</span>
+                    <div class="admin-actions">
+                      <button class="btn-action btn-edit me-1"
+                              title="Editar fecha de proceso de liquidación"
+                              (click)="editarFechaProcLiq()">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button *ngIf="operacion.fechaProcLiq"
+                              class="btn-action btn-remove"
+                              title="Quitar fecha de proceso de liquidación"
+                              (click)="quitarFechaProcLiq()">
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="isAdmin()" class="detail-row">
                   <div class="detail-label">Fecha liquidación:</div>
                   <div class="detail-value detail-value-with-actions">
                     <span>{{ operacion.fechaLiquidacion ? formatDate(operacion.fechaLiquidacion) : 'No establecida' }}</span>
@@ -285,6 +305,31 @@
         </div>
       </div>
 
+      <!-- Modal personalizado para editar fecha de proceso de liquidación -->
+      <div *ngIf="showEditarFechaProcLiqModal" class="custom-modal-backdrop" (click)="cerrarModalFechaProcLiq($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Fecha de Proceso de Liquidación</h3>
+            <button class="btn-close" (click)="cerrarModalFechaProcLiq()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="fechaProcLiq" class="form-label">Seleccionar fecha y hora:</label>
+              <input
+                type="datetime-local"
+                id="fechaProcLiq"
+                class="form-control"
+                [(ngModel)]="fechaProcLiqInput"
+                placeholder="Seleccionar fecha y hora">
+            </div>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary me-2" (click)="cerrarModalFechaProcLiq()">Cancelar</button>
+            <button type="button" class="btn btn-primary" (click)="guardarFechaProcLiq()">Guardar</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Modal personalizado para editar fecha de liquidación -->
       <div *ngIf="showEditarFechaLiquidacionModal" class="custom-modal-backdrop" (click)="cerrarModalFechaLiquidacion($event)">
         <div class="custom-modal-content modal-container">
@@ -355,6 +400,23 @@
           <div class="form-footer">
             <button type="button" class="btn btn-secondary me-2" (click)="cerrarModalConfirmarQuitarFechaAprobacion()">Cancelar</button>
             <button type="button" class="btn btn-danger" (click)="confirmarQuitarFechaAprobacion()">Quitar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal personalizado para confirmar quitar fecha de proceso de liquidación -->
+      <div *ngIf="showConfirmarQuitarFechaProcLiq" class="custom-modal-backdrop" (click)="cerrarModalConfirmarQuitarFechaProcLiq($event)">
+        <div class="custom-modal-content modal-container">
+          <div class="modal-header">
+            <h3>Confirmar</h3>
+            <button class="btn-close" (click)="cerrarModalConfirmarQuitarFechaProcLiq()"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Está seguro que desea quitar la fecha de proceso de liquidación?</p>
+          </div>
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary me-2" (click)="cerrarModalConfirmarQuitarFechaProcLiq()">Cancelar</button>
+            <button type="button" class="btn btn-danger" (click)="confirmarQuitarFechaProcLiq()">Quitar</button>
           </div>
         </div>
       </div>

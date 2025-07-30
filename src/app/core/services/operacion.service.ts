@@ -32,6 +32,7 @@ export interface Operacion {
   planAprobadoId?: number;
   planAprobadoNombre?: string;
   fechaAprobacion?: Date;
+  fechaProcLiq?: Date;
   liquidada?: boolean;
   fechaLiquidacion?: Date;
   cuotaInicial?: number;
@@ -307,6 +308,15 @@ export class OperacionService {
       fechaAprobacion: fechaAprobacion
     };
     return this.http.patch<Operacion>(`${this.apiUrl}/Operacion/${id}/fecha-aprobacion`, body, { headers });
+  }
+
+  // Actualizar fecha de proceso de liquidación
+  actualizarFechaProcLiq(id: number, fechaProcLiq: Date | null): Observable<Operacion> {
+    const headers = this.getAuthHeaders();
+    const body = {
+      fechaProcLiq: fechaProcLiq
+    };
+    return this.http.patch<Operacion>(`${this.apiUrl}/Operacion/${id}/fecha-proc-liq`, body, { headers });
   }
 
   // Actualizar fecha de liquidación

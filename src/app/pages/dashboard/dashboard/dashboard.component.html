@@ -67,10 +67,16 @@
       <i class="bi bi-check-circle"></i>
     </div>
     <div class="stat-content">
-      <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
-      <p class="stat-label">Op. Liquidadas</p>
-      <p class="stat-sublabel">Prom. Canal: {{formatMoney(montoPromedioLiquidadas)}}</p>
-      <p class="stat-sublabel" *ngIf="isAdmin()">Prom. Banco: {{formatMoney(montoPromedioBancoLiquidadas)}}</p>
+      <div class="dual-stat">
+        <div class="stat-item">
+          <h3 class="stat-value">{{operacionesLiquidadas}}</h3>
+          <p class="stat-sublabel">Op. Liquidadas</p>
+        </div>
+        <div class="stat-item" *ngIf="isAdmin()">
+          <h3 class="stat-value secondary">{{operacionesProcLiq}}</h3>
+          <p class="stat-sublabel">Op. En Proc. Liq.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -81,6 +87,7 @@
     <div class="stat-content">
       <h3 class="stat-value">{{formatLargeNumber(totalMontosLiquidados)}}</h3>
       <p class="stat-label">Monto total liquidado canal</p>
+      <p class="stat-sublabel">Prom: {{formatMoney(montoPromedioLiquidadas)}}</p>
     </div>
   </div>
 
@@ -91,6 +98,7 @@
     <div class="stat-content">
       <h3 class="stat-value">{{formatLargeNumber(totalMontoBancoLiquidados)}}</h3>
       <p class="stat-label">Monto total liquidado banco</p>
+      <p class="stat-sublabel">Prom: {{formatMoney(montoPromedioBancoLiquidadas)}}</p>
     </div>
   </div>
 </div>
@@ -145,6 +153,10 @@
             <div class="summary-item">
               <span class="summary-label">Operaciones Liquidadas:</span>
               <span class="summary-value">{{ operacionesLiquidadasEnRango }}</span>
+            </div>
+            <div class="summary-item" *ngIf="isAdmin()">
+              <span class="summary-label">En Proc. Liq.:</span>
+              <span class="summary-value">{{ operacionesProcLiqEnRango }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Porcentaje Liquidado:</span>

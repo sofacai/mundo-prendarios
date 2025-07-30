@@ -41,6 +41,7 @@ export class DashboardWelcomeComponent implements OnInit {
   // Stats generales
   totalOperaciones: number = 0;
   operacionesLiquidadas: number = 0;
+  operacionesProcLiq: number = 0;
   operacionesPendientes: number = 0;
   operacionesAprobadas: number = 0;
   montoPromedioPorOperacion: number = 0;
@@ -56,6 +57,7 @@ export class DashboardWelcomeComponent implements OnInit {
   totalOperacionesEnRango: number = 0;
   operacionesLiquidadasEnRango: number = 0;
   operacionesAprobadasEnRango: number = 0;
+  operacionesProcLiqEnRango: number = 0;
   distribucionChartColors: string[] = [
     'rgba(0, 158, 247, 0.8)',
     'rgba(80, 205, 137, 0.8)',
@@ -103,9 +105,10 @@ export class DashboardWelcomeComponent implements OnInit {
     meses: string[];
     totales: number[];
     liquidadas: number[];
+    procLiq: number[];
     aprobadas: number[];
-    fullData: { mes: string, total: number, liquidadas: number, aprobadas: number }[];
-  } = { meses: [], totales: [], liquidadas: [], aprobadas: [], fullData: [] };
+    fullData: { mes: string, total: number, liquidadas: number, procLiq: number, aprobadas: number }[];
+  } = { meses: [], totales: [], liquidadas: [], procLiq: [], aprobadas: [], fullData: [] };
 
 
   constructor(
@@ -234,7 +237,15 @@ export class DashboardWelcomeComponent implements OnInit {
             borderColor: 'rgba(80, 205, 137, 1)',
             borderWidth: 2,
             tension: 0.4
-          }
+          },
+          ...(this.isAdmin() ? [{
+            label: 'En Proc. Liq.',
+            data: filteredData.procLiq,
+            backgroundColor: 'rgba(138, 43, 226, 0.7)',
+            borderColor: 'rgba(138, 43, 226, 1)',
+            borderWidth: 2,
+            tension: 0.4
+          }] : [])
         ]
       },
       options: {
@@ -332,6 +343,7 @@ export class DashboardWelcomeComponent implements OnInit {
     this.totalOperacionesEnRango = filteredData.totales.reduce((sum, value) => sum + value, 0);
     this.operacionesLiquidadasEnRango = filteredData.liquidadas.reduce((sum, value) => sum + value, 0);
     this.operacionesAprobadasEnRango = filteredData.aprobadas.reduce((sum, value) => sum + value, 0);
+    this.operacionesProcLiqEnRango = filteredData.procLiq.reduce((sum, value) => sum + value, 0);
 
     // Recrear el gráfico con el nuevo tipo
     const canvas = this.operacionesChart.canvas;
@@ -367,7 +379,15 @@ export class DashboardWelcomeComponent implements OnInit {
           borderColor: 'rgba(80, 205, 137, 1)',
           borderWidth: 2,
           tension: 0.4
-        }
+        },
+        ...(this.isAdmin() ? [{
+          label: 'En Proc. Liq.',
+          data: filteredData.procLiq,
+          backgroundColor: 'rgba(138, 43, 226, 0.7)',
+          borderColor: 'rgba(138, 43, 226, 1)',
+          borderWidth: 2,
+          tension: 0.4
+        }] : [])
       ]
     };
 
@@ -455,7 +475,7 @@ export class DashboardWelcomeComponent implements OnInit {
   }
 
   // Helper method to get filtered data based on month selection
-  getFilteredChartData(): { meses: string[], totales: number[], liquidadas: number[], aprobadas: number[] } {
+  getFilteredChartData(): { meses: string[], totales: number[], liquidadas: number[], procLiq: number[], aprobadas: number[] } {
     // Ensure start month is before end month
     const start = Math.min(this.chartStartMonth, this.chartEndMonth);
     const end = Math.max(this.chartStartMonth, this.chartEndMonth);
@@ -464,9 +484,10 @@ export class DashboardWelcomeComponent implements OnInit {
     const meses = this.operacionesPorMes.meses.slice(start, end + 1);
     const totales = this.operacionesPorMes.totales.slice(start, end + 1);
     const liquidadas = this.operacionesPorMes.liquidadas.slice(start, end + 1);
+    const procLiq = this.operacionesPorMes.procLiq.slice(start, end + 1);
     const aprobadas = this.operacionesPorMes.aprobadas.slice(start, end + 1);
 
-    return { meses, totales, liquidadas, aprobadas };
+    return { meses, totales, liquidadas, procLiq, aprobadas };
   }
 
   // Percentage calculation helper
@@ -668,23 +689,34 @@ export class DashboardWelcomeComponent implements OnInit {
     });
     this.operacionesLiquidadas = operacionesLiquidadasDelMes.length;
 
-    // 4. Monto total Op. Liquidadas: suma total de montoAprobado de las liquidadas del mes
+    // 3.1 Op. en Proceso de Liquidación: estadoDashboard = 'EN PROC LIQ' con fechaProcLiq del mes actual
+    const operacionesProcLiqDelMes = this.operaciones.filter(op => {
+      if (op.estadoDashboard === 'EN PROC LIQ' && op.fechaProcLiq) {
+        const fecha = new Date(op.fechaProcLiq);
+        return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+      }
+      return false;
+    });
+    this.operacionesProcLiq = operacionesProcLiqDelMes.length;
+
+    // 4. Monto total Canal: suma total de montoAprobado de las liquidadas del mes (NO incluye proc liq)
     this.totalMontosLiquidados = operacionesLiquidadasDelMes.reduce((sum, op) => {
       const monto = op.montoAprobado || 0;
       return sum + monto;
     }, 0);
 
-    // Monto promedio de operaciones liquidadas del mes (montoAprobado)
+    // Monto promedio de operaciones liquidadas del mes para la caja de canal
     this.montoPromedioLiquidadas = operacionesLiquidadasDelMes.length > 0 ?
       this.totalMontosLiquidados / operacionesLiquidadasDelMes.length : 0;
 
-    // 5. Total y promedio de montoAprobadoBanco de operaciones liquidadas del mes
-    this.totalMontoBancoLiquidados = operacionesLiquidadasDelMes.reduce((sum, op) => {
+    // 5. Total y promedio de montoAprobadoBanco: incluye liquidadas + proc liq del mes
+    const todasOperacionesParaBanco = [...operacionesLiquidadasDelMes, ...operacionesProcLiqDelMes];
+    this.totalMontoBancoLiquidados = todasOperacionesParaBanco.reduce((sum, op) => {
       const monto = op.montoAprobadoBanco || 0;
       return sum + monto;
     }, 0);
-    this.montoPromedioBancoLiquidadas = operacionesLiquidadasDelMes.length > 0 ?
-      this.totalMontoBancoLiquidados / operacionesLiquidadasDelMes.length : 0;
+    this.montoPromedioBancoLiquidadas = todasOperacionesParaBanco.length > 0 ?
+      this.totalMontoBancoLiquidados / todasOperacionesParaBanco.length : 0;
 
     // Mantener para compatibilidad - operaciones del mes actual por fechaCreacion
     this.operacionesDelMesActual = operacionesIngresas;
@@ -935,6 +967,8 @@ export class DashboardWelcomeComponent implements OnInit {
       .reduce((sum, value) => sum + value, 0);
     this.operacionesAprobadasEnRango = operacionesPorMesData.aprobadas.slice(this.chartStartMonth, this.chartEndMonth + 1)
       .reduce((sum, value) => sum + value, 0);
+    this.operacionesProcLiqEnRango = operacionesPorMesData.procLiq.slice(this.chartStartMonth, this.chartEndMonth + 1)
+      .reduce((sum, value) => sum + value, 0);
 
     // Preparar datos para el gráfico de distribución
     this.prepareDistributionData();
@@ -1013,7 +1047,7 @@ export class DashboardWelcomeComponent implements OnInit {
     });
   }
 
-  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[], aprobadas: number[], fullData: any[]} {
+  groupOperacionesPorMes(): {meses: string[], totales: number[], liquidadas: number[], procLiq: number[], aprobadas: number[], fullData: any[]} {
     // Arreglo con todos los meses
     const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const fechaActual = new Date();
@@ -1025,6 +1059,7 @@ export class DashboardWelcomeComponent implements OnInit {
     const mesesMostrados: string[] = [];
     const totales: number[] = [];
     const liquidadas: number[] = [];
+    const procLiq: number[] = [];
     const aprobadas: number[] = [];
     const fullData: any[] = [];
 
@@ -1053,15 +1088,18 @@ export class DashboardWelcomeComponent implements OnInit {
         const etiquetaMes = nombresMeses[mes];
         const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioActual);
         const operacionesLiquidadas = contarPorMesConEstado('LIQUIDADA', 'fechaLiquidacion', mes, anioActual);
+        const operacionesProcLiq = contarPorMesConEstado('EN PROC LIQ', 'fechaProcLiq', mes, anioActual);
         const operacionesAprobadas = contarPorMesConEstado('APROBADA', 'fechaCreacion', mes, anioActual);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
+        procLiq.push(operacionesProcLiq);
         aprobadas.push(operacionesAprobadas);
         fullData.push({
           mes: etiquetaMes,
           total: totalOperaciones,
           liquidadas: operacionesLiquidadas,
+          procLiq: operacionesProcLiq,
           aprobadas: operacionesAprobadas
         });
       }
@@ -1107,15 +1145,18 @@ export class DashboardWelcomeComponent implements OnInit {
         const etiquetaMes = nombresMeses[mes];
         const totalOperaciones = contarPorMes(this.operaciones, 'fechaCreacion', mes, anioActual);
         const operacionesLiquidadas = contarPorMesConEstado('LIQUIDADA', 'fechaLiquidacion', mes, anioActual);
+        const operacionesProcLiq = contarPorMesConEstado('EN PROC LIQ', 'fechaProcLiq', mes, anioActual);
         const operacionesAprobadas = contarPorMesConEstado('APROBADA', 'fechaCreacion', mes, anioActual);
         mesesMostrados.push(etiquetaMes);
         totales.push(totalOperaciones);
         liquidadas.push(operacionesLiquidadas);
+        procLiq.push(operacionesProcLiq);
         aprobadas.push(operacionesAprobadas);
         fullData.push({
           mes: etiquetaMes,
           total: totalOperaciones,
           liquidadas: operacionesLiquidadas,
+          procLiq: operacionesProcLiq,
           aprobadas: operacionesAprobadas
         });
       }
@@ -1180,7 +1221,7 @@ export class DashboardWelcomeComponent implements OnInit {
       }
     }
 
-    return { meses: mesesMostrados, totales, liquidadas, aprobadas, fullData };
+    return { meses: mesesMostrados, totales, liquidadas, procLiq, aprobadas, fullData };
   }
 
   agruparOperacionesPorMes(operaciones: any[]): { [key: string]: any[] } {
